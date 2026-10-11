@@ -13,7 +13,7 @@
   for(const id of ['coffee','bootsGaucho','mateCuiudo','tray'])buyUpgrade(id);
   check(improvementCount()===4&&decorCount()===0,'melhorias não contam como decoração');
   togglePhone(true);phoneTab='decor';renderPhone();
-  check(document.querySelector('[data-act="tab"][data-id="decor"]').classList.contains('active')&&!$('phoneContent').querySelector('[data-act="decorBuy"]')&&[...$('phoneContent').querySelectorAll('button')].filter(b=>b.textContent==='À venda na Casa do Campeiro').length===DECOR.filter(d=>!d.gift).length&&$('phoneContent').textContent.includes('Presente de Lauro Bolador'),'aba Estética lista todas as peças: as de venda apontam a Casa do Campeiro, as de presente não se compram');
+  check(document.querySelector('[data-act="tab"][data-id="decor"]').classList.contains('active')&&!$('phoneContent').querySelector('[data-act="decorBuy"]')&&[...$('phoneContent').querySelectorAll('button')].filter(b=>b.textContent==='À venda no balcão · Personalizar bodega').length===DECOR.filter(d=>!d.gift).length&&$('phoneContent').textContent.includes('Presente de Lauro Bolador'),'aba Estética lista todas as peças: as de venda apontam o balcão, as de presente não se compram');
   const cash=G.cash;buyDecor('kit_chimarrao');check(!decorOwned('kit_chimarrao')&&G.cash===cash,'kit do chimarrão exige a cômoda');
   buyDecor('comoda');buyDecor('kit_chimarrao');buyDecor('bandeira');
   check(decorCount()===3&&G.cash===cash-90-40-60&&decorVisible(DECOR.find(d=>d.id==='kit_chimarrao')),'compra desconta o caixa e expõe a peça');

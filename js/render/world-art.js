@@ -290,7 +290,7 @@ useWorldArt('drawPortal', (cx,y,title) => {
 useWorldArt('drawQuadro', () => {
   const q = VILA.quadro;
   if (!worldSprite('rural',9,q.x-6,q.y-76,q.w+12,106)) return false;
-  signBoard(q.x+q.w/2,q.y-99,130,'ENCOMENDAS · '+(G.orders||[]).length,11); return true;
+  drawCalendarSheet(q,q.y-52);signBoard(q.x+q.w/2,q.y-99,130,'CALENDÁRIO',11); return true;
 });
 function worldFence(x,y,w) {
   if (!WORLD_ART.rural.naturalWidth) return false;

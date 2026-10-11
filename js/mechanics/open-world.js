@@ -210,7 +210,7 @@ const VILA = {
   W: 3600, H: 2700, river: 540, border: 2380, roadY: 690, roadH: 90, roadX: 1580,
   // A horta fica colada na bodega; o fogo de chão é a entrada do campo, onde também fica o curral.
   fogo: { x: 590, y: 240, w: 400, h: 340 }, horta: { x: 1015, y: 270, w: 260, h: 290 }, bodega: { x: 1300, y: 180, w: 640, h: 420 },
-  cancha: { x: 2060, y: 240, w: 460, h: 360 }, calendario: { x: 1365, y: 604, w: 70, h: 30 },
+  cancha: { x: 2060, y: 240, w: 460, h: 360 },
   agro: { x: 1720, y: 1080, w: 440, h: 260 }, gado: { x: 2380, y: 1080, w: 440, h: 260 },
   atacado: { x: 1020, y: 1060, w: 420, h: 260 }, acougue: { x: 1720, y: 1560, w: 400, h: 240 }, quadro: { x: 1860, y: 604, w: 80, h: 30 },
   ferragem: { x: 2660, y: 320, w: 420, h: 250 },
@@ -229,7 +229,7 @@ WORLD_MAPS.vila = {
   id: 'vila', name: 'Fronteira', W: VILA.W, H: VILA.H,
   residents: ['valter', 'manolima', 'baitaca', 'guri', 'jayme'],
   walkLines: [[[620, 735], [1620, 735], [2600, 735], [3500, 735]], [[1620, 800], [1620, 1470], [1620, 2300]], [[620, 1470], [1620, 1470], [2700, 1470], [3500, 1470]]],
-  obstacles() { const V = VILA; return [V.bodega, V.cancha, V.horta, { x: V.fogo.x + 50, y: V.fogo.y + 80, w: V.fogo.w - 100, h: V.fogo.h - 150 }, V.calendario, V.agro, V.gado, V.atacado, V.acougue, V.ferragem, V.quadro, V.marco, { x: V.missoes.x, y: V.missoes.y + 60, w: V.missoes.w, h: V.missoes.h - 60 }, V.pouso, V.estacao, ...V.houses]; },
+  obstacles() { const V = VILA; return [V.bodega, V.cancha, V.horta, { x: V.fogo.x + 50, y: V.fogo.y + 80, w: V.fogo.w - 100, h: V.fogo.h - 150 }, V.agro, V.gado, V.atacado, V.acougue, V.ferragem, V.quadro, V.marco, { x: V.missoes.x, y: V.missoes.y + 60, w: V.missoes.w, h: V.missoes.h - 60 }, V.pouso, V.estacao, ...V.houses]; },
   canWalk(x, y) {
     if (y < 130 || x > VILA.W + 20) return false;
     if (y > VILA.border - 20) return false;                          // rio Uruguai embaixo: fronteira com o Uruguai
@@ -248,8 +248,7 @@ WORLD_MAPS.vila = {
       { id: 'cancha', ...front(V.cancha), label: 'Entrar na cancha de bocha', act: () => { if (prologueActive()) { prologueWarn(); return; } const was = worldOut; worldOut = null; enterCancha(true); if (!worldOut) worldOut = was; } },
       ...hortaSpots(),
       { id: 'campo', ...front(V.fogo), label: isCampo() ? 'Voltar ao costelão' : 'Entrar no campo · curral, laço e fogo de chão', act: () => { if (isCampo()) goInside(); else enterInterior('curral'); } },
-      { id: 'calendario', ...front(V.calendario, 26), label: 'Calendário da bodega', act: () => teachFirst('calendario', calendarDialog) },
-      { id: 'quadro', ...front(V.quadro, 26), label: 'Quadro de encomendas · ' + (G.orders || []).length + ' pedido' + ((G.orders || []).length === 1 ? '' : 's'), act: () => prologueActive() ? prologueWarn() : ordersBoard() },
+      { id: 'calendario', ...front(V.quadro, 26), label: 'Calendário de eventos', act: () => teachFirst('calendario', calendarDialog) },
       { id: 'atacado', ...front(V.atacado), label: 'Entrar no Atacado da Fronteira', act: () => enterInterior('atacado') },
       { id: 'acougue', ...front(V.acougue), label: 'Entrar no Açougue da Fronteira', act: () => enterInterior('acougue') },
       { id: 'agro', ...front(V.agro), label: 'Entrar no Armazém Querência', act: () => enterInterior('agro') },
@@ -271,7 +270,7 @@ WORLD_MAPS.vila = {
     for (const r of VILA_ROADS) road(...r);
     drawVilaRiver();
     const add = (r, fn) => { if (seen(r.x + r.w / 2, r.y + r.h / 2, Math.max(r.w, r.h))) layers.push({ y: r.y + r.h, draw: fn }); };
-    add(V.bodega, drawWorldBodega); add(V.cancha, drawWorldCancha); drawHortaLayers(layers, seen); add(V.fogo, drawWorldFogo); add(V.marco, drawWorldMarco); add(V.calendario, drawCalendarBoard); drawForage(layers, seen);
+    add(V.bodega, drawWorldBodega); add(V.cancha, drawWorldCancha); drawHortaLayers(layers, seen); add(V.fogo, drawWorldFogo); add(V.marco, drawWorldMarco); drawForage(layers, seen);
     // o campo: cerca, uma vaca e a placa, para ninguém confundir com só um fogo de chão
     add({ ...V.fogo, h: V.fogo.h - 120 }, () => { const f = V.fogo; worldFence(f.x, f.y + 40, f.w); drawBoi(2, Math.floor(frameClock * 1.2) % 2 ? 2 : 0, f.x + f.w - 46, f.y + 118, 1.1, true); signBoard(f.x + f.w / 2, f.y + 6, 180, 'CAMPO E CURRAL', 12); });
     add(V.agro, () => drawWorldShop(V.agro, 'ARMAZÉM QUERÊNCIA', 'produtos para agricultura', '#4a7a3a', '#e8e0c8', ['semente', 'regador', 'enxada']));
@@ -330,13 +329,19 @@ function drawWorldShop(s, name, sub, awning, wall, goods) {
   goods.forEach((g, i) => { const x = s.x + 30 + i * 52, y = s.y + s.h - 10; if (g === 'semente' || g === 'racao' || g === 'sal') { rect(x - 16, y - 34, 32, 36, g === 'sal' ? '#f0ece0' : g === 'racao' ? '#c8a060' : '#d8c890', 6, '#8a7a5a'); } else if (g === 'regador') { ellipse(x, y - 14, 14, 12, '#5a8ac0'); rect(x + 10, y - 26, 16, 4, '#5a8ac0'); } else if (g === 'enxada') { rect(x - 2, y - 50, 4, 52, '#8a5a32'); rect(x - 12, y - 52, 24, 8, '#7a7a80'); } else if (g === 'garrafa') { for (let k = 0; k < 3; k++) { rect(x - 14 + k * 10, y - 30, 8, 30, ['#3a7a3a', '#8a4a1a', '#3a5a9a'][k], 3); rect(x - 12 + k * 10, y - 38, 4, 9, '#2a2a2a'); } } else if (g === 'carne') { rect(x - 1, y - 54, 2, 12, '#9a9aa0'); ellipse(x, y - 28, 12, 17, '#b83a3a'); ellipse(x, y - 30, 6, 8, '#f0d0c0'); } else if (g === 'arreio') { ctx.strokeStyle = '#6a3a1a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(x, y - 24, 14, 18, 0, 0, Math.PI * 2); ctx.stroke(); } });
 }
 
-// Quadro de encomendas na frente da bodega: um bilhete para cada pedido.
+// Calendário de eventos na frente da bodega: o quadro de recados com a folha do dia (dia, semana e o evento).
 function drawQuadro() {
-  const q = VILA.quadro, n = (G.orders || []).length;
+  const q = VILA.quadro;
   for (const x of [q.x + 6, q.x + q.w - 12]) rect(x, q.y - 40, 6, 70, '#5a3a20');
   rect(q.x - 6, q.y - 76, q.w + 12, 60, '#8a5a32', 4, '#3a2414'); rect(q.x, q.y - 70, q.w, 48, '#c8a070', 2);
-  for (let k = 0; k < Math.min(n, 3); k++) { rect(q.x + 6 + k * 24, q.y - 66 + (k % 2) * 6, 20, 24, '#f4ecd8', 1); rect(q.x + 14 + k * 24, q.y - 68 + (k % 2) * 6, 4, 4, '#c83a2a', 2); }
-  signBoard(q.x + q.w / 2, q.y - 100, 120, 'ENCOMENDAS', 11);
+  drawCalendarSheet(q); signBoard(q.x + q.w / 2, q.y - 100, 120, 'CALENDÁRIO', 11);
+}
+// Folha do calendário presa no quadro: dia da semana, número do dia e o ícone do evento (ou do evento de mapa).
+function drawCalendarSheet(q, top = q.y - 68) {
+  const cx = q.x + q.w / 2, me = MAP_EVENTS[mapEventFor()], e = eventInfo();
+  rect(cx - 22, top, 44, 42, '#f4ecd8', 2, '#8a6a4a'); rect(cx - 22, top, 44, 11, '#a83a24', 2); rect(cx - 2, top - 3, 4, 4, '#c83a2a', 2);
+  txt(calendar().name.slice(0, 3).toUpperCase(), cx, top + 6, 8, '#fff0d0', 'center', 'Arial', false);
+  txt(String(dayNumber()), cx - 9, top + 26, 14, '#3a2414', 'center', 'Georgia', false); txt((me || e).icon, cx + 11, top + 26, 12, '#3a2414', 'center', 'Arial', false);
 }
 // Rio Uruguai: corta a lateral esquerda e a parte de baixo da vila (lá embaixo, a margem é do Uruguai).
 function drawVilaRiver() {

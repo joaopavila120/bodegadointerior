@@ -1,5 +1,5 @@
 // Vida no campo: o inventário do Sadi, as compras nas lojas da Fronteira, o ritmo do dia, o curral (galinhas, codornas,
-// vaca e bois), a mesa de conservas e o quadro de encomendas dos fregueses especiais.
+// vaca e bois) e a mesa de conservas.
 // O que a bodega vende sai da roça: horta, curral, forno e tacho (prologue.js). Nas lojas só se compra o que não dá na
 // roça: bebida, cigarro, amendoim, vidros, bacon e salame. Ao entrar na bodega, o que é de balcão vai para a despensa.
 'use strict';
@@ -65,7 +65,7 @@ function depositBag() {
 
 // ---------- Lojas da Fronteira ----------
 // Atacado (bebida, cigarro, amendoim e vidros), Açougue (carne de porco: bacon e salame), Armazém Querência (sementes,
-// mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração, equipamento e artigos gaúchos para o galpão).
+// mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração e equipamento).
 const STORE_GOODS = {
   atacado: ['cerveja', 'refri', 'cachaca', 'bitter', 'cafe', 'cigarro', 'amendoim', 'azeite'],
   acougue: ['bacon'],
@@ -77,7 +77,7 @@ const STORE_INFO = {
   acougue: { name: 'Açougue da Fronteira', text: 'Carne de porco: bacon. O salame de colônia vem da nona do Badin, na Serra.' },
   badin: { name: 'Despensa da colônia do Badin', text: 'Salame curado pela nona e muda de parreira da colônia. A uva vira vinho de garrafão na mesa de compota da bodega.' },
   agro: { name: 'Armazém Querência', text: 'Sementes, mudas e adubo para a horta. Aqui também se vende a colheita.' },
-  gado: { name: 'Casa do Campeiro', text: 'Animais, ração, equipamento de campo e artigos gaúchos para enfeitar o galpão.' },
+  gado: { name: 'Casa do Campeiro', text: 'Animais, ração e equipamento de campo.' },
   ferragem: { name: 'Ferragem da Fronteira', text: 'Móveis, equipamentos e melhorias para a bodega. Comprou, já sai instalado. No celular dá para ver e guardar o que é da casa.' }
 };
 // De onde vem cada produto da bodega (lista de compras do celular e tutorial).
@@ -127,9 +127,9 @@ function ferragemCards() {
   return UPGRADE_TABS.map(cat => {
     const list = UPGRADES.filter(u => upgradeCategory(u) === cat && !u.shop && !FERRAGEM_SKIP.includes(u.id)); if (!list.length) return '';
     return '<h3>' + cat + '</h3><div class="store-list">' + list.map(u => { const own = upgradeOwned(u.id), miss = own ? [] : upgradeMissing(u); return `<div class="supply"><span class="icon">${upgradeIconHTML(u.id) || '<span class="bag-emoji">🔧</span>'}</span><div><b>${u.name}</b><p>${u.desc}${u.level > 1 ? ' · nível ' + u.level : ''}${u.rep ? ' · reputação ' + u.rep : ''}</p></div><button class="primary" data-act="upgrade" data-id="${u.id}" ${own || miss.length ? 'disabled' : ''}>${own ? 'Já é da casa' : miss.length ? 'Falta: ' + miss.join(' + ') : u.cost === 0 ? 'Levar de graça' : 'Comprar · ' + money(u.cost)}</button></div>`; }).join('') + '</div>';
-  }).join('') + moveisSection();
+  }).join('');
 }
-// Na Ferragem: melhorias que são móveis podem ser guardadas e reinstaladas (de graça) fora do expediente.
+// No balcão (Personalizar bodega): melhorias que são móveis podem ser guardadas e reinstaladas (de graça) fora do expediente.
 function moveisSection() {
   const list = REMOVABLE_UPGRADES.filter(upgradeOwned).map(id => UPGRADES.find(u => u.id === id)).filter(Boolean); if (!list.length) return '';
   return '<h3>Móveis da bodega</h3><p class="small-note">Guarde ou reinstale de graça, fora do expediente.</p><div class="store-list">' + list.map(u => `<div class="supply"><span class="icon">${upgradeIconHTML(u.id) || '<span class="bag-emoji">🪑</span>'}</span><div><b>${u.name}</b><p>${G.up[u.id] ? 'Instalado na bodega' : 'Guardado no depósito'}</p></div><button data-act="upgradeToggle" data-id="${u.id}" aria-pressed="${!!G.up[u.id]}">${G.up[u.id] ? 'Guardar' : 'Instalar de novo'}</button></div>`).join('') + '</div>';
@@ -140,7 +140,7 @@ function toggleUpgrade(id) {
   if (['open', 'closing'].includes(G.phase)) { warnDialog('Expediente aberto', 'Guardar ou reinstalar móveis só antes de abrir ou depois de encerrar o expediente.'); return; }
   G.upOwned ??= {}; G.upOwned[id] = true; G.up[id] = !G.up[id];
   if (!canWalk(G.player.x, G.player.y)) { const goal = physicalGoal(G.player.x, G.player.y); G.player.x = goal.x; G.player.y = goal.y; }
-  say(UPGRADES.find(u => u.id === id).name + (G.up[id] ? ' instalado de novo.' : ' guardado no depósito.')); AudioEngine.tick(); save(); renderPhone(); refreshStore();
+  say(UPGRADES.find(u => u.id === id).name + (G.up[id] ? ' instalado de novo.' : ' guardado no depósito.')); AudioEngine.tick(); save(); renderPhone(); refreshStore(); refreshCustomize();
 }
 function upgradePhonePanel() {
   const owned = UPGRADES.filter(u => upgradeOwned(u.id) && !u.shop), forSale = UPGRADES.filter(u => !upgradeOwned(u.id) && !u.shop);
@@ -177,7 +177,7 @@ function campeiroCards() {
     extraCard('galinha', '🐔', 'Galinha caipira', 'Bota um ovo por dia, se comer · você tem ' + r.hens + '/' + RANCH_MAX.hens, 15, r.hens < RANCH_MAX.hens ? 'Comprar · ' + money(15) : 'Galinheiro cheio', r.hens < RANCH_MAX.hens) +
     extraCard('codorna', '🐦', 'Codorna', 'Bota um ovinho por dia, se comer · você tem ' + r.quails + '/' + RANCH_MAX.quails, 10, r.quails < RANCH_MAX.quails ? 'Comprar · ' + money(10) : 'Codorneira cheia', r.quails < RANCH_MAX.quails) +
     extraCard('racao', '🌽', 'Saco de ração', 'Um saco alimenta o curral inteiro por um dia', 6, 'Comprar · ' + money(6)) +
-    '</div><h3>Equipamento</h3><div class="store-list">' + gear.map(gearCard).join('') + '</div>' + bootsPanel() + decorStoreSection();
+    '</div><h3>Equipamento</h3><div class="store-list">' + gear.map(gearCard).join('') + '</div>' + bootsPanel();
 }
 // Venda no Armazém: o que é colhido ou produzido e está no inventário.
 const SELLABLE = ['alface', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'conserva_pepino', 'conserva_codorna', 'bergamota', 'pinhao', 'erva'];
@@ -205,7 +205,7 @@ function ruralTick(dt) {
   if (!morningActive()) return;
   const before = G.morning || 0; G.morning = Math.min(7 * 60, before + dt * MORNING_RATE);
   if (before < 360 && G.morning >= 360 && G.event.id !== 'costelao') {
-    repChange(-4); const lost = G.event.id !== 'normal' && G.event.id !== 'costelao' ? eventInfo().name : null;
+    repChange(-4); const lost = eventInfo() !== EVENTS.normal && G.event.id !== 'costelao' ? eventInfo().name : null;
     if (lost) G.event = { id: 'normal', seen: true, fired: {}, lost: true };
     floatNote('Meio-dia e a bodega fechada! A freguesia foi embora (−4 de reputação)' + (lost ? ' e o dia de ' + lost + ' se perdeu.' : '.'), 'bad'); AudioEngine.bad(); save();
   }
@@ -232,14 +232,14 @@ function ruralOnOpen() {
   G.openAt = morningActive() ? morningMinutes() : null;
   if (hortaCells().some(cellThirsty)) showBanner('As plantas ainda não foram regadas hoje', 'Passe na horta com o regador antes que sequem.', 'info');
 }
-function ruralNewDay(prevDay) { G.morning = 0; G.openAt = null; if (!G.testMode) hortaPests(); ranchNewDay(prevDay); ordersNewDay(); if (calendar().weekday === 5) valterTip('sabado'); }
+function ruralNewDay(prevDay) { G.morning = 0; G.openAt = null; if (!G.testMode) hortaPests(); ranchNewDay(prevDay); if (calendar().weekday === 5) valterTip('sabado'); }
 // Ícone no topo: estado da horta e do curral, de qualquer lugar.
 function updateFarmStatus() {
   const el = $('farmStatus'); if (!el) return;
-  const cells = hortaCells(), r = ranchState(), thirsty = cells.filter(cellThirsty).length, ready = cells.filter(cellReady).length, eggs = r.nests.ovo + r.nests.ovo_codorna, milk = r.cows && r.milkedDay !== G.day, orders = (G.orders || []).length;
-  const parts = [thirsty && '💧' + thirsty, ready && '🧺' + ready, eggs && '🥚' + eggs, milk && '🥛', orders && '📋' + orders].filter(Boolean);
+  const cells = hortaCells(), r = ranchState(), thirsty = cells.filter(cellThirsty).length, ready = cells.filter(cellReady).length, eggs = r.nests.ovo + r.nests.ovo_codorna, milk = r.cows && r.milkedDay !== G.day;
+  const parts = [thirsty && '💧' + thirsty, ready && '🧺' + ready, eggs && '🥚' + eggs, milk && '🥛'].filter(Boolean);
   el.classList.toggle('hidden', !parts.length); setHTML(el, parts.join(' '));
-  el.title = [thirsty && thirsty + ' planta(s) com sede', ready && ready + ' pronta(s) para colher', eggs && eggs + ' ovo(s) no curral', milk && 'vaca esperando a ordenha', orders && orders + ' encomenda(s) no quadro'].filter(Boolean).join(' · ');
+  el.title = [thirsty && thirsty + ' planta(s) com sede', ready && ready + ' pronta(s) para colher', eggs && eggs + ' ovo(s) no curral', milk && 'vaca esperando a ordenha'].filter(Boolean).join(' · ');
 }
 
 // ---------- Campo: fogo de chão do costelão e curral (galinhas, codornas, vaca e a cerca do boi) ----------
@@ -336,37 +336,4 @@ function makeConserva(id) {
   bagAdd(c.out, c.n); AudioEngine.glass(); say(c.name + ': ' + c.n + ' potes prontos.');
   if (!worldOut) depositBag();   // feita na cozinha, a conserva já vai para o balcão
   farmXP(3); if (c.id === 'codorna') prologueFlag('compota'); save(); conservasMenu();
-}
-
-// ---------- Quadro de encomendas ----------
-// Os fregueses especiais pedem o que sai da horta e do curral. Entregar dá dinheiro, amizade e às vezes um presente.
-const ORDER_ITEMS = {
-  alface: { q: [3, 5], why: 'pra salada do almoço' }, trigo: { q: [3, 6], why: 'pra fazer pão caseiro' },
-  ovo: { q: [4, 8], why: 'pra fazer cuca', ok: () => ranchState().hens > 0 }, ovo_codorna: { q: [6, 10], why: 'pra um petisco', ok: () => ranchState().quails > 0 },
-  erva: { q: [1000, 1000], why: 'erva da casa pro chimarrão' }, bergamota: { q: [2000, 3000], why: 'pra levar pros netos' }, pinhao: { q: [1000, 2000], why: 'pra cozinhar no fogão a lenha' },
-  pepino_cru: { q: [3, 6], why: 'pra salada', ok: () => hortaLevel() >= 3 }, conserva_pepino: { q: [2, 3], why: 'pra festa da comunidade', ok: () => hortaLevel() >= 3 },
-  conserva_codorna: { q: [2, 3], why: 'pro jogo de truco', ok: () => ranchState().quails > 0 }
-};
-function orderPeople() { const met = PEOPLE.map((p, i) => i).filter(i => isSpecial(i) && G.metSpecial?.[PEOPLE[i].id]); return met.length ? met : ['valter', 'badin', 'lauro', 'manolima'].map(id => PEOPLE.findIndex(p => p.id === id)).filter(i => i >= 0 && isSpecial(i)); }
-function ordersNewDay() {
-  G.orders = (G.orders || []).filter(o => o.due >= G.day);
-  const pool = Object.entries(ORDER_ITEMS).filter(([, d]) => !d.ok || d.ok()).map(([k]) => k);
-  while (G.orders.length < 3 && pool.length) {
-    const item = pick(pool), d = ORDER_ITEMS[item], q = d.q[0] + Math.floor(Math.random() * (d.q[1] - d.q[0] + 1)), person = pick(orderPeople());
-    if (G.orders.some(o => o.person === person)) { if (G.orders.length >= orderPeople().length) break; continue; }
-    const base = BAG_RAW[item] ? BAG_RAW[item].value * q : sellPrice(item, q) / .6;
-    G.orders.push({ id: G.next++, person, item, q, reward: round(Math.max(8, base * 1.8 + 4)), due: G.day + 2 });
-    if (G.orders.length >= 2 && Math.random() < .4) break;
-  }
-}
-function ordersBoard() {
-  if (!G.orders) ordersNewDay();
-  const list = G.orders;
-  openDialog('Quadro de encomendas', '<p>Pedidos dos fregueses para a horta e o curral. Traga no inventário e entregue aqui.</p>' + (list.length ? '<div class="store-list">' + list.map(o => { const i = o.person, left = o.due - G.day, ok = bagQty(o.item) >= o.q; return `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${PEOPLE[i].name}</b><p>“${bagText(o.item, o.q)} de ${bagName(o.item).toLowerCase()}, ${ORDER_ITEMS[o.item].why}.” · paga ${money(o.reward)} · ${left <= 0 ? 'último dia' : 'faltam ' + (left + 1) + ' dias'}</p></div><button class="primary" data-act="deliverOrder" data-id="${o.id}" ${ok ? '' : 'disabled'}>${ok ? 'Entregar' : 'No inventário: ' + bagText(o.item)}</button></div>`; }).join('') + '</div>' : '<p class="small-note">Nenhuma encomenda por enquanto. Amanhã cedo aparecem pedidos novos.</p>'), 'worldStore');
-}
-function deliverOrder(id) {
-  const o = (G.orders || []).find(x => x.id === Number(id)); if (!o || !bagTake(o.item, o.q)) return;
-  G.orders = G.orders.filter(x => x !== o); G.cash = round(G.cash + o.reward); addFriendship(o.person, 6); gainXP(6); AudioEngine.coins();
-  let gift = ''; if (Math.random() < .3) { const k = pick(['alface', 'trigo', 'adubo']); hortaState().seeds[k] += k === 'adubo' ? 2 : 3; gift = ' De presente: ' + (k === 'adubo' ? '2 adubos' : '3 sementes de ' + CROPS[k].name.toLowerCase()) + '!'; }
-  showBanner('Encomenda entregue a ' + PEOPLE[o.person].name, money(o.reward) + ' · +amizade.' + gift, 'gift', { world: true }); save(); ordersBoard();
 }

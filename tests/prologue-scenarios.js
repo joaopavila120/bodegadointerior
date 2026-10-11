@@ -79,9 +79,10 @@
   check(PROLOGUE_TEACH.every(teachSeen),'o que o Valter ensinou no prólogo não se repete como primeira vez');
   // depois do prólogo: lojas, decoração e colheitas que liberam a venda
   G.prologue.done=true;G.tutorial.complete=true;
-  storeShop('gado');check($('dialogContent').innerHTML.includes('Artigos gaúchos para o galpão')&&$('dialogContent').innerHTML.includes('decor/bandeira.png')&&$('dialogContent').innerHTML.includes('Vaca de leite'),'a Casa do Campeiro vende a decoração, com ícones, e a vaca');
-  G.cash=500;buyDecor('bandeira');check(decorOwned('bandeira')&&decorState().bandeira===true&&modal==='worldStore','comprar decoração na loja já enfeita a bodega');closeDialog();
-  phoneTab='decor';togglePhone(true);check($('phoneContent').textContent.includes('À venda na Casa do Campeiro')&&!$('phoneContent').innerHTML.includes('data-act="decorBuy"'),'no celular, a aba Estética só mostra e guarda: comprar é na loja');togglePhone(false);
+  storeShop('gado');check(!$('dialogContent').innerHTML.includes('decor/bandeira.png')&&$('dialogContent').innerHTML.includes('Vaca de leite'),'a Casa do Campeiro vende a vaca, mas não a decoração');closeDialog(true);
+  G.phase='prep';caixaMenu();check($('dialogContent').innerHTML.includes('data-act="personalizar"'),'no caixa do balcão: Personalizar bodega');action('personalizar');check(modal==='personalizar'&&$('dialogContent').innerHTML.includes('decor/bandeira.png')&&$('dialogContent').innerHTML.includes('data-act="decorBuy"'),'Personalizar bodega vende a decoração, com ícones');
+  G.cash=500;buyDecor('bandeira');check(decorOwned('bandeira')&&decorState().bandeira===true&&modal==='personalizar'&&$('dialogContent').innerHTML.includes('data-act="decorToggle" data-id="bandeira"'),'comprar no balcão já enfeita a bodega e dá para guardar');closeDialog(true);
+  phoneTab='decor';togglePhone(true);check($('phoneContent').textContent.includes('À venda no balcão')&&!$('phoneContent').innerHTML.includes('data-act="decorBuy"'),'no celular, a aba Estética só mostra e guarda: comprar é no balcão');togglePhone(false);
   phoneTab='upgrades';togglePhone(true);check(phoneTab==='supplier'&&document.querySelector('[data-act="tab"][data-id="upgrades"]').classList.contains('hidden'),'o celular não tem mais a aba Melhorias');togglePhone(false);
   storeShop('ferragem');const up=$('dialogContent').innerHTML;closeDialog(true);
   check(!/Bergamota do pomar|Pinhão a granel|Amendoim torrado|Conserva de pepino/.test(up)&&/Xis bacon/.test(up),'a Ferragem não vende bergamota, pinhão, amendoim e pepino: vêm da roça');

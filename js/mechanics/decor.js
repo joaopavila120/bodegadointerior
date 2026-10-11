@@ -1,5 +1,5 @@
-// Decoração: comprada na Casa do Campeiro (com o ícone de cada peça) e exposta ou guardada pela aba Estética do
-// celular. Também a janela de chuva e as luzes do cenário.
+// Decoração: comprada no balcão da bodega (caixa → Personalizar bodega) e exposta ou guardada ali ou pela aba Estética
+// do celular. Também a janela de chuva e as luzes do cenário.
 'use strict';
 
 // Cada peça é um PNG recortado do room2.png original. `at` é o canto superior
@@ -57,7 +57,7 @@ function buyDecor(id){
  const missing=decorMissing(d);if(missing.length){say('Falta: '+missing.join(' + ')+'.');AudioEngine.bad();return;}
  spendCash(d.cost);G.stats.investments+=d.cost;decorState()[id]=true;
  if(d.requires)decorState()[d.requires]=true;
- say(d.name+' já enfeita a bodega!');AudioEngine.heart();save();if(modal==='worldStore')refreshStore();else renderPhone();
+ say(d.name+' já enfeita a bodega!');AudioEngine.heart();save();renderPhone();refreshCustomize();
 }
 function toggleDecor(id){
  const d=DECOR.find(d=>d.id===id);if(!d||!decorOwned(id))return;
@@ -65,23 +65,26 @@ function toggleDecor(id){
  // Peças apoiadas em outra acompanham a base: guardar a cômoda guarda o kit.
  if(shown&&d.requires)decorState()[d.requires]=true;
  if(!shown)for(const other of DECOR)if(other.requires===id&&decorOwned(other.id))decorState()[other.id]=false;
- save();renderPhone();
+ save();renderPhone();refreshCustomize();
 }
 function sanitizeDecor(state){const decor=decorState(state);for(const id of Object.keys(decor))if(!DECOR.some(d=>d.id===id))delete decor[id];else decor[id]=decor[id]===true;}
 
-function decorPanel(){
- return `<div class="phone-intro"><h3>Deixe a bodega com a sua cara</h3><p>${decorCount()} de ${DECOR.length} peças compradas. Itens de estética não mudam o atendimento: ${physicalShopping()?'compre na Casa do Campeiro e exponha ou guarde por aqui':'compre, exponha ou guarde quando quiser'}.</p></div>`+DECOR_CATS.map(cat=>`<details class="upgrade-category" open><summary>${cat}</summary>${DECOR.filter(d=>d.cat===cat).map(d=>{
+function decorPanel(shop=false){
+ return (shop?`<p class="small-note">${decorCount()} de ${DECOR.length} peças compradas. Itens de estética não mudam o atendimento: compre, exponha ou guarde quando quiser.</p>`:`<div class="phone-intro"><h3>Deixe a bodega com a sua cara</h3><p>${decorCount()} de ${DECOR.length} peças compradas. Itens de estética não mudam o atendimento: compre no balcão da bodega (Personalizar bodega) e exponha ou guarde por aqui.</p></div>`)+DECOR_CATS.map(cat=>`<details class="upgrade-category" open><summary>${cat}</summary>${DECOR.filter(d=>d.cat===cat).map(d=>{
   const owned=decorOwned(d.id),shown=decorState()[d.id]===true,missing=owned?[]:decorMissing(d),base=d.requires&&DECOR.find(x=>x.id===d.requires);
-  const store=physicalShopping()&&!owned&&!d.gift;
-  return `<div class="decor-card${shown?' shown':''}"><span class="decor-thumb"><img src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><h3>${d.name}</h3><p>${d.desc}</p><small>${d.gift?'Presente · não se compra':money(d.cost)}${d.rep?' · reputação '+d.rep:''}${base?' · vai junto com '+base.name:''}</small>${!owned&&d.gift?`<button disabled>Presente de ${d.gift}</button>`:owned?`<button data-act="decorToggle" data-id="${d.id}" aria-pressed="${shown}">${shown?'Exposto ✓ · guardar':'Guardado · expor'}</button>`:store?`<button disabled>À venda na Casa do Campeiro</button>`:`<button class="primary" data-act="decorBuy" data-id="${d.id}" ${missing.length?'disabled':''}>${missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button>`}</div></div>`;
+  const store=!shop&&!owned&&!d.gift;
+  return `<div class="decor-card${shown?' shown':''}"><span class="decor-thumb"><img src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><h3>${d.name}</h3><p>${d.desc}</p><small>${d.gift?'Presente · não se compra':money(d.cost)}${d.rep?' · reputação '+d.rep:''}${base?' · vai junto com '+base.name:''}</small>${!owned&&d.gift?`<button disabled>Presente de ${d.gift}</button>`:owned?`<button data-act="decorToggle" data-id="${d.id}" aria-pressed="${shown}">${shown?'Exposto ✓ · guardar':'Guardado · expor'}</button>`:store?`<button disabled>À venda no balcão · Personalizar bodega</button>`:`<button class="primary" data-act="decorBuy" data-id="${d.id}" ${missing.length?'disabled':''}>${missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button>`}</div></div>`;
  }).join('')}</details>`).join('')+quadroPanel();
 }
 
-// Na Casa do Campeiro: artigos gaúchos para o galpão, com o ícone de cada peça.
-function decorStoreSection(){
- const list=DECOR.filter(d=>!d.gift);
- return '<h3>Artigos gaúchos para o galpão</h3><p class="small-note">Comprou, já vai para a parede da bodega. No celular, na aba Estética, dá para guardar ou expor cada peça.</p><div class="store-list">'+list.map(d=>{const owned=decorOwned(d.id),missing=owned?[]:decorMissing(d);return `<div class="supply decor-buy"><span class="icon"><img class="decor-icon" src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><b>${d.name}</b><p>${d.desc}</p></div><button class="primary" data-act="decorBuy" data-id="${d.id}" ${owned||missing.length?'disabled':''}>${owned?'Já é sua':missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button></div>`;}).join('')+'</div>';
+// Balcão → Personalizar bodega: comprar, expor e guardar a decoração, os quadros dos amigos e os móveis das melhorias
+// (guardar ou reinstalar). Melhoria nova continua sendo comprada na loja.
+function personalizeMenu(){
+ const box=$('dialogContent').closest('.dialog'),keep=modal==='personalizar'?box.scrollTop:0;
+ openDialog('Personalizar bodega',`<p>Deixe a bodega com a sua cara. A decoração se compra aqui; melhorias novas, na Ferragem da Fronteira (botas e bodoque na Casa do Campeiro).</p>${moveisSection()||'<h3>Móveis da bodega</h3><p class="small-note">Quando comprar melhorias como a mesa de tragos, dá para guardar ou reinstalar aqui.</p>'}<h3>Decoração</h3>${decorPanel(true)}<div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`,'personalizar');
+ box.scrollTop=keep;
 }
+function refreshCustomize(){if(modal==='personalizar')personalizeMenu();}
 
 function drawDecor(){
  ctx.save();ctx.imageSmoothingEnabled=false;
@@ -92,7 +95,7 @@ function drawDecor(){
 const QUADRO_AT=25,QUADRO_SPOT=[1500,200,100,125],QUADRO_ART={};
 function quadroPeople(){return Object.keys(PORTRAIT_FILES).map(id=>PEOPLE.findIndex(p=>p.id===id)).filter(i=>i>=0&&!PEOPLE[i].removed);}
 function quadroUnlocked(i){return (G.friends[i]||0)>=QUADRO_AT;}
-function toggleQuadro(id){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;G.quadro=G.quadro===id?null:id;say(G.quadro?'Quadro de '+PEOPLE[i].name+' na parede!':'Quadro guardado.');AudioEngine.heart();save();renderPhone();}
+function toggleQuadro(id){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;G.quadro=G.quadro===id?null:id;say(G.quadro?'Quadro de '+PEOPLE[i].name+' na parede!':'Quadro guardado.');AudioEngine.heart();save();renderPhone();refreshCustomize();}
 function quadroPanel(){return `<details class="upgrade-category" open><summary>Quadros dos amigos</summary><p class="small-note">Amizade ${QUADRO_AT} libera o quadro de cada especial. Só cabe um na parede.</p>`+quadroPeople().map(i=>{const id=PEOPLE[i].id,ok=quadroUnlocked(i),on=G.quadro===id;return `<div class="decor-card${on?' shown':''}"><span class="decor-thumb">${portraitHTML(i,56)}</span><div><h3>Quadro de ${PEOPLE[i].name}</h3><small>${ok?'Liberado pela amizade':'Amizade '+Math.floor(G.friends[i]||0)+'/'+QUADRO_AT}</small>${ok?`<button data-act="quadro" data-id="${id}" aria-pressed="${on}">${on?'Na parede ✓ · tirar':'Pendurar na parede'}</button>`:'<button disabled>Ainda bloqueado</button>'}</div></div>`;}).join('')+'</details>';}
 function drawFriendPortrait(){
  const id=G.quadro;if(!id||!PORTRAIT_FILES[id])return;

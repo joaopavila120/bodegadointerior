@@ -62,4 +62,7 @@ Object.assign(EVENTS, {
 Object.assign(EVENTS,{
 });
 EVENTS.costelao={name:'Costelão de domingo',icon:'🔥',desc:'A bodega vai para o campo: costela no fogo de chão, maionese caseira e chimarrão. A freguesia compra costela por peso.',prep:'As mantas vêm da carneação: lace e carneie um boi no pasto do curral. Separe ovos e óleo para a maionese e refrigerante na caixa térmica.'};
+// Eventos pequenos acontecem, mas sem aviso e sem aparecer no calendário (lá eles contam como dia tranquilo).
+// Com aviso: truco, chuva forte, futebol (Grêmio, Inter, Gre-Nal) e costelão.
+for(const id of ['radio','baile','feira','geada'])EVENTS[id].quiet=true;
 EVENTS.chuva.desc='Clientes molhados deixam poças pelo caminho até as mesas e o balcão. O chão molhado reduz sua velocidade por 8 segundos.';

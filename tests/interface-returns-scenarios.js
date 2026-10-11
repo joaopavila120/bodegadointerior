@@ -104,9 +104,8 @@
    check(G.valterQueue?.includes('compota'),'a primeira compota guarda um comentário do Valter para um momento calmo');G.valterQueue=[];
    worldOut.x=RANCH.gate;worldOut.y=RANCH.H-20;keys.add('s');simulate(.1);keys.clear();check(worldOut.map==='vila','sai do campo pela porteira');}
   {G.bag={alface:{q:4,c:0}};storeShop('agro');check($('dialogContent').innerHTML.includes('data-act="storeSell"'),'o Armazém compra a colheita');const c1=G.cash;storeSell('alface');check(G.cash>c1&&!bagQty('alface'),'vende a colheita no Armazém');closeDialog(true);
-   G.orders=[];ordersNewDay();check(G.orders.length>=1&&G.orders.length<=3&&G.orders.every(o=>isSpecial(o.person)),'quadro com encomendas dos fregueses especiais');
-   const o=G.orders[0];G.bag={[o.item]:{q:o.q,c:0}};const c2=G.cash,f0=G.friends[o.person]||0;deliverOrder(o.id);check(G.cash===round(c2+o.reward)&&(G.friends[o.person]||0)>f0&&!G.orders.includes(o)&&!bagQty(o.item),'entregar a encomenda dá dinheiro e amizade');closeDialog(true);
-   const sp=WORLD_MAPS.vila.spots().find(s=>s.id==='quadro');worldOut.map='vila';worldOut.x=sp.x;worldOut.y=sp.y;interact();check(modal==='worldStore'&&$('dialogTitle').textContent==='Quadro de encomendas','o quadro de encomendas fica na frente da bodega');closeDialog(true);}
+   check(typeof ordersNewDay==='undefined'&&!WORLD_MAPS.vila.spots().some(s=>s.id==='quadro'),'sem encomendas: o quadro de recados virou o calendário');
+   const sp=WORLD_MAPS.vila.spots().find(s=>s.id==='calendario');check(sp.x===front(VILA.quadro,26).x,'o calendário fica no quadro de recados, na frente da bodega');worldOut.map='vila';worldOut.x=sp.x;worldOut.y=sp.y;interact();for(let k=0;k<5&&modal==='talk';k++)talkNext();check($('dialogTitle').textContent==='Calendário de eventos'&&!$('dialogContent').textContent.includes('Encomendas'),'o quadro abre o calendário de eventos');closeDialog(true);}
   goInside();
   {const realBanner=window.showBanner;let titles='';window.showBanner=(t,...a)=>{titles+=t+'|';return realBanner(t,...a);};
    G.phase='prep';G.morning=0;const ev=Object.keys(EVENTS).find(k=>!['normal','costelao'].includes(k));G.event={id:ev,seen:true,fired:{}};const rep0=G.rep;
@@ -114,7 +113,7 @@
    ruralTick(120);check(G.rep<rep0&&G.event.id==='normal'&&$('floatNotes').textContent.includes('Meio-dia'),'meio-dia com a bodega fechada: perde reputação e o evento do dia');
    const h=hortaState();h.tiles[0]={crop:'alface',growth:0,water:null,fert:false,dry:0};refreshHUD();check(!$('farmStatus').classList.contains('hidden')&&$('farmStatus').textContent.includes('💧'),'o ícone no topo mostra a horta com sede de qualquer lugar');
    G.morning=60;G.event={id:'normal',seen:true,fired:{}};titles='';openDay();check(G.phase==='open'&&G.openAt===7*60&&gameTimeText()==='07:00','abriu às 7h: o relógio do expediente segue dali');check(titles.includes('As plantas ainda não foram regadas hoje'),'ao abrir, o aviso das plantas sem água');
-   window.showBanner=realBanner;G.phase='closed';const d=G.day;G.orders=null;ruralNewDay(d);check(G.morning===0&&G.openAt===null&&Array.isArray(G.orders),'a virada do dia recomeça a manhã e traz encomendas');}
+   window.showBanner=realBanner;G.phase='closed';const d=G.day;ruralNewDay(d);check(G.morning===0&&G.openAt===null,'a virada do dia recomeça a manhã');}
   G.phase='open';}
  reset();G.day=7;G.phase='open';G.up.table3=G.up.table4=true;
  for(let id=0;id<4;id++)spawnGroup({size:4,targetTable:id,fixedOrders:Array(12).fill('cerveja')});for(let i=0;i<350;i++)customersTick(.05);

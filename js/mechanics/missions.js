@@ -73,7 +73,6 @@ const TEACH = {
   compota: ['Mesa de compota', 'Na mesa de compota da cozinha, ovinhos de codorna ou pepinos com um <b>vidro</b> viram conserva para o balcão. Vidros no Atacado da Fronteira.'],
   laco: ['A laçada', 'Segure <span class="keycap">Q</span> para girar o laço e solte com o círculo sobre o boi. Cuidado com o quero-quero: o alvo vermelho no chão é rasante, saia dele ou aperte <span class="keycap">Espaço</span>. Laçado o boi, a carne vai direto para o inventário.'],
   inventario: ['O inventário', 'Tudo o que você colhe, cria, pesca ou compra fica no inventário (<span class="keycap">B</span>). Entrando na bodega, o que é de balcão vai para a despensa; trigo, leite, ovinhos e vidros ficam para o forno, o tacho e a mesa de compota.'],
-  encomendas: ['Quadro de encomendas', 'Os fregueses especiais pedem coisas da roça com prazo. Leve no inventário e entregue no quadro: paga em dinheiro, amizade e, às vezes, presente.'],
   calendario: ['O calendário', 'Mostra a semana: domingo é costelão, quarta tem futebol, sábado tem baile ou campeonato. Planeje a roça e o estoque para os dias grandes.'],
   pedidos: ['Pedidos dos especiais', 'Converse com os moradores, em casa e na rua: alguns têm pedidos ou missões secundárias. Os pedidos aparecem com o tempo, conforme a amizade cresce: atenda bem na bodega e puxe prosa. Aceite, junte os itens (do inventário ou da despensa) e volte para entregar. Os aceitos ficam na aba <b>Missões</b> do celular.'],
   segredo: ['Relíquias escondidas', 'Há 12 relíquias espalhadas pela Fronteira, pela Serra e por Santa Catarina. Quando o chão brilha de perto, aperte <span class="keycap">E</span>. Três delas são páginas do caderno do vô.'],
@@ -505,22 +504,13 @@ function goFishing() {
 function calendarDialog() {
   const c = calendar(), days = [];
   for (let d = G.day; d < G.day + 7; d++) {
-    const fixed = fixedEventFor(d), planned = d === G.day ? G.event : d === G.day + 1 && G.nextEvent ? G.nextEvent : null, e = EVENTS[planned?.id || fixed] || null, cd = calendar(d);
+    const fixed = fixedEventFor(d), planned = d === G.day ? G.event : d === G.day + 1 && G.nextEvent ? G.nextEvent : null, e = EVENTS[shownEventId(planned?.id || fixed)] || null, cd = calendar(d);
     const me = MAP_EVENTS[mapEventFor(d)];
     days.push(`<div class="calendar-day${d === G.day ? ' today' : ''}"><b>${cd.name}</b><small>dia ${dayNumber(d)}</small><span>${e ? e.icon : '🎲'}</span><em>${e ? e.name : 'a sortear'}</em>${me ? `<span class="cal-map">${me.icon} ${me.name}</span>` : ''}</div>`);
   }
-  const orders = (G.orders || []).map(o => `<li>${PEOPLE[o.person].name}: ${bagText(o.item, o.q)} de ${bagName(o.item).toLowerCase()} · até o dia ${o.due}</li>`).join('');
   const missions = activeMissions().map(m => `<li><b>${m.title}</b>: ${m.goal()}</li>`).join('');
   const today = MAP_EVENTS[mapEventFor(G.day)];
-  openDialog('Calendário da bodega', `<p>Hoje: <b>dia ${dayNumber()}</b>, ${c.label}.</p>${today ? `<div class="callout"><b>${today.icon} Evento no mapa: ${today.name}</b><br>${today.desc}</div>` : ''}<div class="calendar-grid">${days.join('')}</div>${missions ? '<h3>Missões em andamento</h3><ul>' + missions + '</ul>' : ''}${orders ? '<h3>Encomendas com prazo</h3><ul>' + orders + '</ul>' : ''}`, 'worldStore');
-}
-function drawCalendarBoard() {
-  const q = VILA.calendario, e = EVENTS[G.event?.id] || EVENTS.normal;
-  for (const x of [q.x + 6, q.x + q.w - 12]) rect(x, q.y - 40, 6, 70, '#5a3a20');
-  rect(q.x - 6, q.y - 82, q.w + 12, 66, '#8a5a32', 4, '#3a2414'); rect(q.x, q.y - 76, q.w, 54, '#f4ecd8', 2);
-  rect(q.x, q.y - 76, q.w, 14, '#a83a24', 2); txt(calendar().name.slice(0, 3).toUpperCase(), q.x + q.w / 2, q.y - 69, 9, '#fff0d0', 'center', 'Arial', false);
-  txt(String(dayNumber()), q.x + q.w / 2 - 12, q.y - 44, 18, '#3a2414', 'center', 'Georgia', false); txt(e.icon, q.x + q.w / 2 + 18, q.y - 44, 16, '#3a2414', 'center', 'Arial', false);
-  signBoard(q.x + q.w / 2, q.y - 106, 120, 'CALENDÁRIO', 11);
+  openDialog('Calendário de eventos', `<p>Hoje: <b>dia ${dayNumber()}</b>, ${c.label}.</p>${today ? `<div class="callout"><b>${today.icon} Evento no mapa: ${today.name}</b><br>${today.desc}</div>` : ''}<div class="calendar-grid">${days.join('')}</div>${missions ? '<h3>Missões em andamento</h3><ul>' + missions + '</ul>' : ''}`, 'worldStore');
 }
 
 // ---------- O caderno do vô completo ----------

@@ -65,7 +65,10 @@
   farmGame.pos=(farmStage().zone[0]+farmStage().zone[1])/2;farmGameKey('e');check(bagQty('peixe')>=1&&fishLeft()===FISH_PER_DAY-1,'fisgou: peixe no inventário e um lance a menos no dia');
   // calendário físico na frente da bodega
   const cal=WORLD_MAPS.vila.spots().find(s=>s.id==='calendario');worldOut.x=cal.x;worldOut.y=cal.y;interact();talkAll();
-  check($('dialogTitle').textContent==='Calendário da bodega'&&document.querySelectorAll('#dialogContent .calendar-day').length===7,'o calendário mostra a semana com os eventos');closeDialog(true);
+  check($('dialogTitle').textContent==='Calendário de eventos'&&document.querySelectorAll('#dialogContent .calendar-day').length===7,'o calendário mostra a semana com os eventos');closeDialog(true);
+  // eventos pequenos acontecem sem aviso e não aparecem no calendário
+  {const ev=G.event,tm=G.testMode;G.testMode=false;G.event={id:'radio',seen:true,fired:{}};check(eventInfo()===EVENTS.normal&&EVENTS.radio.quiet&&EVENTS.baile.quiet&&!EVENTS.chuva.quiet&&!EVENTS.campeonato.quiet&&!EVENTS.grenal.quiet&&!EVENTS.costelao.quiet,'rádio, baile, feira e geada acontecem sem aviso; truco, chuva, futebol e costelão aparecem');
+   calendarDialog();check(!$('dialogContent').textContent.includes('Final do campeonato')&&!$('dialogContent').textContent.includes('Baile na comunidade'),'o calendário não mostra os eventos pequenos');closeDialog(true);G.event=ev;G.testMode=tm;}
   // aba de missões do celular
   phoneTab='missions';togglePhone(true);{const t=$('phoneContent').textContent;check(t.includes('História')&&t.includes('Capítulo')&&t.includes('Secundárias')&&t.includes('Pedidos aceitos')&&$('phoneContent').querySelector('.mission-card.story .reward-list'),'o celular separa a história (com o capítulo da vez) das secundárias e dos pedidos');}togglePhone(false);
   // dificuldade progressiva

@@ -5,7 +5,7 @@ function startGame(isNew,testMode=false){if(isNew&&!testMode&&readSave()&&!confi
 let resetOldTest=false;if(!isNew&&testMode===true){const old=readSave(true);if(old&&old.testRules!==TEST_RULES){isNew=true;resetOldTest=true;}}
 if(isNew){dayStartMemo=null;try{localStorage.removeItem(saveKey(testMode)+'-inicio-dia');}catch(_){}}hidePenalties();worldOut=null;G=isNew?fresh():readSave(testMode);if(G){if(!G.lasso)unstickPlayer();G.testMode=testMode===true;if(G.testMode){G.testRules=TEST_RULES;maxTestProgress();}G.eventMode=testMode==='eventos';if(isNew&&(G.eventMode||G.testMode)){G.tutorial.guided=false;G.tutorial.complete=true;if(G.testMode){G.missions={};G.missionsV=2;}}if(isNew&&!G.testMode&&!G.eventMode)beginPrologue(G);if(!isNew&&!G.missions&&!G.testMode&&!G.eventMode)G.missions={};if(isNew){G.avatarId='sadi';G.bodegaName=$('startingName').value.trim().slice(0,40)||'Bodega Do Sadi';}}if(!G){say('Não foi possível abrir o salvamento. Comece uma nova história.');return;}started=true;restoreRoutes();paused=false;keys.clear();sparks=[];phoneOpen=false;$('start').classList.add('hidden');$('phone').classList.add('hidden');AudioEngine.unlock();if(G.task?.type==='weigh'){$('weighUI').classList.remove('hidden');updateWeightUI();}refreshHUD();if(G.penalties)showPenalties();else if(G.bocce)showBocce();else if(G.atCancha)showCanchaLobby();else if(G.tvAwardPending)showTelevisionAward();else if(G.game)showCards();else if(isNew){if(G.testMode){showEvent();if(resetOldTest)say('Save de testes antigo recomeçado.');}else if(G.eventMode)showEvent();else startIntro();}else if(lassoNeeded()&&G.herd)lassoIntro();else openDialog('De volta à bodega','<p>Teu dinheiro, estoque e atendimentos estão guardados. Seus pedidos e escolhas foram preservados. O Guia da bodega explica os sistemas e os próximos desbloqueios.</p><div class="actions"><button class="primary" data-act="close">Retomar</button></div>','resume');save();}
 
-function planDay(){if(!['prep','closed'].includes(G.phase))return;if(G.phase==='prep'){showEvent();return;}const e=EVENTS[plannedEvent().id];openDialog('Amanhã na bodega',`<p>Dia ${G.day+1} · ${difficulty(G.day+1).label}</p><div class="callout"><b>${e.icon} ${e.name}</b><p>${e.desc}</p></div><p>${e.prep}</p>${weekPreview(G.day+1)}${(G.testMode||G.eventMode)?`<div class="panel test-event"><h3>Modo de testes · escolher o evento</h3><select id="testEvent">${Object.entries(EVENTS).map(([id,v])=>`<option value="${id}" ${id===plannedEvent().id?'selected':''}>${v.icon} ${v.name}</option>`).join('')}<option value="lasso">🐂 Laçar gado (agora)</option></select><button data-act="chooseTestEvent">Usar este evento amanhã</button></div>`:''}<button class="primary" data-act="chooseEvent" data-id="automatic">Preparar o próximo dia</button>`,'planning');}
+function planDay(){if(!['prep','closed'].includes(G.phase))return;if(G.phase==='prep'){showEvent();return;}const e=EVENTS[shownEventId(plannedEvent().id)];openDialog('Amanhã na bodega',`<p>Dia ${G.day+1} · ${difficulty(G.day+1).label}</p><div class="callout"><b>${e.icon} ${e.name}</b><p>${e.desc}</p></div><p>${e.prep}</p>${weekPreview(G.day+1)}${(G.testMode||G.eventMode)?`<div class="panel test-event"><h3>Modo de testes · escolher o evento</h3><select id="testEvent">${Object.entries(EVENTS).map(([id,v])=>`<option value="${id}" ${id===plannedEvent().id?'selected':''}>${v.icon} ${v.name}</option>`).join('')}<option value="lasso">🐂 Laçar gado (agora)</option></select><button data-act="chooseTestEvent">Usar este evento amanhã</button></div>`:''}<button class="primary" data-act="chooseEvent" data-id="automatic">Preparar o próximo dia</button>`,'planning');}
 
 function chooseDayEvent(id){if(G.phase==='closed'){nextDay('automatic');return;}if(G.phase==='prep')showEvent();}
 // Modo de testes (dinheiro infinito): escolhe o evento do próximo dia.
@@ -54,13 +54,15 @@ function eventForDay(day,state=G){
  const id=bag.pop();if(state)state.eventBag=bag;return {id,seen:false,fired:{}};
 }
 
-function eventInfo(){return EVENTS[G.event.id]||EVENTS.normal;}
+// O que a tela mostra do evento: os pequenos aparecem como dia tranquilo (nos modos de teste, todos aparecem).
+function shownEventId(id){return id&&EVENTS[id]?.quiet&&!G?.testMode&&!G?.eventMode?'normal':id;}
+function eventInfo(){return EVENTS[shownEventId(G.event.id)]||EVENTS.normal;}
 
 function orderable(k,n=1){return unlocked(k)&&G.stock[k]+G.deliveries.filter(d=>d.key===k).reduce((sum,d)=>sum+d.qty,0)>=n;}
 
 function eventTick(dt){G.boost=Math.max(0,G.boost-dt);G.weatherClock+=dt;for(const v of G.visual)v.life-=dt;G.visual=G.visual.filter(v=>v.life>0);if(G.phase!=='open')return;const e=G.event;
- if(e.id==='radio'&&G.elapsed>=75&&!e.fired.interval){e.fired.interval=true;let count=0;for(const g of G.groups){if(!['seated','chat'].includes(g.state))continue;addDinerRound(g);count++;}if(!count){spawnGroup({special:'intervalo',fixedOrders:['cerveja','refri'],size:2});}say('Intervalo no rádio! A turma pediu rodadas juntas.');AudioEngine.crowd();}
- if(e.id==='baile'&&G.elapsed>=75&&!e.fired.quiet){e.fired.quiet=true;say('Começou o baile. Agora o movimento dá uma folga.');AudioEngine.ready();}
+ if(e.id==='radio'&&G.elapsed>=75&&!e.fired.interval){e.fired.interval=true;let count=0;for(const g of G.groups){if(!['seated','chat'].includes(g.state))continue;addDinerRound(g);count++;}if(!count){spawnGroup({special:'intervalo',fixedOrders:['cerveja','refri'],size:2});}AudioEngine.crowd();}
+ if(e.id==='baile'&&G.elapsed>=75&&!e.fired.quiet){e.fired.quiet=true;}
  footballTick(dt);
 }
 

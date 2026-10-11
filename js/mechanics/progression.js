@@ -103,7 +103,7 @@ function fixedEventFor(day){
 function randomEventPool(day){const pool=['normal','chuva','radio','feira'];if(WINTER.includes(calendar(day).month))pool.push('geada','chuva');return pool;}
 function weekPreview(day=G.day){
  const first=day-calendar(day).weekday;
- return `<div class="week-strip">${WEEKDAYS.map((w,i)=>{const d=first+i,fixed=d>=1?fixedEventFor(d):null,e=fixed?EVENTS[fixed]:null,today=d===day;return `<div class="${today?'today':''}${d<day?' past':''}"><b>${w.slice(0,3)}</b><span>${e?e.icon:'?'}</span><small>${e?e.name:'sorteio'}</small></div>`;}).join('')}</div>`;
+ return `<div class="week-strip">${WEEKDAYS.map((w,i)=>{const d=first+i,fixed=d>=1?fixedEventFor(d):null,e=fixed?EVENTS[shownEventId(fixed)]:null,today=d===day;return `<div class="${today?'today':''}${d<day?' past':''}"><b>${w.slice(0,3)}</b><span>${e?e.icon:'?'}</span><small>${e?e.name:'sorteio'}</small></div>`;}).join('')}</div>`;
 }
 
 // ---------- Dia e noite ----------

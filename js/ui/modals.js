@@ -1,9 +1,9 @@
 // Menus, painéis de fornecedor/melhorias, telas de ajuda e boas-vindas
 'use strict';
 
-function openDialog(title,html,type='menu'){modal=type;keys.clear();pointerHold=false;$('dialogTitle').textContent=title;$('dialogContent').innerHTML=html;$('overlay').classList.remove('hidden');$('dialogContent').querySelector('button')?.focus();}
+function openDialog(title,html,type='menu'){$('talkUI')?.classList.add('hidden');modal=type;keys.clear();pointerHold=false;$('dialogTitle').textContent=title;$('dialogContent').innerHTML=html;$('overlay').classList.remove('hidden');$('dialogContent').querySelector('button')?.focus();}
 
-function closeDialog(force=false){if(!force&&modal==='farmGame'){cancelFarmGame();return;}if(!force&&modal==='talk'){talkSkip();return;}if(!force&&modal==='sportChallenge'){answerSportChallenge(false);return;}if(modal==='bocceTutorialEnd'){bocceTutorialHome();return;}const fromReport=!force&&modal==='report';if(modal==='tvAward')G.tvAwardPending=false;if(G.game&&!force){leaveCards();return;}cardInvite=null;modal=null;paused=false;$('overlay').classList.add('hidden');keys.clear();canvas.focus();save();if(fromReport)startChallengeVisit();}
+function closeDialog(force=false){if(!force&&modal==='farmGame'){cancelFarmGame();return;}if(!force&&modal==='talk'){talkSkip();return;}if(!force&&modal==='sportChallenge'){answerSportChallenge(false);return;}if(modal==='bocceTutorialEnd'){bocceTutorialHome();return;}const fromReport=!force&&modal==='report';if(modal==='tvAward')G.tvAwardPending=false;if(G.game&&!force){leaveCards();return;}cardInvite=null;modal=null;paused=false;$('overlay').classList.add('hidden');$('talkUI')?.classList.add('hidden');keys.clear();canvas.focus();save();if(fromReport)startChallengeVisit();}
 
 function welcome(){if(prologueActive())prologueWelcome();else if(firstDay())tutorialWelcome();else gameGuide();}
 

@@ -39,14 +39,21 @@ function showTalkLine() {
   const s = talkState, [who, text, extra] = s.lines[s.i], last = s.i === s.lines.length - 1, button = last ? (s.ok || 'Vamos lá') : 'Continuar';
   if (who === 'card') { openDialog(extra || 'Aviso', `<div class="talk-card">${text}</div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk'); return; }
   if (who === 'reward') { openDialog(extra || 'Recompensa recebida', `<div class="reward-card"><p>Você recebeu:</p>${rewardHTML(text)}</div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk'); return; }
-  let face, name;
-  if (who === 'dica') { face = '<span class="portrait portrait-phone" style="width:88px;height:88px">💡</span>'; name = 'Primeira vez'; }
-  else if (who === 'sadi') { face = portraitFromSprite(avatarSprite(), 88); name = avatarName(); }
-  else { const i = PEOPLE.findIndex(p => p.id === who); face = portraitHTML(i, 88); name = PEOPLE[i]?.name || who; }
-  openDialog(extra || name, `<div class="rpg-speaker">${face}<div><p><b>${name}</b></p><p>${text}</p></div></div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk');
+  if (who === 'dica') { openDialog(extra || 'Primeira vez', `<div class="rpg-speaker"><span class="portrait portrait-phone" style="width:88px;height:88px">💡</span><div><p><b>Primeira vez</b></p><p>${text}</p></div></div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk'); return; }
+  // Fala de personagem: a mesma caixa azul estilo RPG das cenas e das conversas na rua, com o mundo aparecendo atrás.
+  const i = PEOPLE.findIndex(p => p.id === who), name = who === 'sadi' ? avatarName() : PEOPLE[i]?.name || who;
+  const portrait = who === 'sadi' ? portraitFromSprite(avatarSprite(), 104) : undefined;
+  modal = 'talk'; keys.clear(); pointerHold = false; $('overlay').classList.add('hidden'); showRpgBox('worldTalk', null);
+  // A janela (escondida) guarda a mesma fala: título e texto continuam consultáveis como antes.
+  $('dialogTitle').textContent = extra || name; $('dialogContent').innerHTML = `<div class="rpg-speaker"><div><p><b>${name}</b></p><p>${text}</p></div></div>`;
+  showRpgBox('talk', { person: i, portrait, name, reply: String(text).replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '') });
+  $('talkAction').textContent = last ? 'E · ' + button : '';
 }
-function talkNext() { const s = talkState; if (!s) return; if (++s.i < s.lines.length) { showTalkLine(); return; } talkState = null; closeDialog(true); s.then?.(); }
-function talkSkip() { const s = talkState; if (!s) return; talkState = null; closeDialog(true); s.then?.(); }
+function talkEnd() { showRpgBox('talk', null); }
+function talkNext() { const s = talkState; if (!s) return; if (++s.i < s.lines.length) { showTalkLine(); return; } talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
+function talkSkip() { const s = talkState; if (!s) return; talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
+// E, Espaço, Enter ou clique: completa a fala que está sendo digitada; com ela inteira, passa para a próxima.
+function talkKey() { if (!$('talkUI').classList.contains('hidden') && rpgTyping('talk')) { finishRpgTyping('talk'); return; } talkNext(); }
 // A conversa do Valter (prólogo e dicas) usa a mesma janela.
 function valterTalk(lines, then, ok) { talk(lines, then, ok); }
 function valterNext() { talkNext(); }

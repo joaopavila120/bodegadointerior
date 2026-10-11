@@ -428,3 +428,5 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .talk-card{line-height:1.5;max-width:520px}
 .score-board{width:100%;border-collapse:collapse;margin:.3em 0}.score-board td{padding:.35em .5em;border-bottom:1px solid #d8c49a}.score-board td:first-child{font-weight:bold;width:3em}.score-board td:last-child{text-align:right;font-variant-numeric:tabular-nums}.score-board tr.me{background:#fff1c2;font-weight:bold}
 .farm-timer{font-size:1.4em;font-weight:bold;text-align:center;margin:0 0 .3em;color:#7a4a1a;font-variant-numeric:tabular-nums}.farm-timer.low{color:#b8321e}
+/* Ação da última fala na caixa RPG das conversas (ex.: "E · Aceitar") */
+.rpg-action{position:absolute;right:34px;bottom:6px;color:#ffd96a;font-size:13px;font-weight:bold;text-shadow:1px 1px 0 #0a0e26}

@@ -179,6 +179,7 @@
    // 23h30: casas trancadas e ninguém na rua
    G.phase='closed';G.report={};switchMap({map:'vila',x:1600,y:735});worldWalkersKey='';walkersTick(.1);check(lateNight()&&!worldWalkers.length,'depois das 23h30 ninguém anda na rua');
    {const hv=WORLD_MAPS.vila.spots().find(s=>s.house);worldOut.x=hv.x;worldOut.y=hv.y;check(/trancada/.test(outsideHint()),'a casa aparece trancada');interact();check(worldOut.map==='vila','e não dá para entrar');}
+   {const lj=WORLD_MAPS.vila.spots().find(s=>s.id==='agro');worldOut.x=lj.x;worldOut.y=lj.y;check(/fechada/.test(outsideHint()),'a loja aparece fechada depois das 23h30');interact();check(worldOut.map==='vila','e não abre até de manhã');}
    // o guri da vela, raro, na beira do rio
    switchMap({map:'vila',x:700,y:1400});G.phase='closed';G.negrinhoNight=G.day;const ng=negrinhoSpot()[0];check(ng&&WORLD_MAPS.vila.canWalk(ng.x,ng.y),'numa noite rara, uma vela anda na beira do rio');worldOut.x=ng.x;worldOut.y=ng.y;interact();
    check(scene?.id==='negrinho'&&scene.steps.some(s=>s.overlay==='note'),'encontrá-lo abre uma cena sobre o que se perdeu');while(scene)sceneSkip();talkAll();check(G.relics.cuia_vo&&!negrinhoTonight(),'ele entrega a cuia do vô e não aparece mais');

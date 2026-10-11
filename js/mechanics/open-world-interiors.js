@@ -367,7 +367,7 @@ Object.assign(FURN, {
 });
 function storeMap(o) {
   return interiorMap({
-    id: o.id, name: o.name, W: 1400, H: 900, bounds: { x: 150, y: 250, w: 1100, h: 550 }, door: 700, floor: o.floor, wallColor: o.wallColor, windows: [200, 1130],
+    id: o.id, name: o.name, store: true, W: 1400, H: 900, bounds: { x: 150, y: 250, w: 1100, h: 550 }, door: 700, floor: o.floor, wallColor: o.wallColor, windows: [200, 1130],
     decor(b) { signBoard(b.x + b.w / 2, b.y - 104, 320, o.name.toUpperCase(), 14); },
     onEnter() { teach('loja'); },
     items: [

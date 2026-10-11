@@ -48,7 +48,7 @@ function switchMap(to) {
   if (to.title) worldBanner(to.title, to.text || ''); WORLD_MAPS[to.map]?.onEnter?.();
 }
 // Entra numa casa (ou na igreja, no salão): guarda onde estava lá fora para sair pela mesma porta.
-function enterInterior(id) { const M = WORLD_MAPS[id]; if (!M) return false; if (prologueBlocks(id)) { prologueWarn(); return true; } worldOut.back = { map: worldOut.map, x: worldOut.x, y: worldOut.y + 6 }; switchMap({ map: id, ...M.spawn(), title: M.name }); worldOut.dy = -1; return true; }
+function enterInterior(id) { const M = WORLD_MAPS[id]; if (!M) return false; if (prologueBlocks(id)) { prologueWarn(); return true; } if (M.store && lateNight()) { worldSay('Passa das 23h30: a loja está fechada. Abre de manhã cedo.'); AudioEngine.bad(); return true; } worldOut.back = { map: worldOut.map, x: worldOut.x, y: worldOut.y + 6 }; switchMap({ map: id, ...M.spawn(), title: M.name }); worldOut.dy = -1; return true; }
 
 // ---------- Avisos: os da bodega ficam na bodega ----------
 // Fora da bodega, say() e showBanner() da bodega ficam em silêncio; o mundo aberto usa worldSay/worldBanner.
@@ -140,9 +140,9 @@ function outsideInteract() {
   if (s.act) s.act(); else if (s.house) houseVisit(s.house); else if (s.info) showInfo(s.label, s.text); else worldSay(s.text);
 }
 // A casa só se revela de perto; o morador, se não estiver na bodega, anda pela estrada.
-// Depois das 23h30 é tarde demais: as casas ficam trancadas e ninguém anda mais na rua (eventos da noite seguem).
+// Depois das 23h30 é tarde demais: casas trancadas, lojas fechadas e ninguém mais na rua (os eventos da noite seguem).
 function lateNight() { return gameMinutes() >= 23 * 60 + 30; }
-function spotLabel(s) { return s.label + (s.house && lateNight() ? ' · trancada' : ''); }
+function spotLabel(s) { return s.label + (!lateNight() ? '' : s.house ? ' · trancada' : WORLD_MAPS[s.id]?.store ? ' · fechada' : ''); }
 function houseVisit(id) { if (prologueActive()) { prologueWarn(); return; } if (lateNight()) { worldSay('Passa das 23h30: a casa está trancada, todo mundo já dorme.'); AudioEngine.bad(); return; } if (enterInterior('casa:' + id)) return; const i = PEOPLE.findIndex(p => p.id === id); if (i < 0) return; warnDialog('Casa de ' + PEOPLE[i].name, activeUniqueVisitors().has(i) ? PEOPLE[i].name + ' não está em casa: tá lá na bodega.' : worldWalkers.some(w => w.person === i) ? PEOPLE[i].name + ' não está em casa: deve estar andando pela estrada.' : 'Casa de ' + PEOPLE[i].name + ': ninguém atendeu. Em breve dá pra bater na porta e levar presente.'); }
 function outsideHint() { const m = worldMap().hint?.(); if (m) return m; const s = worldNearest(); return s ? '<strong>E</strong> ' + spotLabel(s) : worldMap().name + ' · WASD anda'; }
 

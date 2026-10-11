@@ -96,10 +96,16 @@ function drawOrderBubble(x, y, item, k = 1) {
   txt(SERVE_ITEMS[item].icon, x, y - 17, 22, '#000', 'center', 'Arial', false);
   if (k < 1) bar(x - 22, y + 12, 44, k, k > .4 ? '#7ab84a' : '#d8603a');
 }
-// Roda de dança no meio do salão: fregueses comuns girando em pares, com os especiais da região no meio da festa.
+// Pista de dança no meio do salão: casais dançando dois a dois, cada par girando no seu canto da pista, com os
+// especiais da região no meio da festa.
+const DANCE_PAIRS = [[-160, -90], [150, -90], [-160, 90], [150, 90]];
 function drawDancers(layers, cx, cy, extra = []) {
-  const people = [...extra.map(id => PEOPLE.findIndex(p => p.id === id)).filter(i => i >= 0 && !PEOPLE[i].removed), ...PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed)].slice(0, 8);
-  people.forEach((i, k) => { const a = frameClock * 1.2 + k * Math.PI / 4, x = cx + Math.cos(a) * (150 + (k % 2) * 40), y = cy + Math.sin(a) * 90; layers.push({ y, draw: () => personDraw(PEOPLE[i].sprite, x, y + Math.abs(Math.sin(frameClock * 6 + k)) * -4, true, false, Math.cos(a + Math.PI / 2) > 0 ? 1 : -1) }); });
+  const people = [...extra.map(id => PEOPLE.findIndex(p => p.id === id)).filter(i => i >= 0 && !PEOPLE[i].removed), ...PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed)].slice(0, DANCE_PAIRS.length * 2);
+  DANCE_PAIRS.forEach(([ox, oy], k) => {
+    const pair = people.slice(k * 2, k * 2 + 2); if (pair.length < 2) return;
+    const px = cx + ox + Math.sin(frameClock * .8 + k) * 18, py = cy + oy, a = frameClock * (1.4 + k * .1) * (k % 2 ? -1 : 1) + k;
+    pair.forEach((i, n) => { const side = n ? 1 : -1, x = px + Math.cos(a) * 30 * side, y = py + Math.sin(a) * 12 * side; layers.push({ y, draw: () => personDraw(PEOPLE[i].sprite, x, y - Math.abs(Math.sin(frameClock * 6 + k + n)) * 4, true, false, x < px ? 1 : -1) }); });
+  });
 }
 function serveSpots() {
   const s = G.serve; if (!serveActive()) return [];

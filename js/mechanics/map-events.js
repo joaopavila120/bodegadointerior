@@ -457,8 +457,7 @@ function eventPerson(id, x, y, layers, dx = 1) { const i = PEOPLE.findIndex(p =>
     cdraw.call(this, view, seen, layers);
     if (rodeioNight()) { eventPerson('guri', RODEO_SPOT.x, RODEO_SPOT.y, layers, -1); for (const [id, x, y] of [['baitaca', 1300, 470], ['manolima', 640, 470]]) eventPerson(id, x, y, layers, x > 950 ? -1 : 1); }
     if (!fandangoNight()) return;
-    const dancers = PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed).slice(0, 8);
-    dancers.forEach((i, k) => { const a = frameClock * 1.2 + k * Math.PI / 4, cx = 980 + Math.cos(a) * (150 + (k % 2) * 40), cy = 690 + Math.sin(a) * 90; layers.push({ y: cy, draw: () => personDraw(PEOPLE[i].sprite, cx, cy + Math.abs(Math.sin(frameClock * 6 + k)) * -4, true, false, Math.cos(a + Math.PI / 2) > 0 ? 1 : -1) }); });
+    drawDancers(layers, 980, 690, ['manolima', 'baitaca', 'guri']);
     const j = PEOPLE.findIndex(p => p.id === 'jayme'); layers.push({ y: FANDANGO_JAYME.y, draw: () => { personDraw(PEOPLE[j].sprite, FANDANGO_JAYME.x, FANDANGO_JAYME.y, false, false, 1); } });
   };
   const okt = WORLD_MAPS.oktoberfest, ospots = okt.spots, odraw = okt.draw;

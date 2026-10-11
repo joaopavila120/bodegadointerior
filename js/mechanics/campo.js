@@ -7,7 +7,7 @@ const campoArt=campoImage('campo.webp'),fogoArt=campoImage('fogo.png'),espetoArt
 const CAMPO_ART=[[campoArt,'campo.webp'],[fogoArt,'fogo.png'],[espetoArt,'espeto.png'],[boisArt,'bois.png'],[lenhaArt,'lenha.png'],[queroArt,'queroquero.png']];
 const BOI_COATS=['angus','colorado','holandes','hereford','charoles','crioulo'],BOI_W=72,BOI_H=52,ESPETO_W=44,ESPETO_H=96;
 // Basta laçar um boi: cada laço certeiro enche a barra e com LASSO_HITS laços ele está laçado.
-const BOI_COST=120,MANTAS_PER_BOI=6,MANTA_GRAMS=2000,MIN_LASSO=1,LASSO_HITS=6,MANTA_BUY_COST=95;
+const BOI_COST=150,MANTAS_PER_BOI=6,MANTA_GRAMS=2000,MIN_LASSO=1,LASSO_HITS=6,MANTA_BUY_COST=110;
 // Cada lado da manta leva COOK_SIDE s (com o fogo forte) para chegar ao ponto; passa do ponto e queima em BURN_AT.
 const COOK_SIDE=18,BURN_AT=1.8,PERFECT_MAX=1.35,ESPETO_SCALE=1.95;
 // O fogo de chão gasta lenha: sem lenha sobram só brasas e a costela quase não assa.

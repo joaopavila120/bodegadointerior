@@ -316,7 +316,8 @@ function worldGuidePoint() {
   if (prologueActive()) goal = prologueStep().target;
   else if (waiting) goal = { map: 'cancha', spot: 'waiting' };
   else if (tutorialActive() && G.phase === 'prep') goal = { kitchen: true };
-  else { const ch = activeChapter(); if (ch?.guide && !(ch.id === 'trago' && upgradeOwned('trago'))) return routeGuide(ch.guide); }
+  // Fora dos tutoriais não tem seta: só a primeira missão (o trago, que ensina a comprar na Ferragem) ainda é guiada.
+  else { const ch = activeChapter(); if (ch?.id === 'trago' && ch.guide && !upgradeOwned('trago')) return routeGuide(ch.guide); }
   if (!goal) return null;
   if (goal.kitchen) return map === 'vila' ? guideSpot('door') : null;
   if (map === goal.map) {

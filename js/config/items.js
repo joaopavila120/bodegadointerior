@@ -2,13 +2,13 @@
 'use strict';
 
 const GOODS={
- pao_xis:{name:'Pão de xis',cost:1.5,initial:12,cat:'Cozinha'},burger:{name:'Hambúrguer',cost:3,initial:12,cat:'Cozinha'},ovo:{name:'Ovo',cost:1,initial:12,cat:'Cozinha'},queijo:{name:'Queijo',cost:1.5,initial:12,cat:'Cozinha'},salada:{name:'Salada completa',cost:1.5,initial:12,cat:'Cozinha'},bacon:{name:'Bacon',cost:2.5,initial:0,cat:'Cozinha',unlock:'bacon'},coracao:{name:'Coração',cost:3,initial:0,cat:'Cozinha',unlock:'coracao'},refri:{name:'Refrigerante',cost:2.5,price:6,initial:10,cat:'Bebidas',sealed:true},cerveja:{name:'Cerveja na caneca',cost:3.5,price:8,initial:6,cat:'Bebidas',sealed:false},cachaca:{name:'Dose de cachaça',cost:1.5,price:5,initial:0,starter:10,cat:'Bebidas',unlock:'trago'},cigarro:{name:'Maço de cigarros',cost:6,price:12,initial:6,cat:'Balcão',sealed:true},codorna:{name:'Ovos de codorna em conserva',cost:3,price:12,initial:6,cat:'Balcão',sealed:true},pepino:{name:'Pepino em conserva',cost:2.5,price:10,initial:0,cat:'Balcão',sealed:true,unlock:'pepino'},erva:{name:'Erva-mate a granel',cost:.006,price:7,initial:6000,cat:'Balcão',sealed:true,pack:2000},salame:{name:'Salame de colônia',cost:4,price:10,initial:0,cat:'Balcão',unlock:'salame'},amendoim:{name:'Amendoim torrado',cost:2,price:7,initial:0,cat:'Balcão',unlock:'amendoim',sealed:true},queijo_colonial:{name:'Queijo colonial',cost:2,price:16,initial:0,cat:'Balcão',unlock:'queijo_colonial',sealed:true,farm:true,noSupplier:true,removed:true},pinhao:{name:'Pinhão a granel',cost:.006,price:12,initial:0,cat:'Balcão',unlock:'pinhao',pack:4000,starter:6000},bergamota:{name:'Bergamota',cost:.0025,price:6.5,initial:0,cat:'Balcão',unlock:'bergamota',pack:6000,starter:12000},cafe:{name:'Café passado',cost:1,price:4,initial:0,cat:'Bebidas',unlock:'coffee',starter:12},bitter:{name:'Dose de bitter',cost:3,price:9,initial:0,cat:'Bebidas',unlock:'bitter'},
- azeite:{name:'Óleo vegetal',cost:1.5,initial:6,cat:'Cozinha'},
+ pao_xis:{name:'Pão de xis',cost:2,initial:12,cat:'Cozinha'},burger:{name:'Hambúrguer',cost:4,initial:12,cat:'Cozinha'},ovo:{name:'Ovo',cost:1.3,initial:12,cat:'Cozinha'},queijo:{name:'Queijo',cost:2,initial:12,cat:'Cozinha'},salada:{name:'Salada completa',cost:2,initial:12,cat:'Cozinha'},bacon:{name:'Bacon',cost:3.5,initial:0,cat:'Cozinha',unlock:'bacon'},coracao:{name:'Coração',cost:4.5,initial:0,cat:'Cozinha',unlock:'coracao'},refri:{name:'Refrigerante',cost:3.2,price:6,initial:10,cat:'Bebidas',sealed:true},cerveja:{name:'Cerveja na caneca',cost:4.5,price:8,initial:6,cat:'Bebidas',sealed:false},cachaca:{name:'Dose de cachaça',cost:2.2,price:5,initial:0,starter:10,cat:'Bebidas',unlock:'trago'},cigarro:{name:'Maço de cigarros',cost:8,price:12,initial:6,cat:'Balcão',sealed:true},codorna:{name:'Ovos de codorna em conserva',cost:5,price:12,initial:6,cat:'Balcão',sealed:true},pepino:{name:'Pepino em conserva',cost:4,price:10,initial:0,cat:'Balcão',sealed:true,unlock:'pepino'},erva:{name:'Erva-mate a granel',cost:.008,price:7,initial:6000,cat:'Balcão',sealed:true,pack:2000},salame:{name:'Salame de colônia',cost:5.5,price:10,initial:0,cat:'Balcão',unlock:'salame'},amendoim:{name:'Amendoim torrado',cost:3.2,price:7,initial:0,cat:'Balcão',unlock:'amendoim',sealed:true},queijo_colonial:{name:'Queijo colonial',cost:2,price:16,initial:0,cat:'Balcão',unlock:'queijo_colonial',sealed:true,farm:true,noSupplier:true,removed:true},pinhao:{name:'Pinhão a granel',cost:.007,price:12,initial:0,cat:'Balcão',unlock:'pinhao',pack:4000,starter:6000},bergamota:{name:'Bergamota',cost:.0032,price:6.5,initial:0,cat:'Balcão',unlock:'bergamota',pack:6000,starter:12000},cafe:{name:'Café passado',cost:1.5,price:4,initial:0,cat:'Bebidas',unlock:'coffee',starter:12},bitter:{name:'Dose de bitter',cost:4.2,price:9,initial:0,cat:'Bebidas',unlock:'bitter'},
+ azeite:{name:'Óleo vegetal',cost:2,initial:6,cat:'Cozinha'},
  // Vinho de garrafão: uva da parreira + garrafão vazio, na mesa de compota. Só sai da roça (não se pede pelo telefone).
  vinho:{name:'Vinho de garrafão',cost:3,price:24,initial:0,cat:'Balcão',unlock:'vinho',sealed:true,farmOnly:true},
  // Costelão: as mantas vêm da carneação do boi laçado no curral; costela e maionese são preparadas no campo.
  costela_crua:{name:'Manta de costela crua',cost:40,initial:0,cat:'Campo',noSupplier:true},
- costela:{name:'Costela assada',cost:.02,price:22,initial:0,cat:'Campo',noSupplier:true},
+ costela:{name:'Costela assada',cost:.02,price:18,initial:0,cat:'Campo',noSupplier:true},
  lenha:{name:'Lenha rachada',cost:0,initial:0,cat:'Campo',noSupplier:true},
  maionese:{name:'Maionese caseira',cost:1.2,price:9,initial:0,cat:'Campo',noSupplier:true,sealed:true}
 };
@@ -18,28 +18,28 @@ const GEAR={feet:{name:'A pé',bonus:0},bootsGaucho:{name:'Bota de gaúcho',bonu
 const MATES=[{name:'Mate da casa',duration:10,bonus:.55},{name:'Mate Cuiudo',duration:18,bonus:.65},{name:'Mate Topetudo',duration:25,bonus:.75},{name:'Mate Lendário',duration:35,bonus:.85}];
 const UPGRADES=[
  {id:'trago',goods:'cachaca',name:'Mesa de tragos',cost:0,rep:0,desc:'Mesa de cachaça para o trago de pura. O Valter acertou com a Ferragem: sai de graça e vem com 10 doses.'},
- {id:'coffee',level:2,goods:'cafe',name:'Café de cambona',cost:100,rep:62,desc:'Instala um fogareiro a lenha rústico com a cambona, a chaleira preta, e libera pedidos de café. Inclui 12 porções.'},
- {id:'bootsGaucho',name:'Bota de gaúcho',cost:90,rep:62,desc:'Velocidade permanente +15%. Não acumula com outro equipamento.'},
- {id:'bootsBagual',level:3,name:'Bota bagual',cost:190,rep:68,requires:'bootsGaucho',desc:'Velocidade permanente +25%. Substitui a bota de gaúcho.'},
- {id:'mateCuiudo',name:'Mate Cuiudo',cost:110,rep:64,desc:'Impulso de +65% durante 18 segundos.'},
- {id:'mateTopetudo',level:3,name:'Mate Topetudo',cost:240,rep:70,requires:'mateCuiudo',desc:'Impulso de +75% durante 25 segundos.'},
- {id:'mateLendario',level:5,name:'Mate Lendário',cost:440,rep:80,requires:'mateTopetudo',desc:'Impulso de +85% durante 35 segundos.'},
- {id:'cigarro_py',level:3,name:'Cigarro do Paraguai',cost:140,rep:67,desc:'Melhora os maços da prateleira: cada venda passa de R$ 12 para R$ 18.'},
- {id:'table4',level:4,name:'Quarta mesa',cost:240,rep:74,desc:'Mais quatro lugares para o restaurante. Participa do carteado durante campeonatos.'},
- {id:'bodoque',name:'Bodoque',cost:60,rep:0,desc:'Forquilha de goiabeira com borracha de câmara. No campo, segure F (ou o botão) e solte quando o círculo sobre o quero-quero ficar verde: ele leva um susto e vai embora.'},
- {id:'placaFiado',name:'Placa “Fiado só amanhã”',cost:70,rep:0,desc:'Pendurada ao lado do balcão: bem menos fregueses pedem fiado (de 18% para 4%). Quem já tem conta continua pagando normalmente.'},
- {id:'tray',name:'Bandeja de dois lugares',cost:80,rep:60,desc:'Carregue dois itens. Selecione o espaço com 1 e 2.'},
+ {id:'coffee',level:2,goods:'cafe',name:'Café de cambona',cost:180,rep:62,desc:'Instala um fogareiro a lenha rústico com a cambona, a chaleira preta, e libera pedidos de café. Inclui 12 porções.'},
+ {id:'bootsGaucho',name:'Bota de gaúcho',cost:150,rep:62,desc:'Velocidade permanente +15%. Não acumula com outro equipamento.'},
+ {id:'bootsBagual',level:3,name:'Bota bagual',cost:320,rep:68,requires:'bootsGaucho',desc:'Velocidade permanente +25%. Substitui a bota de gaúcho.'},
+ {id:'mateCuiudo',name:'Mate Cuiudo',cost:160,rep:64,desc:'Impulso de +65% durante 18 segundos.'},
+ {id:'mateTopetudo',level:3,name:'Mate Topetudo',cost:360,rep:70,requires:'mateCuiudo',desc:'Impulso de +75% durante 25 segundos.'},
+ {id:'mateLendario',level:5,name:'Mate Lendário',cost:650,rep:80,requires:'mateTopetudo',desc:'Impulso de +85% durante 35 segundos.'},
+ {id:'cigarro_py',level:3,name:'Cigarro do Paraguai',cost:240,rep:67,desc:'Melhora os maços da prateleira: cada venda passa de R$ 12 para R$ 18.'},
+ {id:'table4',level:4,name:'Quarta mesa',cost:420,rep:74,desc:'Mais quatro lugares para o restaurante. Participa do carteado durante campeonatos.'},
+ {id:'bodoque',name:'Bodoque',cost:80,rep:0,desc:'Forquilha de goiabeira com borracha de câmara. No campo, segure F (ou o botão) e solte quando o círculo sobre o quero-quero ficar verde: ele leva um susto e vai embora.'},
+ {id:'placaFiado',name:'Placa “Fiado só amanhã”',cost:110,rep:0,desc:'Pendurada ao lado do balcão: bem menos fregueses pedem fiado (de 18% para 4%). Quem já tem conta continua pagando normalmente.'},
+ {id:'tray',name:'Bandeja de dois lugares',cost:140,rep:60,desc:'Carregue dois itens. Selecione o espaço com 1 e 2.'},
  {id:'pepino',goods:'pepino',shop:'conserva',name:'Conserva de pepino',cost:45,rep:62,desc:'Libera a venda e inclui 4 potes para começar.'},
  {id:'bergamota',goods:'bergamota',shop:'colheita',name:'Bergamota do pomar',cost:45,rep:63,desc:'Libera venda por peso e inclui 12 kg de bergamota.'},
  {id:'amendoim',goods:'amendoim',shop:'atacado',name:'Amendoim torrado',cost:55,rep:64,desc:'Libera o petisco e inclui 4 porções.'},
  {id:'salame',level:2,goods:'salame',shop:'badin',name:'Salame de colônia',cost:85,rep:66,desc:'Salame da nona do Badin: libera salame e torradas. Coloque pão + salame diretamente na prensa. Vem da despensa da colônia, na casa do Badin.'},
  {id:'pinhao',level:2,goods:'pinhao',shop:'colheita',name:'Pinhão a granel',cost:90,rep:68,desc:'Libera venda por peso e inclui 6 kg de pinhão.'},
- {id:'bitter',level:3,goods:'bitter',name:'Bitter da casa',cost:125,rep:72,desc:'Libera a estação de bitter. Inclui 4 doses; sirva segurando E.'},
- {id:'capacity',level:2,name:'Estações maiores',cost:120,rep:64,desc:'30 unidades por estação e 15 kg de erva-mate.'},
- {id:'bacon',name:'Xis bacon',cost:90,rep:63,desc:'Libera bacon e uma nova receita. O bacon vem do Açougue da Fronteira.'},
- {id:'table3',level:2,name:'Terceira mesa',cost:145,rep:66,desc:'Mais uma mesa de quatro lugares no salão.'},
- {id:'grill3',level:3,name:'Terceiro espaço da chapa',cost:110,rep:65,desc:'Mais uma boca independente para cozinhar em paralelo.'},
- {id:'coracao',level:4,name:'Xis coração',cost:140,rep:70,desc:'Libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
+ {id:'bitter',level:3,goods:'bitter',name:'Bitter da casa',cost:220,rep:72,desc:'Libera a estação de bitter. Inclui 4 doses; sirva segurando E.'},
+ {id:'capacity',level:2,name:'Estações maiores',cost:220,rep:64,desc:'30 unidades por estação e 15 kg de erva-mate.'},
+ {id:'bacon',name:'Xis bacon',cost:160,rep:63,desc:'Libera bacon e uma nova receita. O bacon vem do Açougue da Fronteira.'},
+ {id:'table3',level:2,name:'Terceira mesa',cost:260,rep:66,desc:'Mais uma mesa de quatro lugares no salão.'},
+ {id:'grill3',level:3,name:'Terceiro espaço da chapa',cost:200,rep:65,desc:'Mais uma boca independente para cozinhar em paralelo.'},
+ {id:'coracao',level:4,name:'Xis coração',cost:260,rep:70,desc:'Libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
 ];
 const EVENTS={
  campeonato:{name:'Campeonato de truco',icon:'♠',desc:'Duas duplas por mesa entram na abertura e ficam até fechar. Os parceiros permanecem juntos, trocam de adversários e continuam pedindo petiscos e bebidas. Não há outras chegadas.',prep:'Organize e amplie as mesas antes de abrir. Reponha cerveja, cachaça, bitter e petiscos. As duplas trocam de mesa entre rodadas; pedidos pendentes vão junto. Brigas exigem 10 teclas em 24 s.'},

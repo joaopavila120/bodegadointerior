@@ -24,7 +24,7 @@ function orderNext(d,g){
  // Xis só se pede quando dá para montar: se acabou um ingrediente, a pessoa escolhe outro xis ou passa a vez.
  if(RECIPES[k]&&!xisReady(k)){const other=readyRecipes();k=other.length?pick(other):null;}
  // Bebida ou petisco em falta: reclama e fica sem.
- if(k&&!RECIPES[k]&&!orderable(k)){missingComplaint(PEOPLE[d.person]?.name,k,g?.x??ENTRY.x,(g?.y??ENTRY.y)-80);repChange(-1);k=null;}
+ if(k&&!RECIPES[k]&&!orderableFree(k)){missingComplaint(PEOPLE[d.person]?.name,k,g?.x??ENTRY.x,(g?.y??ENTRY.y)-80);repChange(-1);k=null;}
  if(!k){d.orders=[];d.status=d.later?.length?'thinking':'served';d.think=thinkTime(THINK_NEXT);return;}
  d.orders=[k];d.status='waiting';d.patience=d.maxPatience=Math.round(ORDER_WAIT*difficulty().patience);
 }
@@ -62,12 +62,22 @@ function tickDiners(g,dt){
    if(G.phase!=='open'||!d.later?.length){d.later=[];d.status='served';continue;}
    d.think-=dt;if(d.think<=0){orderNext(d,g);syncGroupOrders(g);}continue;
   }
+  if(d.status==='waiting'&&!g.training)dropUnservable(d,g);
   if(d.status!=='waiting')continue;d.patience=Math.max(0,d.patience-(g.training?0:dt));if(d.patience>0)continue;
   d.status='lost';d.orders=[];d.later=[];G.stats.lost++;repChange(-2.5);
   G.stats.waste+=d.delivered.reduce((sum,item)=>sum+(item.cost||0),0);d.delivered=[];
   effect(PEOPLE[d.person].name+': desisti do pedido',g.x,g.y-80,'#e7b097');fxAnger(g.x,g.y-130);
  }
  completeDinerRound(g);
+}
+// Acabou o produto de um pedido em aberto: o freguês reclama e desiste daquele item na hora, em vez de ficar esperando
+// até o fim do prazo. O que já recebeu, ele paga.
+function dropUnservable(d,g){
+ const gone=d.orders.filter(k=>unservable(k));if(!gone.length)return;
+ for(const k of gone){d.orders.splice(d.orders.indexOf(k),1);missingComplaint(PEOPLE[d.person]?.name,k,g.x,g.y-80);repChange(-1);}
+ if(d.orders.length)return;
+ if(d.delivered.length){pay(d.delivered,d.person,d.patience/d.maxPatience,true,g.x,g.y);d.delivered=[];}
+ d.status=d.later?.length&&G.phase==='open'?'thinking':'served';d.think=thinkTime(THINK_NEXT);
 }
 function deliverToDiner(g,item,table){
  ensureDiners(g);

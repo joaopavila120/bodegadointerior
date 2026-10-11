@@ -30,7 +30,7 @@
   check(missionDone('abertura')&&!regionLocked('serra')&&regionLocked('sc'),'abrir três noites seguidas conclui a missão do Valter e abre a Serra');
   tick(4);check(modal==='talk'&&!!G.missions.conhecer,'capítulo 3 começa sozinho: conhecer o Badin, na Serra');talkAll();check(missionActive('conhecer'),'capítulo 3 em andamento');
   // casa do Badin: primeiro encontro, o campeonato de bocha (abre Santa Catarina) e o queijo pra nona (abre a despensa)
-  goOutside();switchMap({map:'serra',x:1800,y:200});check(worldOut.map==='serra'&&worldGuidePoint(),'a Serra já abre e a seta guia até o Badin');
+  goOutside();switchMap({map:'serra',x:1800,y:200});check(worldOut.map==='serra'&&!worldGuidePoint(),'a Serra já abre; fora dos tutoriais não tem seta (o jogador explora)');
   check(atHome('badin'),'quem a história precisa encontrar espera em casa');
   const hb=WORLD_MAPS.serra.spots().find(s=>s.id==='house:badin');worldOut.x=hb.x;worldOut.y=hb.y;interact();check(worldOut.map==='casa:badin','entra na casa do Badin');
   const home=WORLD_MAPS['casa:badin'].spots().find(s=>s.id==='home:badin');check(!!home,'o Badin está em casa');
@@ -174,6 +174,13 @@
    // o que se ganha ou colhe já fica liberado no balcão
    G.up.pinhao=false;bagAdd('pinhao',1000);check(unlocked('pinhao'),'pinhão colhido já libera a venda');G.up.salame=false;bagAdd('salame',2);check(unlocked('salame'),'salame ganho do Badin já libera a venda');
    storeShop('gado');check($('dialogContent').innerHTML.includes('icons/bodoque.png'),'a Casa do Campeiro usa o ícone do bodoque');closeDialog(true);}
+  // última cerveja: dois fregueses não pedem a mesma, e quem espera um produto que acabou desiste na hora
+  {worldOut=null;G.phase='open';G.groups=[];G.stock.cerveja=1;G.hands=[null,null];G.deliveries=[];G.floor=[];G.kitchen.parking=G.kitchen.parking.map(()=>null);G.kitchen.press=null;const mk=()=>({id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders:[],later:['cerveja'],delivered:[],patience:60,maxPatience:60,status:'thinking',think:0}]});
+   const a=mk(),b=mk();G.groups.push(a,b);tickDiners(a,.05);tickDiners(b,.05);check(a.diners[0].orders[0]==='cerveja'&&!b.diners[0].orders.length,'com uma cerveja só, o segundo freguês não pede a mesma');
+   b.diners[0]={person:0,orders:['cerveja'],later:[],delivered:[],patience:60,maxPatience:60,status:'waiting'};G.stock.cerveja=0;tickDiners(b,.05);check(b.diners[0].status!=='waiting','acabou a cerveja: quem esperava desiste na hora, sem ficar parado');
+   b.diners[0]={person:0,orders:['cerveja'],later:[],delivered:[],patience:60,maxPatience:60,status:'waiting'};G.hands[0]={kind:'product',pid:'cerveja',cost:1};tickDiners(b,.05);check(b.diners[0].status==='waiting','com a caneca já tirada na mão, ele espera');G.hands=[null,null];G.groups=[];}
+  // freguesia fiel: abrir dias seguidos rende um extra no fechamento
+  {G.openStreak=2;G.lastOpenDay=G.day-1;G.openedDay=G.day;G.phase='open';G.elapsed=0;G.shop=[];G.groups=[];finishDay(true);while(scene)sceneSkip();check(G.openStreak===3&&G.report.loyal===15,'freguesia fiel: três dias seguidos abertos, +R$ 15 no fechamento');closeDialog(true);}
   check(!JSON.stringify(PEOPLE).includes('Boleador')&&GIFTS.lauro.some(g=>/Bolador/.test(g.text+JSON.stringify(DECOR)))||!JSON.stringify(DECOR).includes('Boleador'),'Lauro Bolador (não mais Boleador)');
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;window.difficulty=difficultyBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();closeDialog(true);worldOut=null;}
  return results;

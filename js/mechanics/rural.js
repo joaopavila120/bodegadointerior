@@ -7,19 +7,19 @@
 // ---------- Inventário ----------
 // Além dos produtos da bodega (GOODS), o inventário leva o que vem cru do campo.
 const BAG_RAW = {
-  alface: { name: 'Alface', icon: '🥬', to: 'salada', mult: 2, value: 1.2 },
-  trigo: { name: 'Trigo', icon: '🌾', value: 1, note: 'vira pão de xis no forno a lenha da bodega' },
-  leite: { name: 'Leite', icon: '🥛', value: .6, note: 'vira queijo no tacho da bodega' },
-  pepino_cru: { name: 'Pepino', icon: '🥒', value: .8 },
-  ovo_codorna: { name: 'Ovo de codorna', icon: '🥚', value: .6 },
-  conserva_pepino: { name: 'Pote pronto de pepino em conserva', icon: '🥒', to: 'pepino', unlock: 'pepino', value: 7 },
-  conserva_codorna: { name: 'Pote pronto de ovos de codorna', icon: '🥚', to: 'codorna', value: 8 },
-  vidro: { name: 'Vidro vazio de conserva', icon: '🫙', value: .8 },
-  peixe: { name: 'Peixe do rio', icon: '🐟', value: 6, note: 'dourado ou jundiá, fisgado no trapiche' },
-  butia: { name: 'Butiá', icon: '🟠', value: .8 }, pitanga: { name: 'Pitanga', icon: '🍒', value: .8 }, guabiroba: { name: 'Guabiroba', icon: '🟡', value: .8 },
-  racao: { name: 'Saco de ração', icon: '🌽', value: 3 },
-  uva: { name: 'Cacho de uva', icon: '🍇', value: 1.5, note: 'vira vinho de garrafão na mesa de compota' },
-  garrafao: { name: 'Garrafão vazio', icon: '🍶', value: 1 }
+  alface: { name: 'Alface', icon: '🥬', to: 'salada', mult: 2, value: .7 },
+  trigo: { name: 'Trigo', icon: '🌾', value: .6, note: 'vira pão de xis no forno a lenha da bodega' },
+  leite: { name: 'Leite', icon: '🥛', value: .4, note: 'vira queijo no tacho da bodega' },
+  pepino_cru: { name: 'Pepino', icon: '🥒', value: .5 },
+  ovo_codorna: { name: 'Ovo de codorna', icon: '🥚', value: .35 },
+  conserva_pepino: { name: 'Pote pronto de pepino em conserva', icon: '🥒', to: 'pepino', unlock: 'pepino', value: 4 },
+  conserva_codorna: { name: 'Pote pronto de ovos de codorna', icon: '🥚', to: 'codorna', value: 4.5 },
+  vidro: { name: 'Vidro vazio de conserva', icon: '🫙', value: .5 },
+  peixe: { name: 'Peixe do rio', icon: '🐟', value: 4, note: 'dourado ou jundiá, fisgado no trapiche' },
+  butia: { name: 'Butiá', icon: '🟠', value: .5 }, pitanga: { name: 'Pitanga', icon: '🍒', value: .8 }, guabiroba: { name: 'Guabiroba', icon: '🟡', value: .8 },
+  racao: { name: 'Saco de ração', icon: '🌽', value: 2 },
+  uva: { name: 'Cacho de uva', icon: '🍇', value: .9, note: 'vira vinho de garrafão na mesa de compota' },
+  garrafao: { name: 'Garrafão vazio', icon: '🍶', value: .6 }
 };
 function bagState(g = G) { g.bag ??= {}; return g.bag; }
 function bagQty(k) { return bagState()[k]?.q || 0; }
@@ -181,7 +181,7 @@ function campeiroCards() {
 }
 // Venda no Armazém: o que é colhido ou produzido e está no inventário.
 const SELLABLE = ['alface', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'conserva_pepino', 'conserva_codorna', 'bergamota', 'pinhao', 'erva'];
-function sellPrice(k, q) { return round(BAG_RAW[k] ? BAG_RAW[k].value * q : (bagBulk(k) ? q / 1000 * (GOODS[k].price || GOODS[k].cost * 1000) * .6 : (GOODS[k].price || GOODS[k].cost * 2) * .5 * q)); }
+function sellPrice(k, q) { return round(BAG_RAW[k] ? BAG_RAW[k].value * q : (bagBulk(k) ? q / 1000 * (GOODS[k].price || GOODS[k].cost * 1000) * .4 : (GOODS[k].price || GOODS[k].cost * 2) * .35 * q)); }
 function sellSection() {
   const list = SELLABLE.filter(k => bagQty(k) > 0);
   return '<h3>Vender a colheita</h3>' + (list.length ? '<div class="store-list">' + list.map(k => `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>No inventário: ${bagText(k)}</p></div><button class="primary" data-act="storeSell" data-id="${k}">Vender tudo · ${money(sellPrice(k, bagQty(k)))}</button></div>`).join('') + '</div>' : '<p class="small-note">Traga no inventário o que colher na horta e no curral para vender aqui.</p>');
@@ -197,17 +197,27 @@ function shoppingListHTML() {
 
 // ---------- Ritmo do dia ----------
 // A manhã (antes de abrir) corre das 6h ao meio-dia: horta, curral, compras e prosa. Às 9h, aviso para abrir; se a
-// bodega continuar fechada ao meio-dia, a freguesia vai embora: perde reputação e o evento do dia.
+// bodega continuar fechada ao meio-dia, a freguesia vai embora: perde reputação e o evento do dia. O dia não para no
+// mundo aberto: a tarde passa e, no pôr do sol, se a bodega não abriu, vem a noite (dá para dormir e seguir).
+const SUNSET = 12 * 60;   // 18h, contando a partir das 6h
 const MORNING_RATE = 1.5;   // minutos de jogo por segundo
 function morningActive() { return G.phase === 'prep' && !tutorialActive() && !prologueActive() && !G.testMode; }
+// Noite de um dia em que a bodega não abriu: o relógio segue do pôr do sol até 23h30, escurecendo aos poucos.
+function duskActive() { return G.phase === 'closed' && !G.report && G.openedDay !== G.day && (G.morning || 0) >= SUNSET && !G.testMode; }
 function ruralTick(dt) {
   ruralGuideTick(); reminderTick();
+  if (duskActive()) G.morning = Math.min(SUNSET + 330, G.morning + dt * MORNING_RATE);
   if (!morningActive()) return;
-  const before = G.morning || 0; G.morning = Math.min(7 * 60, before + dt * MORNING_RATE);
+  const before = G.morning || 0; G.morning = Math.min(SUNSET, before + dt * MORNING_RATE);
   if (before < 360 && G.morning >= 360 && G.event.id !== 'costelao') {
     repChange(-4); const lost = eventInfo() !== EVENTS.normal && G.event.id !== 'costelao' ? eventInfo().name : null;
     if (lost) G.event = { id: 'normal', seen: true, fired: {}, lost: true };
     floatNote('Meio-dia e a bodega fechada! A freguesia foi embora (−4 de reputação)' + (lost ? ' e o dia de ' + lost + ' se perdeu.' : '.'), 'bad'); AudioEngine.bad(); save();
+  }
+  // Pôr do sol com a bodega fechada: o dia acaba assim mesmo e a sequência de dias abertos se perde.
+  if (G.morning >= SUNSET && G.phase === 'prep') {
+    G.phase = 'closed'; G.report = null; G.openStreak = 0;
+    floatNote('🌇 O sol se pôs e a bodega não abriu hoje. Quando quiser, durma no caixa para começar outro dia.', 'bad'); save(); refreshHUD();
   }
 }
 // Lembretes: aparecem uma vez por dia, flutuam um pouco e somem.
@@ -223,8 +233,10 @@ function reminderTick() {
     if (low.length) remindOnce('estoque', '📦 Lembrete: confira o estoque. Está acabando: ' + low.slice(0, 3).map(k => nameOf(k).toLowerCase()).join(', ') + '. Se faltar, o freguês reclama.');
     const ch = activeChapter(); if (ch && m >= 20) remindOnce('historia', '📖 Capítulo ' + ch.chapter + ' · ' + ch.title + ': ' + ch.goal() + '.');
     if (m >= 180) remindOnce('abrir', '🕘 9h: quando estiver pronto, abra a bodega no caixa. Fechada ao meio-dia, a freguesia vai embora.');
+    if (m >= 300 && m < 360 && G.event.id !== 'costelao') remindOnce('abrir2', worldOut ? '🕚 11h e a bodega fechada: tem freguês esperando na porta! Ao meio-dia eles vão embora.' : '🕚 11h: tem freguês esperando na porta! Abra no caixa antes do meio-dia.');
+    if (m >= 540) remindOnce('tarde', '🌇 A tarde passa e a bodega segue fechada. Ainda dá para abrir e pegar o movimento da noite' + (G.lastOpenDay === G.day - 1 && G.openStreak >= 1 ? ', sem perder a freguesia fiel.' : '.'));
     if (m >= 240 && hortaCells().some(cellThirsty)) remindOnce('agua', '💧 Lembrete: as plantas da horta ainda não beberam água hoje.');
-  } else if (G.phase === 'closed') remindOnce('noite', '🌙 Expediente encerrado. Confira o estoque pro próximo dia e, quando quiser, durma no caixa.');
+  } else if (G.phase === 'closed' && !duskActive()) remindOnce('noite', '🌙 Expediente encerrado. Confira o estoque pro próximo dia e, quando quiser, durma no caixa.');
 }
 function morningMinutes() { return 6 * 60 + (G.morning || 0); }
 // Ao abrir: aviso das plantas sem água.

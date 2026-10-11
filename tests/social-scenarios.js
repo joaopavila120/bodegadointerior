@@ -41,7 +41,7 @@
  }
  check(true,'80 lotes de chegadas respeitam exclusividade entre fila, balcão e mesas');
  reset();G.phase='open';const repeatAllowed=spawnGroup({members:[0,0,0,0],size:4});check(repeatAllowed.members.every(i=>i===0),'personagens comuns podem repetir');
- reset();G.phase='open';const group=spawnGroup({members:[0,1,2,3],size:4,fixedOrders:['refri','codorna','cachaca','cerveja','refri']});
+ reset();G.phase='open';for(const k of ['refri','codorna','cachaca','cerveja'])G.stock[k]=10;const group=spawnGroup({members:[0,1,2,3],size:4,fixedOrders:['refri','codorna','cachaca','cerveja','refri']});
  for(let t=0;t<12;t+=.05)customersTick(.05);
  check(group.state==='seated'&&group.diners.length===4&&G.tables[group.table].seats===4&&new Set(group.diners.map(d=>d.person)).size===4,'grupo de quatro chega e cada lugar recebe seu próprio pedido');
  check(group.diners[0].orders.length===2&&group.diners.every(d=>d.maxPatience===ORDER_WAIT),'pedidos maiores mantêm prazo individual normal');

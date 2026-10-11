@@ -77,9 +77,11 @@ function achievementsHTML(){
 function litLamps(){return DECOR.filter(d=>d.light&&decorVisible(d)).length;}
 function dailyCosts(){
  // No costelão a bodega fica fechada: sem luz nem querosene, só o fogo de chão.
- // Sem aluguel: o galpão foi herdado do vô. No costelão não há luz, mas vão lenha e sal.
+ // Sem aluguel: o galpão foi herdado do vô. Mas a casa tem manutenção (gelo, gás, limpeza, conserto), que cresce com o
+ // nível e com as mesas extras (o primeiro dia não paga). No costelão não há luz nem manutenção do salão, mas vão lenha e sal.
  const share=Math.min(G.elapsed/DAY,1),costelao=G.event.id==='costelao',power=costelao?0:round(6+6*share+litLamps()),supplies=costelao?COSTELAO_SUPPLIES:0;
- return {power,rent:0,supplies};
+ const upkeep=costelao||firstDay()?0:5+3*(bodegaLevel()-1)+(G.up.table3?3:0)+(G.up.table4?3:0);
+ return {power,rent:upkeep,supplies};
 }
 
 // ---------- Calendário gaúcho ----------
@@ -109,7 +111,7 @@ function weekPreview(day=G.day){
 // ---------- Dia e noite ----------
 // O expediente vai das 14h às 23h; a preparação é à tarde.
 // Manhã das 6h em diante (rural.js); o expediente corre da hora em que a bodega abriu até as 23h.
-function gameMinutes(){if(G.phase==='prep')return morningActive()?morningMinutes():13*60;if(G.phase==='closed')return 23*60+30;const start=G.openAt??14*60;return start+Math.min(G.elapsed/DAY,1)*(23*60-start);}
+function gameMinutes(){if(G.phase==='prep')return morningActive()?morningMinutes():13*60;if(duskActive())return morningMinutes();if(G.phase==='closed')return 23*60+30;const start=G.openAt??14*60;return start+Math.min(G.elapsed/DAY,1)*(23*60-start);}
 function gameTimeText(){const m=Math.floor(gameMinutes());return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
 function nightLevel(){return clamp((gameMinutes()-18*60)/120,0,1);}
 let nightCanvas=null;

@@ -16,7 +16,7 @@
   check(document.querySelector('[data-act="tab"][data-id="decor"]').classList.contains('active')&&!$('phoneContent').querySelector('[data-act="decorBuy"]')&&[...$('phoneContent').querySelectorAll('button')].filter(b=>b.textContent==='À venda no balcão · Personalizar bodega').length===DECOR.filter(d=>!d.gift).length&&$('phoneContent').textContent.includes('Presente de Lauro Bolador'),'aba Estética lista todas as peças: as de venda apontam o balcão, as de presente não se compram');
   const cash=G.cash;buyDecor('kit_chimarrao');check(!decorOwned('kit_chimarrao')&&G.cash===cash,'kit do chimarrão exige a cômoda');
   buyDecor('comoda');buyDecor('kit_chimarrao');buyDecor('bandeira');
-  check(decorCount()===3&&G.cash===cash-90-40-60&&decorVisible(DECOR.find(d=>d.id==='kit_chimarrao')),'compra desconta o caixa e expõe a peça');
+  check(decorCount()===3&&G.cash===round(cash-['comoda','kit_chimarrao','bandeira'].reduce((n,id)=>n+DECOR.find(d=>d.id===id).cost,0))&&decorVisible(DECOR.find(d=>d.id==='kit_chimarrao')),'compra desconta o caixa e expõe a peça');
   toggleDecor('comoda');check(decorState().comoda===false&&decorState().kit_chimarrao===false,'guardar a base guarda o que está em cima');
   toggleDecor('kit_chimarrao');check(decorState().comoda===true&&decorState().kit_chimarrao===true,'expor a peça devolve a base à parede');
   buyDecor('bandeira');check(decorCount()===3,'peça comprada não é cobrada de novo');

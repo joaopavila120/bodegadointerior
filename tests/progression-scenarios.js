@@ -15,13 +15,13 @@
 
   // Despesas e validade
   reset();G.phase='open';G.elapsed=DAY;G.stock.salada=12;const before=G.cash;finishDay();closeDialog(true);
-  check(G.report.rent===0&&G.report.power>=6&&G.stock.salada===12,'fim do dia cobra só a luz (sem aluguel: o galpão é herança); o estoque não vence');
+  check(G.report.rent===5+3*(bodegaLevel()-1)+(G.up.table3?3:0)+(G.up.table4?3:0)&&G.report.power>=6&&G.stock.salada===12,'fim do dia cobra a luz e a manutenção da casa (sem aluguel: o galpão é herança); o estoque não vence');
   check(G.cash<=before-G.report.power+.01,'despesas saem do caixa');
   reset();G.rep=60;G.phase='open';G.elapsed=DAY*.3;openDay();check(G.rep<54&&G.phase==='closing','fechar as portas cedo derruba a reputação');
   reset();G.rep=60;pay([{pid:'cerveja',key:'cerveja',cost:1}],0,.9);const up=G.rep-60;G.rep=60;repChange(-2.5);check(up>0&&up<1&&G.rep===57.5,'atender bem sobe devagar; cliente que desiste pesa bem mais');
   reset();G.rep=60;settleSport('bocha',{opponent:PEOPLE.findIndex(p=>p.id==='lauro')},false);check(G.rep<60,'perder na bocha também tira reputação');
   reset();G.rep=100;const fast=arrivalInterval('shop');G.rep=20;check(fast<arrivalInterval('shop')&&repTips()<1,'reputação alta traz mais gente; baixa espanta e reduz gorjeta');
-  reset();G.day=1;G.phase='open';G.elapsed=DAY;finishDay();closeDialog(true);check(G.report.rent===0,'primeiro dia sem aluguel');
+  reset();G.day=1;G.phase='open';G.elapsed=DAY;finishDay();closeDialog(true);check(G.report.rent===0,'primeiro dia sem aluguel nem manutenção');
 
   // Conquistas
   reset();G.totalServed=100;checkAchievements();check(G.achievements.freguesia&&G.xp>=120,'conquista concede XP');

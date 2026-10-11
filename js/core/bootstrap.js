@@ -46,8 +46,9 @@ async function initializeGame() {
     draw();
     $('continue').disabled = !readSave();
     document.querySelector('#start [data-act="new"]').disabled = false;
-    // Modos de teste na tela inicial: dinheiro infinito, reputação sempre cheia e pular dias (no caixa e no Esc).
-    $('testModes').classList.remove('hidden');
+    // Modos de teste (dinheiro infinito, reputação sempre cheia e pular dias) só aparecem pelo endereço /teste
+    // (que abre index.html?teste); quem só vai jogar não vê.
+    $('testModes').classList.toggle('hidden', !/[?&#]testes?\b/.test(location.search + location.hash) && !/\/teste\/?$/.test(location.pathname));
     document.querySelector('#start [data-act="test"]').disabled = false;
     document.querySelector('#start [data-act="test2"]').disabled = false;
     document.querySelectorAll('#start [data-act="testNew"]').forEach(b => b.disabled = false);

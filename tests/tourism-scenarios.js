@@ -36,7 +36,8 @@
    const back=WORLD_MAPS[id].edge({x:worldOut.x,y:WORLD_MAPS[id].bounds.y+WORLD_MAPS[id].bounds.h+30});
    check(back?.map===map&&Math.abs(back.x-door.x)<1,'Interior devolve ao mapa errado: '+id);
   }
-  check(WORLD_MAPS.ctg.items.length===WORLD_MAPS.salao.items.length&&WORLD_MAPS.ctg.items!==WORLD_MAPS.salao.items,'CTG deve reutilizar layout sem compartilhar objetos mutáveis');
+  check(WORLD_MAPS.ctg.items.length===SALAO_ITEMS.length+HALL_THEMES.ctg.extra.length&&WORLD_MAPS.ctg.items.every(i=>!WORLD_MAPS.salao.items.includes(i)&&!SALAO_ITEMS.includes(i)),'CTG deve reutilizar layout sem compartilhar objetos mutáveis');
+  check(WORLD_MAPS.oktoberfest.items.some(i=>i.kind==='chope')&&WORLD_MAPS.salao.items.some(i=>/polenta/i.test(i.label||'')),'Oktoberfest com chope e barris; salão da Serra com tacho de polenta e pipas de vinho');
   results.push('igreja, CTG e Oktoberfest têm entrada e retorno corretos');
   const secret=WORLD_DISCOVERIES.find(d=>d.id==='cardeal'),p=discoveryPoint(secret);
   worldOut={map:secret.map,x:p.x+60,y:p.y,dx:0,dy:1};

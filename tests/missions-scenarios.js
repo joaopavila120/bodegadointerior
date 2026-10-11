@@ -116,12 +116,12 @@
   G.phase='open';check(!['forno','tacho','conservas'].some(id=>furniture().some(f=>f.id===id)),'com a bodega aberta, forno, tacho e compota somem');G.phase='prep';
   // mensagens e lembretes flutuantes
   $('floatNotes').replaceChildren();say('Regador vazio: encha no poço.');check($('floatNotes').textContent.includes('Regador vazio')&&!$('toasts').textContent,'as mensagens flutuam no meio da tela, não no canto');
-  G.reminders={};G.morning=250;hortaState().tiles[2]={crop:'alface',growth:0,water:null,fert:false,dry:0};reminderTick();check($('floatNotes').textContent.includes('plantas da horta'),'depois das 10h, lembrete flutuante para regar a horta');check(!doorReminder(),'sem o quadro fixo de abrir a bodega');
+  G.reminders={};G.morning=250;hortaState().tiles[2]={crop:'alface',growth:0,water:null,fert:false,dry:0};reminderTick();check($('floatNotes').textContent.includes('horta está com sede'),'depois das 10h, lembrete flutuante para regar a horta');check(!doorReminder(),'sem o quadro fixo de abrir a bodega');
   // costelão já feito: a missão do Mano Lima não aparece, conclui sozinha
   delete G.missions.costelao;G.costelaoTaught=true;check(missionForGiver('manolima')?.id!=='costelao','com o costelão já feito, o Mano Lima não oferece a missão dele');G.teachQueue=[];G.valterQueue=[];tick(3);talkAll();check(missionDone('costelao'),'e ela conclui sozinha, com a recompensa');
   // eventos de mapa no calendário
   G.tutorial.day=10;G.calOffset=9;check(mapEventFor(15)==='javali'&&calendar(15).name==='Quarta'&&mapEventFor(18)==='fandango'&&calendar(18).name==='Sábado','primeira quarta: invasão de javalis; segundo sábado: fandango no CTG');
-  G.day=15;G.phase='prep';G.mapEv=null;G.teachQueue=[];G.valterQueue=[];goInside();tick(3);check(scene?.id==='evento-javali','de manhã, uma cena: o Valter entra na bodega e explica a caçada');while(scene)sceneSkip();check(modal==='talk'&&$('dialogContent').textContent.includes('javali'),'depois da cena, o cartão do evento');talkAll();
+  while(scene)sceneSkip();talkAll();G.day=15;G.phase='prep';G.mapEv=null;G.teachQueue=[];G.valterQueue=[];goInside();tick(3);check(scene?.id==='evento-javali','de manhã, uma cena: o Valter entra na bodega e explica a caçada');while(scene)sceneSkip();check(modal==='talk'&&$('dialogContent').textContent.includes('javali'),'depois da cena, o cartão do evento');talkAll();
   calendarDialog();check($('dialogContent').textContent.includes('Invasão de javalis'),'o calendário mostra o evento de mapa');closeDialog(true);
   G.phase='closed';goOutside();check(javaliSpots().length>=JAVALI_NEED&&javaliSpots().every(s=>WORLD_MAPS.vila.canWalk(s.x,s.y)),'de noite, os javalis aparecem pela Fronteira');
   {const sp=javaliSpots()[0];startHunt(Number(sp.id.split(':')[1]));const Lz=G.lasso,b=Lz.bois[0];check(Lz.mode==='javali'&&!activeQueros(Lz).length,'a caçada é a laçada, mas sem quero-quero');
@@ -129,11 +129,17 @@
    Lz.immune=0;for(let r=0;r<JAVALI_HITS;r++){b.rope=r+1;javaliRoped(Lz,b);}for(let t=0;t<40&&G.lasso;t++)lassoTick(.05);check(!G.lasso&&mapEvState('javali').kills===1&&worldOut?.map==='vila','três laços: javali abatido, de volta ao mapa');}
   {const cash=G.cash;for(let k=0;k<JAVALI_NEED-1;k++){const sp=javaliSpots()[0];startHunt(Number(sp.id.split(':')[1]));const Lz=G.lasso,b=Lz.bois[0];for(let r=0;r<JAVALI_HITS;r++){b.rope=r+1;javaliRoped(Lz,b);}for(let t=0;t<40&&G.lasso;t++)lassoTick(.05);}
    check(mapEvState('javali').done&&modal==='talk'&&G.cash>cash,'três javalis: o Valter entrega a recompensa');talkAll();}
-  G.day=18;G.phase='prep';G.mapEv=null;goInside();tick(3);check(scene?.id==='evento-fandango','no sábado do fandango, cena: o Jayme entra e pede a encomenda');while(scene)sceneSkip();check(modal==='talk'&&/fandango/i.test($('dialogContent').textContent),'e o cartão do fandango');talkAll();
-  G.phase='closed';G.stock.pao_xis=12;G.stock.cerveja=8;G.stock.erva=2000;goOutside();
+  G.day=18;G.phase='prep';G.mapEv=null;goInside();tick(3);check(scene?.id==='evento-fandango','no sábado do fandango, cena: o Jayme entra e chama para o balcão do CTG');while(scene)sceneSkip();check(modal==='talk'&&/fandango/i.test($('dialogContent').textContent),'e o cartão do fandango');talkAll();
+  G.phase='closed';G.report={};goOutside();
   {const c=WORLD_MAPS.vila.spots().find(s=>s.id==='ctg');check(/fandango/.test(c.label)&&WORLD_MAPS.vila.canWalk(c.x,c.y)&&VILA.ctg.w>=900,'o CTG, maior, avisa que tem fandango');worldOut.x=c.x;worldOut.y=c.y;interact();
-   const f=WORLD_MAPS.ctg.spots().find(s=>s.id==='fandango');check(worldOut.map==='ctg'&&f&&WORLD_MAPS.ctg.canWalk(f.x,f.y),'dentro do CTG, o Jayme espera a encomenda');worldOut.x=f.x;worldOut.y=f.y;interact();
-   check(modal==='talk'&&mapEvState('fandango').done&&G.stock.pao_xis===2&&G.stock.cerveja===2,'entregue a encomenda, vira baile e recompensa');talkAll();}
+   const f=WORLD_MAPS.ctg.spots().find(s=>s.id==='fandango');check(worldOut.map==='ctg'&&f&&WORLD_MAPS.ctg.canWalk(f.x,f.y),'dentro do CTG, o Jayme chama para o balcão');worldOut.x=f.x;worldOut.y=f.y;interact();talkAll();
+   check(serveActive()&&SERVE_EVENTS.fandango.items.join()==='trago,chope'&&serveSpots().some(s=>s.id==='serve:bar:trago')&&serveSpots().some(s=>s.id==='serve:bar:chope')&&serveSpots().filter(s=>s.id.startsWith('serve:bar')).every(s=>WORLD_MAPS.ctg.canWalk(s.x,s.y)),'no fandango, o Sadi serve trago e chope do CTG enquanto o povo dança');
+   {const s=G.serve;serveStartPour('chope');check(!$('pourUI').classList.contains('hidden'),'no balcão do CTG, o chope sai da chopeira como na bodega');keys.add('e');outsideTick(1.2);keys.delete('e');outsideTick(.05);
+    check(s.hand==='chope'&&s.handPerfect&&$('pourUI').classList.contains('hidden'),'segurar E e soltar na faixa verde: chope no ponto na mão');
+    serveStartPour('trago');keys.add('e');outsideTick(2);keys.delete('e');outsideTick(.05);check(s.hand==='chope','com a mão ocupada, não tira outro');
+    s.hand=null;serveStartPour('trago');keys.add('e');outsideTick(1.9);keys.delete('e');outsideTick(.05);check(!s.hand&&$('pourUI').classList.contains('hidden'),'passou do ponto: derrama');}
+   const stock=JSON.stringify(G.stock);for(let k=0;k<500&&!G.serve.done;k++){outsideTick(.25);const n=G.serve.patrons.findIndex(p=>p.want);if(n>=0){serveTake(G.serve.patrons[n].want);servePatron(n);}}
+   check(mapEvState('fandango').done&&modal==='talk'&&$('dialogContent').textContent.includes('servidos')&&JSON.stringify(G.stock)===stock,'acabou o tempo: placar e recompensa, sem gastar o estoque da bodega');talkAll();}
   // Mano Lima: recusar a lição de truco (com o presente já entregue) não deixa ele parado, e o Sadi dorme
   {worldOut=null;G.phase='closed';G.levelStory=LEVELS.length;G.levelSeen=LEVELS.length;G.giftsGiven={...(G.giftsGiven||{}),'manolima:tutorial':1};G.giftQueue=[];G.arcQueue=[];G.challengeVisit=null;
    sportState().challenge={person:PEOPLE.findIndex(p=>p.id==='manolima'),wager:0,tutorial:true,type:'truco'};const d=G.day;sleepDay();
@@ -159,12 +165,20 @@
    check(modal==='talk'&&$('dialogContent').querySelector('.score-board')&&G.trophies.rodeio,'placar do rodeio e troféu para o melhor tempo');talkAll();
    night('oktoberfest');switchMap({map:'sc',x:2030,y:700});const ok=WORLD_MAPS.sc.spots().find(s=>s.id==='oktoberfest');worldOut.x=ok.x;worldOut.y=ok.y;interact();
    const os=WORLD_MAPS.oktoberfest.spots().find(s=>s.id==='okto');check(worldOut.map==='oktoberfest'&&os&&WORLD_MAPS.oktoberfest.canWalk(os.x,os.y),'no salão da Oktoberfest, o Loli espera');worldOut.x=os.x;worldOut.y=os.y;interact();talkAll();
-   check(farmGame?.limit===OKTO_LIMIT&&$('farmTimer'),'chope contra o relógio');for(let k=0;k<5;k++){farmGame.pos=.5;farmGameKey('e');}talkAll();
-   check(/tamanco/.test(farmGame?.title),'depois do chope, a dança do tamanco com o Loli');let key='d';for(let k=0;k<40&&farmGame;k++){key=key==='a'?'d':'a';farmGameKey(key);}talkAll();check(mapEvState('oktoberfest').done&&mapEvState('oktoberfest').hits===5,'Oktoberfest concluída');
+   check(serveActive()&&SERVE_EVENTS.oktoberfest.items.join()==='chope','na Oktoberfest, o Sadi serve só chope');
+   {const s=G.serve;outsideTick(2);const n=s.patrons.findIndex(p=>p.want);s.hand='trago';servePatron(n);check(s.served===0,'pedido errado não conta');for(let k=0;k<500&&!s.done;k++){outsideTick(.25);const m=s.patrons.findIndex(p=>p.want);if(m>=0){serveTake('chope');servePatron(m);}}}
+   talkAll();check(mapEvState('oktoberfest').done&&mapEvState('oktoberfest').served>=SERVE_EVENTS.oktoberfest.target,'Oktoberfest concluída servindo chope');
    night('uva');switchMap({map:'serra',x:1000,y:1000});const sl=WORLD_MAPS.serra.spots().find(s=>s.id==='salao');worldOut.x=sl.x;worldOut.y=sl.y;interact();
    const us=WORLD_MAPS.salao.spots().find(s=>s.id==='uva');check(worldOut.map==='salao'&&us&&WORLD_MAPS.salao.canWalk(us.x,us.y),'no salão da Serra, o Badin organiza o concurso de vinho');
    G.stock.vinho=0;G.bag={};worldOut.x=us.x;worldOut.y=us.y;interact();check(modal==='aviso'||$('dialogTitle').textContent.includes('vinho'),'sem vinho de garrafão não dá para concorrer');closeDialog(true);
    G.up.vinho=true;G.stock.vinho=2;interact();talkAll();for(let k=0;k<3;k++){farmGame.pos=.5;farmGameKey('e');}check(G.stock.vinho===1&&$('dialogContent').querySelector('.score-board')&&G.trophies.uva,'o melhor vinho leva o troféu da Festa da Uva');talkAll();
+   // baile de capela: missa na capela e baile no salão, servindo vinho e polenta
+   night('capela');switchMap({map:'serra',x:1000,y:1000});const ig=WORLD_MAPS.serra.spots().find(s=>s.id==='igreja');check(/Missa e baile de capela/.test(ig.label),'na noite do baile de capela, a igreja chama para a missa');worldOut.x=ig.x;worldOut.y=ig.y;interact();
+   check(scene?.id==='missa'&&scene.steps.some(s=>s.say==='padre'),'primeiro, a cena da missa com o padre');while(scene)sceneSkip();check(worldOut.map==='salao'&&modal==='talk','depois da missa, todo mundo vai pro baile no salão');talkAll();
+   check(serveActive()&&SERVE_EVENTS.capela.items.join()==='vinho,polenta','no baile de capela, o Sadi serve vinho e polenta');{const s=G.serve;for(let k=0;k<500&&!s.done;k++){outsideTick(.25);const m=s.patrons.findIndex(p=>p.want);if(m>=0){serveTake(s.patrons[m].want);servePatron(m);}}}talkAll();check(mapEvState('capela').done,'baile de capela concluído');
+   // 23h30: casas trancadas e ninguém na rua
+   G.phase='closed';G.report={};switchMap({map:'vila',x:1600,y:735});worldWalkersKey='';walkersTick(.1);check(lateNight()&&!worldWalkers.length,'depois das 23h30 ninguém anda na rua');
+   {const hv=WORLD_MAPS.vila.spots().find(s=>s.house);worldOut.x=hv.x;worldOut.y=hv.y;check(/trancada/.test(outsideHint()),'a casa aparece trancada');interact();check(worldOut.map==='vila','e não dá para entrar');}
    // o guri da vela, raro, na beira do rio
    switchMap({map:'vila',x:700,y:1400});G.phase='closed';G.negrinhoNight=G.day;const ng=negrinhoSpot()[0];check(ng&&WORLD_MAPS.vila.canWalk(ng.x,ng.y),'numa noite rara, uma vela anda na beira do rio');worldOut.x=ng.x;worldOut.y=ng.y;interact();
    check(scene?.id==='negrinho'&&scene.steps.some(s=>s.overlay==='note'),'encontrá-lo abre uma cena sobre o que se perdeu');while(scene)sceneSkip();talkAll();check(G.relics.cuia_vo&&!negrinhoTonight(),'ele entrega a cuia do vô e não aparece mais');
@@ -181,6 +195,9 @@
    b.diners[0]={person:0,orders:['cerveja'],later:[],delivered:[],patience:60,maxPatience:60,status:'waiting'};G.hands[0]={kind:'product',pid:'cerveja',cost:1};tickDiners(b,.05);check(b.diners[0].status==='waiting','com a caneca já tirada na mão, ele espera');G.hands=[null,null];G.groups=[];}
   // freguesia fiel: abrir dias seguidos rende um extra no fechamento
   {G.openStreak=2;G.lastOpenDay=G.day-1;G.openedDay=G.day;G.phase='open';G.elapsed=0;G.shop=[];G.groups=[];finishDay(true);while(scene)sceneSkip();check(G.openStreak===3&&G.report.loyal===15,'freguesia fiel: três dias seguidos abertos, +R$ 15 no fechamento');closeDialog(true);}
+  // Mesa de tragos comprada antes do Valter pedir: o capítulo 1 conclui sozinho
+  {const before=G.missions,up=G.up.trago,owned=G.upOwned;G.missions={};G.up.trago=false;G.upOwned={};check(currentChapter()?.id==='trago'&&/Mesa de tragos/.test(trackerLines()[0]?.goal||''),'antes do Valter, o canto da tela já diz para comprar a Mesa de tragos');
+   G.up.trago=true;G.upOwned={trago:true};worldOut=null;G.phase='prep';closeDialog(true);talkState=null;while(scene)sceneSkip();missionsTick();check(missionDone('trago'),'comprar a Mesa de tragos antes do Valter conclui o capítulo 1');G.missions=before;G.up.trago=up;G.upOwned=owned;closeDialog(true);}
   check(!JSON.stringify(PEOPLE).includes('Boleador')&&GIFTS.lauro.some(g=>/Bolador/.test(g.text+JSON.stringify(DECOR)))||!JSON.stringify(DECOR).includes('Boleador'),'Lauro Bolador (não mais Boleador)');
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;window.difficulty=difficultyBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();closeDialog(true);worldOut=null;}
  return results;

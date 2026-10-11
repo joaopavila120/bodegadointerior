@@ -314,16 +314,27 @@ WORLD_MAPS.igreja = interiorMap({
     ...[520, 615, 710, 805, 900, 995].flatMap(y => [{ kind: 'pew', x: 330, y, w: 210, h: 36 }, { kind: 'pew', x: 660, y, w: 210, h: 36 }])
   ]
 });
-// Salão: o maior de todos, com palco do baile, mesas compridas e o bar.
-WORLD_MAPS.salao = interiorMap({
-  id: 'salao', name: 'Salão da comunidade', W: 1900, H: 1160, bounds: { x: 150, y: 300, w: 1600, h: 760 }, door: 950, floor: 'wood', wallColor: '#c86a4a', windows: [260, 460, 1370, 1570],
-  decor(b) { pennants(b.x + 20, b.x + b.w - 20, b.y - 110, ['#d42a2a', '#2a7a3a', '#f0d020']); pennants(b.x + 20, b.x + b.w - 20, b.y - 70, ['#f0d020', '#d42a2a', '#2a7a3a']); signBoard(b.x + b.w / 2, b.y - 104, 380, 'FESTA DO PADROEIRO · GALETO, CUCA E BAILE', 13); },
-  items: [
+// Placa de salão: desenhada aqui mesmo (a placa do mapa só aparece como dica de proximidade).
+function hallSign(x, y, w, text, bg = '#3a2414', fg = '#ffe9b0') { rect(x - w / 2, y, w, 30, bg, 6, '#e8cc8a'); txt(text, x, y + 15, 14, fg, 'center', 'Georgia', false); }
+// Parreira na parede: ramo de folhas com cachos de uva.
+function vineGarland(x0, x1, y) { ctx.strokeStyle = '#5a3a20'; ctx.lineWidth = 3; ctx.beginPath(); for (let x = x0; x <= x1; x += 20) ctx.lineTo(x, y + Math.sin(x / 40) * 6); ctx.stroke(); for (let x = x0 + 10; x < x1; x += 46) { ellipse(x, y + Math.sin(x / 40) * 6 - 6, 9, 6, '#4a8a3a'); if (x % 92 < 46) for (const [dx, dy] of [[-4, 6], [4, 6], [0, 12], [-4, 18], [4, 18], [0, 24]]) ellipse(x + dx + 10, y + dy + 4, 3.5, 3.5, '#6a2a7a'); } }
+// Salão: o maior de todos, com palco do baile, mesas compridas e o bar. Na Serra, com jeito de festa italiana da colônia.
+const SALAO_ITEMS = [
     { kind: 'stage', x: 650, y: 300, w: 600, h: 130, label: 'Palco do baile', info: true, text: 'Salão de comunidade: no interior gaúcho é o coração da vila. Ali acontecem os bailes, as quermesses, os casamentos e o jantar de galeto com cuca.' },
     { kind: 'gaita', x: 760, y: 360, w: 70, h: 30, solid: false, layerY: 431 }, { kind: 'viola', x: 1080, y: 380, w: 50, h: 30, solid: false, layerY: 431 },
     ...[520, 680, 840].flatMap(y => [{ kind: 'longtable', x: 260, y, w: 360, h: 46 }, { kind: 'longtable', x: 1260, y, w: 340, h: 46 }]),
     { kind: 'bar', x: 1640, y: 460, w: 90, h: 240, label: 'Copa do salão', text: 'A copa do salão: refri, cerveja e a cuca que as senhoras da comunidade assam de madrugada.' },
     { kind: 'barrel', x: 1660, y: 760, w: 60, h: 60 }
+];
+WORLD_MAPS.salao = interiorMap({
+  id: 'salao', name: 'Salão da comunidade', W: 1900, H: 1160, bounds: { x: 150, y: 300, w: 1600, h: 760 }, door: 950, floor: 'wood', wallColor: '#e8d8b8', windows: [260, 460, 1370, 1570],
+  decor(b) {
+    pennants(b.x + 20, b.x + b.w - 20, b.y - 112, ['#2a8a3a', '#f4f2ea', '#d42a2a']); vineGarland(b.x + 20, b.x + b.w - 20, b.y - 82);
+    hallSign(b.x + b.w / 2, b.y - 60, 440, 'FESTA DELLA COMUNITÀ · VINO, POLENTA E BALLO', '#2a4a2a');
+  },
+  items: [...SALAO_ITEMS,
+    { kind: 'barrel', x: 175, y: 330, w: 60, h: 60, label: 'Pipas de vinho', text: 'Vinho colonial da Serra, feito na cantina da família: uva isabel e bordô, pisada e guardada na pipa de madeira.' },
+    { kind: 'barrel', x: 245, y: 345, w: 60, h: 60 }, { kind: 'stove', x: 1430, y: 340, w: 110, h: 40, label: 'Tacho de polenta', text: 'Polenta mexida no tacho de cobre com a pá de madeira, como fazia a nona: cortada com linha e servida com galeto e queijo.' }
   ]
 });
 

@@ -42,12 +42,24 @@ function tourismPaths(map) {
  return [];
 }
 // Copy the existing community-hall layout, with an independent identity and exit.
+// Cada salão com o seu tema: o CTG gaúcho e a Oktoberfest com jeito de festa alemã de Blumenau e Pomerode.
+const HALL_THEMES={
+ ctg:{wallColor:'#c86a4a',decor(b){pennants(b.x+20,b.x+b.w-20,b.y-110,['#2a7a3a','#d42a2a','#f0d020']);pennants(b.x+20,b.x+b.w-20,b.y-70,['#f0d020','#2a7a3a','#d42a2a']);hallSign(b.x+b.w/2,b.y-104,400,'CTG DA FRONTEIRA · GAITA, MATE E VANERÃO');},extra:[]},
+ oktoberfest:{wallColor:'#f2ecdc',decor:oktoberfestDecor,extra:[{kind:'chope',x:175,y:335,w:60,h:60,label:'Barril de chope',text:'Chope claro de Blumenau, tirado na hora. Na Oktoberfest, a caneca de vidro vem com o colarinho de dois dedos.'},{kind:'barrel',x:245,y:350,w:60,h:60},{kind:'barrel',x:1440,y:345,w:60,h:60},{kind:'barrel',x:1510,y:330,w:60,h:60}]}
+};
+// Faixa xadrez azul e branca da Baviera, bandeirinhas da Alemanha e pretzels pendurados.
+function oktoberfestDecor(b){
+ for(let x=b.x-20,k=0;x<b.x+b.w+20;x+=36,k++)poly([[x,b.y-104],[x+18,b.y-120],[x+36,b.y-104],[x+18,b.y-88]],k%2?'#f4f6fa':'#2a6ab8');
+ pennants(b.x+20,b.x+b.w-20,b.y-84,['#1a1a1a','#d42a2a','#f0c020']);
+ ctx.strokeStyle='#a8682a';ctx.lineWidth=7;for(const x of [b.x+120,b.x+b.w-120]){ctx.beginPath();ctx.arc(x-12,b.y-40,16,Math.PI*.2,Math.PI*1.9);ctx.stroke();ctx.beginPath();ctx.arc(x+12,b.y-40,16,Math.PI*1.1,Math.PI*.8);ctx.stroke();for(const [dx,dy] of [[-10,-50],[6,-34],[14,-48]])ellipse(x+dx,b.y+dy,2,2,'#fff8e8');}
+ hallSign(b.x+b.w/2,b.y-58,420,"OKTOBERFEST · O'ZAPFT IS! · PROST!",'#1f4a8a');
+}
 for(const [id,name] of [['ctg','CTG da Fronteira'],['oktoberfest','Salão da Oktoberfest']]){
- const source=WORLD_MAPS.salao;
- WORLD_MAPS[id]=interiorMap({...source,id,name,items:source.items.map(i=>({...i,
+ const source=WORLD_MAPS.salao,theme=HALL_THEMES[id];
+ WORLD_MAPS[id]=interiorMap({...source,id,name,wallColor:theme.wallColor,decor:theme.decor,items:[...SALAO_ITEMS.map(i=>({...i,
   ...(i.kind==='stage'?{label:id==='ctg'?'Palco do CTG':'Palco da Oktoberfest',text:id==='ctg'?'O CTG é um lugar de encontro para danças, música e tradições gaúchas. Hoje o salão está pronto para receber a comunidade.':'Um salão para a bandinha, o baile e os encontros da comunidade, inspirado nas festas de Blumenau.'}:{}),
-  ...(i.kind==='bar'?{label:'Copa',text:'A copa e as mesas estão prontas para a próxima festa.'}:{})
- }))});
+  ...(i.kind==='bar'?{label:id==='oktoberfest'?'Chopeira':'Copa',text:id==='oktoberfest'?'A chopeira da festa: torneiras de chope claro e escuro e canecas de vidro de meio litro.':'A copa e as mesas estão prontas para a próxima festa.'}:{})
+ })),...theme.extra]});
 }
 const tourismVilaObstacles=WORLD_MAPS.vila.obstacles;
 WORLD_MAPS.vila.obstacles=()=>[...tourismVilaObstacles(),VILA.ctg];

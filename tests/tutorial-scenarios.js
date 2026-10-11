@@ -34,7 +34,7 @@
  action('tvAwardClose');check(modal==='report'&&sportState().challenge.tutorial,'relatório aparece antes do convite');closeDialog();
  check(!modal&&PEOPLE[G.challengeVisit?.person]?.id==='lauro','o Lauro Bolador entra pela porta da bodega antes de convidar');for(let n=0;n<400&&modal!=='sportChallenge';n++)simulate(.05);
  check(modal==='sportChallenge'&&G.challengeVisit.arrived,'o convite para a bocha aparece quando ele chega até você');answerSportChallenge(false);check(G.challengeVisit?.leaving,'recusar faz o visitante ir embora');nextDay('normal');closeDialog(true);G.event.seen=true;openDay();advance(25);
- check(G.day===2&&G.elapsed>0&&G.groups.length>0&&G.shop.length>0,'dia 2 retoma tempo e chegadas normais ao salão e balcão');
+ check(G.day===2&&G.elapsed>0&&G.groups.length>0&&(G.shop.length>0||G.shopVisits>0),'dia 2 retoma tempo e chegadas normais ao salão e balcão');
  const legacy=fresh();legacy.version=11;legacy.day=3;legacy.stock.cachaca=7;const migrated=normalizeSave(legacy);
  check(migrated.up.trago&&migrated.stock.cachaca===7&&!migrated.tutorial.guided,'partidas antigas preservam a estação e o estoque de tragos');
  G=fresh();G.day=7;G.phase='open';G.up.table3=G.up.table4=true;G.tutorial.complete=true;

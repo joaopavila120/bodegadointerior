@@ -12,7 +12,7 @@ function refreshHUD(){
 }
 
 // Mensagens flutuantes: aparecem no meio da tela, ficam um pouco e somem (não ficam mais no canto).
-function floatNote(text,kind=''){const host=$('floatNotes');if(!host)return;[...host.children].find(e=>e.textContent===text)?.remove();const e=document.createElement('div');e.className='float-note'+(kind?' '+kind:'');e.textContent=text;host.prepend(e);while(host.children.length>3)host.lastChild.remove();setTimeout(()=>e.remove(),kind==='reminder'?7000:4200);}
+function floatNote(text,kind=''){const host=$('floatNotes');if(!host)return;[...host.children].find(e=>e.textContent===text)?.remove();const e=document.createElement('div');e.className='float-note'+(kind?' '+kind:'');e.textContent=text;host.prepend(e);while(host.children.length>2)host.lastChild.remove();setTimeout(()=>e.remove(),kind==='reminder'?7000:4200);}
 function say(text,opts){if(bodegaNoticeMuted(opts))return;floatNote(text);}
 
 function effect(text,x,y,color='#fce59e'){sparks.push({text,x,y,life:2.2,color});}

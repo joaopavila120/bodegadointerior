@@ -130,6 +130,7 @@ const MISSIONS = [
   { id: 'trago', chapter: 1, title: 'Trago de pura', giver: 'valter', direct: () => tragoMorning(), where: 'Ferragem da Fronteira, à direita da cancha',
     guide: { region: 'vila', spot: 'ferragem', inside: 'ferragem', insideSpot: 'item:caixa' },
     when: () => G.tutorial?.complete && !tutorialActive() && !firstDay() && !worldOut && G.phase === 'prep',
+    waitText: () => 'de manhã, na bodega · ou já compre a Mesa de tragos na Ferragem',
     goal: () => 'Compre a Mesa de tragos na Ferragem da Fronteira, à direita da cancha (sai de graça)',
     done: () => upgradeOwned('trago'), reward: { xp: 20, rep: 1 },
     outro: ['Agora sim, bodega de respeito! A mesa fica embaixo da torneira de cerveja: segura E pra servir a dose.', 'E a primeira dose de pura quem toma sou eu, hehe.'] },
@@ -272,7 +273,11 @@ function completeMission(m) {
 function syncChapters() { const list = storyChapters(); let last = -1; list.forEach((m, i) => { const st = missionState(m.id); if (st && st.status !== 'offered') last = i; }); for (let i = 0; i < last; i++) if (!missionState(list[i].id)) G.missions[list[i].id] = { status: 'done', day: G.day }; }
 function missionsTick() {
   migrateMissions(); if (G.missions) syncChapters();
-  if (!G.missions || prologueActive() || tutorialActive() || !storyCalm()) return;
+  if (!G.missions || prologueActive() || tutorialActive()) return;
+  // Mesa de tragos comprada antes do Valter pedir: o capítulo 1 conclui na hora, com a recompensa.
+  const tr = MISSIONS.find(m => m.id === 'trago');
+  if (tr && !missionDone('trago') && missionState('trago')?.status !== 'active' && tr.done()) { G.missions.trago = { status: 'done', day: G.day }; grantReward(tr.reward); showBanner('Capítulo 1 concluído · ' + tr.title, 'A Mesa de tragos já está na bodega.', 'level', { world: true }); save(); return; }
+  if (!storyCalm()) return;
   for (const m of activeMissions()) if (!m.deliver && m.done?.()) { completeMission(m); return; }
   // Missão cujo objetivo já foi cumprido antes de alguém oferecer (ex.: o primeiro costelão): conclui sozinha, com a recompensa.
   for (const m of MISSIONS) if (m.skipIfDone && missionReady(m) && m.done?.()) { G.missions[m.id] = { status: 'done', day: G.day }; grantReward(m.reward); m.onDone?.(); showBanner('Missão já cumprida: ' + m.title, rewardParts(m.reward).map(p => p.join(' ')).join(' · '), 'level', { world: true }); save(); return; }
@@ -530,11 +535,11 @@ function playCadernoScene() {
 // Missões ativas no canto da tela, discretas (a opção de esconder fica na aba Missões do celular).
 function trackerLines() {
   const lines = [], ch = activeChapter(), wait = chapterWaiting(), ev = mapEventToday(), t = ev?.def.tracker?.();
-  if (ch) lines.push({ icon: '📖', title: 'Capítulo ' + ch.chapter + ' · ' + ch.title, goal: ch.goal() + (ch.where ? ' · ' + ch.where : ''), kind: 'story' });
+  if (ch) lines.push({ icon: '📖', title: 'Capítulo ' + ch.chapter + ' · ' + ch.title, goal: ch.goal(), kind: 'story' });
   else if (wait) lines.push({ icon: '📖', title: 'Próximo capítulo: ' + wait.title, goal: 'Começa ' + (wait.waitText?.() || 'em breve'), kind: 'story' });
   if (t) lines.push({ ...t, kind: 'event' });
-  const side = activeMissions().filter(m => !m.chapter)[0]; if (side) lines.push({ title: side.title, goal: side.goal(), kind: 'side' });
-  return lines.slice(0, 3);
+  const side = activeMissions().filter(m => !m.chapter)[0]; if (side && lines.length < 2) lines.push({ title: side.title, goal: side.goal(), kind: 'side' });
+  return lines.slice(0, 2);
 }
 function updateQuestTracker() {
   const el = $('questTracker'); if (!el) return;

@@ -62,14 +62,14 @@ function worldBanner(title, text) { showBanner(title, text, 'info', { world: tru
 let worldWalkers = [], worldWalkersKey = '';
 function walkerPos(w) { const a = w.line[w.seg], b = w.line[w.seg + 1]; return { a, b }; }
 // A turma da estrada só muda quando muda o mapa, o dia, a noite ou uma região abre (antes mudava a cada quadro e piscava).
-function walkersKey(M) { return M.id + ':' + G.day + ':' + worldNight() + ':' + prologueActive() + ':' + (G.regions ? Object.values(G.regions).join() : ''); }
+function walkersKey(M) { return M.id + ':' + G.day + ':' + worldNight() + ':' + lateNight() + ':' + prologueActive() + ':' + (G.regions ? Object.values(G.regions).join() : ''); }
 // Personagens menores (sem casa): fregueses comuns e torcedores que também andam pelas ruas.
 const STORE_KEEPERS = ['lucia', 'anselmo', 'rosa', 'arlindo'];
 function minorPeople() { return PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].unique && !PEOPLE[i].removed && !STORE_KEEPERS.includes(PEOPLE[i].id) && PEOPLE[i].id !== G.avatarId); }
 function minorsToday(M) { const salt = { vila: 1, serra: 2, sc: 3 }[M.id] || 4, n = worldNight() ? 1 : M.id === 'vila' ? 3 : 2; return minorPeople().map(i => ({ i, h: dayHash(i, salt) })).sort((a, b) => a.h - b.h).slice(0, n).map(x => x.i); }
 function spawnWalkers(M) {
   worldWalkersKey = walkersKey(M); worldWalkers = [];
-  if (prologueActive()) return;   // no começo, os personagens especiais ainda não apareceram
+  if (prologueActive() || lateNight()) return;   // no começo os especiais ainda não apareceram; depois das 23h30, todo mundo já foi dormir
   const busy = activeUniqueVisitors(), idx = id => PEOPLE.findIndex(p => p.id === id);
   // moradores: uns andam pela rua, outros ficam em casa; quem tem pedido ou missão espera o Sadi em casa
   const locals = (M.residents || []).map(idx).filter(i => i >= 0 && !PEOPLE[i].removed && !busy.has(i) && walkingToday(i) && !questMarker(PEOPLE[i].id) && !storyNeeds(PEOPLE[i].id)).slice(0, 3);
@@ -140,8 +140,11 @@ function outsideInteract() {
   if (s.act) s.act(); else if (s.house) houseVisit(s.house); else if (s.info) showInfo(s.label, s.text); else worldSay(s.text);
 }
 // A casa só se revela de perto; o morador, se não estiver na bodega, anda pela estrada.
-function houseVisit(id) { if (prologueActive()) { prologueWarn(); return; } if (enterInterior('casa:' + id)) return; const i = PEOPLE.findIndex(p => p.id === id); if (i < 0) return; warnDialog('Casa de ' + PEOPLE[i].name, activeUniqueVisitors().has(i) ? PEOPLE[i].name + ' não está em casa: tá lá na bodega.' : worldWalkers.some(w => w.person === i) ? PEOPLE[i].name + ' não está em casa: deve estar andando pela estrada.' : 'Casa de ' + PEOPLE[i].name + ': ninguém atendeu. Em breve dá pra bater na porta e levar presente.'); }
-function outsideHint() { const m = worldMap().hint?.(); if (m) return m; const s = worldNearest(); return s ? '<strong>E</strong> ' + s.label : worldMap().name + ' · WASD anda'; }
+// Depois das 23h30 é tarde demais: as casas ficam trancadas e ninguém anda mais na rua (eventos da noite seguem).
+function lateNight() { return gameMinutes() >= 23 * 60 + 30; }
+function spotLabel(s) { return s.label + (s.house && lateNight() ? ' · trancada' : ''); }
+function houseVisit(id) { if (prologueActive()) { prologueWarn(); return; } if (lateNight()) { worldSay('Passa das 23h30: a casa está trancada, todo mundo já dorme.'); AudioEngine.bad(); return; } if (enterInterior('casa:' + id)) return; const i = PEOPLE.findIndex(p => p.id === id); if (i < 0) return; warnDialog('Casa de ' + PEOPLE[i].name, activeUniqueVisitors().has(i) ? PEOPLE[i].name + ' não está em casa: tá lá na bodega.' : worldWalkers.some(w => w.person === i) ? PEOPLE[i].name + ' não está em casa: deve estar andando pela estrada.' : 'Casa de ' + PEOPLE[i].name + ': ninguém atendeu. Em breve dá pra bater na porta e levar presente.'); }
+function outsideHint() { const m = worldMap().hint?.(); if (m) return m; const s = worldNearest(); return s ? '<strong>E</strong> ' + spotLabel(s) : worldMap().name + ' · WASD anda'; }
 
 // ---------- Desenho comum ----------
 function beginOutside(M) {
@@ -167,7 +170,7 @@ function drawOutside() {
   if (night && !M.indoor) {
     rect(view.x, view.y, view.w, view.h, `rgba(12,20,52,${night})`);
   }
-  const s = modal === 'talk' ? null : worldNearest(); if (s) { ctx.font = 'bold 13px Arial'; const w = ctx.measureText(s.label).width + 44; rect(s.x - w / 2, s.y - 130, w, 26, '#2b1d12dd', 6, '#ffdf91'); rect(s.x - w / 2 + 6, s.y - 126, 18, 18, '#ffdf91', 4, '#614322'); txt('E', s.x - w / 2 + 15, s.y - 117, 12, '#38291b', 'center', 'Arial', false); txt(s.label, s.x + 11, s.y - 117, 13, '#fff0c3', 'center', 'Arial', false); }
+  const s = modal === 'talk' ? null : worldNearest(); if (s) { const label = spotLabel(s); ctx.font = 'bold 13px Arial'; const w = ctx.measureText(label).width + 44; rect(s.x - w / 2, s.y - 130, w, 26, '#2b1d12dd', 6, '#ffdf91'); rect(s.x - w / 2 + 6, s.y - 126, 18, 18, '#ffdf91', 4, '#614322'); txt('E', s.x - w / 2 + 15, s.y - 117, 12, '#38291b', 'center', 'Arial', false); txt(label, s.x + 11, s.y - 117, 13, '#fff0c3', 'center', 'Arial', false); }
   drawFx();
 }
 // Peças de desenho reaproveitadas pelos mapas.

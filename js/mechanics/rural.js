@@ -123,10 +123,12 @@ function buyFeedback(act, id, text) {
 const FERRAGEM_SKIP = ['bootsGaucho', 'bootsBagual', 'bodoque'];
 function upgradeOwned(id) { return !!G.up[id] || !!G.upOwned?.[id]; }
 function upgradeMissing(u) { const m = []; if (bodegaLevel() < (u.level || 1)) m.push('nível ' + u.level); if (G.rep < u.rep) m.push('reputação ' + u.rep); if (!hasCash(u.cost)) m.push(money(u.cost)); if (u.requires && !upgradeOwned(u.requires)) m.push(UPGRADES.find(v => v.id === u.requires).name); return m; }
+// Primeiro as melhorias da bodega (balcão, cozinha, salão); depois mate e botas.
+const FERRAGEM_ORDER = [['Balcão', 'Balcão'], ['Cozinha', 'Cozinha'], ['Outros', 'Salão e casa'], ['Mate', 'Mate'], ['Botas', 'Botas']];
 function ferragemCards() {
-  return UPGRADE_TABS.map(cat => {
+  return FERRAGEM_ORDER.map(([cat, title]) => {
     const list = UPGRADES.filter(u => upgradeCategory(u) === cat && !u.shop && !FERRAGEM_SKIP.includes(u.id)); if (!list.length) return '';
-    return '<h3>' + cat + '</h3><div class="store-list">' + list.map(u => { const own = upgradeOwned(u.id), miss = own ? [] : upgradeMissing(u); return `<div class="supply"><span class="icon">${upgradeIconHTML(u.id) || '<span class="bag-emoji">🔧</span>'}</span><div><b>${u.name}</b><p>${u.desc}${u.level > 1 ? ' · nível ' + u.level : ''}${u.rep ? ' · reputação ' + u.rep : ''}</p></div><button class="primary" data-act="upgrade" data-id="${u.id}" ${own || miss.length ? 'disabled' : ''}>${own ? 'Já é da casa' : miss.length ? 'Falta: ' + miss.join(' + ') : u.cost === 0 ? 'Levar de graça' : 'Comprar · ' + money(u.cost)}</button></div>`; }).join('') + '</div>';
+    return '<h3>' + title + '</h3><div class="store-list">' + list.map(u => { const own = upgradeOwned(u.id), miss = own ? [] : upgradeMissing(u); return `<div class="supply"><span class="icon">${upgradeIconHTML(u.id) || '<span class="bag-emoji">🔧</span>'}</span><div><b>${u.name}</b><p>${u.desc}${u.level > 1 ? ' · nível ' + u.level : ''}${u.rep ? ' · reputação ' + u.rep : ''}</p></div><button class="primary" data-act="upgrade" data-id="${u.id}" ${own || miss.length ? 'disabled' : ''}>${own ? 'Já é da casa' : miss.length ? 'Falta: ' + miss.join(' + ') : u.cost === 0 ? 'Levar de graça' : 'Comprar · ' + money(u.cost)}</button></div>`; }).join('') + '</div>';
   }).join('');
 }
 // No balcão (Personalizar bodega): melhorias que são móveis podem ser guardadas e reinstaladas (de graça) fora do expediente.
@@ -212,12 +214,12 @@ function ruralTick(dt) {
   if (before < 360 && G.morning >= 360 && G.event.id !== 'costelao') {
     repChange(-4); const lost = eventInfo() !== EVENTS.normal && G.event.id !== 'costelao' ? eventInfo().name : null;
     if (lost) G.event = { id: 'normal', seen: true, fired: {}, lost: true };
-    floatNote('Meio-dia e a bodega fechada! A freguesia foi embora (−4 de reputação)' + (lost ? ' e o dia de ' + lost + ' se perdeu.' : '.'), 'bad'); AudioEngine.bad(); save();
+    floatNote('Meio-dia e a bodega fechada: a freguesia foi embora (−4 de reputação).', 'bad'); AudioEngine.bad(); save();
   }
   // Pôr do sol com a bodega fechada: o dia acaba assim mesmo e a sequência de dias abertos se perde.
   if (G.morning >= SUNSET && G.phase === 'prep') {
     G.phase = 'closed'; G.report = null; G.openStreak = 0;
-    floatNote('🌇 O sol se pôs e a bodega não abriu hoje. Quando quiser, durma no caixa para começar outro dia.', 'bad'); save(); refreshHUD();
+    floatNote('🌇 O sol se pôs e a bodega não abriu hoje.', 'bad'); save(); refreshHUD();
   }
 }
 // Lembretes: aparecem uma vez por dia, flutuam um pouco e somem.
@@ -230,13 +232,12 @@ function reminderTick() {
   if (!started || G.testMode || prologueActive() || tutorialActive() || modal || scene || G.lasso || !G.tutorial?.complete) return;
   if (morningActive()) {
     const m = G.morning || 0, low = m >= 60 ? lowStock() : [];
-    if (low.length) remindOnce('estoque', '📦 Lembrete: confira o estoque. Está acabando: ' + low.slice(0, 3).map(k => nameOf(k).toLowerCase()).join(', ') + '. Se faltar, o freguês reclama.');
-    const ch = activeChapter(); if (ch && m >= 20) remindOnce('historia', '📖 Capítulo ' + ch.chapter + ' · ' + ch.title + ': ' + ch.goal() + '.');
-    if (m >= 180) remindOnce('abrir', '🕘 9h: quando estiver pronto, abra a bodega no caixa. Fechada ao meio-dia, a freguesia vai embora.');
-    if (m >= 300 && m < 360 && G.event.id !== 'costelao') remindOnce('abrir2', worldOut ? '🕚 11h e a bodega fechada: tem freguês esperando na porta! Ao meio-dia eles vão embora.' : '🕚 11h: tem freguês esperando na porta! Abra no caixa antes do meio-dia.');
-    if (m >= 540) remindOnce('tarde', '🌇 A tarde passa e a bodega segue fechada. Ainda dá para abrir e pegar o movimento da noite' + (G.lastOpenDay === G.day - 1 && G.openStreak >= 1 ? ', sem perder a freguesia fiel.' : '.'));
-    if (m >= 240 && hortaCells().some(cellThirsty)) remindOnce('agua', '💧 Lembrete: as plantas da horta ainda não beberam água hoje.');
-  } else if (G.phase === 'closed' && !duskActive()) remindOnce('noite', '🌙 Expediente encerrado. Confira o estoque pro próximo dia e, quando quiser, durma no caixa.');
+    if (low.length) remindOnce('estoque', '📦 Acabando: ' + low.slice(0, 3).map(k => nameOf(k).toLowerCase()).join(', ') + '.');
+    if (m >= 180) remindOnce('abrir', '🕘 9h: abra a bodega no caixa.');
+    if (m >= 300 && m < 360 && G.event.id !== 'costelao') remindOnce('abrir2', '🕚 11h: freguês esperando na porta da bodega!');
+    if (m >= 540) remindOnce('tarde', '🌇 Bodega fechada: ainda dá para abrir à noite.');
+    if (m >= 240 && hortaCells().some(cellThirsty)) remindOnce('agua', '💧 A horta está com sede.');
+  } else if (G.phase === 'closed' && !duskActive()) remindOnce('noite', '🌙 Bodega fechada. Durma no caixa quando quiser.');
 }
 function morningMinutes() { return 6 * 60 + (G.morning || 0); }
 // Ao abrir: aviso das plantas sem água.

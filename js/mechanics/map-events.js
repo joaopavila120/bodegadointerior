@@ -1,9 +1,10 @@
 // Eventos de mapa: além do evento da bodega, alguns dias têm algo acontecendo no mundo aberto. Aparecem no calendário,
 // começam com uma cena na bodega (quem organiza entra e explica) e acontecem de noite, depois de fechar.
 //   · Invasão de javalis (Valter): abater pelo menos 3 javalis pela Fronteira, numa caçada parecida com a laçada.
-//   · Fandango no CTG (Jayme): levar a encomenda da bodega para a roda.
+//   · Fandango no CTG (Jayme): servir trago e chope no balcão do CTG enquanto o povo dança (serve-events.js).
 //   · Campeonato de pênaltis (Márcio e Marcelo): quartas, semi e final no campinho da Serra; o campeão leva troféu.
-//   · Oktoberfest (Loli): chope contra o relógio no salão de Santa Catarina e dança do tamanco.
+//   · Oktoberfest (Loli): servir chope no salão de Santa Catarina.
+//   · Baile de capela (Badin): missa na capela da Serra e depois baile no salão, servindo vinho e polenta.
 //   · Rodeio crioulo (Guri): prova de laço contra o relógio no CTG, com placar e troféu.
 //   · Festa da Uva (Badin): concurso de vinho de garrafão no salão da Serra; ganha a melhor nota.
 // Também aqui: o guri da vela, que aparece raramente na beira do rio, e a prateleira de lembranças da bodega.
@@ -11,7 +12,6 @@
 
 const JAVALI_NEED = 3, JAVALI_HITS = 3;
 const JAVALI_SPOTS = [[760, 1250], [1250, 1560], [2300, 1480], [3200, 1560], [1350, 2040], [3420, 2260], [880, 2120], [2650, 900], [3380, 820], [820, 830], [2380, 1960], [1100, 1880]];
-const FANDANGO_WANT = { pao_xis: 10, cerveja: 6, erva: 1000 };
 const MAP_EVENTS = {
   javali: {
     id: 'javali', name: 'Invasão de javalis', icon: '🐗', giver: 'valter', place: 'Fronteira, de noite, depois de fechar',
@@ -23,11 +23,11 @@ const MAP_EVENTS = {
   },
   fandango: {
     id: 'fandango', name: 'Fandango no CTG', icon: '💃', giver: 'jayme', place: 'CTG da Fronteira, de noite',
-    desc: 'Baile no CTG da Fronteira. O Jayme pediu a encomenda da bodega para a roda: 10 pães de xis, 6 cervejas e 1 kg de erva-mate. Leve ao CTG à noite, depois de fechar.',
+    desc: 'Baile no CTG da Fronteira. O Jayme chamou o Sadi para cuidar do balcão: sirva trago e chope para a roda enquanto o povo dança. As bebidas são do CTG.',
     reward: { cash: 80, xp: 60, rep: 4, friend: { jayme: 8, manolima: 4, baitaca: 4, guri: 4 } },
     days: n => n === 9 || n > 9 && (n - 9) % 14 === 0, requires: () => true,
-    scene: [['jayme', 'Buenas, vivente! Hoje tem fandango no CTG da Fronteira, e a bodega foi convidada.'], ['jayme', '“Onde tem gaita e tem mate, o gaúcho se acha em casa.” O patrão pediu a encomenda: 10 pães de xis, 6 cervejas e 1 kg de erva pro chimarrão da roda.'], ['sadi', 'Deixa comigo, seu Jayme!'], ['jayme', 'Depois de fechar, leva tudo no CTG. E vem de bota limpa, que vanerão não espera ninguém!']],
-    tracker: () => { const st = mapEvState('fandango'); if (st.done) return null; return { icon: '💃', title: 'Fandango no CTG', goal: (mapNight() ? 'Leve ao CTG: ' : 'De noite, leve ao CTG: ') + Object.entries(FANDANGO_WANT).map(([k, q]) => (haveItem(k) >= q ? '✔ ' : '') + bagText(k, q) + ' de ' + bagName(k).toLowerCase()).join(', ') }; }
+    scene: [['jayme', 'Buenas, vivente! Hoje tem fandango no CTG da Fronteira, e a bodega foi convidada.'], ['jayme', '“Onde tem gaita e tem mate, o gaúcho se acha em casa.” O bolicheiro do CTG adoeceu: tu cuida do balcão?'], ['sadi', 'Deixa comigo, seu Jayme!'], ['jayme', 'Depois de fechar, vem pro CTG. Trago e chope são do CTG: é só servir a roda enquanto o povo dança.']],
+    tracker: () => { const st = mapEvState('fandango'); if (st.done) return null; return { icon: '💃', title: 'Fandango no CTG', goal: (mapNight() ? '' : 'De noite: ') + 'servir trago e chope no CTG' }; }
   },
   penalti: {
     id: 'penalti', name: 'Campeonato de pênaltis', icon: '⚽', giver: 'marcio', partner: 'marcelo', place: 'Campinho da Serra Gaúcha, de noite',
@@ -39,11 +39,11 @@ const MAP_EVENTS = {
   },
   oktoberfest: {
     id: 'oktoberfest', name: 'Oktoberfest em Pomerode', icon: '🍺', giver: 'loligebien', place: 'Salão da Oktoberfest, Santa Catarina, de noite',
-    desc: 'O Loli chamou a bodega para servir chope no salão da Oktoberfest. Encha as canecas contra o tempo e, no fim, dance de tamanco com ele.',
+    desc: 'O Loli chamou o Sadi para o balcão da Oktoberfest: sirva chope para o salão enquanto a bandinha toca e o povo dança. O chope é da festa.',
     reward: { cash: 90, xp: 70, rep: 3, friend: { loligebien: 8 } },
     days: n => n === 16 || n > 16 && (n - 16) % 28 === 0, requires: () => !regionLocked('sc'),
-    scene: [['loligebien', 'Prosit, Sadi! Hoje é Oktoberfest no salão de Pomerode, ja!'], ['loligebien', 'O chopeiro torceu o pé dançando. Tu vem servir chope? Caneca cheia, colarinho no ponto, e rápido, que a fila é grande.'], ['sadi', 'Chope eu sirvo todo dia, Loli!'], ['loligebien', 'E no fim tu dança de tamanco comigo. Sem desculpa, ja!']],
-    tracker: () => { const st = mapEvState('oktoberfest'); if (st.done) return null; return { icon: '🍺', title: 'Oktoberfest em Pomerode', goal: (mapNight() ? '' : 'Hoje à noite: ') + 'salão da Oktoberfest, em Santa Catarina: servir chope e dançar de tamanco' }; }
+    scene: [['loligebien', 'Prosit, Sadi! Hoje é Oktoberfest no salão de Pomerode, ja!'], ['loligebien', 'O chopeiro torceu o pé dançando. Tu vem servir chope? A fila é grande e a bandinha não para.'], ['sadi', 'Chope eu sirvo todo dia, Loli!'], ['loligebien', 'Depois de fechar, sobe pra Santa Catarina. O povo dança de tamanco e tu cuida das canecas, ja!']],
+    tracker: () => { const st = mapEvState('oktoberfest'); if (st.done) return null; return { icon: '🍺', title: 'Oktoberfest', goal: (mapNight() ? '' : 'De noite: ') + 'servir chope no salão de Pomerode' }; }
   },
   rodeio: {
     id: 'rodeio', name: 'Rodeio crioulo no CTG', icon: '🤠', giver: 'guri', place: 'CTG da Fronteira, de noite',
@@ -52,6 +52,14 @@ const MAP_EVENTS = {
     days: n => n === 19 || n > 19 && (n - 19) % 21 === 0, requires: () => true,
     scene: [['guri', 'Bah, tchê! Hoje tem rodeio crioulo no CTG da Fronteira!'], ['guri', 'Prova de laço contra o relógio: um terneiro, uma armada e o cronômetro do patrão.'], ['sadi', 'E quem ganha?'], ['guri', 'O melhor tempo leva o troféu. Eu tô inscrito… mas tu é neto do velho Sadi, tem laço no sangue. Depois de fechar, te espero no CTG!']],
     tracker: () => { const st = mapEvState('rodeio'); if (st.done) return null; return { icon: '🤠', title: 'Rodeio crioulo no CTG', goal: (mapNight() ? '' : 'Hoje à noite: ') + 'prova de laço contra o relógio, no CTG da Fronteira' }; }
+  },
+  capela: {
+    id: 'capela', name: 'Baile de capela', icon: '⛪', giver: 'badin', place: 'Capela e salão da comunidade, Serra Gaúcha, de noite',
+    desc: 'Missa na capela da comunidade e, depois, baile no salão. O Badin pediu ajuda no balcão: sirva vinho e polenta enquanto o povo dança.',
+    reward: { cash: 90, xp: 70, rep: 4, friend: { badin: 6, marcio: 3, marcelo: 3 } },
+    days: n => n === 11 || n > 11 && (n - 11) % 21 === 0, requires: () => !regionLocked('serra'),
+    scene: [['badin', 'Ô, Sadi! Hoje tem missa na capela e depois baile, como nos tempos da nona!'], ['badin', 'O padre reza, a gaita toca e a polenta sai do tacho. Tu me ajuda no balcão? Vinho e polenta pra comunidade inteira.'], ['sadi', 'Conta comigo, Badin!'], ['badin', 'Depois de fechar, sobe pra Serra e vai direto na capela. Começa com a missa, hein, que a nona tá de olho!']],
+    tracker: () => { const st = mapEvState('capela'); if (st.done) return null; return { icon: '⛪', title: 'Baile de capela', goal: (mapNight() ? '' : 'De noite: ') + 'missa na capela da Serra e baile no salão' }; }
   },
   uva: {
     id: 'uva', name: 'Festa da Uva', icon: '🍇', giver: 'badin', place: 'Salão da comunidade, Serra Gaúcha, de noite',
@@ -76,9 +84,10 @@ function mapEventToday() { const id = mapEventFor(); return id ? { id, def: MAP_
 function mapNight() { return G.phase === 'closed'; }
 const MAP_REMIND = {
   javali: ['🐗 Os javalis estão soltos! Saia pela porta e cace com os cuiudos.', '🐗 Os cuiudos se espalharam: ache os javalis pela Fronteira e aperte E perto deles.'],
-  fandango: ['💃 O fandango começou! Leve a encomenda ao CTG da Fronteira.', '💃 Tem música no CTG da Fronteira: entre e procure o Jayme.'],
+  fandango: ['💃 Fandango no CTG: o Jayme te espera no balcão.', '💃 Tem música no CTG: entre e procure o Jayme.'],
+  capela: ['⛪ Missa e baile de capela na Serra.', '⛪ A missa vai começar: entre na capela da Serra.'],
   penalti: ['⚽ O campeonato de pênaltis já vai começar no campinho da Serra.', '⚽ Campeonato de pênaltis: suba para o campinho da Serra.'],
-  oktoberfest: ['🍺 A Oktoberfest começou em Pomerode: o Loli te espera no salão.', '🍺 Oktoberfest: o salão fica em Santa Catarina, subindo pela Serra.'],
+  oktoberfest: ['🍺 Oktoberfest: o Loli te espera no salão de Pomerode.', '🍺 Oktoberfest: o salão fica em Santa Catarina.'],
   rodeio: ['🤠 O rodeio crioulo começou no CTG da Fronteira.', '🤠 Rodeio crioulo: entre no CTG e fale com o Guri.'],
   uva: ['🍇 A Festa da Uva começou no salão da comunidade, na Serra.', '🍇 Festa da Uva: leve um vinho de garrafão ao salão da comunidade, na Serra.']
 };
@@ -190,13 +199,10 @@ function cuiudosSpot() { return javaliNight() && worldOut?.map === 'vila' ? [{ i
 // ---------- Fandango no CTG ----------
 function fandangoNight() { const ev = mapEventToday(); return ev?.id === 'fandango' && mapNight(); }
 const FANDANGO_JAYME = { x: 760, y: 500 };
-function fandangoDeliver() {
+function fandangoMenu() {
   const st = mapEvState('fandango'), j = PEOPLE.findIndex(p => p.id === 'jayme');
   if (st.done) { worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: j, name: 'Jayme Caetano Braun', reply: '“Quem dança no fandango não esquece a noite.” Volta no próximo, vivente!' }); return; }
-  if (!canDeliver(FANDANGO_WANT)) { warnDialog('Encomenda do fandango', 'Ainda falta: ' + wantText(FANDANGO_WANT) + '.<br>Junte na despensa da bodega ou no inventário e volte.'); return; }
-  takeItems(FANDANGO_WANT); st.done = true; const rw = MAP_EVENTS.fandango.reward; grantReward(rw); AudioEngine.ready();
-  talk([['jayme', 'Chegou a encomenda da bodega! Abram a roda, que o bodegueiro vai dançar!'], ['sadi', 'Eu? Dançar vanerão?'], ['jayme', '“Quem não dança no fandango não conhece o coração do Rio Grande!”'], ['jayme', 'E dançaram até o galo cantar. A Fronteira inteira vai falar dessa noite.'], ['reward', rw, 'Fandango no CTG · concluído']], null, 'Receber');
-  save();
+  talk([['jayme', 'Chegou o bolicheiro! Trago e chope ficam ali no balcão: leva pra quem levantar o copo.'], ['jayme', 'Enquanto a roda gira, ninguém fica de goela seca. Bora!']], () => startServe('fandango'), 'Começar');
 }
 
 // ---------- Campeonato de pênaltis (campinho da Serra) ----------
@@ -237,26 +243,13 @@ function cupAfter(m) {
 }
 
 // ---------- Oktoberfest (salão em Santa Catarina) ----------
-// Cinco canecas contra o relógio (colarinho no ponto) e, no fim, a dança do tamanco com o Loli.
-const OKTO_LIMIT = 20, OKTO_SPOT = { x: 1120, y: 520 };
+// Servir chope para o salão enquanto o povo dança de tamanco (serve-events.js).
+const OKTO_SPOT = { x: 1120, y: 520 };
 function oktoNight() { const ev = mapEventToday(); return ev?.id === 'oktoberfest' && mapNight(); }
 function oktoMenu() {
   const st = mapEvState('oktoberfest'), i = PEOPLE.findIndex(p => p.id === 'loligebien');
   if (st.done) { worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: PEOPLE[i].name, reply: 'Prost, Sadi! Ano que vem tu volta pro chope, ja?' }); return; }
-  talk([['loligebien', 'Avental, ja! São cinco canecas e ' + OKTO_LIMIT + ' segundos antes que a fila vire bagunça.'], ['loligebien', 'Abre a torneira e fecha na hora certa: colarinho de dois dedos, nem mais, nem menos!']], startChope, 'Pegar as canecas');
-}
-function startChope() {
-  startFarmGame({ title: 'Oktoberfest · chope contra o tempo', limit: OKTO_LIMIT, stages: [1, 2, 3, 4, 5].map(n => ({ kind: 'timing', label: 'Caneca ' + n, text: 'Caneca ' + n + ': aperte <span class="keycap">E</span> com a espuma na faixa verde.', zone: [.4, .58], speed: .8 + n * .12, button: 'Fechar a torneira', hitText: 'Colarinho no ponto! Prost!', missText: 'Só espuma…' })), done: r => oktoDance(r.filter(Boolean).length) });
-}
-function oktoDance(hits) {
-  talk([['loligebien', hits >= 4 ? 'Wunderbar! ' + hits + ' canecas perfeitas, o salão tá cantando!' : hits ? hits + ' canecas boas… o resto foi espuma, mas a festa segue, ja!' : 'Só espuma, Sadi! Hehe, a fila riu junto.'], ['loligebien', 'Agora o tamanco! Alterna A e D no ritmo da bandinha!']],
-    () => startFarmGame({ title: 'Dança do tamanco com o Loli', stages: [{ kind: 'alternate', label: 'Dança do tamanco', text: 'Bate o tamanco no assoalho! Alterne <span class="keycap">A</span> e <span class="keycap">D</span> sem parar.', doneText: 'Que dança!', pitch: 520, step: .07 }], done: () => oktoEnd(hits) }), 'Dançar');
-}
-function oktoEnd(hits) {
-  const st = mapEvState('oktoberfest'), def = MAP_EVENTS.oktoberfest; st.done = true; st.hits = hits;
-  const rw = hits >= 4 ? def.reward : { cash: 30 + hits * 10, xp: 40, friend: { loligebien: 5 } };
-  grantReward(rw); AudioEngine.ready(); save(); refreshHUD();
-  talk([['loligebien', 'Ein Prosit! Tu dança tamanco melhor que muito alemão de Pomerode!'], ['loligebien', hits >= 4 ? 'E serviu chope como chopeiro de verdade. O salão inteiro mandou agradecer!' : 'Ano que vem a gente treina essa torneira, ja?'], ['reward', rw, 'Oktoberfest · concluída']], null, 'Receber');
+  talk([['loligebien', 'Avental, ja! O chope tá na chopeira, ali no balcão: leva pra quem levantar a mão.'], ['loligebien', 'A bandinha não para e o povo dança de tamanco. Rápido, que a fila é grande!']], () => startServe('oktoberfest'), 'Começar');
 }
 
 // ---------- Rodeio crioulo (CTG) ----------
@@ -456,7 +449,7 @@ function eventPerson(id, x, y, layers, dx = 1) { const i = PEOPLE.findIndex(p =>
   const ctg = WORLD_MAPS.ctg, cspots = ctg.spots, cdraw = ctg.draw;
   ctg.spots = function () {
     const list = cspots.call(this);
-    if (fandangoNight()) list.push({ id: 'fandango', x: FANDANGO_JAYME.x, y: FANDANGO_JAYME.y + 30, label: mapEvState('fandango').done ? 'Prosear com o Jayme' : 'Entregar a encomenda do fandango', act: fandangoDeliver });
+    if (fandangoNight()) list.push({ id: 'fandango', x: FANDANGO_JAYME.x, y: FANDANGO_JAYME.y + 30, label: mapEvState('fandango').done ? 'Prosear com o Jayme' : 'Servir no fandango · falar com o Jayme', act: fandangoMenu });
     if (rodeioNight()) list.push({ id: 'rodeio', x: RODEO_SPOT.x, y: RODEO_SPOT.y + 30, label: mapEvState('rodeio').done ? 'Ver o placar do rodeio' : 'Prova de laço · falar com o Guri', act: rodeioMenu });
     return list;
   };
@@ -466,15 +459,14 @@ function eventPerson(id, x, y, layers, dx = 1) { const i = PEOPLE.findIndex(p =>
     if (!fandangoNight()) return;
     const dancers = PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed).slice(0, 8);
     dancers.forEach((i, k) => { const a = frameClock * 1.2 + k * Math.PI / 4, cx = 980 + Math.cos(a) * (150 + (k % 2) * 40), cy = 690 + Math.sin(a) * 90; layers.push({ y: cy, draw: () => personDraw(PEOPLE[i].sprite, cx, cy + Math.abs(Math.sin(frameClock * 6 + k)) * -4, true, false, Math.cos(a + Math.PI / 2) > 0 ? 1 : -1) }); });
-    const j = PEOPLE.findIndex(p => p.id === 'jayme'); layers.push({ y: FANDANGO_JAYME.y, draw: () => { personDraw(PEOPLE[j].sprite, FANDANGO_JAYME.x, FANDANGO_JAYME.y, false, false, 1); if (!mapEvState('fandango').done) drawQuestBubble(FANDANGO_JAYME.x, FANDANGO_JAYME.y - 150, canDeliver(FANDANGO_WANT) ? 'deliver' : 'waiting'); } });
+    const j = PEOPLE.findIndex(p => p.id === 'jayme'); layers.push({ y: FANDANGO_JAYME.y, draw: () => { personDraw(PEOPLE[j].sprite, FANDANGO_JAYME.x, FANDANGO_JAYME.y, false, false, 1); } });
   };
   const okt = WORLD_MAPS.oktoberfest, ospots = okt.spots, odraw = okt.draw;
-  okt.spots = function () { return [...ospots.call(this), ...(oktoNight() ? [{ id: 'okto', x: OKTO_SPOT.x, y: OKTO_SPOT.y + 30, label: mapEvState('oktoberfest').done ? 'Prosear com o Loli' : 'Servir chope com o Loli', act: oktoMenu }] : [])]; };
+  okt.spots = function () { return [...ospots.call(this), ...(oktoNight() ? [{ id: 'okto', x: OKTO_SPOT.x, y: OKTO_SPOT.y + 30, label: mapEvState('oktoberfest').done ? 'Prosear com o Loli' : 'Servir chope · falar com o Loli', act: oktoMenu }] : [])]; };
   okt.draw = function (view, seen, layers) {
     odraw.call(this, view, seen, layers); if (!oktoNight()) return;
     const i = PEOPLE.findIndex(p => p.id === 'loligebien'); if (i >= 0) layers.push({ y: OKTO_SPOT.y, draw: () => personDraw(PEOPLE[i].sprite, OKTO_SPOT.x, OKTO_SPOT.y + Math.abs(Math.sin(frameClock * 5)) * -3, false, false, -1) });
-    const crowd = PEOPLE.map((p, k) => k).filter(k => !isSpecial(k) && !PEOPLE[k].removed).slice(0, 6);
-    crowd.forEach((k, n) => { const x = 700 + n * 110, y = 610 + (n % 2) * 50; layers.push({ y, draw: () => personDraw(PEOPLE[k].sprite, x, y + Math.abs(Math.sin(frameClock * 5 + n)) * -3, false, false, n % 2 ? 1 : -1) }); });
+    drawDancers(layers, 980, 700);
   };
   const salao = WORLD_MAPS.salao, sspots = salao.spots, sdraw = salao.draw;
   salao.spots = function () { return [...sspots.call(this), ...(uvaNight() ? [{ id: 'uva', x: UVA_SPOT.x, y: UVA_SPOT.y + 30, label: mapEvState('uva').done ? 'Prosear com o Badin' : 'Concurso de vinho · falar com o Badin', act: uvaMenu }] : [])]; };

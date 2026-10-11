@@ -65,12 +65,12 @@ const WORLD_TALK = {
   ],
   dianho: [
     { player: 'Dianho! Que cara séria é essa?', reply: 'Cara de gângster de galpão, vivente. Mas fica tranquilo, hoje eu tô de folga.' },
-    { player: 'Indo pra Santa Cruz?', reply: 'Lá é minha terra. Fumo, cuca e Oktoberfest. Mas de chope eu fico longe.' },
+    { player: 'Indo pra Santa Cruz?', reply: 'Lá é minha terra. Fumo, cuca e Oktoberfest. E os guri de lá são tudo cupinxa.' },
     { player: 'Tá precisando de alguma coisa?', reply: 'Um refri gelado e respeito na vizinhança. O resto eu me viro.' },
     { player: 'Como tá a vida?', reply: 'Tranquila. Galpão varrido, cavalo escovado e ninguém me devendo.' }
   ],
   lauro: [
-    { player: 'Lauro Boleador! Treinando a mira?', reply: 'Todo dia, Sadi! Bocha é que nem pescaria: quem tem paciência leva.' },
+    { player: 'Lauro Bolador! Treinando a mira?', reply: 'Todo dia, Sadi! Bocha é que nem pescaria: quem tem paciência leva.' },
     { player: 'Bonita tua canchinha.', reply: 'Pequena, mas honesta. Aqui eu treino antes de ir arrasar na tua cancha.' },
     { player: 'E o Indavírus, como tá?', reply: 'Escrevendo o jornal dele. Diz que vai me pôr na capa como maior boleador de Indaial.' },
     { player: 'Me ensina mais uma dica de bocha?', reply: 'Olha o bolim, não a bocha. A bocha vai sozinha se o olho estiver certo.' }
@@ -152,7 +152,7 @@ const WORLD_HOME_TALK = {
   ],
   dianho: [
     { player: 'Dá licença, Dianho?', reply: 'Entra, mas limpa o pé. Gângster de galpão também tem tapete.' },
-    { player: 'Só refri na geladeira?', reply: 'Só refri. Cabeça boa é a melhor arma de um gângster.' },
+    { player: 'Só refri na geladeira?', reply: 'Só refri. Revoada dos cupinxa sem estoque de refri é crime, rapaz!' },
     { player: 'Bonito o quadro na parede.', reply: 'Foi presente dos guris de Santa Cruz. Respeito se ganha, não se compra.' }
   ],
   lauro: [
@@ -180,4 +180,32 @@ const WORLD_HOME_TALK = {
     { player: 'Escrevendo um verso novo?', reply: '“O galpão guarda a memória, o fogo guarda o calor; quem chega de mão estendida leva da casa o melhor.”' },
     { player: 'Quanto livro!', reply: 'Cada livro é uma tropeada. A gente sai de um jeito e volta de outro.' }
   ]
+};
+
+// Personagens menores (sem casa): fregueses e torcedores que andam pelas ruas.
+const MINOR_TALK = {
+  all: [
+    { player: 'Buenas!', reply: 'Buenas, bodegueiro! Dia bonito pra uma prosa, hein?' },
+    { player: 'Tudo certo por aí?', reply: 'Tudo nos conformes. Só falta passar na tua bodega pra um xis caprichado.' },
+    { player: 'Indo pra onde?', reply: 'Vou ali no Armazém buscar uma muda de bergamota. A minha secou na geada.' },
+    { player: 'Que calorão, hein?', reply: 'Bah, nem me fala. Hoje é dia de mate gelado e sombra de umbu.' },
+    { player: 'Passa na bodega hoje?', reply: 'Passo! Me guarda um maço e uma cerveja bem gelada, que eu chego de tarde.' },
+    { player: 'Viu o Valter por aí?', reply: 'Vi sim, tava proseando na frente de casa. Esse aí conhece cada boi da Fronteira pelo nome.' },
+    { player: 'E a lavoura?', reply: 'Choveu na hora certa. Se Deus quiser, a safra vem boa e eu pago o fiado em dia.' },
+    { player: 'Bonito o dia!', reply: 'Céu de brigadeiro! Dia de laçar, de plantar e de tomar um trago no fim da tarde.' }
+  ],
+  gremio: [
+    { player: 'E o Grêmio, hein?', reply: 'Tricolor imortal, tchê! Quarta tem jogo e eu vejo na TV da tua bodega.' },
+    { player: 'Vai ver o jogo onde?', reply: 'Na bodega do Sadi, claro! Só peço uma coisa: TV no canal certo e cerveja gelada.' }
+  ],
+  inter: [
+    { player: 'E o Inter, hein?', reply: 'Colorado de coração! Domingo tem jogo e eu quero ver com um xis na mão.' },
+    { player: 'Vai ver o jogo onde?', reply: 'Na tua bodega, que lá tem TV e o Valter torce junto. Colorado é família!' }
+  ]
+};
+// De visita em outra região: a resposta para "o que tu tá fazendo pelas bandas de cá?".
+const WANDER_TALK = {
+  vila: ['Desci pra Fronteira pra ver o rio Uruguai e tomar um mate na beira do trapiche.', 'Vim conhecer de perto a bodega do Sadi, que todo mundo comenta!', 'Vim atrás de erva da Fronteira. Moída grossa, do jeito que eu gosto.', 'Vim ver as ruínas das Missões. Coisa linda, vivente, dá até arrepio.'],
+  serra: ['Subi a Serra pra provar o vinho da colônia e ver os parreirais.', 'Vim ver a Maria Fumaça passar. Apito de trem é música, tchê!', 'Vim comprar salame na colônia. O da nona do Badin não tem igual.', 'Vim pro baile do salão da comunidade. Galeto, cuca e vanerão!'],
+  sc: ['Vim pra Pomerode ver as casas de enxaimel. Parece cartão-postal, ja!', 'Subi pra Santa Catarina atrás de cuca e de chope gelado.', 'Vim ver a canchinha do Lauro. Dizem que ele não erra uma bocha!', 'Vim passear no Vale Europeu. Tudo limpinho e florido, até dá vergonha da minha horta.']
 };

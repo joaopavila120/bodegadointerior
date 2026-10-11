@@ -1,6 +1,6 @@
 // PNGs compartilhados pelo cenário, pedidos, bandeja e catálogo do celular.
 'use strict';
-const ITEM_SPRITE_KEYS = ['erva','pao_xis','burger','burger_pronto','ovo','ovo_pronto','queijo','salada','bacon','coracao','refri','cerveja','cachaca','cigarro','cigarro_py','codorna','pepino','salame','amendoim','pinhao','bergamota','cafe','bitter','torrada','xis_montado','xis_prensado','mate','wait','costela_crua','costela_assada','costela_queimada','costela','maionese','azeite','lenha'];
+const ITEM_SPRITE_KEYS = ['erva','pao_xis','burger','burger_pronto','ovo','ovo_pronto','queijo','salada','bacon','coracao','refri','cerveja','cachaca','cigarro','cigarro_py','codorna','pepino','salame','amendoim','pinhao','bergamota','cafe','bitter','torrada','xis_montado','xis_prensado','mate','wait','costela_crua','costela_assada','costela_queimada','costela','maionese','azeite','lenha','vinho'];
 const ITEM_ART = Object.fromEntries(ITEM_SPRITE_KEYS.map(key => {
   const image = new Image();
   image.src = 'assets/images/items/' + key + '.png';
@@ -38,6 +38,7 @@ function itemImageForSize(key, pixels) {
 function itemBadge(key) { return {xis_bacon:'bacon',xis_coracao:'coracao',torrada:'salame'}[key] || null; }
 
 function itemArtKey(key, item) {
+  if (key === 'queijo_colonial') return 'queijo';
   if (key?.startsWith('xis_') && !['xis_montado','xis_prensado'].includes(key)) return item && !item.ready ? 'xis_montado' : 'xis_prensado';
   if (key === 'cigarro' && G?.up.cigarro_py) return 'cigarro_py';
   if (key === 'costela_assada' && item?.burned) return 'costela_queimada';
@@ -59,7 +60,22 @@ function itemIconHTML(key, item=null) {
   return `<span class="pixel-item" aria-hidden="true"><img src="assets/images/items/${artKey}.png" alt="" draggable="false" style="filter:${itemFilter(item)}">${badge?`<img class="pixel-item-extra" src="assets/images/items/${badge}.png" alt="" draggable="false">`:''}</span>`;
 }
 
-function food(key,x,y,size=40,item=null) {
+// Bacon/coração prontos, itens queimados e estragados: o filtro é aplicado uma vez por imagem e guardado
+// (ctx.filter a cada quadro custa caro, principalmente com a chapa cheia).
+const itemTintCache = new WeakMap();
+function itemTinted(image, filter) {
+  let byFilter = itemTintCache.get(image);
+  if (!byFilter) itemTintCache.set(image, byFilter = new Map());
+  let tinted = byFilter.get(filter);
+  if (!tinted) {
+    tinted = document.createElement('canvas'); tinted.width = image.width; tinted.height = image.height;
+    const c = tinted.getContext('2d'); c.filter = filter; c.drawImage(image, 0, 0); byFilter.set(filter, tinted);
+  }
+  return tinted;
+}
+
+function food(key,x,y,size=40,item=null,inTransit=false) {
+  if(item && !inTransit && itemInTransfer(item))return;
   const transform=ctx.getTransform();
   const image = itemImageForSize(itemArtKey(key,item),size*Math.hypot(transform.a,transform.b));
   if (image) {
@@ -68,8 +84,7 @@ function food(key,x,y,size=40,item=null) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    if (filter !== 'none') ctx.filter = filter;
-    ctx.drawImage(image,Math.round(x-w/2),Math.round(y-h/2),w,h);
+    ctx.drawImage(filter !== 'none' ? itemTinted(image, filter) : image,Math.round(x-w/2),Math.round(y-h/2),w,h);
     ctx.restore();
   }
   // Selo do ingrediente que diferencia o lanche, grande e com sombra para destacar.

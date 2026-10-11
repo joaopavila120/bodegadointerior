@@ -259,11 +259,11 @@
 .rpg-speaker{display:flex;gap:14px;align-items:flex-start}.rpg-speaker .portrait{border:3px solid #f1ead2;outline:2px solid #0a0e26;border-radius:2px}.rpg-speaker>div{flex:1}.rpg-speaker p:first-child{margin-top:0}
 
 .bocce-court{position:relative}
-#bocceTalkUI{left:auto;right:16px;bottom:16px;transform:none;width:min(560px,52%)}
+#bocceTalkUI{left:auto;right:16px;bottom:16px;transform:none;width:min(420px,40%);gap:10px;padding:9px 12px 9px 9px}#bocceTalkUI .rpg-portrait .portrait{width:58px!important;height:58px!important}#bocceTalkUI .rpg-reply{font-size:14px}
 @media(max-width:750px){#bocceTalkUI{width:calc(100% - 20px);right:10px}}
 
 /* Introdução da história */
-body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .banner,body.intro-playing .toasts{visibility:hidden}
+body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .banner,body.intro-playing .toasts,body.intro-playing .float-notes,body.intro-playing .quest-tracker,body.intro-playing .action-hint{visibility:hidden}
 .intro-skip{position:absolute;top:calc(7% + 10px);right:16px;z-index:10;background:#0a0e26cc;color:#f1ead2;border:2px solid #f1ead2;border-radius:4px;padding:6px 12px;font-weight:bold;cursor:pointer}
 .intro-skip.hidden{display:none}
 #sceneTalkUI{bottom:calc(7% + 14px)}
@@ -280,14 +280,14 @@ body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .ban
 .news-meta{font-size:11px;text-align:center;letter-spacing:2px;text-transform:uppercase;margin:6px 0 10px;border-bottom:1px solid #2a262066;padding-bottom:6px}
 .news-paper h2{font:900 30px/1.1 Georgia,serif;margin:6px 0 12px;text-align:center}
 .news-body{display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:start}
-.news-photo{height:110px;background:url('../assets/images/room2.png') center/cover;filter:grayscale(1) contrast(1.15) sepia(.15);border:1px solid #2a2620}
+.news-photo{height:110px;background:url('../assets/images/room2.webp') center/cover;filter:grayscale(1) contrast(1.15) sepia(.15);border:1px solid #2a2620}
 .news-body p{margin:0;font-size:14px;line-height:1.5;text-align:justify}
 @keyframes paperIn{from{opacity:0;transform:translateY(30px) rotate(-6deg) scale(.92)}}
 @media(max-width:750px){.letter-text{font-size:19px}.news-body{grid-template-columns:1fr}.news-paper h2,.news-mast{font-size:22px}}
 
 /* Foto antiga do vô e telefone do atacado */
 .old-photo{background:#f2ead6;padding:14px 14px 10px;transform:rotate(3deg);box-shadow:0 18px 40px #000a;animation:paperIn .6s ease-out}
-.old-photo-img{width:min(300px,70vw);height:220px;background:url('../assets/images/room2.png') 35% 60%/260% auto;filter:sepia(1) contrast(1.1) brightness(.92);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;box-shadow:inset 0 0 40px #3a2a1688}
+.old-photo-img{width:min(300px,70vw);height:220px;background:url('../assets/images/room2.webp') 35% 60%/260% auto;filter:sepia(1) contrast(1.1) brightness(.92);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;box-shadow:inset 0 0 40px #3a2a1688}
 .old-photo p{margin:10px 0 0;text-align:center;color:#4a3218;font:20px 'Segoe Script','Lucida Handwriting','Brush Script MT',cursive}
 .portrait-phone{display:flex!important;align-items:center;justify-content:center;font-size:56px;background:#1b2550}
 
@@ -368,3 +368,63 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .bag-item{display:grid;justify-items:center;gap:2px;padding:8px;background:#f4ecd8;border:2px solid #a8884a;border-radius:8px;text-align:center}
 .bag-item small{font-size:12px;line-height:1.2}
 .bag-emoji{font-size:30px;line-height:48px}
+/* Minijogos da roça (ordenha, forno, tacho, carneação) */
+.farm-game{min-width:min(520px,80vw)}
+.farm-steps{display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:0 0 10px;list-style:none;counter-reset:farm}
+.farm-steps li{counter-increment:farm;padding:3px 9px;border-radius:12px;background:#e8dcc0;color:#6a5440;font-size:12px}
+.farm-steps li::before{content:counter(farm) '. '}
+.farm-steps li.now{background:#d9b25e;color:#2a1d12;font-weight:bold}
+.farm-steps li.done{background:#c8e0a8;color:#2f4a1f}
+.farm-steps li.miss{background:#f0c8b0;color:#6a2a14}
+.farm-track{position:relative;height:26px;margin:12px 0;border-radius:13px;background:#3a2a1a;border:2px solid #7a5a32;overflow:hidden}
+.farm-zone{position:absolute;top:0;bottom:0;background:#6aa84a;opacity:.85}
+.farm-marker{position:absolute;top:-2px;bottom:-2px;width:8px;margin-left:-4px;background:#ffe27a;border:2px solid #5a3a10;border-radius:4px}
+.farm-flash{min-height:1.3em;font-weight:bold;color:#7a4a1a}
+.decor-icon{width:46px;height:46px;object-fit:contain;image-rendering:pixelated}
+/* Recompensas, missões e calendário */
+.reward-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.reward-list span{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:14px;background:#fff4d0;border:1px solid #d9b25e;color:#3a2414;font-size:13px;font-weight:bold}
+.reward-list b{font-size:16px}
+.reward-card{padding:10px 12px;border:2px dashed #d9b25e;border-radius:12px;background:#fffaf0}
+.mission-card{margin:6px 0;padding:8px 10px;border-radius:10px;background:#f4ecd8;border:1px solid #c8a870;color:#2a1d12}
+.mission-card b{display:block}
+.mission-card p{margin:3px 0 0;font-size:13px}
+.mission-card.active{border-color:#7a9a4a;background:#eef4dc}
+.phone-section{margin:12px 0 4px;font-size:14px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0}
+.calendar-day{display:grid;justify-items:center;gap:2px;padding:6px 4px;border-radius:8px;background:#f4ecd8;border:1px solid #c8a870;text-align:center;font-size:12px}
+.calendar-day span{font-size:22px}
+.calendar-day em{font-style:normal;font-size:11px;line-height:1.2}
+.calendar-day.today{background:#ffe8a8;border:2px solid #d9a03e}
+@media(max-width:750px){.calendar-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* Retorno ao clicar: o botão afunda; a compra pisca verde e marca o que entrou. */
+.dialog button:active:not(:disabled),.phone button:active:not(:disabled){transform:translateY(1px) scale(.97);filter:brightness(.92)}
+.flash-ok{animation:flashOk .7s ease-out}
+@keyframes flashOk{0%{box-shadow:0 0 0 0 #8fd16a;background:#7dbb57}100%{box-shadow:0 0 0 10px #8fd16a00}}
+.supply{position:relative}.bought-tag{grid-column:1/3;font-size:12px;font-weight:bold;color:#2f6a2a;background:#e2f2d2;border:1px solid #9cc884;border-radius:4px;padding:3px 8px;animation:boughtTag .4s ease-out}
+@keyframes boughtTag{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+.mission-note{border-left-color:#d9a43a;background:#fbf0cf;color:#5a3f17}.shop-checklist{list-style:none;padding:0;margin:6px 0 0}.shop-checklist li{padding:2px 0}.shop-checklist li.ok{color:#3b7a33;text-decoration:line-through;text-decoration-color:#3b7a3388}
+
+/* Mensagens flutuantes e lembretes: no meio da tela, somem sozinhos. */
+.float-notes{position:absolute;left:50%;top:24%;transform:translateX(-50%);width:min(620px,90%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:8}
+.float-note{background:#20160dd9;border:1px solid #e0b860;color:#fff1cc;padding:7px 16px;border-radius:999px;font-size:15px;line-height:1.35;box-shadow:0 6px 18px #0007;text-align:center;animation:floatNote 4.2s ease-out forwards}
+.float-note.reminder{background:#1b2a1ee6;border-color:#9cc37a;animation-duration:7s}
+.float-note.bad{background:#3a1a12e6;border-color:#e07a5a}
+@keyframes floatNote{0%{opacity:0;transform:translateY(14px)}8%{opacity:1;transform:none}82%{opacity:1;transform:translateY(-4px)}100%{opacity:0;transform:translateY(-22px)}}
+/* Missões ativas, discretas, no canto de cima à esquerda. */
+.quest-tracker{position:absolute;left:12px;top:12px;z-index:5;width:min(290px,40%);display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.qt-line{background:#1e150da6;border-left:3px solid #e7b95e;border-radius:6px;padding:6px 10px;color:#fff1cc;opacity:.85}
+.qt-line b{display:block;font-size:13px}.qt-line span{display:block;font-size:12px;color:#ead9b2;line-height:1.3}
+.qt-line.side{border-left-color:#8fb07a;opacity:.7}.qt-line.event{border-left-color:#e07a3a;background:#2a140ab0}
+@media(max-width:750px){.quest-tracker{width:46%;top:6px;left:6px}.qt-line{padding:4px 7px}.qt-line b{font-size:11px}.qt-line span{font-size:10px}.float-note{font-size:13px}}
+.calendar-day .cal-map{display:block;font-size:11px;color:#a8431f;font-weight:bold;margin-top:3px}
+
+/* Capítulo da história: em destaque no canto e no celular. */
+.qt-line.story{border-left:4px solid #ffd34a;background:#2a1d0cd0;opacity:1}.qt-line.story b{color:#ffe08a;font-size:14px}
+.mission-card.story{border:2px solid #d9a43a;background:#fbf0cf}
+.farm-game .touch-only{display:block}@media (hover:hover) and (pointer:fine){.farm-game .touch-only{display:none!important}}
+/* Cartões de evento, placares e minijogo contra o relógio */
+.talk-card{line-height:1.5;max-width:520px}
+.score-board{width:100%;border-collapse:collapse;margin:.3em 0}.score-board td{padding:.35em .5em;border-bottom:1px solid #d8c49a}.score-board td:first-child{font-weight:bold;width:3em}.score-board td:last-child{text-align:right;font-variant-numeric:tabular-nums}.score-board tr.me{background:#fff1c2;font-weight:bold}
+.farm-timer{font-size:1.4em;font-weight:bold;text-align:center;margin:0 0 .3em;color:#7a4a1a;font-variant-numeric:tabular-nums}.farm-timer.low{color:#b8321e}

@@ -31,12 +31,13 @@ async function initializeGame() {
       ...Object.entries(ITEM_ART).map(([key,image])=>waitForImage(image,"assets/images/items/"+key+".png")),
       waitForImage(peopleArt, PEOPLE_DATA),
       waitForImage(furnitureArt, FURNITURE_DATA),
-      waitForImage(bocceArt, 'assets/images/bocha.png'),
+      waitForImage(bocceArt, 'assets/images/bocha.webp'),
+      waitForImage(penaltyBackgroundArt, PENALTY_BACKGROUND_DATA),
       waitForImage($('startLogo'), 'assets/images/logo.png'),
       ...DECOR.map(d=>waitForImage(DECOR_ART[d.id],'assets/images/decor/'+d.id+'.png')),
       waitForImage(rainWindowArt, RAIN_WINDOW_DATA),
       ...CAMPO_ART.map(([image,file])=>waitForImage(image,CAMPO_IMG+file)),
-      ...Object.entries(CHARACTER_ART).map(([name,im])=>waitForImage(im,name+'.png'))
+      ...Object.entries(CHARACTER_ART).map(([name,im])=>waitForImage(im,name+'.webp'))
     ]);
 
     await restoreDialogues();
@@ -45,8 +46,8 @@ async function initializeGame() {
     draw();
     $('continue').disabled = !readSave();
     document.querySelector('#start [data-act="new"]').disabled = false;
-    // Modos de teste só aparecem com ?testes no endereço (ex.: index.html?testes), para não confundir quem só vai jogar.
-    $('testModes').classList.toggle('hidden', !/[?&#]testes\b/.test(location.search + location.hash));
+    // Modos de teste na tela inicial: dinheiro infinito, reputação sempre cheia e pular dias (no caixa e no Esc).
+    $('testModes').classList.remove('hidden');
     document.querySelector('#start [data-act="test"]').disabled = false;
     document.querySelector('#start [data-act="test2"]').disabled = false;
     document.querySelectorAll('#start [data-act="testNew"]').forEach(b => b.disabled = false);

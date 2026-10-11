@@ -14,14 +14,15 @@ const BOCCE_LEVELS={
 };
 const BOCCE_SKILL={marcio:'pessimo',marcelo:'pessimo',peixinhonabrasa:'fraco',indavirus:'medio',lauro:'bom',manolima:'bom',badin:'bom',guri:'bom',dianho:'fraco',mitodosul:'medio',loligebien:'fraco',jayme:'bom',baitaca:'bom',gaudencio:'medio',valter:'medio'};
 function bocceSkill(person){return BOCCE_SKILL[PEOPLE[person]?.id]||'medio';}
-const bocceArt=new Image();bocceArt.src='assets/images/bocha.png';
+const bocceArt=new Image();bocceArt.src='assets/images/bocha.webp';
 const bocceCanvas=$('bocceCanvas'),bocceContext=bocceCanvas.getContext('2d');
 let bocceAccumulator=0;
 
 function bocceMenu(){
  if(!started||G.game||G.bocce||G.task){say('Termine a ação atual antes de ir à cancha.');return;}
+ if(!boccePeople().length){warnDialog('Ninguém pra jogar ainda','Bocha é com os amigos: faça amizade na bodega e puxe prosa na rua. Com amizade '+CONTACT_AT+', o especial vira contato e aceita jogar.');return;}
 
- openDialog('Bora pra cancha!',`<p>Quatro bochas por lado. Chegue mais perto do bolim para pontuar. Partida em <b>melhor de 3 rodadas</b>: vence quem ganhar 2, com lançamentos alternados.</p><div class="grid"><div class="panel"><h3>Aposta da partida</h3><label for="bocceWager">Valor por jogador</label><select id="bocceWager">${WAGER_OPTIONS.map(n=>`<option value="${n}" ${hasCash(n)?'':'disabled'}>${n?money(n):'Sem aposta · treino'}</option>`).join('')}</select><p>A entrada sai do caixa agora. Vitória devolve o dobro; derrota ou desistência perde a entrada. Empate na rodada não dá pontos.</p></div><div class="panel"><h3>Convidar um contato</h3><label>Quem joga? <select id="bocceOpponent">${boccePeople().map(i=>`<option value="${i}">${PEOPLE[i].name}</option>`).join('')}</select></label><p>${sportStanding('bocha')}</p><p>Cada adversário tem seu nível: uns erram quase tudo, outros encostam no bolim e ainda tiram sua bocha do ponto.</p></div></div><div class="callout"><b>A / D ou ← / →</b>: escolha de onde lançar.<br><b>Espaço</b>: trave a direção; aperte de novo para definir a força.<br>No celular, use os botões ao lado da cancha.</div><p>A bodega fica pausada durante a partida. Seu progresso na cancha também é salvo.</p><div class="actions"><button class="primary" data-act="startBocce">Entrar na cancha</button><button data-act="close">Voltar ao caixa</button></div>`,'bocceSetup');
+ openDialog('Bora pra cancha!',`<p>Quatro bochas por lado. Chegue mais perto do bolim para pontuar. Partida em <b>melhor de 3 rodadas</b>: vence quem ganhar 2, com lançamentos alternados.</p><div class="grid"><div class="panel"><h3>Aposta da partida</h3><label for="bocceWager">Valor por jogador</label><select id="bocceWager">${WAGER_OPTIONS.map(n=>`<option value="${n}" ${hasCash(n)?'':'disabled'}>${n?money(n):'Sem aposta · treino'}</option>`).join('')}</select><p>A entrada sai do caixa agora. Vitória devolve o dobro; derrota ou desistência perde a entrada. Empate na rodada não dá pontos.</p></div><div class="panel"><h3>Convidar um contato</h3><label>Quem joga? <select id="bocceOpponent">${boccePeople().map(i=>`<option value="${i}">${PEOPLE[i].name}</option>`).join('')}</select></label><p>${sportStanding('bocha')}</p><p>Cada adversário tem seu nível: uns erram quase tudo, outros encostam no bolim e ainda tiram sua bocha do ponto.</p></div></div><div class="callout"><b>A / D ou ← / →</b>: escolha de onde lançar.<br><b>E</b>: trave a direção; aperte de novo para definir a força. <b>Espaço</b> pula a fala do adversário.<br>No celular, use os botões ao lado da cancha.</div><p>A bodega fica pausada durante a partida. Seu progresso na cancha também é salvo.</p><div class="actions"><button class="primary" data-act="startBocce">Entrar na cancha</button><button data-act="close">Voltar ao caixa</button></div>`,'bocceSetup');
 }
 function startBocceGame(){
  if(modal!=='bocceSetup'||G.bocce||G.game||G.task)return;
@@ -166,7 +167,7 @@ function updateBocceUI(){
  const stages={jack:'O bolim está sendo lançado',direction:'1 · Escolha a direção',power:'2 · Escolha a força',ai:'O adversário prepara o lançamento',rolling:'Bocha rolando…',settling:'Medindo a aproximação…',between:'Rodada encerrada',over:b.winner===0?'Você venceu!':'Fim da partida'};
  $('bocceStage').textContent=b.paused?'Partida pausada':stages[b.phase];$('bocceResult').textContent=b.result;
  $('boccePowerPanel').classList.toggle('hidden',b.phase!=='power');$('boccePowerFill').style.width=(b.power*100)+'%';$('boccePowerValue').textContent=Math.round(b.power*100)+'%';
- const button=$('bocceConfirm');button.disabled=!b.paused&&!['direction','power','between','over'].includes(b.phase);button.textContent=b.paused?'Retomar':({direction:'Travar direção · Espaço',power:'Lançar · Espaço',between:'Próxima rodada',over:'Voltar à bodega'}[b.phase]||'Aguarde o lançamento');
+ const button=$('bocceConfirm');button.disabled=!b.paused&&!['direction','power','between','over'].includes(b.phase);button.textContent=b.paused?'Retomar':({direction:'Travar direção · E',power:'Lançar · E',between:'Próxima rodada',over:'Voltar à bodega'}[b.phase]||'Aguarde o lançamento');
  $('boccePause').textContent=b.paused?'Retomar':'Pausar';$('bocceExit').textContent=b.settled?'Voltar à bodega':'Sair da partida';
  document.querySelectorAll('[data-bocce-move]').forEach(button=>button.disabled=b.paused||b.phase!=='direction');
  $('bocceMeasurements').textContent=b.measurements&&['between','over'].includes(b.phase)?'Distância ao bolim · você: '+b.measurements[0].map(n=>Math.round(n)).join(', ')+' · '+sportName(b.opponent)+': '+b.measurements[1].map(n=>Math.round(n)).join(', '):'';
@@ -201,10 +202,12 @@ function drawBocce(){
 }
 function bocceKeyDown(event){
  const key=event.key.length===1?event.key.toLowerCase():event.key;
- if([' ','a','d','ArrowLeft','ArrowRight','Escape'].includes(key))event.preventDefault();
- if(event.repeat&&[' ','Escape'].includes(key))return;
+ if([' ','e','a','d','ArrowLeft','ArrowRight','Escape'].includes(key))event.preventDefault();
+ if(event.repeat&&[' ','e','Escape'].includes(key))return;
  if(key==='Escape'){toggleBoccePause();return;}
- if(key===' '){confirmBocce();return;}
+ // Espaço pula a fala do adversário; E trava a direção, lança e segue a partida.
+ if(key===' '){if(!$('bocceTalkUI').classList.contains('hidden'))bocceTalkClick();return;}
+ if(key==='e'){confirmBocce();return;}
  if(!G.bocce.paused&&G.bocce.phase==='direction'&&['a','d','ArrowLeft','ArrowRight'].includes(key))keys.add(key);
 }
 $('bocceConfirm').addEventListener('click',confirmBocce);

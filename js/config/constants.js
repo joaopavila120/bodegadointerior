@@ -1,9 +1,9 @@
 // Caminhos relativos ao HTML: funcionam tanto por file:// quanto por HTTP.
 'use strict';
 // Cenário único, sem decoração: as peças ficam em assets/images/decor e são compradas no celular.
-const ROOM_DATA = 'assets/images/room2.png';
-const PEOPLE_DATA = 'assets/images/people.png';
-const FURNITURE_DATA = 'assets/images/furniture.png';
+const ROOM_DATA = 'assets/images/room2.webp';
+const PEOPLE_DATA = 'assets/images/people.webp';
+const FURNITURE_DATA = 'assets/images/furniture.webp';
 const MUSIC_DATA = ['assets/audio/1.mp3', 'assets/audio/2.mp3'];
 
 // A arte, a colisão e as rotas usam o mesmo mundo lógico de 1600 x 900 (16:9, o formato da arte).
@@ -15,7 +15,7 @@ const DAY = 180, ORDER_WAIT = 110, COUNTER_WAIT = 95;
 // Saves separados: jogo normal, testes com dinheiro infinito e testes sem tutorial (escolhe eventos, dinheiro normal).
 const KEY = 'bodega-interior-v3', TEST_KEY = 'bodega-interior-tests', TEST2_KEY = 'bodega-interior-tests-eventos';
 // Versão das regras do modo dinheiro infinito (só dinheiro infinito e escolha de eventos).
-const TEST_RULES = 2;
+const TEST_RULES = 3;
 function saveKey(mode){return mode===true?TEST_KEY:mode==='eventos'?TEST2_KEY:KEY;}
 const BASE_SPEED=280;
 
@@ -35,7 +35,10 @@ const FIXED=[
  {id:'bottle:refri',x:560,y:455,w:55,h:92,label:'Refrigerante'}, {id:'tap:cerveja',x:625,y:455,w:55,h:92,label:'Cerveja'}, {id:'pour',x:560,y:610,w:90,h:87,label:'Servir uma dose',unlock:'trago'},
  {id:'parking:0',x:300,y:680,w:83,h:78,label:'Apoio · lugar 1'}, {id:'parking:1',x:392,y:680,w:83,h:78,label:'Apoio · lugar 2'}, {id:'trash',x:50,y:815,w:48,h:52,label:'Lixeira'},
  {id:'shop:cigarro',x:960,y:355,w:52,h:57,label:'Maços de cigarros'}, {id:'shop:codorna',x:1022,y:355,w:52,h:57,label:'Ovos de codorna em conserva'}, {id:'bag',x:1084,y:355,w:52,h:57,label:'Balança de erva-mate'},
- {id:'shop:pepino',x:1146,y:355,w:52,h:57,label:'Pepino em conserva',unlock:'pepino'}, {id:'shop:salame',x:1208,y:355,w:52,h:57,label:'Salame de colônia',unlock:'salame'}, {id:'shop:amendoim',x:1270,y:355,w:52,h:57,label:'Amendoim torrado',unlock:'amendoim'}, {id:'shop:pinhao',x:1332,y:355,w:52,h:57,label:'Pinhão a granel',unlock:'pinhao'}, {id:'shop:bergamota',x:1394,y:355,w:52,h:57,label:'Bergamota',unlock:'bergamota'},
+ {id:'shop:pepino',x:1146,y:355,w:52,h:57,label:'Pepino em conserva',unlock:'pepino'}, {id:'shop:salame',x:1208,y:355,w:52,h:57,label:'Salame de colônia',unlock:'salame'}, {id:'shop:amendoim',x:1270,y:355,w:52,h:57,label:'Amendoim torrado',unlock:'amendoim'}, {id:'shop:pinhao',x:1332,y:355,w:52,h:57,label:'Pinhão a granel',unlock:'pinhao'}, {id:'shop:bergamota',x:1394,y:355,w:52,h:57,label:'Bergamota',unlock:'bergamota'}, {id:'shop:vinho',x:1456,y:355,w:52,h:57,label:'Vinho de garrafão',unlock:'vinho'},
  {id:'service',x:1150,y:770,w:200,h:55,label:'Balcão de atendimento'}, {id:'mate',x:780,y:470,w:66,h:54,label:'Chimarrão · segure E'}, {id:'bitter',x:690,y:620,w:67,h:64,label:'Servir bitter',unlock:'bitter'},
- {id:'coffee',x:690,y:730,w:67,h:55,label:'Café de cambona · segure E',unlock:'coffee'}
+ {id:'coffee',x:690,y:730,w:67,h:55,label:'Café de cambona · segure E',unlock:'coffee'},
+ // Da roça para a bodega: o trigo vira pão no forno a lenha e o leite da vaca vira queijo no tacho.
+ {id:'forno',x:505,y:776,w:112,h:78,label:'Forno a lenha · pão de xis',prepOnly:true}, {id:'tacho',x:190,y:800,w:86,h:64,label:'Tacho · queijo da casa',prepOnly:true},
+ {id:'conservas',x:300,y:812,w:170,h:52,label:'Mesa de compota',prepOnly:true}
 ];

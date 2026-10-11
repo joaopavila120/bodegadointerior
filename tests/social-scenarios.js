@@ -13,12 +13,12 @@
  runScene(()=>scene.step?.overlay==='letter');check(!$('sceneLetter').classList.contains('hidden'),'ele acha a carta do vô');
  runScene(()=>scene.step?.overlay==='photo');check(!$('scenePhoto').classList.contains('hidden')&&$('scenePhoto').textContent.includes('1968'),'e uma foto do vô no armazém');
  runScene(()=>scene.step?.overlay==='news');check($('sceneNews').textContent.includes('Velho galpão vai virar bodega'),'o Jornal da Comunidade anuncia a bodega');
- runScene(()=>scene.step?.say==='fornecedor');check($('sceneTalkName').textContent.includes('Atacado'),'o atacado liga avisando da primeira entrega');
+ runScene(()=>scene.view==='bodega'&&scene.step?.say==='sadi');check(rpgBoxes.sceneTalk.text.includes('mercadoria'),'a bodega aparece montada, mas sem mercadoria');
  runScene(()=>scene.step?.say==='valter');check(scene.view==='bodega'&&scene.actors.valter,'o primeiro vizinho aparece na porta');
- runScene(()=>scene.view==='bodega'&&scene.step?.say==='sadi');check(rpgBoxes.sceneTalk.text.includes('gente conhecida'),'a bodega aparece montada e ele fala das figuras conhecidas');
+ runScene(()=>scene.step?.say==='valter'&&scene.step.text.includes('Mimosa'));check(rpgBoxes.sceneTalk.text.includes('boi'),'o Valter dá de presente um boi e a Mimosa, vaca de leite');
  runScene(()=>false);check(!scene&&!document.body.classList.contains('intro-playing'),'a introdução termina e devolve o jogo');
- check(G.avatarId==='sadi'&&G.bodegaName==='Bodega do teste'&&modal==='welcome','novo jogo começa com Sadi, aplica nome e apresenta o guia');
- check($('dialogTitle').textContent.includes('Um passo de cada vez')&&$('dialogContent').textContent.includes('um freguês por vez'),'boas-vindas apresentam tutorial sequencial');gameGuide();check(['Bocha','Truco','Contatos','Estética'].every(text=>$('dialogContent').textContent.includes(text)),'guia apresenta lazer, contatos e caminho de progressão');
+ check(G.avatarId==='sadi'&&G.bodegaName==='Bodega do teste'&&modal==='tutorial'&&prologueActive(),'novo jogo começa com Sadi, aplica nome e abre o prólogo da roça');
+ check($('dialogTitle').textContent.includes('A roça do vô')&&$('dialogContent').textContent.includes('Armazém Querência'),'boas-vindas apresentam o primeiro passo da roça');G.prologue.done=true;gameGuide();check(['Bocha','Truco','Contatos','Estética'].every(text=>$('dialogContent').textContent.includes(text)),'guia apresenta lazer, contatos e caminho de progressão');
  closeDialog(true);G.xp=99999;G.levelSeen=7;
  playAs('indavirus');check(G.avatarId==='sadi','sem amizade máxima não dá para jogar com Indavirus');
  G.friends[index('indavirus')]=100;socialCheck();const indaGifts=(G.giftQueue||[]).filter(g=>g.person===index('indavirus'));check(indaGifts.length===4&&!decorState().alho,'presentes ficam guardados para a visita depois do expediente');indaGifts.forEach(deliverGift);G.giftQueue=[];
@@ -64,7 +64,7 @@
  G=migrated;const cash=G.cash;buyUpgrade('horse');equipGear('horse');check(G.gear==='bootsBagual'&&G.cash===cash,'cavalo não pode ser comprado nem equipado');
 
  phoneTab='contacts';renderPhone();check($('phoneContent').textContent.includes('Contatos da bodega')&&document.querySelectorAll('[data-contact]').length===ALWAYS_TALK.size,'aba Contatos lista só os especiais, com retratos e afeto; preferências');
- phoneTab='upgrades';renderPhone();check(!$('phoneContent').querySelector('.contact-card')&&[...$('phoneContent').querySelectorAll('.upgrade-cats button')].map(b=>b.textContent).join()==='Botas,Mate,Cozinha,Balcão,Outros'&&$('phoneContent').querySelectorAll('.upgrade-category').length===1,'melhorias em abas: Botas, Mate, Cozinha, Balcão e Outros');
+ phoneTab='upgrades';renderPhone();check(phoneTab==='supplier'&&document.querySelector('[data-act="tab"][data-id="upgrades"]').classList.contains('hidden'),'sem aba Melhorias no celular: comprar é na Ferragem da Fronteira');
  {const lauroI=index('lauro');window.NO_SCENES=false;G.arcs={};G.arcQueue=[];G.phase='open';deliveryConversation(lauroI,{});check(scene?.id==='arcMeet'&&arcState('lauro').met,'primeiro atendimento do Lauro abre a conversa de apresentação');sceneSkip();
   G.friends[lauroI]=80;arcCheck();check(G.arcQueue.length===3&&G.arcQueue.every(q=>q.arc==='lauro'),'amizade libera os três capítulos em ordem');
   const repBefore=G.rep;G.phase='closed';let guard=0,played=0;while(G.arcQueue.length&&guard++<5){playNextArc(null);played++;arcCheck();check(!G.arcQueue.some(q=>q.arc==='lauro'&&q.i===played-1),'o capítulo em cena não volta para a fila (não repete)');let n=0;while(scene&&n++<900){if(scene.step?.say){sceneNext();sceneNext();}else sceneTick(1/20);}arcCheck();}
@@ -74,9 +74,8 @@
   const mm=index('marcio');deliveryConversation(mm,{});check(scene?.id==='arcMeet'&&arcState('marciomarcelo').met,'Márcio e Marcelo dividem o mesmo arco');sceneSkip();window.NO_SCENES=true;}
  {const d=index('dianho'),m=index('mitodosul'),l=index('loligebien');let ok=true,beer=0;for(let n=0;n<200;n++){for(const k of ['cerveja','cachaca','bitter'])if(ALCOHOL.includes(fitOrder(d,k)))ok=false;for(const k of ['refri','cerveja','cafe','cigarro'])if(DRINKS.includes(fitOrder(m,k))||fitOrder(m,k)==='cigarro')ok=false;if(fitOrder(l,'refri')==='cerveja')beer++;}
   check(ok&&beer>120,'Dianho não bebe álcool, o Mito do Sul não pede bebida nem cigarro e o Loli pede chopp');
-  check(['dianho','mitodosul','loligebien','jayme','baitaca','gaudencio'].every(id=>isSpecial(index(id))&&ARCS[id]&&GIFTS[id]&&portraitHTML(index(id)).includes('portraits/256/')),'novos especiais têm retrato, presente e arco');
-  {const saved=G.metSpecial;G.metSpecial={};check(!specialReady(index('gaudencio'))&&specialReady(index('badin'))&&specialReady(index('dianho')),'personagens com corpo provisório esperam os de pixel art própria (os cinco novos já têm a sua)');
-   G.metSpecial=Object.fromEntries(specialPeople().filter(i=>!PEOPLE[i].placeholder).map(i=>[PEOPLE[i].id,1]));check(specialReady(index('gaudencio')),'depois que todos os de pixel art vieram, os provisórios aparecem');G.metSpecial=saved;}
+  check(['dianho','mitodosul','loligebien','jayme','baitaca'].every(id=>isSpecial(index(id))&&ARCS[id]&&GIFTS[id]&&portraitHTML(index(id)).includes('portraits/256/')),'novos especiais têm retrato, presente e arco');
+  check(!isSpecial(index('gaudencio'))&&PEOPLE[index('gaudencio')].removed&&!visitorPool().includes(index('gaudencio'))&&!specialPeople().includes(index('gaudencio')),'o Gaudêncio saiu do jogo: nem especial, nem freguês');
   check(isSpecial(index('valter'))&&ARCS.valter&&GIFTS.valter&&PEOPLE[index('valter')].name==='Valter'&&ARCS.valter.chapters[2].reward.herd===1,'Valter virou especial: amigo de lida do pai do Sadi, com arco que dá um boi');}
  {window.NO_SCENES=false;G.levelStory=1;G.xp=LEVELS[2].xp;G.phase='closed';check(nextLevelStory()===2,'subir de nível libera o capítulo da história');
   const seen=[];for(let k=0;k<3&&nextLevelStory();k++){playLevelStory(null);let n=0;while(scene&&n++<900){if(scene.step?.say){seen.push(scene.step.say);sceneNext();sceneNext();}else if(scene.step?.overlay){sceneNext();}else sceneTick(1/20);}}

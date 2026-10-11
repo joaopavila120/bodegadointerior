@@ -7,6 +7,108 @@ let fx = [], fxDust = 0, fxEmber = 0;
 const fxSeen = new Set();
 const fxRand = (a, b) => a + Math.random() * (b - a);
 
+// Estado visual transitório: nunca entra no save nem atrasa uma ação de gameplay.
+let playerAnimation = null;
+function playerAnimationState() {
+  const actor = worldOut || G.player, place = worldOut ? worldOut.map : G.room;
+  if (!playerAnimation || playerAnimation.game !== G || playerAnimation.actor !== actor || playerAnimation.place !== place || playerAnimation.day !== G.day || frameClock < playerAnimation.clock) {
+    playerAnimation = { game: G, actor, place, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, stride: 0, transfers: [] };
+  }
+  const a = playerAnimation;
+  // Entrar em outra sala/teletransportar não produz um passo enorme ou itens voadores.
+  if (Math.hypot(actor.x - a.x, actor.y - a.y) > 100) {
+    a.x = actor.x; a.y = actor.y; a.stride = 0; a.transfers.length = 0;
+  }
+  for (let i = a.transfers.length - 1; i >= 0; i--) if (frameClock - a.transfers[i].start >= a.transfers[i].duration) a.transfers.splice(i, 1);
+  return a;
+}
+
+function playerWalkPose(x, y) {
+  const a = playerAnimationState(), dt = Math.min(.1, Math.max(0, frameClock - a.clock));
+  if (dt > 0) {
+    const distance = Math.hypot(x - a.x, y - a.y), moving = distance > .05 && distance < 100;
+    if (moving) a.phase = (a.phase + distance * Math.PI / 44) % (Math.PI * 2);
+    a.stride += ((moving ? 1 : 0) - a.stride) * (1 - Math.exp(-dt * 20));
+    a.x = x; a.y = y; a.clock = frameClock;
+  }
+  return { phase: a.phase, stride: a.stride, bob: (1 - Math.cos(a.phase * 2)) * .85 * a.stride };
+}
+
+function playerItemAnchor(slot = G.slot) {
+  const p = worldOut || G.player;
+  const carry = playerCarryPose(p.x, p.y), offset = G.up.tray ? (slot ? 13 : -13) : 0;
+  return { x: carry.x + offset * Math.cos(carry.roll) + 9 * Math.sin(carry.roll),
+    y: carry.y + offset * Math.sin(carry.roll) - 9 * Math.cos(carry.roll) };
+}
+
+function playerCarrying() {
+  return G.hands.some(Boolean) || playerAnimationState().transfers.length > 0;
+}
+function playerCarryPose(x, y) {
+  const pose = playerWalkPose(x, y), reach = playerReachPose(), p = worldOut || G.player;
+  const back = playerFacingSprite(avatarSprite(), p.dy) === SADI_BACK;
+  return { x: x + Math.sin(pose.phase) * pose.stride * .8 + (back ? 8 : 0),
+    y: y - (back ? 71 : 65) - pose.bob * .65 + reach.dip * .5,
+    roll: Math.sin(pose.phase) * pose.stride * .022 + reach.lean * .18, back };
+}
+function itemStationAnchor() {
+  if (worldOut) return null;
+  const n = nearest(); if (!n) return null;
+  const f = n.obj;
+  return n.kind === 'floor' ? { x: f.x, y: f.y - 11 } : { x: f.x + f.w / 2, y: f.y + Math.min(27, f.h / 2) };
+}
+function animateItemTransfer(item, incoming, target = null) {
+  if (!item || !started) return;
+  const a = playerAnimationState(), hand = playerItemAnchor(), point = target || itemStationAnchor();
+  if (!point || !Number.isFinite(point.x + point.y) || Math.hypot(point.x - hand.x, point.y - hand.y) > 300) return;
+  // Uma ação rápida substitui o percurso anterior do mesmo item; estoque já foi alterado.
+  a.transfers = a.transfers.filter(t => t.item !== item);
+  if (a.transfers.length >= 6) a.transfers.shift();
+  a.transfers.push({ item, incoming, point, hand, slot: G.slot, start: frameClock, duration: incoming ? .26 : .30 });
+}
+function itemInTransfer(item) {
+  return !!item && playerAnimationState().transfers.some(t => t.item === item);
+}
+function playerReachPose() {
+  const a = playerAnimationState(), t = a.transfers.at(-1);
+  if (!worldOut && G.task) {
+    const time = G.task.time || 0;
+    if (['clean', 'mop'].includes(G.task.type)) return { lean: Math.sin(time * 26) * .018, dip: 3 + Math.sin(time * 26) * 1.2 };
+    if (G.task.type === 'mate') return { lean: -(G.player.dx < 0 ? -1 : 1) * .018 * Math.sin(clamp(time / 1.1, 0, 1) * Math.PI), dip: 0 };
+  }
+  if (!t) return { lean: 0, dip: 0 };
+  const wave = Math.sin(clamp((frameClock - t.start) / t.duration, 0, 1) * Math.PI);
+  return { lean: clamp((t.point.x - t.hand.x) / 120, -1, 1) * .065 * wave, dip: wave * (t.point.y > t.hand.y + 30 ? 6 : 2) };
+}
+function drawPlayerTransfers() {
+  const a = playerAnimationState();
+  for (const t of a.transfers) {
+    const p = clamp((frameClock - t.start) / t.duration, 0, 1), eased = p * p * (3 - 2 * p);
+    const from = t.incoming ? t.point : t.hand, to = t.incoming ? playerItemAnchor(t.slot) : t.point;
+    const x = from.x + (to.x - from.x) * eased, y = from.y + (to.y - from.y) * eased - Math.sin(p * Math.PI) * 15;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(p * Math.PI) * (to.x >= from.x ? .10 : -.10));
+    food(t.item.pid || t.item.key, 0, 0, 38, t.item, true); ctx.restore();
+  }
+}
+
+function drawPlayerTask(x, y) {
+  if (worldOut) return;
+  const task = G.task; if (!task) return;
+  const t = task.time || 0, side = G.player.dx < 0 ? -1 : 1;
+  if (task.type === 'mate') {
+    const lift = Math.sin(clamp(t / 1.1, 0, 1) * Math.PI), cx = x + side * (19 - lift * 9), cy = y - 71 - lift * 30;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-side * lift * .12); food('mate', 0, 0, 32); ctx.restore();
+  } else if (task.type === 'clean' || task.type === 'mop') {
+    const f = furniture().find(f => f.id === task.target), floor = task.type === 'mop';
+    const cx = floor ? x + side * 23 : f ? clamp(x, f.x + 14, f.x + f.w - 14) : x + side * 25;
+    const cy = floor ? y + 8 : f ? f.y + f.h / 2 : y - 60, scrub = Math.sin(t * 26) * 9;
+    ctx.save(); ctx.translate(cx + scrub, cy); ctx.rotate(Math.sin(t * 26) * .08);
+    if (floor) { rect(-2, -65, 4, 66, '#ac7d45', 1, '#533a24'); rect(-16, -2, 32, 8, '#bfc5aa', 3, '#747964'); }
+    else { rect(-12, -5, 24, 10, '#e7d6ab', 3, '#ad9974'); rect(-8, -2, 16, 2, '#fff0cb', 1); }
+    ctx.restore();
+  }
+}
+
 function fxAdd(type, x, y, o = {}) {
   if (fx.length >= FX_MAX) fx.shift();
   const life = o.life ?? 1;

@@ -1209,9 +1209,9 @@ Tu ganhou… | Ganhei! Fonte confiável: eu mesmo.
 
 [lauro.bocha.inicio]
 # Escreva as falas abaixo, uma por linha.
-Bora pra cancha? | Bora! Aqui quem chega é o Lauro Boleador, rapaz.
-Vamos jogar uma bocha? | Vamos! Não é à toa que me chamam de Lauro Boleador.
-Topa uma partida? | Contra o Lauro Boleador? Coragem tua, hein!
+Bora pra cancha? | Bora! Aqui quem chega é o Lauro Bolador, rapaz.
+Vamos jogar uma bocha? | Vamos! Não é à toa que me chamam de Lauro Bolador.
+Topa uma partida? | Contra o Lauro Bolador? Coragem tua, hein!
 Bora pra cancha? | Vamos! Só não me deixa segurar a bocha muito tempo, que eu derrubo.
 Vamos jogar uma bocha? | Bora! Na roça eu jogava bocha com os vizinhos todo domingo.
 Topa uma partida? | Vamos, rapaz! O Gustavo filma e eu jogo.
@@ -1225,9 +1225,9 @@ Bora ver quem é bom de bocha? | Bora, que a cancha tá bonita.
 
 [lauro.bocha.direcao]
 # Escreva as falas abaixo, uma por linha.
-Mira onde, Lauro? | O Boleador mira com o coração, rapaz.
-Escolheu o lado? | Lauro Boleador não escolhe lado, escolhe o bolim.
-Vai pela esquerda? | Esquerda, direita… o Boleador acerta de qualquer jeito.
+Mira onde, Lauro? | O Bolador mira com o coração, rapaz.
+Escolheu o lado? | Lauro Bolador não escolhe lado, escolhe o bolim.
+Vai pela esquerda? | Esquerda, direita… o Bolador acerta de qualquer jeito.
 Pra onde eu miro? | Mira com calma, rapaz. Pressa estraga tudo.
 Tá boa essa mira? | Um tiquinho pra direita… isso.
 Mirando no bolim… | Assim tá bom, ja. Confia.
@@ -1241,9 +1241,9 @@ Tá boa essa mira? | Mira bem, que eu não vou facilitar.
 
 [lauro.bocha.forca]
 # Escreva as falas abaixo, uma por linha.
-Quanta força? | Força de Boleador: nem muito, nem pouco.
-Vai forte? | Devagarinho, que bocha de Boleador chega mansinha.
-Tá calculando? | Boleador não calcula, rapaz. Sente.
+Quanta força? | Força de Bolador: nem muito, nem pouco.
+Vai forte? | Devagarinho, que bocha de Bolador chega mansinha.
+Tá calculando? | Bolador não calcula, rapaz. Sente.
 Quanta força? | Devagar, rapaz. Bocha é jeitinho.
 Vou com tudo? | Força de quem sabe, com calma.
 Devagar ou forte? | Um pouco mais, que essa não chega.
@@ -1257,9 +1257,9 @@ Vou com tudo? | Assim! Bem dosado.
 
 [lauro.bocha.lancamento]
 # Escreva as falas abaixo, uma por linha.
-Lá vai! | Essa é do Lauro Boleador, pode marcar!
-Soltou! | Olha a curva do Boleador!
-Boa jogada? | Jogada de Boleador. Gustavo, filma isso!
+Lá vai! | Essa é do Lauro Bolador, pode marcar!
+Soltou! | Olha a curva do Bolador!
+Boa jogada? | Jogada de Bolador. Gustavo, filma isso!
 Que tal essa? | Foi bem! Melhor que eu, que quase acertei o Gustavo.
 Foi bem? | Rolou bonito, rapaz.
 Viu o lançamento? | Essa vai chegar, ja.
@@ -1273,9 +1273,9 @@ Foi bem? | Lançou bem, rapaz. Respeito.
 
 [lauro.bocha.aproximacao]
 # Escreva as falas abaixo, uma por linha.
-Encostou? | Encostadinha! Por isso que é Lauro Boleador.
-Chegou perto? | Coladinha no bolim. Coisa de Boleador.
-Ficou boa? | Boleador que é Boleador deixa assim, ó.
+Encostou? | Encostadinha! Por isso que é Lauro Bolador.
+Chegou perto? | Coladinha no bolim. Coisa de Bolador.
+Ficou boa? | Bolador que é Bolador deixa assim, ó.
 Encostou? | Encostou! Bonito de ver.
 Ficou perto? | Ficou coladinha, ja.
 Tá colada no bolim? | Isso que é bocha!
@@ -1289,9 +1289,9 @@ Ficou perto? | Bem pertinho, ja.
 
 [lauro.bocha.rodada]
 # Escreva as falas abaixo, uma por linha.
-Fechou a rodada! | O Boleador tá só esquentando.
-Rodada nossa? | Rodada do Lauro Boleador, rapaz!
-E agora? | Agora o Boleador acorda de verdade.
+Fechou a rodada! | O Bolador tá só esquentando.
+Rodada nossa? | Rodada do Lauro Bolador, rapaz!
+E agora? | Agora o Bolador acorda de verdade.
 Fechou a rodada! | Fechou a rodada! Vamos contar com calma.
 E a rodada? | Essa foi apertada, rapaz.
 Quem levou essa? | Próxima! A cancha tá boa.
@@ -1305,9 +1305,9 @@ E a rodada? | Vamos pra próxima, que tá bom.
 
 [lauro.bocha.vitoria]
 # Escreva as falas abaixo, uma por linha.
-Ganhei! | Ganhou do Lauro Boleador? Vou ter que trocar de apelido.
-Venci! | Bateu o Boleador! Gustavo, apaga esse vídeo.
-Ganhei do Lauro! | Do Lauro Boleador, ainda por cima. Respeito!
+Ganhei! | Ganhou do Lauro Bolador? Vou ter que trocar de apelido.
+Venci! | Bateu o Bolador! Gustavo, apaga esse vídeo.
+Ganhei do Lauro! | Do Lauro Bolador, ainda por cima. Respeito!
 Ganhei! | Ganhou honesto! Vou contar pros porquinhos.
 Venci! | Bah, tu joga bem, rapaz.
 Foi minha! | Perdi pra quem sabe. Tudo bem.
@@ -1321,9 +1321,9 @@ Venci! | Perdi, mas não quebrei nada. Já é vitória.
 
 [lauro.bocha.derrota]
 # Escreva as falas abaixo, uma por linha.
-Perdi… | Não dá pra ganhar do Lauro Boleador, rapaz!
-Tu ganhou! | É por isso que me chamam de Boleador.
-Que jogada! | O Lauro Boleador não perdoa nem amigo.
+Perdi… | Não dá pra ganhar do Lauro Bolador, rapaz!
+Tu ganhou! | É por isso que me chamam de Bolador.
+Que jogada! | O Lauro Bolador não perdoa nem amigo.
 Perdi… | Perdeu pro Lauro Antigo! Isso nem o Gustavo vai acreditar, ja.
 Tu ganhou… | Ganhei, rapaz! Calma que da próxima tu ganha.
 Perdi a partida… | Bocha é paciência, rapaz.
@@ -1859,7 +1859,7 @@ Tu ganhou… | Não fica triste, até no M'Bororé eu ganho.
 E aí, quem é tu? | É os guri! Dianho, gângster de galpão, direto de Santa Cruz do Sul. Tá todo Nicolas Cagezinho esse lugar!
 Que história é essa de Nicolas Cagezinho? | Era verão, eu tava bronzeado, de chapéu, cabelo penteado… me achei bonitão. Pronto: todo Nicolas Cagezinho!
 Por que Dianho? | No serviço da estrada eu não lembrava o nome de ninguém, chamava todo mundo de dianho. Aí o apelido voltou pra mim, hehehe.
-Vai uma cerveja? | Não, não! Álcool eu não tomo. Me dá um refri bem gelado que o gângster de galpão tá na dieta da cabeça boa.
+Me conta um causo da estrada. | Uma vez chamei o chefe de dianho na frente da firma inteira. Desde então o dianho sou eu, hehehe.
 O que tu faz da vida? | Reformo galpão, cuido da roça, viajo e filmo tudo. O povo gosta de ver o Dianho martelando torto, hehehe.
 E essa revoada? | Revoada dos cupinxa, rapaz! Quando junta os guri tudo, é revoada. Ninguém segura.
 Tu é famoso mesmo? | Sou ídolo na Irlanda do Norte! Lá eles não sabem quem eu sou, mas eu sei que sou ídolo, hehehe.
@@ -1872,7 +1872,7 @@ Vai um xis? | Vai! Capricha que o gângster de galpão tá com fome de reforma. 
 Bora pra cancha? | É os guri! Bora pra cancha que o gângster de galpão chegou.
 Vamos jogar uma bocha? | Bocha? Tô todo Nicolas Cagezinho pra isso, hehehe.
 Topa uma partida? | Revoada dos cupinxa na cancha! Bora!
-Vamos de bocha? | Bora, mas sem cerveja que eu tô no refri.
+Vamos de bocha? | Bora! Se eu ganhar, é revoada dos cupinxa na cancha, hehehe.
 Bora ver quem é bom de bocha? | Já vou avisando: na Irlanda do Norte eu sou campeão de bocha.
 Bora pra cancha? | Bora! Joguei bocha no galpão lá de casa, com tábua de reforma.
 Vamos jogar uma bocha? | Gângster de galpão não recusa desafio, rapaz.
@@ -1967,14 +1967,14 @@ Perdi a partida… | Vitória! Vai pro vídeo e pra Irlanda do Norte.
 Perdi… | Revoada dos cupinxa comemorando!
 Tu ganhou… | Ganhei, rapaz! Mas jogou bonito.
 Foi tua… | O galpão é meu hoje, hehehe.
-Perdi a partida… | Vitória com refri na mão. Sem álcool e com estilo.
+Perdi a partida… | Vitória de gângster de galpão: com estilo e todo Nicolas Cagezinho.
 Perdi… | Ganhei! Ajeita o chapéu que o campeão passou.
 Tu ganhou… | É os guri! Bocha é comigo.
 
 [dianho.truco.inicio]
 # Escreva as falas abaixo, uma por linha.
 Bora um truco? | Truco? É os guri! Embaralha aí.
-Vamos de truco? | Bora, mas o meu é refri, hein.
+Vamos de truco? | Bora! Truco de galpão é coisa séria, rapaz.
 Topa uma mão? | Gângster de galpão também joga carta, rapaz.
 Embaralha aí? | Vamos! Tô todo Nicolas Cagezinho pra blefar.
 Bora um truco? | Truco com os cupinxa é revoada certa.

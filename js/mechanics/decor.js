@@ -1,4 +1,5 @@
-// Decoração comprável (aba Estética do celular), janela de chuva e luzes do cenário.
+// Decoração: comprada na Casa do Campeiro (com o ícone de cada peça) e exposta ou guardada pela aba Estética do
+// celular. Também a janela de chuva e as luzes do cenário.
 'use strict';
 
 // Cada peça é um PNG recortado do room2.png original. `at` é o canto superior
@@ -25,7 +26,7 @@ const DECOR=[
  {id:'lampiao_centro',cat:'Luz e plantas',name:'Lampião do meio',cost:35,rep:0,at:[575,44],light:[595,124,90],desc:'Lampião de parede: à noite clareia o meio do salão.'},
  {id:'lampiao_dir',cat:'Luz e plantas',name:'Lampião do salão',cost:35,rep:0,at:[1589,0],light:[1613,121,100],desc:'Lampião que, à noite, ilumina o canto do salão.'},
  {id:'planta_esq',cat:'Luz e plantas',name:'Samambaia pendurada',cost:25,rep:0,at:[49,36],desc:'Samambaia caindo do vaso no canto da cozinha.'},
- {id:'lampada',cat:'Luz e plantas',name:'Lâmpada pendente',cost:0,rep:0,gift:'Lauro Boleador',at:[1091,0],light:[1114,80,90],desc:'Presente do Lauro Boleador depois da primeira bocha. À noite clareia o salão.'},
+ {id:'lampada',cat:'Luz e plantas',name:'Lâmpada pendente',cost:0,rep:0,gift:'Lauro Bolador',at:[1091,0],light:[1114,80,90],desc:'Presente do Lauro Bolador depois da primeira bocha. À noite clareia o salão.'},
  {id:'planta_dir',cat:'Luz e plantas',name:'Folhagem no vaso de barro',cost:30,rep:0,at:[1467,0],desc:'Vaso pendurado ao lado da janela, com folhas até o chão.'}
 ];
 const DECOR_ART=Object.fromEntries(DECOR.map(d=>{const image=new Image();image.src='assets/images/decor/'+d.id+'.png';return[d.id,image];}));
@@ -56,7 +57,7 @@ function buyDecor(id){
  const missing=decorMissing(d);if(missing.length){say('Falta: '+missing.join(' + ')+'.');AudioEngine.bad();return;}
  spendCash(d.cost);G.stats.investments+=d.cost;decorState()[id]=true;
  if(d.requires)decorState()[d.requires]=true;
- say(d.name+' já enfeita a bodega!');AudioEngine.heart();save();renderPhone();
+ say(d.name+' já enfeita a bodega!');AudioEngine.heart();save();if(modal==='worldStore')refreshStore();else renderPhone();
 }
 function toggleDecor(id){
  const d=DECOR.find(d=>d.id===id);if(!d||!decorOwned(id))return;
@@ -69,16 +70,36 @@ function toggleDecor(id){
 function sanitizeDecor(state){const decor=decorState(state);for(const id of Object.keys(decor))if(!DECOR.some(d=>d.id===id))delete decor[id];else decor[id]=decor[id]===true;}
 
 function decorPanel(){
- return `<div class="phone-intro"><h3>Deixe a bodega com a sua cara</h3><p>${decorCount()} de ${DECOR.length} peças compradas. Itens de estética não mudam o atendimento: compre, exponha ou guarde quando quiser.</p></div>`+DECOR_CATS.map(cat=>`<details class="upgrade-category" open><summary>${cat}</summary>${DECOR.filter(d=>d.cat===cat).map(d=>{
+ return `<div class="phone-intro"><h3>Deixe a bodega com a sua cara</h3><p>${decorCount()} de ${DECOR.length} peças compradas. Itens de estética não mudam o atendimento: ${physicalShopping()?'compre na Casa do Campeiro e exponha ou guarde por aqui':'compre, exponha ou guarde quando quiser'}.</p></div>`+DECOR_CATS.map(cat=>`<details class="upgrade-category" open><summary>${cat}</summary>${DECOR.filter(d=>d.cat===cat).map(d=>{
   const owned=decorOwned(d.id),shown=decorState()[d.id]===true,missing=owned?[]:decorMissing(d),base=d.requires&&DECOR.find(x=>x.id===d.requires);
-  return `<div class="decor-card${shown?' shown':''}"><span class="decor-thumb"><img src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><h3>${d.name}</h3><p>${d.desc}</p><small>${d.gift?'Presente · não se compra':money(d.cost)}${d.rep?' · reputação '+d.rep:''}${base?' · vai junto com '+base.name:''}</small>${!owned&&d.gift?`<button disabled>Presente de ${d.gift}</button>`:owned?`<button data-act="decorToggle" data-id="${d.id}" aria-pressed="${shown}">${shown?'Exposto ✓ · guardar':'Guardado · expor'}</button>`:`<button class="primary" data-act="decorBuy" data-id="${d.id}" ${missing.length?'disabled':''}>${missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button>`}</div></div>`;
- }).join('')}</details>`).join('');
+  const store=physicalShopping()&&!owned&&!d.gift;
+  return `<div class="decor-card${shown?' shown':''}"><span class="decor-thumb"><img src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><h3>${d.name}</h3><p>${d.desc}</p><small>${d.gift?'Presente · não se compra':money(d.cost)}${d.rep?' · reputação '+d.rep:''}${base?' · vai junto com '+base.name:''}</small>${!owned&&d.gift?`<button disabled>Presente de ${d.gift}</button>`:owned?`<button data-act="decorToggle" data-id="${d.id}" aria-pressed="${shown}">${shown?'Exposto ✓ · guardar':'Guardado · expor'}</button>`:store?`<button disabled>À venda na Casa do Campeiro</button>`:`<button class="primary" data-act="decorBuy" data-id="${d.id}" ${missing.length?'disabled':''}>${missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button>`}</div></div>`;
+ }).join('')}</details>`).join('')+quadroPanel();
+}
+
+// Na Casa do Campeiro: artigos gaúchos para o galpão, com o ícone de cada peça.
+function decorStoreSection(){
+ const list=DECOR.filter(d=>!d.gift);
+ return '<h3>Artigos gaúchos para o galpão</h3><p class="small-note">Comprou, já vai para a parede da bodega. No celular, na aba Estética, dá para guardar ou expor cada peça.</p><div class="store-list">'+list.map(d=>{const owned=decorOwned(d.id),missing=owned?[]:decorMissing(d);return `<div class="supply decor-buy"><span class="icon"><img class="decor-icon" src="assets/images/decor/${d.id}.png" alt="" draggable="false"></span><div><b>${d.name}</b><p>${d.desc}</p></div><button class="primary" data-act="decorBuy" data-id="${d.id}" ${owned||missing.length?'disabled':''}>${owned?'Já é sua':missing.length?'Falta: '+missing.join(' + '):'Comprar · '+money(d.cost)}</button></div>`;}).join('')+'</div>';
 }
 
 function drawDecor(){
  ctx.save();ctx.imageSmoothingEnabled=false;
  for(const d of DECOR)if(decorVisible(d))drawRoomArt(DECOR_ART[d.id],d.at[0],d.at[1]);
- ctx.restore();
+ ctx.restore();drawFriendPortrait();
+}
+// Quadros dos amigos: amizade 25 libera o retrato de cada especial; cabe um na parede da direita, ao lado da janela.
+const QUADRO_AT=25,QUADRO_SPOT=[1500,200,100,125],QUADRO_ART={};
+function quadroPeople(){return Object.keys(PORTRAIT_FILES).map(id=>PEOPLE.findIndex(p=>p.id===id)).filter(i=>i>=0&&!PEOPLE[i].removed);}
+function quadroUnlocked(i){return (G.friends[i]||0)>=QUADRO_AT;}
+function toggleQuadro(id){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;G.quadro=G.quadro===id?null:id;say(G.quadro?'Quadro de '+PEOPLE[i].name+' na parede!':'Quadro guardado.');AudioEngine.heart();save();renderPhone();}
+function quadroPanel(){return `<details class="upgrade-category" open><summary>Quadros dos amigos</summary><p class="small-note">Amizade ${QUADRO_AT} libera o quadro de cada especial. Só cabe um na parede.</p>`+quadroPeople().map(i=>{const id=PEOPLE[i].id,ok=quadroUnlocked(i),on=G.quadro===id;return `<div class="decor-card${on?' shown':''}"><span class="decor-thumb">${portraitHTML(i,56)}</span><div><h3>Quadro de ${PEOPLE[i].name}</h3><small>${ok?'Liberado pela amizade':'Amizade '+Math.floor(G.friends[i]||0)+'/'+QUADRO_AT}</small>${ok?`<button data-act="quadro" data-id="${id}" aria-pressed="${on}">${on?'Na parede ✓ · tirar':'Pendurar na parede'}</button>`:'<button disabled>Ainda bloqueado</button>'}</div></div>`;}).join('')+'</details>';}
+function drawFriendPortrait(){
+ const id=G.quadro;if(!id||!PORTRAIT_FILES[id])return;
+ const img=QUADRO_ART[id]??=Object.assign(new Image(),{src:'assets/images/portraits/256/'+PORTRAIT_FILES[id]+'.jpg'});
+ const[rx,ry,rw,rh]=QUADRO_SPOT,x=roomX(rx),y=roomY(ry),w=roomX(rw),h=roomY(rh);
+ rect(x-8,y-8,w+16,h+16,'#5a3a1e',3,'#2a1a0e');rect(x-3,y-3,w+6,h+6,'#c8a050',2);
+ if(img.complete&&img.naturalWidth){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/s,sh=h/s;ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,x,y,w,h);}else rect(x,y,w,h,'#3a2a1a');
 }
 function glow(x,y,radius,alpha,color){
  const g=ctx.createRadialGradient(x,y,0,x,y,radius);g.addColorStop(0,`rgba(${color},${alpha})`);g.addColorStop(1,`rgba(${color},0)`);

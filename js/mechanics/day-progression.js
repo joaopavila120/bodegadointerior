@@ -1,6 +1,9 @@
 'use strict';
 
-function difficulty(day=G.day){return {maxGroup:day<3?2:day<5?3:4,maxItems:day<3?1:day<7?2:3,fights:day>=5,label:day===1?'Tutorial':day<3?'Primeiros fregueses':day<5?'Casa conhecida':day<7?'Casa movimentada':'Bodega cheia'};}
+// A bodega cresce aos poucos: conta os dias desde o primeiro dia de portas abertas (o do tutorial). No começo vem menos
+// gente, com mais paciência e pedidos pequenos; depois, grupos maiores, mais pressa e mais pedidos em falta.
+function bodegaDays(day=G.day){return Math.max(1,day-((G.tutorial&&G.tutorial.day)||1)+1);}
+function difficulty(day=G.day){const n=bodegaDays(day),lvl=bodegaLevel();return {day:n,maxGroup:n<3?2:n<5?3:4,maxItems:n<3?1:n<7?2:3,fights:n>=5,pace:(n<=2?1.3:n<=4?1.15:n<=7?1:n<=12?.92:.85)*(1-Math.min(.12,(lvl-1)*.02)),patience:n<=2?1.25:n<=4?1.15:n<=7?1:n<=12?.95:.9,missing:n<=2?.1:n<=6?.2:.28,label:n===1?'Tutorial':n<3?'Primeiros fregueses':n<5?'Casa conhecida':n<7?'Casa movimentada':n<13?'Bodega cheia':'Bodega afamada'};}
 function restaurantGroupSize(person){
  const d=difficulty(),pair=PEOPLE[person].partner&&Math.random()<.8;
  if(d.maxGroup===2)return pair||Math.random()<.55?2:1;
@@ -20,7 +23,7 @@ function nearCanchaDoor(){return false;}
 function nearTrucoTable(){return availableTables().filter(isTableTruco).find(t=>distRect(G.player,t)<65);}
 function enterCancha(fromOutside=false){
  if(!started||G.task||G.game||G.bocce||!fromOutside&&!nearCanchaDoor()){say('Vá até a porta à direita do salão para entrar na cancha.');return;}
- if(sportState().bocceTutorialDay===G.day){say('Hoje o Lauro já guardou as bochas. A cancha abre de novo amanhã à noite.');AudioEngine.bad();return;}
+ if(sportState().bocceTutorialDay===G.day){warnDialog('Cancha fechada','Hoje o Lauro já guardou as bochas. A cancha abre de novo amanhã.');return;}
  if(phoneOpen)togglePhone(false);G.atCancha=true;G.player.walk=false;keys.clear();pointerHold=false;modal=null;paused=false;$('overlay').classList.add('hidden');showCanchaLobby();save();
 }
 // A cancha agora é um lugar para andar: entra-se nela (ou volta-se de uma partida) com a bocha no meio.
@@ -50,12 +53,15 @@ function updateContextActions(){
  $('refuseFiadoButton').classList.toggle('hidden',!fiadoFirst()||!!G.task);$('dismissButton').classList.toggle('hidden',fiadoFirst()||!!G.task||!counterCustomer()||tutorialActive());updateSlingButton();updateHortaBar();updateFarmStatus();document.body.classList.toggle('world-out',!!worldOut);$('canchaExitButton').classList.toggle('hidden',worldOut?.map!=='cancha'||!!modal);
  $('hint').classList.toggle('hidden',worldOut?false:!!(G.lasso||G.bocce||scene)||nearShopDoor()&&!G.task||!G.task&&!n&&!nearCanchaDoor()&&!nearShopDoor()&&G.day>1);
  const toast=G.toastLesson&&!G.toastLesson.done&&G.toastLesson.actor&&G.day>=G.toastLesson.day;
- $('tutorialHint').classList.toggle('hidden',!toast&&(G.day!==1||!!scene||(phoneOpen&&!tutorialStockMissing().length)||!!G.task||!!G.dialogue));if(toast)$('tutorialHint').textContent='Torrada: pegue um pão de xis e coloque na chapa junto do salame. Use o mesmo espaço, aguarde 6 s, retire e sirva com E.';
- if(G.day===1)setHTML($('tutorialHint'),tutorialHint());
+ $('tutorialHint').classList.toggle('hidden',!toast&&(!firstDay()||!!scene||(phoneOpen&&!tutorialStockMissing().length)||!!G.task||!!G.dialogue));if(toast)$('tutorialHint').textContent='Torrada: pegue um pão de xis e coloque na chapa junto do salame. Use o mesmo espaço, aguarde 6 s, retire e sirva com E.';
+ if(firstDay())setHTML($('tutorialHint'),tutorialHint());
  if((costelaoTutorialActive()||costelaoPrepFirst())&&!scene){$('tutorialHint').classList.remove('hidden');$('tutorialHint').innerHTML=costelaoTutorialHint();}
  else if(!toast&&doorReminder()){$('tutorialHint').classList.remove('hidden');setHTML($('tutorialHint'),doorReminder());}
  // Os avisos da bodega (porta, tutorial, costelão) ficam só dentro dela.
- if(worldOut&&!tutorialStockMissing().length)$('tutorialHint').classList.add('hidden');
+ if(worldOut&&!(tutorialActive()&&G.phase==='prep'))$('tutorialHint').classList.add('hidden');
+ // Prólogo da roça e desafiante esperando na cancha: o quadro vale dentro e fora da bodega.
+ const guide=!scene&&!G.lasso&&(prologueActive()?prologueHint():waitingHint());
+ if(guide){$('tutorialHint').classList.remove('hidden');setHTML($('tutorialHint'),guide);}
  $('gameSidebar').classList.toggle('lasso-mode',!!G.lasso);
  $('gameSidebar').classList.toggle('focused-task',['weigh','pour'].includes(G.task?.type)||G.fightTarget!==null);
 }
@@ -64,7 +70,7 @@ function updateContextActions(){
 
 
 function awardTelevision(){
- if(G.day!==1||G.tv)return false;G.tv=true;G.tvAwardPending=true;return true;
+ if(!firstDay()||G.tv)return false;G.tv=true;G.tvAwardPending=true;return true;
 }
 // Fim do primeiro dia: o vizinho Valter entra e dá a TV de presente (em cena; sem cenas, num quadro).
 function showTelevisionAward(){
@@ -72,9 +78,11 @@ function showTelevisionAward(){
  openDialog('Presente do vizinho: uma TV!',`<div class="rpg-speaker">${portraitHTML(PEOPLE.findIndex(p=>p.id==='valter'),88)}<div><p><b>Valter</b>: “Bodega que se preze precisa passar os Gre-Nal! Me criei junto com o teu pai, guri. Toma essa TV pra começar.”</p><p>Ela fica guardada e vai para a parede nos dias de jogo do Grêmio, do Inter e Gre-Nal.</p></div></div><div class="callout"><b>Amizade rende presente</b><br>Atendendo bem, jogando truco ou bocha com os fregueses conhecidos, a amizade cresce e eles trazem presentes no fim do dia.</div><button class="primary" data-act="tvAwardClose">Ver o resultado do primeiro dia</button>`,'tvAward');
 }
 
-// Bodega ou costelão ainda fechados (ou o dia já encerrado): um aviso no alto da tela lembra de ir até a porta.
+// Bodega ou costelão ainda fechados (ou o dia já encerrado): um aviso no alto da tela lembra de ir até o caixa.
+// O quadro fixo de "a bodega está fechada" virou lembrete flutuante (reminderTick, rural.js).
 function doorReminder(){
- if(!started||worldOut||scene||G.lasso||G.bocce||G.atCancha||G.game||G.task||G.dialogue||tutorialActive()||costelaoPrepFirst()||!['prep','closed'].includes(G.phase))return '';
- if(G.phase==='closed')return '<b>Expediente encerrado</b><p>Vá até a <b>porta</b>, embaixo, e aperte <span class="keycap">E</span> para seguir para o próximo dia.</p>';
- const campo=isCampo();return '<b>'+(campo?'O costelão está fechado':'A bodega está fechada')+'</b><p>Quando estiver pronto, vá até a <b>porta</b>, embaixo, e aperte <span class="keycap">E</span> para abrir'+(campo?' o domingo':'')+'.</p>';
+ return '';
+ if(!started||worldOut||scene||G.lasso||G.bocce||G.atCancha||G.game||G.task||G.dialogue||tutorialActive()||prologueActive()||sportState().waiting||costelaoPrepFirst()||!['prep','closed'].includes(G.phase))return '';
+ if(G.phase==='closed')return '<b>Expediente encerrado</b><p>Para passar ao próximo dia, vá ao <b>caixa</b> (balcão de atendimento) e escolha <b>Dormir</b>. A porta leva para fora.</p>';
+ const campo=isCampo();return '<b>'+(campo?'O costelão está fechado':'A bodega está fechada')+'</b><p>Quando estiver pronto, vá ao <b>caixa</b> (balcão de atendimento), aperte <span class="keycap">E</span> e escolha <b>Abrir</b>'+(campo?' o domingo':' a bodega')+'. A porta leva para fora.</p>';
 }

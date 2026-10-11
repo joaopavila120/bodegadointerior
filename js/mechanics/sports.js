@@ -27,15 +27,15 @@ function sportTalkTick(dt){
 // A caixa fica no canto de baixo do chão da cancha (a imagem é centralizada no canvas).
 function placeBocceTalk(){const c=$('bocceCanvas'),box=$('bocceTalkUI');if(!c||!box||innerWidth<=750)return;const cw=c.clientWidth,ch=c.clientHeight,k=Math.min(cw/1672,ch/941);box.style.bottom=Math.max(8,(ch-941*k)/2+14)+'px';box.style.right=Math.max(8,(cw-1672*k)/2+16)+'px';}
 addEventListener('resize',placeBocceTalk);
-function updateBocceTalk(){placeBocceTalk();const b=G.bocce,line=b&&b.talkLife>0&&b.talk?.[0];showRpgBox('bocceTalk',line&&{person:line.person,name:sportName(line.person)+(PEOPLE[line.person]?.id==='lauro'?' Boleador':''),player:line.player,reply:line.reply});}
+function updateBocceTalk(){placeBocceTalk();const b=G.bocce,line=b&&b.talkLife>0&&b.talk?.[0];showRpgBox('bocceTalk',line&&{person:line.person,name:sportName(line.person)+(PEOPLE[line.person]?.id==='lauro'?' Bolador':''),reply:line.reply});}
 function bocceTalkClick(){if(rpgAdvance('bocceTalk'))return;const b=G.bocce;if(b){b.talkLife=0;b.talk=[];}updateBocceTalk();}
 function updateBocceSocial(){
  const b=G.bocce,host=$('bocceSocial');if(!b||!host)return;
  $('bocceMatchUI').classList.toggle('guided',!!b.tutorial);
  const token=(b.talkLife>0?b.talkSequence:0)+':'+b.phase+':'+b.paused+':'+b.tutorial;
  if(host.dataset.token===token)return;host.dataset.token=token;
- const tips={jack:'1 · A bolinha pequena é o bolim. Ganha quem deixar suas bochas mais perto dele.',direction:'2 · Mova com A/D. Quando a mira apontar para o bolim, aperte Espaço para travar a direção.',power:'3 · A força está subindo. Aperte Espaço para lançar. Aproximadamente 70% alcança o fundo da cancha.',rolling:'4 · Observe onde sua bocha para. Na próxima, ajuste a direção e a força.',ai:'Agora observe o lançamento do '+sportName(b.opponent)+'. Cada lado tem quatro bochas.',between:'5 · Quem deixou a bocha mais perto do bolim vence a rodada. Aperte Próxima rodada. A partida é melhor de 3: vence quem ganhar 2 rodadas.',over:'Tutorial concluído! Você pode apostar e organizar campeonatos na cancha.'};
- host.innerHTML='<p><b>Contra '+escapeHTML(sportName(b.opponent))+(PEOPLE[b.opponent]?.id==='lauro'?' Boleador':'')+'</b></p>'+(b.tutorial?'<div class="callout">'+tips[b.phase]+'</div>':'');
+ const tips={jack:'1 · A bolinha pequena é o bolim. Ganha quem deixar suas bochas mais perto dele.',direction:'2 · Mova com A/D. Quando a mira apontar para o bolim, aperte E para travar a direção.',power:'3 · A força está subindo. Aperte E para lançar. Aproximadamente 70% alcança o fundo da cancha.',rolling:'4 · Observe onde sua bocha para. Na próxima, ajuste a direção e a força.',ai:'Agora observe o lançamento do '+sportName(b.opponent)+'. Cada lado tem quatro bochas.',between:'5 · Quem deixou a bocha mais perto do bolim vence a rodada. Aperte Próxima rodada. A partida é melhor de 3: vence quem ganhar 2 rodadas.',over:'Tutorial concluído! Você pode apostar e organizar campeonatos na cancha.'};
+ host.innerHTML='<p><b>Contra '+escapeHTML(sportName(b.opponent))+(PEOPLE[b.opponent]?.id==='lauro'?' Bolador':'')+'</b></p>'+(b.tutorial?'<div class="callout">'+tips[b.phase]+'</div>':'');
  updateBocceTalk();
 }
 function settleSport(type,match,won){
@@ -49,23 +49,25 @@ function settleSport(type,match,won){
 }
 function prepareAfterHours(){
  const s=sportState();if(s.challengeDay===G.day)return;s.challengeDay=G.day;queueAfterHoursGifts();
- if(G.day===1&&G.tutorial.complete&&!s.tutorialDone&&!s.tutorialOffered){s.tutorialOffered=true;s.challenge={person:PEOPLE.findIndex(p=>p.id==='lauro'),wager:0,tutorial:true,type:'bocha'};}
- // Na primeira segunda, o Mano Lima aparece para ensinar truco.
- else if(calendar().weekday===0&&G.day>1&&!s.trucoTutorialOffered){s.trucoTutorialOffered=true;s.challenge={person:PEOPLE.findIndex(p=>p.id==='manolima'),wager:0,tutorial:true,type:'truco'};}
+ if(firstDay()&&G.tutorial.complete&&!s.tutorialDone&&!s.tutorialOffered){s.tutorialOffered=true;s.challenge={person:PEOPLE.findIndex(p=>p.id==='lauro'),wager:0,tutorial:true,type:'bocha'};}
+ // No fim do segundo dia de bodega (o sábado), o Mano Lima aparece para ensinar truco.
+ else if(!s.trucoTutorialOffered&&G.tutorial?.complete&&bodegaDays()>=2){s.trucoTutorialOffered=true;s.challenge={person:PEOPLE.findIndex(p=>p.id==='manolima'),wager:0,tutorial:true,type:'truco'};}
  else if(G.day>1&&contactPeople().length&&Math.random()<.25)s.challenge={person:pick(contactPeople()),wager:pick([5,10,25]),tutorial:false};
 }
 function showSportChallenge(){
  const challenge=sportState().challenge;if(!challenge)return false;
  const truco=challenge.type==='truco';
- openDialog(challenge.tutorial?(truco?'Mano Lima te ensina a jogar truco':'Lauro Boleador te ensina a jogar bocha'):'Desafio depois do expediente',`<div class="rpg-speaker">${portraitHTML(challenge.person,88)}<div><p><b>${sportName(challenge.person)}</b> apareceu na bodega!</p><p>${challenge.tutorial?(truco?'“Puxa uma cadeira, vivente! Índio véio te ensina as cartas, o truco e a hora de correr.” Partida de treino, sem aposta.':'“Bora pra cancha, rapaz! O Lauro Boleador te ensina a mirar, a dosar a força e a contar os pontos.” Treino gratuito e guiado.'):'“Vamos tirar uma bocha valendo '+money(challenge.wager)+' por lado?” Vitória devolve o dobro; derrota perde a entrada. Recusar custa 3 pontos de amizade.'}</p></div></div><div class="actions"><button class="primary" data-act="sportAccept" ${hasCash(challenge.wager)?'':'disabled'}>${challenge.tutorial?(truco?'Aprender truco com o Mano':'Aprender com o Lauro'):'Aceitar · '+money(challenge.wager)}</button><button data-act="sportDecline">${challenge.tutorial?'Aprender depois':'Recusar · −3 amizade'}</button></div>`,'sportChallenge');return true;
+ openDialog(challenge.tutorial?(truco?'Mano Lima te ensina a jogar truco':'Lauro Bolador te ensina a jogar bocha'):'Desafio depois do expediente',`<div class="rpg-speaker">${portraitHTML(challenge.person,88)}<div><p><b>${sportName(challenge.person)}</b> apareceu na bodega!</p><p>${challenge.tutorial?(truco?'“Puxa uma cadeira, vivente! Índio véio te ensina as cartas, o truco e a hora de correr.” Partida de treino, sem aposta.':'“Bora pra cancha, rapaz! O Lauro Bolador te ensina a mirar, a dosar a força e a contar os pontos.” Treino gratuito e guiado.'):'“Vamos tirar uma bocha valendo '+money(challenge.wager)+' por lado?” Vitória devolve o dobro; derrota perde a entrada. Recusar custa 3 pontos de amizade.'}</p></div></div><div class="actions"><button class="primary" data-act="sportAccept" ${hasCash(challenge.wager)?'':'disabled'}>${challenge.tutorial?(truco?'Aprender truco com o Mano':worldOut?.map==='cancha'?'Aprender com o Lauro':'Ir com o Lauro até a cancha'):'Aceitar · '+money(challenge.wager)+(truco||worldOut?.map==='cancha'?'':' · na cancha')}</button><button data-act="sportDecline">${challenge.tutorial?'Aprender depois':'Recusar · −3 amizade'}</button></div>`,'sportChallenge');return true;
 }
 function answerSportChallenge(accept){
  const s=sportState(),c=s.challenge;if(!c)return;
  if(accept&&!hasCash(c.wager))return;
  s.challenge=null;
  // Recusar a lição de truco: o Mano Lima entrega a bandeira assim mesmo.
- if(!accept&&c.tutorial&&c.type==='truco'){closeDialog(true);finishTrucoTutorial();if(G.challengeVisit){G.challengeVisit.kind='gift';showGiftVisit();}save();return;}
+ if(!accept&&c.tutorial&&c.type==='truco'){closeDialog(true);finishTrucoTutorial();if(G.challengeVisit){G.challengeVisit.kind='gift';if(!showGiftVisit())challengeVisitLeave();}save();return;}
  if(!accept){if(!c.tutorial)addFriendship(c.person,-3);closeDialog(true);challengeVisitLeave();save();return;}
+ // Bocha se joga na cancha, do lado: quem convidou sai na frente e espera lá, a não ser que já estejam na cancha.
+ if(c.type!=='truco'&&worldOut?.map!=='cancha'){waitAtCancha(c);return;}
  G.challengeVisit=null;closeDialog(true);
  if(c.type==='truco'){launchSport('truco',c.person,{tutorial:true});return;}
  G.atCancha=true;launchSport('bocha',c.person,{wager:c.wager,tutorial:c.tutorial});
@@ -74,7 +76,9 @@ function answerSportChallenge(accept){
 let sportLaunch=null;
 function invitablePeople(){return [...new Set([sportLaunch,sportState().challenge?.person,...contactPeople()].filter(i=>Number.isInteger(i)&&i>=0))];}
 // O Mano Lima está sempre disponível para uma bocha.
-function boccePeople(){const mano=PEOPLE.findIndex(p=>p.id==='manolima');return [...new Set([...invitablePeople(),...(PEOPLE[mano]?.id!==G.avatarId?[mano]:[])])];}
+// Só se joga com quem tem amizade (o contato sai com amizade 15); os convites do jogo (tutorial, desafio) valem sempre.
+function sportFriend(i){return hasContact(i)||(G.friends[i]||0)>=CONTACT_AT;}
+function boccePeople(){const sys=[sportLaunch,sportState().challenge?.person].filter(i=>Number.isInteger(i)&&i>=0);return [...new Set([...sys,...sportPeople().filter(sportFriend)])];}
 
 // ---------- Desafiante entrando na bodega ----------
 // Depois do expediente, quem propõe a bocha entra pela porta e caminha até você; só então aparece o convite.
@@ -92,8 +96,10 @@ function startVisit(person,kind){
 function challengeVisitTick(dt){
  const v=G.challengeVisit;if(!v)return;
  const done=moveActor(v,dt,130);
- if(v.leaving){if(done)G.challengeVisit=null;return;}
- if(done&&!v.arrived){v.arrived=true;v.dx=G.player.x<v.x?-1:1;save();if(v.kind==='gift')showGiftVisit();else showSportChallenge();}
+ if(v.leaving){if(done){G.challengeVisit=null;continueSleep();}return;}
+ if(done&&!v.arrived){v.arrived=true;v.dx=G.player.x<v.x?-1:1;save();if(v.kind==='gift'?!showGiftVisit():!showSportChallenge())challengeVisitLeave();return;}
+ // Chegou e não tem mais nada a fazer (presente já entregue, convite resolvido): vai embora em vez de ficar parado.
+ if(v.arrived&&!modal&&(v.kind==='gift'?!G.giftQueue?.length:!sportState().challenge))challengeVisitLeave();
 }
 function challengeVisitLeave(){const v=G.challengeVisit;if(!v)return;v.leaving=true;v.dest=null;setDestination(v,EXIT);}
 function drawChallengeVisit(layers){const v=G.challengeVisit;if(v)layers.push({y:v.y,draw:()=>{if(isSpecial(v.person))specialRing(v.x,v.y);personDraw(PEOPLE[v.person].sprite,v.x,v.y,!!v.path?.length,false,v.dx);}});}
@@ -130,7 +136,7 @@ function advanceSportBracket(){
  const matches=b.rounds.at(-1);
  for(const m of matches)if(m.winner===null&&m.a!==-1&&m.b!==-1)m.winner=pick([m.a,m.b]);
  if(matches.some(m=>m.winner===null))return;
- if(matches.length===1){b.finished=true;b.champion=matches[0].winner;if(b.champion===-1&&!b.paid){b.paid=true;G.cash=round(G.cash+80);G.stats[b.type==='bocha'?'bocceReturns':'cardReturns']+=80;const s=sportState()[b.type];s.titles++;s.reputation=clamp(s.reputation+20,0,100);syncBocceReport();syncCardReport();}return;}
+ if(matches.length===1){b.finished=true;b.champion=matches[0].winner;G.sportCups??={};G.sportCups[b.type]=(G.sportCups[b.type]||0)+1;if(b.champion===-1&&!b.paid){b.paid=true;G.cash=round(G.cash+80);G.stats[b.type==='bocha'?'bocceReturns':'cardReturns']+=80;const s=sportState()[b.type];s.titles++;s.reputation=clamp(s.reputation+20,0,100);syncBocceReport();syncCardReport();}return;}
  const winners=matches.map(m=>m.winner);b.rounds.push(Array.from({length:winners.length/2},(_,i)=>({a:winners[i*2],b:winners[i*2+1],winner:null})));advanceSportBracket();
 }
 function recordSportMatch(won){
@@ -156,6 +162,6 @@ function sportsAction(act,id){
 // onde o Lauro entra para entregar a lâmpada. Campeonatos e desafios ficam para as próximas noites.
 function showBocceTutorialEnd(){
  const lauro=PEOPLE.findIndex(p=>p.id==='lauro');sportState().bocceTutorialDay=G.day;
- openDialog('A cancha é tua!',`<div class="rpg-speaker">${portraitHTML(lauro,88)}<div><p><b>Lauro Boleador</b></p><p>“Bah, tu leva jeito pra coisa! De agora em diante a cancha tá sempre aberta pra ti.”</p></div></div><div class="callout">Volte à cancha quando quiser pela <b>porta à direita do salão</b>. Lá você pode <b>organizar campeonatos de bocha</b> e <b>desafiar seus contatos</b>. Para ter com quem jogar, faça amizade com os fregueses especiais: atenda bem, converse e eles viram contatos.</div><p>Hoje o Lauro já guardou as bochas: a cancha abre de novo amanhã à noite.</p><button class="primary" data-act="bocceTutorialHome">Voltar para a bodega</button>`,'bocceTutorialEnd');
+ openDialog('A cancha é tua!',`<div class="rpg-speaker">${portraitHTML(lauro,88)}<div><p><b>Lauro Bolador</b></p><p>“Bah, tu leva jeito pra coisa! De agora em diante a cancha tá sempre aberta pra ti.”</p></div></div><div class="callout">Volte à cancha quando quiser pela <b>porta à direita do salão</b>. Lá você pode <b>organizar campeonatos de bocha</b> e <b>desafiar seus contatos</b>. Para ter com quem jogar, faça amizade com os fregueses especiais: atenda bem, converse e eles viram contatos.</div><p>Hoje o Lauro já guardou as bochas: a cancha abre de novo amanhã à noite.</p><button class="primary" data-act="bocceTutorialHome">Voltar para a bodega</button>`,'bocceTutorialEnd');
 }
 function bocceTutorialHome(){if(modal==='bocceTutorialEnd'){modal=null;$('overlay').classList.add('hidden');}G.atCancha=true;leaveCancha();}

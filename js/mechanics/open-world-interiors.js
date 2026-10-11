@@ -4,10 +4,22 @@
 'use strict';
 
 // Hoje, quem anda pela estrada e quem fica em casa (os gêmeos andam sempre juntos).
-// De dia, uns dois terços andam pela rua; de noite, a maioria está em casa.
+// De dia, metade anda pela rua e metade fica em casa; de noite, quase todos em casa.
+// Raramente alguém passa o dia em outra região (e o Sadi pergunta o que ele faz por aquelas bandas).
 function worldNight() { return G.phase === 'closed' || G.phase === 'open' && G.elapsed / DAY > .72; }
-function walkingToday(i) { const id = PEOPLE[i]?.id || '', key = id === 'marcelo' ? 'marcio' : id; let h = (G.day || 1) * 131 + 7; for (const c of key) h = (h * 31 + c.charCodeAt(0)) % 100003; return worldNight() ? h % 5 === 0 : h % 3 !== 0; }
-function atHome(id) { const i = PEOPLE.findIndex(p => p.id === id); return i >= 0 && !activeUniqueVisitors().has(i) && !walkingToday(i); }
+function dayHash(i, salt = 0) { const id = PEOPLE[i]?.id || '', key = id === 'marcelo' ? 'marcio' : id; let h = (G.day || 1) * 131 + 7 + salt * 977; for (const c of key) h = (h * 31 + c.charCodeAt(0)) % 100003; return h; }
+function homeRegion(i) { const id = PEOPLE[i]?.id; return id ? QUEST_HOMES[questKey(id)] || null : null; }
+const WANDER_CHANCE = 7;   // em cada 100 dias, quantos o especial passa em outra região
+function wanderMap(i) {
+  const home = homeRegion(i); if (!home || worldNight() || PEOPLE[i]?.removed) return null;
+  // quem tem missão para dar e mora numa região ainda fechada vem até a Fronteira procurar o Sadi
+  if (regionLocked(home)) return missionForGiver(PEOPLE[i].id) ? 'vila' : null;
+  if (dayHash(i, 3) % 100 >= WANDER_CHANCE) return null;
+  const others = ['vila', 'serra', 'sc'].filter(m => m !== home && !regionLocked(m)); if (!others.length) return null;
+  return others[dayHash(i, 5) % others.length];
+}
+function walkingToday(i) { if (wanderMap(i)) return false; const h = dayHash(i); return worldNight() ? h % 5 === 0 : h % 2 === 0; }
+function atHome(id) { const i = PEOPLE.findIndex(p => p.id === id); return i >= 0 && !PEOPLE[i].removed && !activeUniqueVisitors().has(i) && (storyNeeds(id) || !wanderMap(i) && (!walkingToday(i) || !!questMarker(id))); }
 
 // ---------- Pisos ----------
 function drawFloor(r, kind) { ctx.save(); ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip(); floorPattern(r, kind); ctx.restore(); }
@@ -83,12 +95,18 @@ const FURN = {
   altarStep(i) { rect(i.x, i.y, i.w, i.h, '#c8bfae', 0, '#8a8070'); rect(i.x, i.y + i.h - 10, i.w, 10, '#a8a090'); },
   altar(i) { rect(i.x, i.y - 30, i.w, i.h + 30, '#f4f2ee', 4, '#b8b0a0'); rect(i.x + i.w / 2 - 30, i.y - 30, 60, i.h + 30, '#c8a040'); for (const dx of [16, i.w - 22]) { rect(i.x + dx, i.y - 64, 6, 34, '#f4f0e0'); ellipse(i.x + dx + 3, i.y - 70, 4, 7, '#ffcc44'); } },
   saint(i) { rect(i.x, i.y - 20, i.w, i.h + 20, '#c8bfae', 3, '#8a8070'); rect(i.x + i.w / 2 - 12, i.y - 90, 24, 70, i.color || '#4a6a9a', 8); ellipse(i.x + i.w / 2, i.y - 100, 11, 12, '#f0d8b8'); ctx.strokeStyle = '#d8b040'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(i.x + i.w / 2, i.y - 104, 15, 15, 0, 0, Math.PI * 2); ctx.stroke(); },
-  stage(i) { rect(i.x, i.y, i.w, i.h, '#7a4a2a', 4, '#3a2414'); for (let x = i.x + 30; x < i.x + i.w; x += 30) rect(x, i.y, 2, i.h, '#5a3420'); rect(i.x, i.y + i.h - 14, i.w, 14, '#5a3420'); },
+  stage(i) { worldTexture(3,i.x,i.y,i.w,i.h,160); for (let x = i.x + 30; x < i.x + i.w; x += 30) rect(x, i.y, 2, i.h, '#5a3420'); rect(i.x, i.y + i.h - 14, i.w, 14, '#5a3420'); },
   longtable(i) { rect(i.x, i.y - 16, i.w, i.h, '#f4f0e6', 4, '#c8bfae'); for (let x = i.x + 20; x < i.x + i.w - 10; x += 56) { rect(x, i.y - 40, 26, 22, '#6a4024', 4); rect(x, i.y + i.h - 14, 26, 22, '#6a4024', 4); ellipse(x + 13, i.y - 4, 10, 6, '#e8e4dc'); } },
   bar(i) { rect(i.x, i.y - 30, i.w, i.h + 30, '#6a4024', 4, '#2a1a0e'); rect(i.x, i.y - 30, i.w, 12, '#8a5a32'); for (let k = 0; k < Math.floor(i.h / 30); k++) { rect(i.x + 10, i.y + k * 30 - 10, 10, 22, ['#3a6a3a', '#8a2a2a', '#c8a040'][k % 3], 3); } },
   // Na parede do fundo (wall: true): bandeiras, quadros, cruz, vitrais e varas de pesca.
   flag(i) {
     rect(i.x - 4, i.y - 4, 4, i.h + 30, '#5a4a3a');
+    if (i.ulster) {   // Ulster Banner: cruz vermelha, estrela de seis pontas com a mão vermelha e a coroa
+      const cx = i.x + i.w / 2, cy = i.y + i.h / 2; rect(i.x, i.y, i.w, i.h, '#f4f4f0'); rect(cx - i.w * .09, i.y, i.w * .18, i.h, '#c8202a'); rect(i.x, cy - i.h * .13, i.w, i.h * .26, '#c8202a');
+      const r = i.h * .26; poly([[cx, cy - r], [cx + r * .87, cy + r * .5], [cx - r * .87, cy + r * .5]], '#f4f4f0'); poly([[cx, cy + r], [cx + r * .87, cy - r * .5], [cx - r * .87, cy - r * .5]], '#f4f4f0');
+      rect(cx - 5, cy - 3, 10, 10, '#c8202a', 2); for (let k = 0; k < 4; k++) rect(cx - 5 + k * 2.6, cy - 9, 2, 7, '#c8202a'); rect(cx + 5, cy, 3, 5, '#c8202a');
+      rect(cx - 7, cy - r - 9, 14, 6, '#e8b020', 1); for (const dx of [-6, -1, 4]) rect(cx + dx, cy - r - 13, 3, 5, '#e8b020'); return;
+    }
     if (i.rs) { const fw = i.w, fh = i.h, d = fh * .23; poly([[i.x, i.y], [i.x + fw * (1 - d / fh), i.y], [i.x, i.y + fh - d]], '#2a8a3a'); poly([[i.x, i.y + fh - d], [i.x + fw * (1 - d / fh), i.y], [i.x + fw, i.y], [i.x + fw, i.y + d], [i.x + fw * d / fh, i.y + fh], [i.x, i.y + fh]], '#d42a2a'); poly([[i.x + fw * d / fh, i.y + fh], [i.x + fw, i.y + d], [i.x + fw, i.y + fh]], '#f0d020'); return; }
     const c = i.colors, n = c.length; for (let k = 0; k < n; k++) i.vertical ? rect(i.x + k * i.w / n, i.y, i.w / n + 1, i.h, c[k]) : rect(i.x, i.y + k * i.h / n, i.w, i.h / n + 1, c[k]);
     if (i.sun) ellipse(i.x + 14, i.y + 14, 9, 9, '#f0c020');
@@ -123,7 +141,7 @@ function interiorMap(def) {
       return null;
     },
     spots() {
-      const people = (def.residents || []).filter(atHome).map((id, k) => { const i = PEOPLE.findIndex(p => p.id === id), [x, y] = def.homeSpots[k]; return { id: 'home:' + id, x, y, label: 'Prosear com ' + PEOPLE[i].name, act: () => worldTalk({ person: i, x, y, wait: 0, dx: 1 }) }; });
+      const people = (def.residents || []).filter(atHome).map((id, k) => { const i = PEOPLE.findIndex(p => p.id === id), [x, y] = def.homeSpots[k]; return { id: 'home:' + id, x, y, label: ['deliver', 'waiting'].includes(questMarker(id)) ? 'Falar com ' + PEOPLE[i].name + ' sobre o pedido' : 'Prosear com ' + PEOPLE[i].name, act: () => houseResidentTalk(i, x, y) }; });
       const things = (def.items || []).filter(i => i.text || i.act).map(i => ({ id: 'item:' + i.kind + i.x, x: i.x + i.w / 2, y: i.spotY ?? i.y + i.h + 22, label: i.label, act: i.act || (() => i.info ? showInfo(i.label, i.text) : showItem(i.label, i.text, def.residents?.[0])) }));
       return [...people, ...things];
     },
@@ -135,14 +153,15 @@ function interiorMap(def) {
       // parede do fundo, janelas e o que está pendurado nela
       if (def.open) { rect(b.x - 20, b.y - 120, b.w + 40, 120, '#4a3a2a'); for (let x = b.x; x < b.x + b.w; x += 90) rect(x, b.y - 120, 14, 120, '#3a2a1e'); }
       else { rect(b.x - 20, b.y - 120, b.w + 40, 120, def.wallColor || '#c8a878'); rect(b.x - 20, b.y - 18, b.w + 40, 18, '#5a3a22'); rect(b.x - 20, b.y - 124, b.w + 40, 8, '#3a2414'); }
+      if (!def.open) worldWall(b.x - 20, b.y - 120, b.w + 40, 102);
       for (const x of def.windows || []) windowPane(x, b.y - 100, 70, 56);
       def.decor?.(b);
       for (const i of def.items || []) if (i.wall) FURN[i.kind](i);
       if (!def.open) { rect(b.x - 20, b.y - 124, 20, b.h + 150, '#3a2414'); rect(b.x + b.w, b.y - 124, 20, b.h + 150, '#3a2414'); }
-      for (const w of walls) layers.push({ y: w.y + w.h, draw: () => { if (w.w > w.h) { rect(w.x, w.y - 56, w.w, 56, def.wallColor || '#c8a878'); rect(w.x, w.y - 60, w.w, 6, '#3a2414'); rect(w.x, w.y, w.w, w.h, '#5a3a22'); } else rect(w.x, w.y - 60, w.w, w.h + 60, '#3a2414'); } });
+      for (const w of walls) layers.push({ y: w.y + w.h, draw: () => { if (w.w > w.h) { worldWall(w.x, w.y - 56, w.w, 56); rect(w.x, w.y - 60, w.w, 6, '#3a2414'); rect(w.x, w.y, w.w, w.h, '#5a3a22'); } else rect(w.x, w.y - 60, w.w, w.h + 60, '#3a2414'); } });
       for (const i of def.items || []) if (!i.wall) layers.push({ y: i.layerY ?? (i.flat ? i.y - 400 : i.y + i.h), draw: () => FURN[i.kind](i) });
       if (def.keeper) drawKeeper(def, layers);
-      (def.residents || []).filter(atHome).forEach((id, k) => { const i = PEOPLE.findIndex(p => p.id === id), [x, y] = def.homeSpots[k], dir = k % 2 ? -1 : 1; layers.push({ y, draw: () => { personDraw(PEOPLE[i].sprite, x, y, false, false, dir); if (def.cuia) drawCuia(x + dir * 26, y - 58); } }); });
+      (def.residents || []).filter(atHome).forEach((id, k) => { const i = PEOPLE.findIndex(p => p.id === id), [x, y] = def.homeSpots[k], dir = k % 2 ? -1 : 1; layers.push({ y, draw: () => personDraw(PEOPLE[i].sprite, x, y, false, false, dir) }); });
       if (!def.open) layers.push({ y: b.y + b.h + 60, draw: () => { rect(b.x - 20, b.y + b.h, door - half - (b.x - 20), 26, '#3a2414'); rect(door + half, b.y + b.h, b.x + b.w + 20 - door - half, 26, '#3a2414'); rect(door - half, b.y + b.h + 16, half * 2, 10, '#6a4424', 3); } });
     }
   };
@@ -161,7 +180,7 @@ function casaPadrao(o) {
       { kind: 'wardrobe', x: 470, y: 250, w: 100, h: 50 },
       { kind: 'stove', x: 640, y: 260, w: 110, h: 60 },
       { kind: 'counter', x: 770, y: 260, w: 190, h: 50, sink: true },
-      { kind: 'fridge', x: 990, y: 260, w: 80, h: 50, refri: o.refri, label: o.refri ? 'Geladeira de refri' : undefined, text: o.refri ? 'Geladeira cheia de refri: aqui ninguém toma trago.' : undefined },
+      { kind: 'fridge', x: 990, y: 260, w: 80, h: 50, refri: o.refri, label: o.refri ? 'Geladeira de refri' : undefined, text: o.refri ? 'Geladeira cheia de refri: estoque oficial da revoada dos cupinxa.' : undefined },
       { kind: 'table', x: 650, y: 360, w: 120, h: 44 },
       { kind: 'rug', x: 420, y: 540, w: 360, h: 150, solid: false, color: o.rug, flat: true },
       ...(o.items || [])
@@ -195,21 +214,19 @@ const HOUSE_INTERIORS = [
     { kind: 'flag', wall: true, x: 340, y: 128, w: 96, h: 62, colors: ['#f4f4f4', '#3a6ac8', '#f4f4f4', '#3a6ac8', '#f4f4f4'], sun: true }, { kind: 'flag', wall: true, x: 460, y: 128, w: 96, h: 62, rs: true }] }),
   // Serra
   casaPadrao({ id: 'casa:badin', name: 'Casa de pedra de Badin', residents: ['badin'], floor: 'stone', wallColor: '#a8a298', items: [
-    { kind: 'salame', x: 830, y: 540, w: 190, h: 40, label: 'Salames da colônia', text: 'Salame colonial pendurado pra curar: receita do nono, com pimenta e alho.' },
+    { kind: 'salame', x: 830, y: 540, w: 190, h: 40, label: 'Despensa da colônia · salame e muda de uva', act: () => G.badinShop ? storeShop('badin') : showItem('Salames da colônia', 'Salame colonial pendurado pra curar: receita do nono, com pimenta e alho. A nona só vende pra quem é de confiança: faça as missões do Badin.', 'badin') },
     { kind: 'barrel', x: 160, y: 560, w: 60, h: 60 }, { kind: 'barrel', x: 230, y: 560, w: 60, h: 60 }, { kind: 'table', x: 200, y: 690, w: 160, h: 50 },
     { kind: 'flag', wall: true, x: 400, y: 128, w: 96, h: 62, colors: ['#2a8a3a', '#f4f4f4', '#d42a2a'], vertical: true }] }),
-  rancho({ id: 'casa:gaudencio', name: 'Rancho de Gaudêncio', residents: ['gaudencio'], items: [
-    { kind: 'arreio', x: 860, y: 560, w: 100, h: 50, label: 'Arreios', text: 'Os arreios do Gaudêncio: couro sovado, prata gasta e cheiro de cavalo.' },
-    { kind: 'flag', wall: true, x: 540, y: 140, w: 96, h: 62, rs: true }] }),
   casaPadrao({ id: 'casa:mitodosul', name: 'Casa de Mito do Sul', residents: ['mitodosul'], rug: '#2a4a8a', items: [
     { kind: 'computer', x: 810, y: 540, w: 250, h: 50, label: 'Setup de live', text: 'O setup do Mito do Sul: dois monitores, microfone e Farming Simulator aberto.' },
     { kind: 'sofa', x: 150, y: 660, w: 220, h: 60, color: '#2a4a8a' }, { kind: 'flag', wall: true, x: 400, y: 128, w: 96, h: 62, colors: ['#2a6ac8', '#1a1a1a', '#f4f4f4', '#2a6ac8'], vertical: true }] }),
   casaPadrao({ id: 'casa:dianho', name: 'Casa de Dianho', residents: ['dianho'], refri: true, items: [
     { kind: 'sofa', x: 150, y: 660, w: 220, h: 60, color: '#2a2a2a' }, { kind: 'table', x: 840, y: 580, w: 150, h: 50 },
-    { kind: 'poster', wall: true, x: 390, y: 124, w: 130, h: 70, text2: 'GÂNGSTER DE GALPÃO', color: '#e8d8b0' }] }),
+    { kind: 'poster', wall: true, x: 268, y: 124, w: 118, h: 70, text2: 'GÂNGSTER DE GALPÃO', color: '#e8d8b0' },
+    { kind: 'flag', wall: true, x: 400, y: 122, w: 104, h: 66, ulster: true, spotY: 330, label: 'Bandeira da Irlanda do Norte', text: 'A bandeira da Irlanda do Norte: o Dianho jura que é ídolo por lá. Lá eles não sabem quem ele é, mas ele sabe que é ídolo, hehehe.' }] }),
   // Santa Catarina
   casaPadrao({ id: 'casa:lauro', name: 'Casa de Lauro', residents: ['lauro'], items: [
-    { kind: 'trophy', x: 830, y: 540, w: 220, h: 40, label: 'Troféus de bocha', text: 'Os troféus do Lauro Boleador: campeão de Indaial, vice de Pomerode e “melhor mira” da festa da igreja.' },
+    { kind: 'trophy', x: 830, y: 540, w: 220, h: 40, label: 'Troféus de bocha', text: 'Os troféus do Lauro Bolador: campeão de Indaial, vice de Pomerode e “melhor mira” da festa da igreja.' },
     { kind: 'bochas', x: 200, y: 560, w: 70, h: 30, solid: false, flat: true }, { kind: 'sofa', x: 150, y: 670, w: 220, h: 60, color: '#6a5a3a' }] }),
   casaPadrao({ id: 'casa:indavirus', name: 'Casa de Indavírus', residents: ['indavirus'], items: [
     { kind: 'desk', x: 800, y: 540, w: 220, h: 50, papers: true, label: 'Redação do Jornal Indavírus', text: 'A redação do Jornal Indavírus: pilhas de manchete, café frio e muita fofoca de Indaial.' },
@@ -240,8 +257,8 @@ const CASONA_LINES = {
 function showItem(label, text, owner) { const i = PEOPLE.findIndex(p => p.id === owner); if (i < 0) { showInfo(label, text); return; } worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: label, reply: text }); AudioEngine.tick(); }
 function twinSay(id, text) { const i = PEOPLE.findIndex(p => p.id === id); if (i < 0) return; worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: PEOPLE[i].name, reply: text }); AudioEngine.tick(); }
 function anyTwin() { return pick(['marcio', 'marcelo']); }
-WORLD_MAPS['casa:marcio'] = interiorMap({
-  id: 'casa:marcio', name: 'Casona · embaixo', W: 1400, H: 820, bounds: { x: 150, y: 270, w: 1100, h: 460 }, door: 600, doorHalf: 520, floor: 'concrete', bg: '#6f9a45', open: true,
+WORLD_MAPS.casonaTerreo = interiorMap({
+  id: 'casonaTerreo', name: 'Casona · embaixo', W: 1400, H: 820, bounds: { x: 150, y: 270, w: 1100, h: 460 }, door: 600, doorHalf: 520, floor: 'concrete', bg: '#6f9a45', open: true,
   items: [
     { kind: 'pillar', x: 170, y: 300, w: 28, h: 26 }, { kind: 'pillar', x: 660, y: 300, w: 28, h: 26 }, { kind: 'pillar', x: 170, y: 690, w: 28, h: 26 }, { kind: 'pillar', x: 660, y: 690, w: 28, h: 26 },
     { kind: 'grill', x: 240, y: 300, w: 170, h: 50, label: 'Churrasqueira', text: 'A churrasqueira da Casona: domingo é dia de assado antes do racha.' },
@@ -254,7 +271,7 @@ WORLD_MAPS['casa:marcio'] = interiorMap({
 // Em cima: três portas no corredor de cima (quarto, banheiro, quarto) e, embaixo, sala e cozinha juntas.
 // Entra-se pela porta do meio, vindo da escada lateral.
 WORLD_MAPS.casona = interiorMap({
-  id: 'casona', name: 'Casona de Márcio e Marcelo', W: 1400, H: 1000, bounds: { x: 100, y: 240, w: 1200, h: 620 }, door: 700, floor: 'wood', wallColor: '#e8d8b0', windows: [160, 760, 1170],
+  id: 'casa:marcio', name: 'Casona de Márcio e Marcelo', W: 1400, H: 1000, bounds: { x: 100, y: 240, w: 1200, h: 620 }, door: 700, floor: 'wood', wallColor: '#e8d8b0', windows: [160, 760, 1170],
   walls: [[100, 520, 160, 20], [340, 520, 320, 20], [740, 520, 320, 20], [1140, 520, 160, 20], [500, 240, 20, 280], [880, 240, 20, 280]],
   rooms: [
     { name: 'quarto1', x: 100, y: 240, w: 400, h: 280, floor: 'wood', enter: () => { if (atHome('marcio')) twinSay(anyTwin(), CASONA_LINES.cama); } },
@@ -275,11 +292,12 @@ WORLD_MAPS.casona = interiorMap({
     { kind: 'som', x: 1180, y: 770, w: 100, h: 60, label: 'Sonzão da Casona', text: 'Sonzão da Casona.' }
   ],
   residents: ['marcio', 'marcelo'], homeSpots: [[960, 680], [1060, 680]],
-  // Saindo pela porta, volta para a escada lateral.
-  exit: () => ({ map: 'casa:marcio', x: 1160, y: 640, title: '' }),
   // Na primeira vez que entra, um dos gêmeos mostra a porta.
   onEnter() { if (atHome('marcio') && !G.casonaSeen) { G.casonaSeen = true; twinSay(anyTwin(), CASONA_LINES.porta); save(); } }
 });
+
+// A Casona agora é só o andar de cima: a porta da rua entra direto na sala.
+WORLD_MAPS['casa:marcio'] = WORLD_MAPS.casona; delete WORLD_MAPS.casonaTerreo;
 
 // ---------- Igreja e salão da comunidade ----------
 // Igreja: nave comprida com o corredor ao meio, bancos dos dois lados e o altar no fundo.
@@ -340,6 +358,7 @@ function storeMap(o) {
   return interiorMap({
     id: o.id, name: o.name, W: 1400, H: 900, bounds: { x: 150, y: 250, w: 1100, h: 550 }, door: 700, floor: o.floor, wallColor: o.wallColor, windows: [200, 1130],
     decor(b) { signBoard(b.x + b.w / 2, b.y - 104, 320, o.name.toUpperCase(), 14); },
+    onEnter() { teach('loja'); },
     items: [
       { kind: 'storeShelf', x: 300, y: 270, w: 300, h: 40, goods: o.goods }, { kind: 'storeShelf', x: 800, y: 270, w: 300, h: 40, goods: o.goods },
       { kind: 'storeShelf', x: 220, y: 500, w: 240, h: 40, goods: o.goods }, { kind: 'storeShelf', x: 520, y: 500, w: 240, h: 40, goods: o.goods },
@@ -359,5 +378,7 @@ WORLD_MAPS.gado = storeMap({ id: 'gado', name: 'Casa do Campeiro', goods: 'gado'
 // Atacado da Fronteira (bebidas e balcão) e Açougue (carnes): o resto do que a bodega vende.
 WORLD_MAPS.atacado = storeMap({ id: 'atacado', name: 'Atacado da Fronteira', goods: 'atacado', floor: 'stone', wallColor: '#d8d0b8', keeper: 'lucia', shop: () => storeShop('atacado'), items: [
   { kind: 'sacks', x: 220, y: 700, w: 200, h: 60, color: '#e8d8a8', tag: 'FARINHA' }, { kind: 'hay', x: 760, y: 520, w: 110, h: 50, label: 'Engradados de cerveja', text: 'Engradados de casco retornável empilhados até o teto: sábado de bocha esvazia tudo.' }] });
+WORLD_MAPS.ferragem = storeMap({ id: 'ferragem', name: 'Ferragem da Fronteira', goods: 'gado', floor: 'wood', wallColor: '#d8c8a8', keeper: 'nair', shop: () => storeShop('ferragem'), items: [
+  { kind: 'tools', x: 860, y: 520, w: 150, h: 20, label: 'Ferramentas', text: 'Martelo, serrote, plaina e prego de todo tamanho: tudo para ajeitar a bodega.' }, { kind: 'barrel', x: 220, y: 690, w: 60, h: 60 }, { kind: 'sacks', x: 300, y: 700, w: 200, h: 60, color: '#b8a888', tag: 'CIMENTO' }] });
 WORLD_MAPS.acougue = storeMap({ id: 'acougue', name: 'Açougue da Fronteira', goods: 'acougue', floor: 'stone', wallColor: '#e8e4dc', keeper: 'rosa', shop: () => storeShop('acougue'), items: [
   { kind: 'plant', x: 1180, y: 520, w: 44, h: 40 }, { kind: 'sacks', x: 220, y: 700, w: 200, h: 60, color: '#f0ece0', tag: 'SAL GROSSO' }] });

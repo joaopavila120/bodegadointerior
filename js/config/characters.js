@@ -3,7 +3,7 @@
 // Recortes em coordenadas da arte original. Os PNGs fornecidos ficam intactos.
 const CHARACTER_ART = {};
 function characterSprite(file, crop, outline) {
-  if (!CHARACTER_ART[file]) { const image = new Image(); image.src = 'assets/images/' + file + '.png'; CHARACTER_ART[file] = image; }
+  if (!CHARACTER_ART[file]) { const image = new Image(); image.src = 'assets/images/' + file + '.webp'; CHARACTER_ART[file] = image; }
   return { file, crop, outline };
 }
 const originalIds = ['lucia','anselmo','rosa','nair','valter','arlindo'];
@@ -20,6 +20,12 @@ PEOPLE.push(...specialCharacters);
 
 // Os três arquivos de torcida possuem seis figuras cada, em duas linhas.
 const fanCrops = [[180,20,240,490],[650,20,245,490],[1110,15,280,495],[170,515,265,485],[648,514,260,486],[1120,515,245,485]];
+// A folha do Inter tem outro enquadramento e transparência própria.
+// Preservar seu contorno completo, sem aplicar as máscaras da folha do Grêmio.
+const interFanSprites = [
+ [155,29,234,499],[603,33,265,502],[1058,25,266,509],
+ [130,545,275,499],[609,535,257,509],[1085,542,230,500]
+].map(crop=>characterSprite('inter',crop,[[0,0],[crop[2],0],[crop[2],crop[3]],[0,crop[3]]]));
 const fanOutlines = [
  [[60,50],[82,17],[151,10],[179,48],[173,103],[213,136],[236,216],[225,243],[222,302],[202,329],[202,390],[184,421],[189,463],[164,482],[143,472],[139,423],[138,386],[114,366],[103,409],[73,449],[46,462],[30,444],[49,418],[70,393],[63,343],[49,304],[47,270],[33,290],[23,283],[22,260],[36,208],[36,173],[52,139],[80,116],[66,87]],
  [[60,45],[82,18],[129,17],[140,3],[168,8],[187,40],[181,117],[201,151],[208,217],[197,231],[211,272],[233,360],[243,380],[225,406],[213,433],[178,445],[175,471],[158,484],[143,475],[146,448],[124,445],[91,444],[73,465],[49,466],[48,453],[72,435],[53,425],[27,411],[10,383],[29,347],[40,317],[63,252],[50,282],[39,291],[31,280],[36,247],[44,221],[41,205],[56,151],[90,121],[66,108],[59,82]],
@@ -34,12 +40,12 @@ for (const [file,team,names] of [
  ['gremio','gremio',['Tiago','Bia','Seu Dario','Clara','Nestor','Pedro']],
  ['gremio2','gremio',['Leandro','Marta','Seu Juca','Helena','Fábio','Ana']],
  ['inter','inter',['André','Cris','Seu Osvaldo','Vera','Renato','Lucas']]
-]) for (let i=0;i<6;i++) PEOPLE.push({id:file+'_'+(i+1),name:names[i]+(team==='gremio'?' · gremista':' · colorado'),team,dialogueKey:team,retailFav:i%2?'erva':'cigarro',fav:i%2?'refri':'cerveja',sprite:characterSprite(file,fanCrops[i],file==='gremio2'&&i===0?[[55,42],[75,33],[82,7],[118,2],[159,10],[178,42],[207,65],[214,80],[200,94],[173,102],...fanOutlines[0].slice(5)]:file==='gremio2'&&i===5?[[28,40],[70,25],[86,7],[145,8],[158,31],[182,50],[177,75],[143,88],[144,115],[165,133],[190,160],[206,206],[230,246],[225,285],[201,303],[196,340],[208,370],[199,394],[176,405],[161,410],[162,451],[153,473],[131,484],[111,477],[105,456],[111,421],[110,400],[94,399],[91,437],[83,452],[61,460],[48,454],[47,441],[64,422],[73,391],[54,380],[44,356],[50,296],[27,281],[17,251],[31,202],[47,154],[78,116],[77,90],[50,78],[25,59]]:fanOutlines[i])});
+]) for (let i=0;i<6;i++) PEOPLE.push({id:file+'_'+(i+1),name:names[i]+(team==='gremio'?' · gremista':' · colorado'),team,dialogueKey:team,retailFav:i%2?'erva':'cigarro',fav:i%2?'refri':'cerveja',sprite:file==='inter'?interFanSprites[i]:characterSprite(file,fanCrops[i],file==='gremio2'&&i===0?[[55,42],[75,33],[82,7],[118,2],[159,10],[178,42],[207,65],[214,80],[200,94],[173,102],...fanOutlines[0].slice(5)]:file==='gremio2'&&i===5?[[28,40],[70,25],[86,7],[145,8],[158,31],[182,50],[177,75],[143,88],[144,115],[165,133],[190,160],[206,206],[230,246],[225,285],[201,303],[196,340],[208,370],[199,394],[176,405],[161,410],[162,451],[153,473],[131,484],[111,477],[105,456],[111,421],[110,400],[94,399],[91,437],[83,452],[61,460],[48,454],[47,441],[64,422],[73,391],[54,380],[44,356],[50,296],[27,281],[17,251],[31,202],[47,154],[78,116],[77,90],[50,78],[25,59]]:fanOutlines[i])});
 
 // Sem membro definido (saves antigos, vagas extras): usa só fregueses comuns, nunca um especial como o Valter.
 let commonFallback = null;
-function groupPerson(g, index) { const m = g.members?.[index]; if (m !== undefined && m !== null) return m; commonFallback ??= PEOPLE.map((p, i) => i).filter(i => !PEOPLE[i].unique && !PEOPLE[i].team && !isSpecial(i)); return commonFallback[((g.person || 0) + index) % commonFallback.length]; }
-function visitorPool(team = null) { return PEOPLE.map((p,i)=>i).filter(i => !team || PEOPLE[i].team === team); }
+function groupPerson(g, index) { const m = g.members?.[index]; if (m !== undefined && m !== null) return m; commonFallback ??= PEOPLE.map((p, i) => i).filter(i => !PEOPLE[i].unique && !PEOPLE[i].removed && !PEOPLE[i].team && !isSpecial(i)); return commonFallback[((g.person || 0) + index) % commonFallback.length]; }
+function visitorPool(team = null) { return PEOPLE.map((p,i)=>i).filter(i => !PEOPLE[i].removed && (!team || PEOPLE[i].team === team)); }
 function pickVisitor(extra=[]) {
  let team=['gremio','inter'].includes(G.event.id)?G.event.id:G.event.id==='grenal'?(Math.random()<.5?'gremio':'inter'):null;
  if(G.event.id==='grenal'&&['gremio','inter'].includes(G.event.result))team=G.event.result;

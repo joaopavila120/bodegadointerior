@@ -14,34 +14,40 @@ const CROPS = {
   bergamota: { name: 'Bergamoteira', seed: 'Muda de bergamoteira', pack: 1, seedCost: 18, kind: 'tree', days: 5, every: 2, good: 'bergamota', yield: 3000, icon: '🍊' },
   araucaria: { name: 'Araucária', seed: 'Muda de araucária', pack: 1, seedCost: 24, kind: 'tree', days: 6, every: 3, good: 'pinhao', yield: 2000, icon: '🌲' },
   // Pé de erva-mate (Ilex paraguariensis): a erveira dá folha para a erva do chimarrão, cancheada e moída.
-  erva: { name: 'Erveira', seed: 'Muda de erva-mate (Ilex paraguariensis)', pack: 1, seedCost: 20, kind: 'tree', days: 6, every: 3, good: 'erva', yield: 2000, icon: '🧉' }
+  erva: { name: 'Erveira', seed: 'Muda de erva-mate (Ilex paraguariensis)', pack: 1, seedCost: 20, kind: 'tree', days: 6, every: 3, good: 'erva', yield: 2000, icon: '🧉' },
+  // Parreira: muda de uva da colônia do Badin. O cacho vira vinho de garrafão na mesa de compota.
+  uva: { name: 'Parreira', seed: 'Muda de parreira (uva)', pack: 2, seedCost: 12, kind: 'bed', days: 5, good: 'vinho', raw: 'uva', yield: 6, icon: '🍇', shop: 'badin' }
 };
 const ADUBO_PACK = 3, ADUBO_COST = 6, CAN_MAX = 12;
 const HORTA_TOOLS = [
   { id: 'mao', name: 'Mão', icon: '✋' }, { id: 'regador', name: 'Regador', icon: '🚿' }, { id: 'mangueira', name: 'Mangueira', icon: '🌊' },
   { id: 'alface', name: 'Alface', icon: '🥬' }, { id: 'trigo', name: 'Trigo', icon: '🌾' }, { id: 'pepino', name: 'Pepino', icon: '🥒' },
   { id: 'bergamota', name: 'Bergamoteira', icon: '🍊' }, { id: 'araucaria', name: 'Araucária', icon: '🌲' },
-  { id: 'erva', name: 'Erveira', icon: '🧉' }, { id: 'adubo', name: 'Adubo', icon: '🧪' }
+  { id: 'erva', name: 'Erveira', icon: '🧉' }, { id: 'uva', name: 'Parreira', icon: '🍇' }, { id: 'adubo', name: 'Adubo', icon: '🧪' }
 ];
 // Progressão da horta: cada colheita dá experiência. Cada nível abre canteiros, aumenta o regador, libera o pepino,
 // a mangueira e o espantalho reforçado contra as pragas.
 const HORTA_LEVELS = [
   { xp: 0, rows: 2, can: 12 },
-  { xp: 8, rows: 3, can: 20, note: 'Mais uma fileira de canteiros e um regador de 20 regadas.' },
-  { xp: 20, rows: 3, can: 20, note: 'Sementes de pepino no Armazém Querência. No galpão, pepino vira compota na mesa de conservas.' },
-  { xp: 36, rows: 4, can: 20, hose: true, note: 'A última fileira de canteiros e a mangueira do poço: rega uma fileira inteira de uma vez.' },
-  { xp: 56, rows: 4, can: 24, hose: true, scare: true, note: 'Espantalho reforçado: as pragas não chegam mais nos canteiros.' }
+  { xp: 18, rows: 3, can: 20, note: 'Mais uma fileira de canteiros e um regador de 20 regadas.' },
+  { xp: 45, rows: 3, can: 20, note: 'Sementes de pepino no Armazém Querência. Na cozinha, pepino vira compota na mesa de compota.' },
+  { xp: 80, rows: 4, can: 20, hose: true, note: 'A última fileira de canteiros e a mangueira do poço: rega uma fileira inteira de uma vez.' },
+  { xp: 125, rows: 4, can: 24, hose: true, scare: true, note: 'Espantalho reforçado: as pragas não chegam mais nos canteiros.' }
 ];
 function hortaLevel(h = hortaState()) { let n = 1; HORTA_LEVELS.forEach((l, i) => { if ((h.xp || 0) >= l.xp) n = i + 1; }); return n; }
 function hortaPerks(h = hortaState()) { return HORTA_LEVELS[hortaLevel(h) - 1]; }
 function canMax(h = hortaState()) { return hortaPerks(h).can; }
-function cropOpen(k, h = hortaState()) { return hortaLevel(h) >= (CROPS[k]?.level || 1); }
+function cropOpen(k, h = hortaState()) { if (CROPS[k]?.shop === 'badin' && !G.badinShop) return false; return hortaLevel(h) >= (CROPS[k]?.level || 1); }
 function hortaTools(h = hortaState()) { return HORTA_TOOLS.filter(t => t.id === 'mangueira' ? !!hortaPerks(h).hose : !CROPS[t.id] || cropOpen(t.id, h)); }
 // Canteiro numa fileira ainda fechada: só se mexe nele se já tinha planta (partidas antigas).
 function tileLocked(i, h = hortaState()) { return Math.floor(i / GARDEN.cols) >= hortaPerks(h).rows && !h.tiles[i].crop; }
 function hortaGainXP(n) {
   const h = hortaState(), before = hortaLevel(h); h.xp = (h.xp || 0) + n; const lv = hortaLevel(h);
-  if (lv > before) { if (h.tool === 'regador' || h.can > canMax(h)) h.can = canMax(h); showBanner('Horta nível ' + lv + '!', HORTA_LEVELS[lv - 1].note, 'level', { world: true }); AudioEngine.ready(); }
+  if (lv > before) {
+    if (h.tool === 'regador' || h.can > canMax(h)) h.can = canMax(h); AudioEngine.ready(); gainXP(20); if (lv === 3) valterTip('horta3');
+    const next = HORTA_LEVELS[lv], text = '<b>' + HORTA_LEVELS[lv - 1].note + '</b>' + (next ? '<br><br>Próximo nível: ' + next.note.toLowerCase() + ' Faltam ' + (next.xp - h.xp) + ' pontos de colheita.' : '<br><br>A horta chegou no nível máximo!') + '<br><br>Recompensa: <b>+20 XP da bodega</b>.';
+    if (scenesEnabled() && !modal) talk([['dica', text, 'A horta subiu para o nível ' + lv + '!']], null, 'Bah, que beleza!'); else showBanner('Horta nível ' + lv + '!', HORTA_LEVELS[lv - 1].note, 'level', { world: true });
+  }
 }
 // Tela da horta: 8 × 4 canteiros, quatro covas para árvore, o poço e o galpãozinho.
 const GARDEN = { W: 1600, H: 1000, gx: 300, gy: 250, ts: 90, cols: 8, rows: 4, gate: 800,
@@ -84,7 +90,6 @@ function hortaPests(rng = Math.random) {
 function hortaTarget() {
   const p = worldOut, G_ = GARDEN, fx = p.x + (p.dx || 0) * 46, fy = p.y - 14 + (p.dy || 0) * 40;
   const w = G_.well; if (Math.hypot(p.x - (w.x + w.w / 2), p.y - (w.y + w.h + 20)) < 110) return { type: 'well' };
-  const s = G_.shed; if (Math.hypot(p.x - (s.x + s.w / 2), p.y - (s.y + s.h + 24)) < 90) return { type: 'shed' };
   for (let i = 0; i < G_.pits.length; i++) if (Math.hypot(fx - G_.pits[i].x, fy - G_.pits[i].y) < 56) return { type: 'tree', i };
   const c = Math.floor((fx - G_.gx) / G_.ts), r = Math.floor((fy - G_.gy) / G_.ts);
   if (c >= 0 && c < G_.cols && r >= 0 && r < G_.rows) return { type: tileLocked(r * G_.cols + c) ? 'locked' : 'tile', i: r * G_.cols + c, c, r };
@@ -101,7 +106,6 @@ function hortaUse() {
     if (tool !== 'regador') { worldSay('Escolha o regador (2) para encher no poço.'); return true; }
     h.can = canMax(h); AudioEngine.gulp(); fxPuffs(GARDEN.well.x + 55, GARDEN.well.y + 40, 6, 50, '#7ab8e0'); worldSay('Regador cheio: ' + canMax(h) + ' regadas.'); save(); return true;
   }
-  if (t.type === 'shed') { conservasMenu(); return true; }
   if (t.type === 'locked') { const n = HORTA_LEVELS.findIndex(l => l.rows > t.r) + 1; worldSay('Terra por lavrar: esta fileira abre no nível ' + n + ' da horta. Colha para subir de nível.'); return true; }
   const cell = targetCell(t, h), slot = t.type === 'tile' ? 'bed' : 'tree', at = cellCenter(t);
   if (cellReady(cell)) { hortaHarvest(cell, at); save(); return true; }
@@ -127,7 +131,7 @@ function hortaUse() {
     const crop = CROPS[tool];
     if (crop.kind !== slot) worldSay(crop.kind === 'tree' ? 'Muda de árvore vai nas covas, embaixo.' : 'Semente vai nos canteiros de terra.');
     else if (cell.crop) worldSay('Aqui já tem ' + CROPS[cell.crop].name.toLowerCase() + '.');
-    else if (h.seeds[tool] <= 0) { worldSay('Acabou ' + (crop.kind === 'tree' ? 'a muda' : 'a semente') + ': compre no Armazém Querência.'); AudioEngine.bad(); }
+    else if (h.seeds[tool] <= 0) { worldSay('Acabou ' + (crop.kind === 'tree' || crop.shop ? 'a muda' : 'a semente') + ': compre ' + (crop.shop === 'badin' ? 'na despensa do Badin, na Serra.' : 'no Armazém Querência.')); AudioEngine.bad(); }
     else { h.seeds[tool]--; Object.assign(cell, { crop: tool, growth: 0, water: null, fert: false, dry: 0, dead: null }); AudioEngine.tick(); fxPuffs(at.x, at.y - 6, 4, 26, '#6e4e2e'); }
   }
   save(); return true;
@@ -135,10 +139,11 @@ function hortaUse() {
 // A colheita vai para o inventário: o que é de balcão é guardado na despensa ao entrar na bodega.
 function hortaHarvest(cell, at) {
   const crop = CROPS[cell.crop], k = crop.raw || crop.good;
+  if (cell.crop === 'erva') prologueFlag('erva');
   bagAdd(k, crop.yield);
   if (crop.kind === 'tree') { cell.growth = crop.days - crop.every; cell.fert = false; } else cell.crop = null;
   AudioEngine.coins(); effect('+' + bagText(k, crop.yield) + ' ' + bagName(k).toLowerCase(), at.x, at.y - 60, '#e1ff9e');
-  hortaGainXP(crop.kind === 'tree' ? 3 : 1);
+  hortaGainXP(crop.kind === 'tree' ? 3 : 1); farmXP(crop.kind === 'tree' ? 4 : 2, bagText(k, crop.yield) + ' de ' + bagName(k).toLowerCase() + ' no inventário');
 }
 function hortaSelectTool(n) { const t = hortaTools()[n]; if (!t) return; hortaState().tool = t.id; AudioEngine.tick(); refreshHUD(); }
 function hortaToolCount(id, h = hortaState()) { return id === 'mao' || id === 'mangueira' ? '' : id === 'regador' ? h.can + '/' + canMax(h) : String(h.seeds[id] || 0); }
@@ -146,7 +151,6 @@ function hortaHint() {
   const h = hortaState(), t = hortaTarget(), tool = HORTA_TOOLS.find(x => x.id === h.tool), n = hortaTools(h).length;
   if (!t) return tool.icon + ' ' + tool.name + ' · 1–' + (n % 10) + ' troca a ferramenta · E usa na terra à frente · horta nível ' + hortaLevel(h);
   if (t.type === 'well') return '<strong>E</strong> encher o regador no poço';
-  if (t.type === 'shed') return '<strong>E</strong> mesa de conservas, no galpão';
   if (t.type === 'locked') return 'Terra por lavrar · abre com o nível da horta';
   const c = targetCell(t, h);
   if (cellReady(c)) return '<strong>E</strong> colher ' + CROPS[c.crop].name.toLowerCase();
@@ -174,7 +178,7 @@ WORLD_MAPS.horta = {
   },
   edge(p) { if (p.y > GARDEN.H - 60) return { ...worldOut.back, title: '' }; return null; },
   spots() { return []; },
-  onEnter() { const h = hortaState(); if (h.pest?.day === G.day) { worldBanner('Praga na horta!', h.pest.text + '. Com o nível 5, o espantalho reforçado protege tudo.'); h.pest = null; } },
+  onEnter() { teach('horta'); const h = hortaState(); if (h.pest?.day === G.day) { worldBanner('Praga na horta!', h.pest.text + '. Com o nível 5, o espantalho reforçado protege tudo.'); h.pest = null; } },
   interact: hortaUse,
   hint: hortaHint,
   draw(view, seen, layers) {
@@ -185,23 +189,25 @@ WORLD_MAPS.horta = {
     rect(100, 180, G_.W - 200, 6, '#8a5a32'); rect(100, G_.H - 86, G_.gate - 160, 6, '#8a5a32'); rect(G_.gate + 60, G_.H - 86, G_.W - 160 - G_.gate, 6, '#8a5a32');
     for (const x of [100, G_.W - 100]) rect(x, 170, 6, G_.H - 230, '#6a4424');
     rect(G_.gate - 60, G_.H - 100, 8, 50, '#5a3a20'); rect(G_.gate + 52, G_.H - 100, 8, 50, '#5a3a20');
+    gardenSurroundings(layers);
     // canteiros: terra escura quando regada hoje
     for (let r = 0; r < G_.rows; r++) for (let c = 0; c < G_.cols; c++) {
       const cell = h.tiles[r * G_.cols + c], x = G_.gx + c * G_.ts, y = G_.gy + r * G_.ts, wet = cell.crop && cell.water === G.day;
-      if (tileLocked(r * G_.cols + c, h)) { rect(x + 3, y + 3, G_.ts - 6, G_.ts - 6, '#86a650', 6); for (let k = 0; k < 4; k++) rect(x + 14 + k * 18, y + 30 + (k % 2) * 22, 3, 10, '#5f8a3a'); continue; }
+      if (tileLocked(r * G_.cols + c, h)) { gardenLocked(x,y,G_.ts); continue; }
       rect(x + 3, y + 3, G_.ts - 6, G_.ts - 6, cell.dead && !cell.crop ? '#a8885a' : wet ? '#4a3220' : '#7a5634', 6);
       for (let k = 0; k < 3; k++) rect(x + 10, y + 18 + k * 26, G_.ts - 20, 3, wet ? '#3a2616' : '#6a4a2c', 2);
+      gardenBed(cell, x, y, G_.ts);
     }
-    for (const pit of G_.pits) ellipse(pit.x, pit.y, 44, 22, '#6e4e2e');
+    for (const pit of G_.pits) gardenPit(pit.x, pit.y);
     // a terra que vai receber a ferramenta
     const t = hortaTarget();
     if (t && t.type !== 'well' && t.type !== 'shed') { const a = cellCenter(t), pulse = .6 + .4 * Math.sin(frameClock * 6); ctx.strokeStyle = `rgba(255,224,110,${pulse})`; ctx.lineWidth = 4; if (t.type !== 'tree') ctx.strokeRect(a.x - G_.ts / 2 + 3, a.y - G_.ts / 2 + 3, G_.ts - 6, G_.ts - 6); else { ctx.beginPath(); ctx.ellipse(a.x, a.y, 48, 25, 0, 0, Math.PI * 2); ctx.stroke(); } }
     for (let i = 0; i < h.tiles.length; i++) { const cell = h.tiles[i]; if (!cell.crop) continue; const x = G_.gx + (i % G_.cols) * G_.ts, y = G_.gy + Math.floor(i / G_.cols) * G_.ts; layers.push({ y: y + G_.ts - 8, draw: () => drawTileCrop(cell, x, y) }); }
     h.trees.forEach((cell, i) => { if (cell.crop) layers.push({ y: G_.pits[i].y + 10, draw: () => drawTreeCrop(cell, G_.pits[i].x, G_.pits[i].y + 6) }); });
     // poço, galpãozinho e espantalho
-    layers.push({ y: G_.well.y + G_.well.h, draw: () => { const w = G_.well; ellipse(w.x + w.w / 2, w.y + w.h - 20, w.w / 2, 26, '#8a8a80'); ellipse(w.x + w.w / 2, w.y + w.h - 26, w.w / 2 - 12, 16, '#2a4a5a'); for (const x of [w.x + 10, w.x + w.w - 16]) rect(x, w.y - 50, 6, w.h - 10, '#5a3a20'); rect(w.x, w.y - 56, w.w, 10, '#7a4a2a'); gable(w.x - 6, w.y - 90, w.w + 12, 40, '#8a3a24', 6); rect(w.x + w.w / 2 - 2, w.y - 46, 4, 40, '#c8c8c0'); rect(w.x + w.w / 2 - 12, w.y - 10, 24, 22, '#7a5a3a', 3); signBoard(w.x + w.w / 2, w.y + w.h + 6, 90, 'POÇO', 12); } });
-    layers.push({ y: G_.shed.y + G_.shed.h, draw: () => { const s = G_.shed; gable(s.x, s.y - 20, s.w, 70, '#7a4a2a', 14); rect(s.x, s.y + 40, s.w, s.h - 40, '#a8743a', 0, '#5a3a20'); for (let x = s.x + 12; x < s.x + s.w; x += 22) rect(x, s.y + 42, 2, s.h - 44, '#8a5a2a'); rect(s.x + s.w / 2 - 28, s.y + s.h - 70, 56, 70, '#5a3a20', 2); for (let k = 0; k < 3; k++) rect(s.x + 16 + k * 20, s.y + s.h - 30, 16, 26, '#c8a870', 5); signBoard(s.x + s.w / 2, s.y + 50, 150, 'GALPÃO', 12); } });
-    layers.push({ y: 720, draw: () => { const sx = 1100, sy = 720; rect(sx - 3, sy - 60, 6, 64, '#5a3a20'); rect(sx - 34, sy - 36, 68, 6, '#5a3a20'); ellipse(sx, sy - 70, 14, 14, '#e8d6a8'); rect(sx - 20, sy - 88, 40, 9, '#3a2a1a'); rect(sx - 11, sy - 100, 22, 14, '#3a2a1a'); rect(sx - 17, sy - 50, 34, 34, '#a83a24', 4); } });
+    layers.push({ y: G_.well.y + G_.well.h, draw: () => { const w = G_.well; if (worldSprite("garden", 0, w.x, w.y - 90, w.w, w.h + 90)) { signBoard(w.x+w.w/2,w.y+w.h+6,90,"POÇO",12); return; } ellipse(w.x + w.w / 2, w.y + w.h - 20, w.w / 2, 26, '#8a8a80'); ellipse(w.x + w.w / 2, w.y + w.h - 26, w.w / 2 - 12, 16, '#2a4a5a'); for (const x of [w.x + 10, w.x + w.w - 16]) rect(x, w.y - 50, 6, w.h - 10, '#5a3a20'); rect(w.x, w.y - 56, w.w, 10, '#7a4a2a'); gable(w.x - 6, w.y - 90, w.w + 12, 40, '#8a3a24', 6); rect(w.x + w.w / 2 - 2, w.y - 46, 4, 40, '#c8c8c0'); rect(w.x + w.w / 2 - 12, w.y - 10, 24, 22, '#7a5a3a', 3); signBoard(w.x + w.w / 2, w.y + w.h + 6, 90, 'POÇO', 12); } });
+    layers.push({ y: G_.shed.y + G_.shed.h, draw: () => { const s = G_.shed; if (worldSprite("garden", 1, s.x, s.y - 30, s.w, s.h + 30)) { signBoard(s.x+s.w/2,s.y+s.h+6,150,"GALPÃO",12); return; } gable(s.x, s.y - 20, s.w, 70, '#7a4a2a', 14); rect(s.x, s.y + 40, s.w, s.h - 40, '#a8743a', 0, '#5a3a20'); for (let x = s.x + 12; x < s.x + s.w; x += 22) rect(x, s.y + 42, 2, s.h - 44, '#8a5a2a'); rect(s.x + s.w / 2 - 28, s.y + s.h - 70, 56, 70, '#5a3a20', 2); for (let k = 0; k < 3; k++) rect(s.x + 16 + k * 20, s.y + s.h - 30, 16, 26, '#c8a870', 5); signBoard(s.x + s.w / 2, s.y + 50, 150, 'GALPÃO', 12); } });
+    layers.push({ y: 720, draw: () => { const sx = 1100, sy = 720; if (worldSprite("garden", 2, sx - 35, sy - 110, 70, 110)) return; rect(sx - 3, sy - 60, 6, 64, '#5a3a20'); rect(sx - 34, sy - 36, 68, 6, '#5a3a20'); ellipse(sx, sy - 70, 14, 14, '#e8d6a8'); rect(sx - 20, sy - 88, 40, 9, '#3a2a1a'); rect(sx - 11, sy - 100, 22, 14, '#3a2a1a'); rect(sx - 17, sy - 50, 34, 34, '#a83a24', 4); } });
   }
 };
 
@@ -247,10 +253,10 @@ function hortaBuySeed(key) {
   const h = hortaState(), crop = CROPS[key], cost = key === 'adubo' ? ADUBO_COST : crop?.seedCost, n = key === 'adubo' ? ADUBO_PACK : crop?.pack; if (!cost || crop && !cropOpen(key)) return;
   if (!hasCash(cost)) { worldSay('Não há dinheiro para isso.'); AudioEngine.bad(); return; }
   spendCash(cost); G.stats.purchases += cost; h.seeds[key] += n; AudioEngine.coins(); save();
-  if (modal === 'worldStore') refreshStore();
+  if (modal === 'worldStore') { refreshStore(); buyFeedback('hortaDo', 'seed:' + key, '+' + n + ' no inventário da horta'); }
 }
-function hortaSeedCards() {
+function hortaSeedCards(filter = () => true, adubo = true) {
   const h = hortaState(), card = (key, name, cost, n, note, ok = true, why = '') => `<div class="supply"><span class="icon">${key === 'adubo' ? '🧪' : CROPS[key].icon}</span><div><b>${name}</b><p>${note} · você tem ${h.seeds[key] || 0}</p></div><button class="primary" data-act="hortaDo" data-id="seed:${key}" ${ok && hasCash(cost) ? '' : 'disabled'}>${ok ? 'Comprar ' + n + ' · ' + money(cost) : why}</button></div>`;
-  return Object.entries(CROPS).map(([k, c]) => card(k, c.pack > 1 ? c.seed.replace('Semente', 'Sementes') : c.seed, c.seedCost, c.pack, c.kind === 'tree' ? 'Árvore: dá ' + stockText(c.good, c.yield) + ' a cada ' + c.every + ' dias' : 'Pronta em ' + c.days + ' dias regando: ' + c.yield + ' ' + bagName(c.raw).toLowerCase() + ' por canteiro', cropOpen(k, h), 'Horta nível ' + (c.level || 1))).join('') +
-    card('adubo', 'Adubo orgânico', ADUBO_COST, ADUBO_PACK, 'Cresce o dobro até a colheita');
+  return Object.entries(CROPS).filter(([k]) => filter(k)).map(([k, c]) => card(k, c.pack > 1 ? c.seed.replace('Semente', 'Sementes') : c.seed, c.seedCost, c.pack, c.kind === 'tree' ? 'Árvore: dá ' + stockText(c.good, c.yield) + ' a cada ' + c.every + ' dias' : 'Pronta em ' + c.days + ' dias regando: ' + c.yield + ' ' + bagName(c.raw).toLowerCase() + ' por canteiro', cropOpen(k, h), 'Horta nível ' + (c.level || 1))).join('') +
+    (adubo ? card('adubo', 'Adubo orgânico', ADUBO_COST, ADUBO_PACK, 'Cresce o dobro até a colheita') : '');
 }

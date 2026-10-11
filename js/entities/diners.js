@@ -19,7 +19,15 @@ function ensureDiners(g){
 // antes do primeiro pedido, e o próximo item só sai depois da entrega anterior.
 const THINK_FIRST=[2,7],THINK_NEXT=[7,16];
 function thinkTime([a,b]){return a+Math.random()*(b-a);}
-function orderNext(d){d.orders=[d.later.shift()];d.status='waiting';d.patience=d.maxPatience=ORDER_WAIT;}
+function orderNext(d,g){
+ let k=d.later.shift();
+ // Xis só se pede quando dá para montar: se acabou um ingrediente, a pessoa escolhe outro xis ou passa a vez.
+ if(RECIPES[k]&&!xisReady(k)){const other=readyRecipes();k=other.length?pick(other):null;}
+ // Bebida ou petisco em falta: reclama e fica sem.
+ if(k&&!RECIPES[k]&&!orderable(k)){missingComplaint(PEOPLE[d.person]?.name,k,g?.x??ENTRY.x,(g?.y??ENTRY.y)-80);repChange(-1);k=null;}
+ if(!k){d.orders=[];d.status=d.later?.length?'thinking':'served';d.think=thinkTime(THINK_NEXT);return;}
+ d.orders=[k];d.status='waiting';d.patience=d.maxPatience=Math.round(ORDER_WAIT*difficulty().patience);
+}
 function seatDiners(g){
  const fixed=g.fixedOrders;delete g.fixedOrders;
  g.diners=Array.from({length:g.size},(_,i)=>{
@@ -27,7 +35,7 @@ function seatDiners(g){
   // Encomendas fixas e lições chegam completas; a freguesia comum pede aos poucos.
   if(fixed||g.training)return {person:groupPerson(g,i),orders:all,later:[],delivered:[],patience:ORDER_WAIT,maxPatience:ORDER_WAIT,status:all.length?'waiting':'served'};
   const d={person:groupPerson(g,i),orders:[],later:all,delivered:[],patience:ORDER_WAIT,maxPatience:ORDER_WAIT,status:'thinking',think:i===0?0:thinkTime(THINK_FIRST)};
-  if(!all.length)d.status='served';else if(i===0)orderNext(d);return d;
+  if(!all.length)d.status='served';else if(i===0)orderNext(d,g);return d;
  });syncGroupOrders(g);if(g.celebrationTeam){const team=g.celebrationTeam;delete g.celebrationTeam;alcoholRound(g,team);}
 }
 function addDinerRound(g){
@@ -52,7 +60,7 @@ function tickDiners(g,dt){
   if(d.status==='thinking'){
    // Depois que as portas fecham, ninguém pede mais nada.
    if(G.phase!=='open'||!d.later?.length){d.later=[];d.status='served';continue;}
-   d.think-=dt;if(d.think<=0){orderNext(d);syncGroupOrders(g);}continue;
+   d.think-=dt;if(d.think<=0){orderNext(d,g);syncGroupOrders(g);}continue;
   }
   if(d.status!=='waiting')continue;d.patience=Math.max(0,d.patience-(g.training?0:dt));if(d.patience>0)continue;
   d.status='lost';d.orders=[];d.later=[];G.stats.lost++;repChange(-2.5);
@@ -65,7 +73,8 @@ function deliverToDiner(g,item,table){
  ensureDiners(g);
  const d=g.diners.filter(d=>d.status==='waiting'&&d.orders.includes(item.pid)).sort((a,b)=>a.patience-b.patience)[0];
  if(!d){say('A mesa espera '+g.orders.map(nameOf).join(' e ')+'.');return;}
- takeHeld();d.orders.splice(d.orders.indexOf(item.pid),1);d.delivered.push(item);table.plates++;G.tutorial.table=true;
+ const seat=groupSeatPosition(g,g.diners.indexOf(d));
+ takeHeld({x:seat.x,y:seat.y-65});d.orders.splice(d.orders.indexOf(item.pid),1);d.delivered.push(item);table.plates++;G.tutorial.table=true;
  if(RECIPES[item.pid])G.tutorial.xis=true;AudioEngine.tick();
  if(!d.orders.length){pay(d.delivered,d.person,d.patience/d.maxPatience,true,g.x,g.y);d.delivered=[];d.status=d.later?.length&&G.phase==='open'&&!g.training?'thinking':'served';d.think=thinkTime(THINK_NEXT);}
  finishToastLesson(g,item);deliveryConversation(d.person,g,d);tutorialDelivered(g,item.pid);completeDinerRound(g);save();

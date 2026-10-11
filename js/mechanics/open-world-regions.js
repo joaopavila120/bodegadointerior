@@ -113,13 +113,13 @@ function drawPortal(cx, y, text, colors, wall, enx = false) {
   gable(cx - 170, y - 236, 340, 46, enx ? '#8a3a24' : '#a8442a', 10); pennants(cx - 150, cx + 150, y - 140, colors);
 }
 function drawArroio(M, y, bridgeX) {
-  const g = ctx.createLinearGradient(0, y, 0, y + 60); g.addColorStop(0, '#5a8aa0'); g.addColorStop(1, '#3a6a84'); ctx.fillStyle = g; ctx.fillRect(0, y, M.W, 60);
+  const g = ctx.createLinearGradient(0, y, 0, y + 60); g.addColorStop(0, '#5a8aa0'); g.addColorStop(1, '#3a6a84'); ctx.fillStyle = g; ctx.fillRect(0, y, M.W, 60); worldTexture(6, 0, y, M.W, 60, 256);
   for (let i = 0; i < 24; i++) { const x = (i * 131 + frameClock * 30) % M.W; rect(x, y + 14 + (i * 13) % 34, 28, 3, 'rgba(220,240,245,.4)', 2); }
   rect(bridgeX - 70, y - 8, 140, 76, '#8a5f36', 2, '#5a3a1e'); for (let x = bridgeX - 64; x < bridgeX + 70; x += 18) rect(x, y - 8, 2, 76, '#5a3a1e'); rect(bridgeX - 74, y - 14, 6, 88, '#4a3018'); rect(bridgeX + 68, y - 14, 6, 88, '#4a3018');
 }
 function drawCampinho(c) {
-  rect(c.x, c.y, c.w, c.h, '#5aa040', 2, '#f4f4f4'); ctx.strokeStyle = '#f4f4f4'; ctx.lineWidth = 4; ctx.strokeRect(c.x + 10, c.y + 10, c.w - 20, c.h - 20); ctx.beginPath(); ctx.moveTo(c.x + c.w / 2, c.y + 10); ctx.lineTo(c.x + c.w / 2, c.y + c.h - 10); ctx.stroke(); ctx.beginPath(); ctx.arc(c.x + c.w / 2, c.y + c.h / 2, 50, 0, Math.PI * 2); ctx.stroke();
-  for (const gx of [c.x + 4, c.x + c.w - 16]) rect(gx, c.y + c.h / 2 - 50, 12, 100, 'rgba(255,255,255,.5)', 2, '#f4f4f4'); ellipse(c.x + c.w / 2 + Math.sin(frameClock * 2) * 120, c.y + c.h / 2 + Math.cos(frameClock * 1.3) * 60, 9, 9, '#f8f8f8'); signBoard(c.x + c.w / 2, c.y - 50, 220, 'SHOW DE BOLA', 13);
+  if(!regionalEnvironmentReady(worldOut?.map))worldTexture(0,c.x,c.y,c.w,c.h,512); ctx.strokeStyle = '#f4f4f4'; ctx.lineWidth = 4; ctx.strokeRect(c.x + 10, c.y + 10, c.w - 20, c.h - 20); ctx.beginPath(); ctx.moveTo(c.x + c.w / 2, c.y + 10); ctx.lineTo(c.x + c.w / 2, c.y + c.h - 10); ctx.stroke(); ctx.beginPath(); ctx.arc(c.x + c.w / 2, c.y + c.h / 2, 50, 0, Math.PI * 2); ctx.stroke();
+  for (const gx of [c.x + 4, c.x + c.w - 16]) rect(gx, c.y + c.h / 2 - 50, 12, 100, 'rgba(255,255,255,.5)', 2, '#f4f4f4'); signBoard(c.x + c.w / 2, c.y - 50, 220, 'SHOW DE BOLA', 13);
 }
 // Monumento: pedestal de pedra, figuras de bronze e a placa com a data.
 function drawMonument(m, plaque, stone, figures) {
@@ -138,17 +138,19 @@ const SERRA = { W: 3600, H: 2600, roadY: 940, roadH: 90, roadX: 1760, roadW: 80,
   badin: { x: 520, y: 560, w: 290, h: 210 }, casona: { x: 2200, y: 420, w: 320, h: 360 }, gaudencio: { x: 2900, y: 580, w: 260, h: 190, wall: '#efe6d2', roof: '#b89a58' },
   mito: { x: 3050, y: 1250, w: 260, h: 190, wall: '#d8d8d0', roof: '#2a6ac8' }, dianho: { x: 1900, y: 2160, w: 280, h: 200 },
   vines: [{ x: 120, y: 500, w: 340, h: 340 }, { x: 900, y: 520, w: 440, h: 300 }, { x: 160, y: 2100, w: 600, h: 320 }, { x: 2500, y: 2150, w: 520, h: 300 }],
-  estacao: { x: 120, y: 1140, w: 260, h: 150 }, igreja: { x: 440, y: 1320, w: 300, h: 330 }, salao: { x: 750, y: 1420, w: 520, h: 230 }, praca: { x: 1330, y: 1250, w: 380, h: 400 },
+  estacao: { x: 120, y: 1140, w: 260, h: 150 }, igreja: { x: 440, y: 1320, w: 300, h: 330 }, salao: { x: 750, y: 1320, w: 950, h: 330 }, praca: { x: 1910, y: 1250, w: 380, h: 400 },
   roadEnd: 3300, roadSouth: 2400, tunnel: { x: 3300, y: 900, w: 300, h: 280 },
   campinho: { x: 2560, y: 1180, w: 400, h: 260 }, vinicola: { x: 2500, y: 1640, w: 380, h: 220 }, galeteria: { x: 3080, y: 1660, w: 340, h: 210 },
-  capiteis: [{ x: 1420, y: 600, w: 70, h: 90 }, { x: 3080, y: 940 - 120, w: 70, h: 90 }], enx: { x: 1900, y: 190, w: 230, h: 170 },
+  capiteis: [{ x: 1420, y: 600, w: 70, h: 90 }, { x: 3080, y: 940 - 120, w: 70, h: 90 }],
   italianos: { x: 2620, y: 640, w: 110, h: 130 }, alemaes: { x: 1420, y: 2160, w: 110, h: 130 }
 };
+[SERRA.badin, SERRA.mito, SERRA.dianho].forEach(r => sizeWorldHome(r));
+sizeWorldHome(SERRA.casona, 450, 365);
 SERRA.coreto = { x: SERRA.praca.x + SERRA.praca.w / 2 - 80, y: SERRA.praca.y + SERRA.praca.h / 2 - 80, w: 160, h: 140 };
-SERRA.obstacles = [SERRA.badin, SERRA.casona, SERRA.gaudencio, SERRA.mito, SERRA.dianho, ...SERRA.vines, SERRA.estacao, SERRA.igreja, SERRA.coreto, SERRA.salao, SERRA.vinicola, SERRA.galeteria, ...SERRA.capiteis, SERRA.enx, SERRA.italianos, SERRA.alemaes, SERRA.tunnel];
+SERRA.obstacles = [SERRA.badin, SERRA.casona, SERRA.mito, SERRA.dianho, ...SERRA.vines, SERRA.estacao, SERRA.igreja, SERRA.coreto, SERRA.salao, SERRA.vinicola, SERRA.galeteria, ...SERRA.capiteis, SERRA.italianos, SERRA.alemaes];
 WORLD_MAPS.serra = regionMap({
   id: 'serra', name: 'Serra Gaúcha', W: SERRA.W, H: SERRA.H, obstacles: SERRA.obstacles,
-  residents: ['badin', 'marcio', 'marcelo', 'gaudencio', 'mitodosul', 'dianho'],
+  residents: ['badin', 'marcio', 'marcelo', 'mitodosul', 'dianho'],
   walkLines: [[[80, 985], [900, 985], [1800, 985], [2700, 985], [3240, 985]], [[1800, 150], [1800, 985], [1800, 1700], [1800, 2360]]],
   blocked(x, y) { const S = SERRA, cx = S.roadX + S.roadW / 2; if (y < 110 && Math.abs(x - cx) > 36) return true; if (x < 40 && (y < S.roadY || y > S.roadY + S.roadH)) return true; return y > S.arroio - 10 && y < S.arroio + 64 && Math.abs(x - cx) > 60; },
   // Pela esquerda volta à Fronteira; subindo pela estrada, Santa Catarina.
@@ -163,10 +165,9 @@ WORLD_MAPS.serra = regionMap({
     { id: 'alemaes', ...front(S.alemaes, 24), label: 'Monumento ao imigrante alemão', info: true, text: 'Imigração alemã: em 25 de julho de 1824, as primeiras famílias alemãs chegaram às margens do rio dos Sinos e fundaram São Leopoldo. Depois vieram outras colônias de pequenas propriedades, como Santa Cruz do Sul.' },
     { id: 'farroupilha', x: S.praca.x + 66, y: S.praca.y + S.praca.h / 2 + 10, label: 'Bandeira do Rio Grande', info: true, text: 'Revolução Farroupilha (1835–1845): os farrapos enfrentaram o Império por dez anos, e a bandeira tricolor do Rio Grande nasceu nessa luta. Todo 20 de setembro o gaúcho comemora a data.' },
     { id: 'house:marcio', ...front(S.casona), label: 'Casona de Márcio e Marcelo', house: 'marcio' },
-    { id: 'house:gaudencio', ...front(S.gaudencio), label: 'Rancho de Gaudêncio', house: 'gaudencio' },
     { id: 'house:mitodosul', ...front(S.mito), label: 'Casa de Mito do Sul', house: 'mitodosul' },
     { id: 'house:dianho', ...front(S.dianho), label: 'Casa de Dianho', house: 'dianho' },
-    { id: 'campinho', x: S.campinho.x + S.campinho.w / 2, y: S.campinho.y + S.campinho.h + 24, label: 'Campinho · show de bola', text: 'O campinho dos gêmeos: aqui é show de bola. Em breve, um racha no domingo à tarde.' },
+    { id: 'campinho', x: S.campinho.x + S.campinho.w / 2, y: S.campinho.y + S.campinho.h + 24, label: 'Bater pênaltis no campinho', act: () => penaltyMenu() },
     { id: 'estacao', ...front(S.estacao), label: 'Estação da Maria Fumaça', info: true, text: 'Maria Fumaça: na Serra, o trem a vapor ainda corre entre Bento Gonçalves, Garibaldi e Carlos Barbosa, no meio dos parreirais, com apito, vinho e música italiana.' },
     { id: 'igreja', x: S.igreja.x + S.igreja.w * .4, y: S.igreja.y + S.igreja.h + 30, label: 'Entrar na igreja', act: () => enterInterior('igreja') },
     { id: 'coreto', ...front(S.coreto, 26), label: 'Coreto da praça', text: 'Praça da comunidade: em breve, feirinha de domingo e roda de chimarrão.' },
@@ -175,35 +176,30 @@ WORLD_MAPS.serra = regionMap({
     { id: 'galeteria', ...front(S.galeteria), label: 'Galeteria', text: 'Galeteria: galeto al primo canto, polenta frita, radicci e massa.' },
     ...S.capiteis.map((c, i) => ({ id: 'capitel' + i, ...front(c, 24), label: 'Capitel', info: true, text: 'Capitel de beira de estrada: capelinha erguida por promessa, onde as famílias rezam o terço e pedem chuva para a lavoura.' }))
   ]; },
-  lights() { const S = SERRA; return [[S.badin.x + 50, S.badin.y + 120], [S.casona.x + 60, S.casona.y + 100], [S.gaudencio.x + 50, S.gaudencio.y + 116], [S.mito.x + 50, S.mito.y + 116], [S.dianho.x + 44, S.dianho.y + 100], [S.salao.x + 90, S.salao.y + 150], [S.igreja.x + 120, S.igreja.y + 100], [S.galeteria.x + 60, S.galeteria.y + 120]]; },
+  lights() { const S = SERRA; return [[S.badin.x + 50, S.badin.y + 120], [S.casona.x + 60, S.casona.y + 100], [S.mito.x + 50, S.mito.y + 116], [S.dianho.x + 44, S.dianho.y + 100], [S.salao.x + 90, S.salao.y + 150], [S.igreja.x + 120, S.igreja.y + 100], [S.galeteria.x + 60, S.galeteria.y + 120]]; },
   draw(view, seen, layers) {
     const S = SERRA, cx = S.roadX + S.roadW / 2, add = addLayer(layers, seen);
     grassField(this, view, seen, '#76984a', ['#668a3e', '#8aac58']);
-    for (const [x, y, rx] of [[600, 300, 600], [2000, 300, 700], [3200, 360, 500], [1800, 2400, 700]]) if (seen(x, y, rx)) ellipse(x, y, rx, rx * .3, 'rgba(110,140,70,.4)');
-    forestEdge(this, S.roadX, S.roadW);
-    road(0, S.roadY, S.roadEnd, S.roadH); road(S.roadX, 110, S.roadW, S.roadSouth - 110); ellipse(cx, S.roadSouth, 90, 40, '#b08a58'); drawRail(0, S.tunnel.x + 60, S.rail);
+    if(!regionalEnvironmentReady(this.id))for (const [x, y, rx] of [[600, 300, 600], [2000, 300, 700], [3200, 360, 500], [1800, 2400, 700]]) if (seen(x, y, rx)) ellipse(x, y, rx, rx * .3, 'rgba(110,140,70,.4)');
+    if(!regionalEnvironmentReady(this.id))forestEdge(this, S.roadX, S.roadW);
+    road(0, S.roadY, S.roadEnd, S.roadH); road(S.roadX, 110, S.roadW, S.roadSouth - 110); if(!regionalEnvironmentReady(this.id))ellipse(cx, S.roadSouth, 90, 40, '#b08a58'); drawRail(0, S.W, S.rail);
     drawArroio(this, S.arroio, cx);
     for (const v of S.vines) add(v, () => drawVineyard(v));
     for (const c of S.capiteis) add(c, () => drawCapitel(c));
     add(S.badin, () => drawStoneHouse(S.badin, null));
     add(S.casona, () => drawCasona(S.casona, 'CASONA'));
-    add(S.gaudencio, () => worldHouse(S.gaudencio, null, S.gaudencio));
     add(S.mito, () => worldHouse(S.mito, null, S.mito));
     add(S.dianho, () => drawEnxaimel(S.dianho, null));
-    add(S.enx, () => drawEnxaimel(S.enx));
     add(S.italianos, () => drawMonument(S.italianos, 'IMIGRANTE ITALIANO · 1875', '#8a7a5a', 2));
     add(S.alemaes, () => drawMonument(S.alemaes, 'IMIGRANTE ALEMÃO · 1824', '#7a7a70', 3));
     layers.push({ y: S.campinho.y, draw: () => drawCampinho(S.campinho) });
-    add(S.estacao, () => { const s = S.estacao; gable(s.x, s.y + 10, s.w, 50, '#7a3a24', 16); rect(s.x, s.y + 56, s.w, s.h - 56, '#f0d8a8', 0, '#6a5a3a'); for (const x of [s.x + 20, s.x + s.w - 70]) windowPane(x, s.y + 74, 50, 40); rect(s.x + s.w / 2 - 20, s.y + s.h - 60, 40, 60, '#6a4424'); signBoard(s.x + s.w / 2, s.y + 20, 220, 'ESTAÇÃO · MARIA FUMAÇA', 12); });
+    add(S.estacao, () => { const s = S.estacao; if (worldBuilding(9, s, "ESTAÇÃO DA SERRA")) return; gable(s.x, s.y + 10, s.w, 50, '#7a3a24', 16); rect(s.x, s.y + 56, s.w, s.h - 56, '#f0d8a8', 0, '#6a5a3a'); for (const x of [s.x + 20, s.x + s.w - 70]) windowPane(x, s.y + 74, 50, 40); rect(s.x + s.w / 2 - 20, s.y + s.h - 60, 40, 60, '#6a4424'); signBoard(s.x + s.w / 2, s.y + 20, 220, 'ESTAÇÃO · MARIA FUMAÇA', 12); });
     add(S.igreja, () => drawIgreja(S.igreja));
     layers.push({ y: S.praca.y, draw: () => drawPraca(S.praca) }); add(S.coreto, () => drawCoreto(S.coreto));
     add(S.salao, () => drawSalao(S.salao));
-    add(S.vinicola, () => { drawStoneHouse(S.vinicola, null); rect(S.vinicola.x + 30, S.vinicola.y + 72, S.vinicola.w - 60, 26, '#f4ecd8', 3, '#5a3a20'); txt('VINÍCOLA DA FAMÍLIA · VINHO COLONIAL', S.vinicola.x + S.vinicola.w / 2, S.vinicola.y + 85, 12, '#6a1a2a', 'center', 'Georgia'); wineBarrels(S.vinicola.x - 150, S.vinicola.y + S.vinicola.h - 20); });
-    add(S.galeteria, () => { drawStoneHouse(S.galeteria, null); rect(S.galeteria.x + 20, S.galeteria.y + 70, S.galeteria.w - 40, 26, '#f4ecd8', 3, '#5a3a20'); txt('GALETERIA · GALETO E POLENTA', S.galeteria.x + S.galeteria.w / 2, S.galeteria.y + 83, 12, '#6a1a2a', 'center', 'Georgia'); pennants(S.galeteria.x + 10, S.galeteria.x + S.galeteria.w - 10, S.galeteria.y + 50, ['#2a8a3a', '#f4f4f4', '#d42a2a']); });
+    add(S.vinicola, () => { if(worldBuilding(14,S.vinicola)) return; drawStoneHouse(S.vinicola, null); rect(S.vinicola.x + 30, S.vinicola.y + 72, S.vinicola.w - 60, 26, '#f4ecd8', 3, '#5a3a20'); txt('VINÍCOLA DA FAMÍLIA · VINHO COLONIAL', S.vinicola.x + S.vinicola.w / 2, S.vinicola.y + 85, 12, '#6a1a2a', 'center', 'Georgia'); wineBarrels(S.vinicola.x - 150, S.vinicola.y + S.vinicola.h - 20); });
+    add(S.galeteria, () => { if(worldBuilding(15,S.galeteria)) return; drawStoneHouse(S.galeteria, null); rect(S.galeteria.x + 20, S.galeteria.y + 70, S.galeteria.w - 40, 26, '#f4ecd8', 3, '#5a3a20'); txt('GALETERIA · GALETO E POLENTA', S.galeteria.x + S.galeteria.w / 2, S.galeteria.y + 83, 12, '#6a1a2a', 'center', 'Georgia'); pennants(S.galeteria.x + 10, S.galeteria.x + S.galeteria.w - 10, S.galeteria.y + 50, ['#2a8a3a', '#f4f4f4', '#d42a2a']); });
     layers.push({ y: S.rail + 20, draw: () => drawTrain(trainX(0, S.W, 120, 900), S.rail + 10) });
-    // O trilho some no túnel da serra, rumo a Bento Gonçalves; a estrada termina antes do morro.
-    layers.push({ y: S.rail + 40, draw: () => { const t = S.tunnel; ellipse(t.x + 170, t.y + 150, 230, 170, '#4f7a36'); ellipse(t.x + 200, t.y + 90, 170, 120, '#5f8a42'); rect(t.x + 30, S.rail - 70, 70, 100, '#2a2420', 30); rect(t.x + 22, S.rail - 78, 86, 14, '#8a8a80', 4); rect(t.x + 60, S.rail + 30, t.w, 60, '#4f7a36'); } });
-    layers.push({ y: S.roadY - 10, draw: () => { rect(110, S.roadY - 120, 8, 120, '#5a3a20'); poly([[250, S.roadY - 120], [70, S.roadY - 120], [40, S.roadY - 98], [70, S.roadY - 76], [250, S.roadY - 76]], '#e8d6a8'); txt('← FRONTEIRA', 150, S.roadY - 98, 13, '#5a2a14', 'center', 'Georgia'); } });
     layers.push({ y: 240, draw: () => { signBoard(cx + 170, 150, 200, 'SANTA CATARINA ↑', 13); } });
   }
 });
@@ -212,11 +208,11 @@ WORLD_MAPS.serra = regionMap({
 const SC = { W: 3000, H: 2000, roadX: 1460, roadW: 80, streetY: 960, streetH: 80,
   houses: [{ id: 'lauro', x: 300, y: 1150, w: 280, h: 200, label: 'Casa de Lauro' }, { id: 'indavirus', x: 700, y: 640, w: 280, h: 210, label: 'Casa de Indavírus' },
     { id: 'peixinhonabrasa', x: 1700, y: 1180, w: 270, h: 200, label: 'Casa de Peixinho na Brasa' }, { id: 'loligebien', x: 2100, y: 1160, w: 280, h: 210, label: 'Casa de Loli Gebien' }],
-  enx: [{ x: 300, y: 640, w: 240, h: 200 }, { x: 1700, y: 640, w: 240, h: 200 }],
   cafe: { x: 2420, y: 640, w: 320, h: 220 }, bolao: { x: 2450, y: 1220, w: 420, h: 150 },
-  festa: { x: 660, y: 1200, w: 380, h: 170 }, ostern: { x: 1100, y: 1160, w: 260, h: 260 }, canchaLauro: { x: 300, y: 1450, w: 280, h: 110 }, grelha: { x: 1990, y: 1300, w: 70, h: 60 }, marco: { x: 1600, y: 1600, w: 110, h: 130 }
+  festa: { x: 660, y: 1200, w: 380, h: 170 }, ostern: { x: 1100, y: 1160, w: 260, h: 260 }, canchaLauro: { x: 300, y: 1450, w: 280, h: 110 }, grelha: { x: 1910, y: 1510, w: 70, h: 60 }, marco: { x: 1600, y: 1600, w: 110, h: 130 }
 };
-SC.obstacles = [...SC.houses, ...SC.enx, SC.cafe, SC.bolao, SC.festa, { x: SC.ostern.x + 100, y: SC.ostern.y + 100, w: 60, h: 60 }, SC.canchaLauro, SC.grelha, SC.marco];
+SC.houses.forEach(r => sizeWorldHome(r, 330, 260));
+SC.obstacles = [...SC.houses, SC.cafe, SC.bolao, SC.festa, { x: SC.ostern.x + 100, y: SC.ostern.y + 100, w: 60, h: 60 }, SC.canchaLauro, SC.grelha, SC.marco];
 WORLD_MAPS.sc = regionMap({
   id: 'sc', name: 'Santa Catarina · Vale Europeu', W: SC.W, H: SC.H, obstacles: SC.obstacles,
   residents: ['lauro', 'indavirus', 'peixinhonabrasa', 'loligebien'],
@@ -229,7 +225,7 @@ WORLD_MAPS.sc = regionMap({
     { id: 'bolao', ...front(P.bolao), label: 'Cancha de bolão', text: 'Cancha de bolão: o boliche dos colonos alemães. Em breve, partidas valendo chope.' },
     { id: 'festa', ...front(P.festa), label: 'Festa Pomerana', text: 'Festa Pomerana: chope, bandinha, marreco recheado e baile, como na Kerb dos colonos.' },
     { id: 'ostern', ...front(P.ostern, 0), label: 'Osterbaum', info: true, text: 'Osterbaum: a árvore de Páscoa enfeitada com casquinhas de ovo pintadas, orgulho de Pomerode.' },
-    { id: 'canchaLauro', ...front(P.canchaLauro, 20), label: 'Cancha do Lauro', text: 'A canchinha do Lauro Boleador: é aqui que ele treina o jogo de bocha que te ensinou.' },
+    { id: 'canchaLauro', ...front(P.canchaLauro, 20), label: 'Cancha do Lauro', text: 'A canchinha do Lauro Bolador: é aqui que ele treina o jogo de bocha que te ensinou.' },
     { id: 'marco', ...front(P.marco, 24), label: 'Marco do Vale Europeu', info: true, text: 'Vale Europeu: Blumenau foi fundada em 1850 por Hermann Blumenau, e dela nasceram cidades como Pomerode e Indaial. Muitos colonos vieram da Pomerânia, que deu nome a Pomerode.' },
     { id: 'grelha', ...front(P.grelha, 20), label: 'Brasa do Peixinho', text: 'A brasa do Peixinho: peixe na grelha e uma Kaiser gelada na mão.' }
   ]; },
@@ -237,19 +233,18 @@ WORLD_MAPS.sc = regionMap({
   draw(view, seen, layers) {
     const P = SC, add = addLayer(layers, seen);
     grassField(this, view, seen, '#5f8a3e', ['#4f7a32', '#76a050']);
-    rect(0, 0, P.W, 200, '#2f5a2a'); for (let x = 0; x < P.W; x += 80) { ellipse(x + 40, 200, 56, 34, '#3a6a32'); ellipse(x + 10, 150, 40, 70, '#2a5028'); }
+    if(!regionalEnvironmentReady(this.id)){rect(0, 0, P.W, 200, '#2f5a2a'); for (let x = 0; x < P.W; x += 80) { ellipse(x + 40, 200, 56, 34, '#3a6a32'); ellipse(x + 10, 150, 40, 70, '#2a5028'); }}
     road(P.roadX, P.streetY, P.roadW, P.H - P.streetY, '#a8a49a', '#8a8680'); road(200, P.streetY, P.W - 400, P.streetH, '#a8a49a', '#8a8680');
-    for (let x = 210; x < P.W - 200; x += 30) rect(x, P.streetY + P.streetH / 2 - 2, 16, 4, '#d8d4c8');
+    if(!regionalEnvironmentReady(this.id))for (let x = 210; x < P.W - 200; x += 30) rect(x, P.streetY + P.streetH / 2 - 2, 16, 4, '#d8d4c8');
     for (const h of P.houses) add(h, () => h.rancho ? worldHouse(h, null, { wall: '#efe6d2', roof: '#b89a58' }) : drawEnxaimel(h, null));
     add(P.marco, () => drawMonument(P.marco, 'VALE EUROPEU · 1850', '#7a7a70', 1));
-    for (const h of P.enx) add(h, () => drawEnxaimel(h));
-    add(P.cafe, () => { drawEnxaimel(P.cafe); rect(P.cafe.x + 30, P.cafe.y + 20, P.cafe.w - 60, 28, '#f4ecd8', 3, '#3a2414'); txt('CAFÉ COLONIAL · CUCA E CHIMIA', P.cafe.x + P.cafe.w / 2, P.cafe.y + 34, 12, '#5a2a14', 'center', 'Georgia'); });
+    add(P.cafe, () => { if(worldBuilding(4,P.cafe)) return; drawEnxaimel(P.cafe); rect(P.cafe.x + 30, P.cafe.y + 20, P.cafe.w - 60, 28, '#f4ecd8', 3, '#3a2414'); txt('CAFÉ COLONIAL · CUCA E CHIMIA', P.cafe.x + P.cafe.w / 2, P.cafe.y + 34, 12, '#5a2a14', 'center', 'Georgia'); });
     add(P.bolao, () => drawBolao(P.bolao));
     add(P.festa, () => drawPavilion(P.festa, 'FESTA POMERANA · CHOPE E BANDINHA', ['#e8304a', '#f0c040', '#2a7a3a', '#3a6ac8']));
-    add({ ...P.ostern, h: P.ostern.h - 100 }, () => { const o = P.ostern, x = o.x + o.w / 2, y = o.y + 160; rect(o.x, o.y + 40, o.w, o.h - 60, '#7fae52', 8, '#c9b58a'); rect(x - 8, y - 140, 16, 150, '#5a3a20'); ellipse(x, y - 170, 90, 70, '#3f7a36'); for (let k = 0; k < 26; k++) ellipse(x - 70 + (k * 37) % 140, y - 220 + (k * 23) % 100, 6, 8, ['#e8304a', '#f0c040', '#3a6ac8', '#e87ad0', '#5ac87a'][k % 5]); });
-    add(P.canchaLauro, () => { const c = P.canchaLauro; rect(c.x, c.y, c.w, c.h, '#c0603a', 3, '#7a3a1e'); rect(c.x, c.y, c.w, 10, '#8a5a32'); for (const [x, col] of [[c.x + 60, '#3a6ad0'], [c.x + 150, '#d03a3a'], [c.x + 110, '#f0e8c0']]) ellipse(x, c.y + 60, 7, 6, col); });
-    add(P.grelha, () => { const g = P.grelha; rect(g.x, g.y + 20, g.w, 30, '#3a3a3a', 3); for (let k = 0; k < 3; k++) ellipse(g.x + 14 + k * 20, g.y + 24, 8, 4, '#c8a050'); for (let k = 0; k < 3; k++) { const a = (frameClock + k * .3) % 1; ellipse(g.x + 20 + k * 15, g.y + 10 - a * 40, 6 + a * 8, 5 + a * 6, `rgba(220,220,215,${.5 * (1 - a)})`); } rect(g.x + 6, g.y + 50, 6, 10, '#3a3a3a'); rect(g.x + g.w - 12, g.y + 50, 6, 10, '#3a3a3a'); });
-    for (let k = 0; k < 10; k++) { const x = 260 + k * 250, y = 900; if (seen(x, y)) layers.push({ y, draw: () => { for (let j = 0; j < 4; j++) ellipse(x + j * 14, y, 9, 8, ['#7a9ad8', '#c87ad0', '#f0f0f8', '#7a9ad8'][j]); } }); }   // hortênsias
+    add({ ...P.ostern, h: P.ostern.h - 100 }, () => { const o = P.ostern, x = o.x + o.w / 2, y = o.y + 160; if (worldSprite("rural", 7, o.x, o.y - 90, o.w, o.h - 10)) return; rect(o.x, o.y + 40, o.w, o.h - 60, '#7fae52', 8, '#c9b58a'); rect(x - 8, y - 140, 16, 150, '#5a3a20'); ellipse(x, y - 170, 90, 70, '#3f7a36'); for (let k = 0; k < 26; k++) ellipse(x - 70 + (k * 37) % 140, y - 220 + (k * 23) % 100, 6, 8, ['#e8304a', '#f0c040', '#3a6ac8', '#e87ad0', '#5ac87a'][k % 5]); });
+    add(P.canchaLauro, () => { const c = P.canchaLauro; worldTexture(1,c.x,c.y,c.w,c.h,160);rect(c.x,c.y+c.h-8,c.w,8,'#6a4424'); rect(c.x, c.y, c.w, 10, '#8a5a32'); for (const [x, col] of [[c.x + 60, '#3a6ad0'], [c.x + 150, '#d03a3a'], [c.x + 110, '#f0e8c0']]) ellipse(x, c.y + 60, 7, 6, col); });
+    add(P.grelha, () => { const g = P.grelha; if(worldSprite('furniture',31,g.x-8,g.y-85,g.w+16,g.h+85))return; rect(g.x, g.y + 20, g.w, 30, '#3a3a3a', 3); for (let k = 0; k < 3; k++) ellipse(g.x + 14 + k * 20, g.y + 24, 8, 4, '#c8a050'); for (let k = 0; k < 3; k++) { const a = (frameClock + k * .3) % 1; ellipse(g.x + 20 + k * 15, g.y + 10 - a * 40, 6 + a * 8, 5 + a * 6, `rgba(220,220,215,${.5 * (1 - a)})`); } rect(g.x + 6, g.y + 50, 6, 10, '#3a3a3a'); rect(g.x + g.w - 12, g.y + 50, 6, 10, '#3a3a3a'); });
+    for (let k = 0; k < 10; k++) { const x = 260 + k * 250, y = 900; if (seen(x, y)) layers.push({ y, draw: () => { worldSprite("nature", 5, x - 10, y - 22, 70, 30); } }); }   // hortênsias
     layers.push({ y: P.H - 120, draw: () => drawPortal(P.roadX + P.roadW / 2, P.H - 120, 'SANTA CATARINA · VALE EUROPEU', ['#1a1a1a', '#d42a2a', '#f0c020'], '#f4f0e6', true) });
   }
 });
@@ -266,14 +261,15 @@ WORLD_MAPS.cancha = {
     return !hitRect([CANCHA_IN.bocha], x, y);
   },
   edge(p) { if (p.y > CANCHA_IN.H - 25) return { map: 'vila', ...front(VILA.cancha, 40), title: 'Pátio da bodega', text: '' }; return null; },
-  spots() { const b = CANCHA_IN.bocha; return [{ id: 'bocha', x: b.x + b.w / 2, y: b.y + b.h + 20, label: 'Bocha · jogar, campeonato ou aprender', act: canchaOptions }]; },
+  spots() { const b = CANCHA_IN.bocha, w = waitingSpot(); return [...(w ? [w] : []), { id: 'bocha', x: b.x + b.w / 2, y: b.y + b.h + 20, label: 'Bocha · jogar, campeonato ou aprender', act: canchaOptions }]; },
   draw(view, seen, layers) {
     rect(view.x, view.y, view.w, view.h, '#20180f');
     if (bocceArt.complete && bocceArt.naturalWidth) { ctx.imageSmoothingEnabled = false; ctx.drawImage(bocceArt, 0, 0, this.W, this.H); ctx.imageSmoothingEnabled = true; }
     const b = CANCHA_IN.bocha, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    drawWaitingPlayer(layers);
     layers.push({ y: b.y + b.h, draw: () => { ellipse(cx, cy + 8, 60, 14, 'rgba(40,20,10,.35)'); ellipse(cx, cy, 6, 6, '#f4f0e0'); for (const [dx, dy, col] of [[-34, 4, '#3a6ad0'], [-14, -6, '#d03a3a'], [22, 6, '#3a6ad0'], [36, -4, '#d03a3a']]) { ellipse(cx + dx, cy + dy, 13, 12, col); ellipse(cx + dx - 4, cy + dy - 4, 4, 3, 'rgba(255,255,255,.5)'); } } });
   }
 };
 function canchaOptions() {
-  openDialog('Cancha de bocha', `<p>O que vai ser?</p><div class="game-menu"><button class="primary" data-act="bocce">Jogar bocha</button><button data-act="sportTournament" data-id="bocha">Jogar campeonato</button><button data-act="learnBocce">Aprender com o Lauro Boleador</button><button data-act="sportBracket">Ver chave salva</button></div>`, 'canchaOptions');
+  openDialog('Cancha de bocha', `<p>O que vai ser?</p><div class="game-menu"><button class="primary" data-act="bocce">Jogar bocha</button><button data-act="sportTournament" data-id="bocha">Jogar campeonato</button><button data-act="learnBocce">Aprender com o Lauro Bolador</button><button data-act="sportBracket">Ver chave salva</button></div>`, 'canchaOptions');
 }

@@ -1,9 +1,9 @@
 // Mecânicas de cozinha: chapa, prensa de xis, bancadas, balança de secos e lixeira
 'use strict';
 
-function putHeld(item){if(held())return false;G.hands[G.slot]=item;return true;}
+function putHeld(item,source=null){if(held())return false;G.hands[G.slot]=item;animateItemTransfer(item,true,source);return true;}
 
-function takeHeld(){const h=held();G.hands[G.slot]=null;return h;}
+function takeHeld(target=null){const h=held();G.hands[G.slot]=null;animateItemTransfer(h,false,target);return h;}
 
 function takeFromBin(key){if(!freeHand()){say('Seu espaço ativo está ocupado. Use o apoio, Q ou outro espaço da bandeja.');return;}const item=consumeStock(key);if(item){putHeld(item);AudioEngine.tick();save();}}
 
@@ -11,9 +11,9 @@ function readyProduct(key){if(!freeHand()){say('Libere o espaço ativo da bandej
 
 function mergeLife(a,b){if(b.floorLeft!==null&&b.floorLeft!==undefined)a.floorLeft=a.floorLeft===null||a.floorLeft===undefined?b.floorLeft:Math.min(a.floorLeft,b.floorLeft);}
 
-function dropItem(){if(!started||modal||phoneOpen)return;if(G.task){say('Solte E antes de largar o item.');return;}const i=held();if(!i){say('O espaço selecionado está vazio.');return;}const p=G.player,dx=p.dx||0,dy=p.dy||1,candidates=[{x:p.x+dx*43,y:p.y+dy*43},{x:p.x+dx*39+dy*24,y:p.y+dy*39-dx*24},{x:p.x+dx*39-dy*24,y:p.y+dy*39+dx*24}];const pos=candidates.find(q=>canWalk(q.x,q.y)&&!G.floor.some(f=>Math.hypot(f.x-q.x,f.y-q.y)<32));if(!pos){AudioEngine.bad();effect('Sem espaço',p.x,p.y-50,'#ffb8a1');say('Não há lugar livre à frente. O item continua nas mãos.');return;}takeHeld();i.floorLeft??=i.sealed?20:10;G.floor.push({id:G.next++,item:i,...pos});AudioEngine.drop();burst(pos.x,pos.y);save();refreshHUD();}
+function dropItem(){if(!started||modal||phoneOpen)return;if(G.task){say('Solte E antes de largar o item.');return;}const i=held();if(!i){say('O espaço selecionado está vazio.');return;}const p=G.player,dx=p.dx||0,dy=p.dy||1,candidates=[{x:p.x+dx*43,y:p.y+dy*43},{x:p.x+dx*39+dy*24,y:p.y+dy*39-dx*24},{x:p.x+dx*39-dy*24,y:p.y+dy*39+dx*24}];const pos=candidates.find(q=>canWalk(q.x,q.y)&&!G.floor.some(f=>Math.hypot(f.x-q.x,f.y-q.y)<32));if(!pos){AudioEngine.bad();effect('Sem espaço',p.x,p.y-50,'#ffb8a1');say('Não há lugar livre à frente. O item continua nas mãos.');return;}takeHeld({x:pos.x,y:pos.y-11});i.floorLeft??=i.sealed?20:10;G.floor.push({id:G.next++,item:i,...pos});AudioEngine.drop();burst(pos.x,pos.y);save();refreshHUD();}
 
-function pickupFloor(f){if(!freeHand()){say('Libere o espaço ativo para recolher.');return;}const n=G.floor.indexOf(f);if(n<0)return;G.floor.splice(n,1);putHeld(f.item);AudioEngine.tick();save();}
+function pickupFloor(f){if(!freeHand()){say('Libere o espaço ativo para recolher.');return;}const n=G.floor.indexOf(f);if(n<0)return;G.floor.splice(n,1);putHeld(f.item,{x:f.x,y:f.y-11});AudioEngine.tick();save();}
 
 function trash(){if(!held()){say('Pegue o objeto e traga à lixeira.');return;}const i=takeHeld();G.stats.waste+=i.cost;AudioEngine.trash();effect('Descartado',G.player.x,G.player.y-48,'#dcc8a4');AudioEngine.tick();save();}
 
@@ -33,7 +33,7 @@ function usePress(){const p=G.kitchen.press,h=held();if(useToastPress(p,h))retur
 
 function useToastPress(p,h){if(p?.waitingToast){if(!h){delete p.waitingToast;G.kitchen.press=null;putHeld(p);AudioEngine.tick();save();return true;}const needed=p.key==='pao_xis'?'salame':'pao_xis';if(h.key!==needed||h.spoiled||h.burned){say('Falta '+nameOf(needed)+'. Com mãos vazias, E recupera o ingrediente.');return true;}const second=takeHeld(),item={id:G.next++,kind:'assembled',pid:'torrada',key:'torrada',cost:p.cost+second.cost,parts:['pao_xis','salame'],heat:0,ready:false,perfect:true,burned:false,spoiled:false,floorLeft:null};mergeLife(item,p);mergeLife(item,second);G.kitchen.press=item;AudioEngine.press();effect('Torrada na prensa!',G.player.x,G.player.y-90);save();return true;}if(!p&&unlocked('salame')&&h&&['pao_xis','salame'].includes(h.key)&&['ingredient','product'].includes(h.kind)&&!h.spoiled&&!h.burned){G.kitchen.press=takeHeld();G.kitchen.press.waitingToast=true;AudioEngine.tick();say('Agora coloque '+nameOf(h.key==='pao_xis'?'salame':'pao_xis')+' na prensa.');save();return true;}return false;}
 
-function useParking(index){const old=G.kitchen.parking[index],h=held();G.kitchen.parking[index]=h;G.hands[G.slot]=old;if(!old&&!h)effect('Apoio livre',G.player.x,G.player.y-48);else AudioEngine.tick();save();}
+function useParking(index){const old=G.kitchen.parking[index],h=held();G.kitchen.parking[index]=h;G.hands[G.slot]=old;animateItemTransfer(h,false);animateItemTransfer(old,true);if(!old&&!h)effect('Apoio livre',G.player.x,G.player.y-48);else AudioEngine.tick();save();}
 
 function kitchenTick(dt){for(let j=0;j<G.kitchen.grill.length;j++){const i=G.kitchen.grill[j];if(!i||i.waitingToast)continue;i.heat+=dt;if(i.heat>=COOK[i.key]&&!i.ready){i.ready=true;AudioEngine.ready();effect('Pronto! Retire da chapa',77,315+j*78,'#d9ffa3');}if(i.heat>=COOK[i.key]+9&&!i.warned){i.warned=true;AudioEngine.warning();effect('Vai queimar!',77,315+j*78,'#ffc875');}if(i.heat>=COOK[i.key]+18&&!i.burned){i.burned=true;AudioEngine.bad();effect('Queimou!',77,315+j*78,'#ff9872');}}const p=G.kitchen.press;if(p&&!p.waitingToast){p.heat+=dt;if(p.heat>=6&&!p.ready){p.ready=true;AudioEngine.ready();effect('Pronto: '+nameOf(p.pid),85,571,'#dcffad');}if(p.heat>=15&&!p.warned){p.warned=true;AudioEngine.warning();effect('Tire da prensa!',85,571,'#ffcb75');}if(p.heat>=24&&!p.burned){p.burned=true;AudioEngine.bad();effect('Lanche queimado!',85,571,'#ff9d75');}}for(const b of G.kitchen.bench)if(b)b.age+=dt;}
 

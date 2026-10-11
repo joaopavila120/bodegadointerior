@@ -52,15 +52,13 @@
   interact();check(G.task?.type==='mix'&&!$('mixUI').classList.contains('hidden'),'tigela cheia começa a bater');
   mixKey('e');check(G.task.progress===0,'E não bate a maionese: só A e D');mixKey('a');mixKey('a');check(Math.abs(G.task.progress-MIX_STEP)<1e-9,'repetir a mesma tecla não conta');for(let i=0;i<=Math.ceil(1/MIX_STEP);i++)mixKey(i%2?'a':'d');
   check(!G.task&&G.stock.maionese===3&&!b.ovo,'alternar A e D dá o ponto: 3 porções');
-  interact();check(held()?.pid==='maionese','pega uma porção de maionese');G.hands=[null,null];
+  interact();check(held()?.pid==='maionese'&&G.stock.maionese===2,'pega uma porção de maionese');interact();check(!held()&&G.stock.maionese===3,'com a maionese na mão, E na tigela devolve a porção');interact();G.hands=[null,null];
   // pedido em dobro: costela + maionese
   G.shop=[];G.stock.costela=4000;const combo=spawnShop({pid:'costela',grams:500,extra:['maionese'],fiado:false});for(let n=0;n<300;n++)customersTick(.05);
   check(orderList(combo).join()==='costela,maionese'&&customerOrderBubbles()[0]?.items.length===2,'domingo: freguês pede costela e maionese juntas');
   weigh();use('service');check(combo.state==='queue'&&combo.pid==='maionese','entregou a costela, falta a maionese');const cash2=G.cash;use('maionese');use('service');check(combo.state==='leave'&&G.cash>cash2,'com a maionese o pedido em dobro é pago');
   // mantas do açougue, mais caras
-  G.stock.costela_crua=2;campoState().mantasUsed=0;G.deliveries=[];const before=G.cash,mantas=G.stock.costela_crua;G.bag={};storeShop('acougue');check(document.querySelector('#dialogContent [data-id="manta"]:not([disabled])'),'o Açougue da Fronteira vende mantas avulsas');closeDialog(true);
-  storeExtra('manta');depositBag();check(G.cash===before-MANTA_BUY_COST&&G.stock.costela_crua===mantas+1&&!bagQty('costela_crua')&&MANTA_BUY_COST>BOI_COST/MANTAS_PER_BOI*2,'manta do açougue vem no inventário sem laçar, bem mais cara');
-  {G.stock.costela_crua=4;campoState().mantasUsed=2;const cash=G.cash;storeExtra('manta');check(!bagQty('costela_crua')&&G.cash===cash,'no costelão vai no máximo a carne de um boi: 6 mantas por domingo');campoState().mantasUsed=0;}
+  G.bag={};storeShop('acougue');check(!document.querySelector('#dialogContent [data-id="manta"]')&&!document.querySelector('#dialogContent [data-id="burger"]'),'o Açougue não vende manta nem hambúrguer: a carne do boi vem da carneação');closeDialog(true);
   // clientes do campo
   check(['costela','maionese','refri'].includes(campoOrder())&&!spawnGroup(),'no campo só chegam fregueses ao balcão: costela, maionese ou refri');
   // tutorial do primeiro costelão
@@ -75,7 +73,7 @@
   roast();check(costelaoTarget()==='espeto:0','pronto: a seta aponta para retirar');interact();check(costelaoTarget()==='tabua','e depois para a tábua');check(costelaoStep().id==='tabua','etapa: tábua');use('tabua');check(costelaoStep().id==='cortar','etapa: cortar');
   simulate(.05);const first=G.shop[0];check(first?.pid==='costela'&&first.grams===500&&first.training,'primeiro freguês pede 500 g sem prazo');
   for(let n=0;n<300;n++)customersTick(.05);weigh();use('service');
-  check(costelaoStep().id==='maionese','etapa: maionese');mayo();
+  check(costelaoStep().id==='maionese','etapa: maionese');G.stock.ovo=0;simulate(.05);check(G.stock.ovo>=1,'sem ovo na despensa, o Valter traz ovos: o tutorial do costelão não trava');mayo();
   check(costelaoStep().id==='servir','etapa: servir maionese');simulate(.05);for(let n=0;n<300;n++)customersTick(.05);use('maionese');use('service');
   check(!costelaoTutorialActive()&&G.costelaoTaught,'tutorial do costelão concluído');
   G.stock.costela_crua=6;G.stock.maionese=3;G.shop=[];for(let i=0;i<6;i++)spawnShop();check(campoState().firstOrders===3&&G.shop.length===3&&G.shop.every(c=>c.pid==='costela'&&c.extra?.[0]==='maionese'),'primeiro costelão: só três pedidos de costela com maionese');
@@ -85,16 +83,14 @@
   reset();window.NO_SCENES=false;G.day=1;G.phase='open';G.elapsed=DAY;finishDay();check(scene?.id==='tv'&&G.tv,'no fim do primeiro dia o vizinho entra com a TV');
   {let n=0,said=[];while(scene&&n++<900){if(scene.step?.say){said.push(rpgBoxes.sceneTalk?.text||'');sceneNext();sceneNext();}else sceneTick(1/20);}check(said.join(' ').includes('teu pai')&&said.join(' ').includes('presentes')&&modal==='report'&&!G.tvAwardPending,'ele conta que se criou com o pai do Sadi, a dica dos presentes aparece e segue o relatório');}
   closeDialog(true);window.NO_SCENES=true;
-  // primeiro sábado: cena no campo, o boi do pai, um quero-quero só e a montagem do costelão
-  reset();window.NO_SCENES=false;G.day=2;G.phase='closed';G.event={id:'normal',seen:true,fired:{}};G.report={};nextDay();check(scene?.id==='sabado'&&G.herd===1,'primeiro sábado abre a cena do boi que o pai deu');
-  sceneSkip();check(modal==='lassoIntro','depois da cena vêm as instruções da laçada');action('lassoStart');check(G.lasso.bois.length===1&&activeQueros(G.lasso).length<=1,'primeira laçada: um boi e um quero-quero só');
+  // laçada a qualquer hora (na cerca do campo), um boi por vez; o boi laçado vira carne na hora
+  reset();G.day=2;G.phase='closed';G.event={id:'normal',seen:true,fired:{}};G.report={};nextDay('automatic');check(G.day===3&&!G.lasso&&!scene&&modal!=='lassoIntro','o sábado não exige mais laçada: o dia segue');closeDialog(true);
+  reset();G.herd=1;G.phase='prep';G.stock.burger=0;G.stock.costela_crua=0;startLasso();check(G.lasso.bois.length===1&&activeQueros(G.lasso).length<=1,'primeira laçada: um boi e um quero-quero só');
   {const L1=G.lasso;L1.queros=[];const b1=L1.bois[0];for(let k=0;k<LASSO_HITS;k++){G.player={x:b1.x-200,y:b1.y+40,dx:1,dy:0};L1.fx=1;L1.fy=0;lassoCharge();let best=0,bd=1e9;for(let t=0;t<1.4;t+=.01){L1.charge=t;const a=lassoAim(),d=Math.hypot(a.x-b1.x,a.y-(b1.y-28));if(d<bd){bd=d;best=t;}}L1.charge=best;b1.speed=0;b1.dx=b1.dy=0;b1.t=99;lassoRelease();for(let t=0;t<1;t+=.05){b1.t=99;lassoTick(.05);}}}
-  finishLasso();check(scene?.id==='montagem'&&isCampo(),'depois da primeira laçada vem a cena da montagem do costelão');
-  {let n=0;while(scene&&n++<800){if(scene.step?.say){if(scene.step.say==='marcio')check(rpgBoxes.sceneTalk.text.includes('Presença de Márcio e Marcelo'),'Márcio e Marcelo confirmam presença no costelão');sceneNext();sceneNext();}else sceneTick(1/20);}}
-  check(!scene&&!isCampo()&&modal==='planning','a cena termina e segue para o domingo');closeDialog(true);
-  buyManta();check(!G.deliveries.length,'no primeiro costelão não dá pra comprar manta do açougue');window.NO_SCENES=true;
-  reset();G.day=2;G.phase='closed';G.event={id:'normal',seen:true,fired:{}};G.report={};G.herd=5;G.lassoTaught=true;nextDay();check(modal==='lassoIntro','sábado exige a laçada antes do próximo dia');
-  action('lassoStart');const L=G.lasso;L.queros=[];check(L&&L.bois.length===5&&isCampo()&&!$('lassoUI').classList.contains('hidden'),'campo com o rebanho para laçar');
+  finishLasso();check(!G.lasso&&G.herd===0&&!farmGame&&modal!=='farmGame','boi laçado: sem minigame de carnear');
+  check(G.stock.costela_crua===MANTAS_PER_BOI&&G.stock.burger+bagQty('burger')===24&&G.carneacoes===1,'o boi vira na hora as mantas do costelão e o hambúrguer');
+  check(G.stock.burger===stationCapacity('burger')&&bagQty('burger')===24-stationCapacity('burger'),'carneando na bodega, a carne vai direto para a despensa; o que não cabe fica no inventário');
+  reset();G.day=2;G.phase='prep';G.herd=5;G.lassoTaught=true;G.stock.burger=0;startLasso();const L=G.lasso;L.queros=[];check(L&&L.bois.length===5&&isCampo()&&!$('lassoUI').classList.contains('hidden'),'campo com o rebanho para laçar');
   finishLasso();check(G.lasso,'não termina sem laçar nenhum boi');
   const boi=L.bois.find(b=>b.state==='free');
   for(let k=0;k<LASSO_HITS;k++){G.player={x:boi.x-200,y:boi.y+40,dx:1,dy:0};L.fx=1;L.fy=0;lassoCharge();
@@ -106,10 +102,13 @@
   L.queros=makeQueros();L.queros.length=1;const q=L.queros[0];G.player={x:700,y:700,dx:1,dy:0};q.state='warn';q.t=0;q.x=500;q.y=700;q.h=180;q.tx=700;q.ty=700;
   let hitAt=null;for(let t=0;t<.6;t+=.02){querosTick(L,.02);if(L.knock>0&&!hitAt)hitAt={x:G.player.x};}check(hitAt&&!(L.stun>0)&&L.immune>0,'rasante do quero-quero acerta sem atordoar');
   lassoCharge();check(!L.charging,'empurrado pelo rasante não gira o laço');const x0=G.player.x;for(let t=0;t<QUERO_KNOCK;t+=.02)lassoTick(.02);check(G.player.x>x0+100,'o rasante joga o peão para trás');L.knock=0;L.immune=0;lassoKeyDown({key:' ',repeat:false,preventDefault(){}});check(L.dash>0,'Espaço dá o pique para esquivar');L.dash=0;L.dashCool=0;lassoKeyDown({key:'q',repeat:false,preventDefault(){}});check(L.charging,'Q gira o laço');lassoKeyUp({key:'q'});check(!L.charging&&L.throw,'soltar Q arremessa');L.throw=null;L.dash=0;L.queros=[];
-  const day=G.day,stock=G.stock.costela_crua;finishLasso();check(!G.lasso&&G.herd===4&&G.stock.costela_crua===stock+MANTAS_PER_BOI&&G.lassoDay===day,'um boi laçado basta e vira mantas para o costelão');
-  check(modal==='planning','depois da laçada aparece a previsão de amanhã');action('chooseEvent','automatic');check(G.day===3&&G.event.id==='costelao','e o dia seguinte é o domingo de costelão');
-  reset();G.herd=0;G.day=2;G.phase='closed';nextDay();check(modal==='lassoIntro'&&$('dialogContent').textContent.includes('Comprar bois'),'sem bois o jogo pede compra de bois');
-  buyBoi();buyBoi();check(G.herd===2&&G.cash===2000-2*BOI_COST,'compra de bois no celular');closeDialog(true);
+  const stock=G.stock.costela_crua;finishLasso();check(!G.lasso&&G.herd===4&&!farmGame&&G.stock.costela_crua===stock+MANTAS_PER_BOI,'um boi laçado basta: a carne vai direto para a despensa');
+  // primeiro domingo de costelão: a cena da montagem, com Márcio e Marcelo
+  reset();window.NO_SCENES=false;G.costelaoTaught=false;G.day=2;G.phase='closed';G.event={id:'normal',seen:true,fired:{}};G.report={};nextDay('automatic');check(G.event.id==='costelao'&&scene?.id==='montagem','no primeiro domingo de costelão vem a cena da montagem');
+  {let n=0;while(scene&&n++<800){if(scene.step?.say){if(scene.step.say==='marcio')check(rpgBoxes.sceneTalk.text.includes('Presença de Márcio e Marcelo'),'Márcio e Marcelo confirmam presença no costelão');sceneNext();sceneNext();}else sceneTick(1/20);}}
+  check(!scene&&modal!=='event'&&G.event.id==='costelao'&&G.phase==='prep','a cena termina e o domingo começa sem menu: abrir é no caixa');closeDialog(true);window.NO_SCENES=true;
+  reset();G.herd=0;goOutside();enterInterior('curral');{const ps=WORLD_MAPS.curral.spots().find(s=>s.id==='cerca');check(ps.label.includes('Casa do Campeiro'),'sem bois a cerca indica a Casa do Campeiro');worldOut.x=ps.x;worldOut.y=ps.y;interact();check(!G.lasso,'sem boi não tem laçada');}worldOut=null;
+  buyBoi();buyBoi();check(G.herd===2&&G.cash===2000-2*BOI_COST&&G.herdValue===2*BOI_COST,'compra de bois: o preço entra no custo da carne');closeDialog(true);
   storeShop('gado');check(document.querySelector('#dialogContent [data-id="boi"]'),'a Casa do Campeiro vende bois');closeDialog(true);
   // quero-queros de visita enquanto a costela assa
   sunday();campoBirds=[];G.player={x:525,y:640,dx:1,dy:0};campoState().espetos[0]={heat:[0,0],fire:0,burned:false,cost:1,turns:0};Math.random=()=>.001;campoBirdsTick(.05);Math.random=random;
@@ -122,14 +121,14 @@
   check(!G.stock.costela&&!G.stock.costela_crua&&!campoState().espetos[1]&&!G.report.waste,'carne que sobra no fim do costelão sai sem contar como prejuízo');check(G.report.power===0&&G.report.supplies===COSTELAO_SUPPLIES&&!G.report.rent,'no costelão não há luz: vão lenha e sal');closeDialog(true);
   // sem carne e sem dinheiro, o domingo vira dia normal (menos no primeiro costelão)
   reset();G.costelaoTaught=true;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.stock.costela=0;G.cash=20;nextDay('automatic');
-  check(G.day===3&&G.event.id==='normal'&&G.event.noCostelao&&$('dialogContent').textContent.includes('Sem costelão hoje'),'sem carne nem dinheiro, o domingo vira dia normal com aviso');closeDialog(true);
+  check(G.day===3&&G.event.id==='normal'&&G.event.noCostelao,'sem carne nem dinheiro, o domingo vira dia normal');{const f=furniture().find(f=>f.id==='service');G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};interact();check(modal==='caixa'&&$('dialogContent').textContent.includes('Sem costelão hoje'),'o caixa avisa que não tem costelão hoje');}closeDialog(true);
   reset();G.costelaoTaught=false;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.cash=0;nextDay('automatic');check(G.event.id==='costelao','o primeiro costelão acontece sempre (o tutorial dá a carne)');closeDialog(true);
   // mate sem reposição no campo
   sunday();approach('mate');keys.add('e');interact();tick(1.2,holdTick);keys.clear();check(G.boost>0,'campo tem estação de mate, sem reposição de erva');
   save();check(readSave().herd===G.herd&&readSave().version===15,'rebanho e campo persistem no salvamento');
   // laçou um boi: a laçada encerra sozinha e leva a carne de um boi
   {reset();G.herd=3;G.lassoTaught=true;G.day=2;G.phase='closed';startLasso();const L=G.lasso;L.queros=[];const b=L.bois[0];b.rope=LASSO_HITS;b.state='caught';L.caught=1;b.x=CURRAL.x+40;b.y=CURRAL.y+60;
-   for(let n=0;n<80&&G.lasso;n++)lassoTick(.05);check(!G.lasso&&G.lassoDay===2&&G.stock.costela_crua===MANTAS_PER_BOI,'laçou um boi: ele vai pro curral e a laçada encerra sozinha');closeDialog(true);}
+   for(let n=0;n<80&&G.lasso;n++)lassoTick(.05);check(!G.lasso&&G.lassoDay===2&&!farmGame,'laçou um boi: a laçada encerra sozinha');check(G.stock.costela_crua>0&&G.stock.burger>0,'e a carne do boi já vai para a despensa');closeDialog(true);}
   // bodoque: trancado até comprar; pedrada no tempo certo espanta o quero-quero
   {sunday();openDay();closeDialog(true);campoBirds=[];G.player={x:600,y:760,dx:1,dy:0,walk:false};campoBirds.push({x:700,y:760,tx:700,ty:760,h:0,state:'ground',face:1,flap:0,t:20,hop:9,peck:0,calm:0,aggr:0});
    slingStart();check(!sling.aim&&!slingOwned(),'sem comprar, o bodoque fica trancado');G.cash=500;buyUpgrade('bodoque');check(slingOwned(),'bodoque comprado no celular');

@@ -1,4 +1,4 @@
-// Bodoque: espanta quero-quero na laçada e no costelão. Comprado no celular (Melhorias → Outros).
+// Bodoque: espanta quero-quero na laçada e no costelão. Comprado na Casa do Campeiro.
 // Segure F: um círculo fecha sobre o quero-quero mais próximo; solte com ele verde e a pedrada assusta o bicho.
 // Em voo o círculo fecha mais rápido; pousado é mais fácil.
 'use strict';
@@ -19,7 +19,7 @@ function slingAlive(t) { return t.kind === 'lasso' ? !!G.lasso && t.ref.state !=
 
 function slingStart() {
   if (!slingActive()) return;
-  if (!slingOwned()) { say('Bodoque bloqueado: compre no celular → Melhorias → Outros.'); AudioEngine.bad(); return; }
+  if (!slingOwned()) { say('Bodoque bloqueado: compre na Casa do Campeiro, na Fronteira.'); AudioEngine.bad(); return; }
   if (sling.aim || sling.cool > 0) return;
   const t = slingTargets().sort((a, b) => Math.hypot(a.ref.x - G.player.x, a.ref.y - G.player.y) - Math.hypot(b.ref.x - G.player.x, b.ref.y - G.player.y))[0];
   if (!t) { effect('Nenhum quero-quero por perto', G.player.x, G.player.y - 140, '#fff0c3'); return; }
@@ -65,5 +65,5 @@ function updateSlingButton() {
   const b = $('slingButton'); if (!b) return;
   const show = slingActive() && !modal; b.classList.toggle('hidden', !show); if (!show) return;
   const owned = slingOwned(); b.classList.toggle('locked', !owned);
-  setHTML(b, owned ? '<b>F</b> · Bodoque' : '🔒 Bodoque · no celular');
+  setHTML(b, owned ? '<b>F</b> · Bodoque' : '🔒 Bodoque · Casa do Campeiro');
 }

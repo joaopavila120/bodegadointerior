@@ -21,7 +21,7 @@ const ARCS = {
     chapters: [
       { title: 'Nervoso na frente da câmera', lines: [['x', 'O Gustavo quer gravar um vídeo meu jogando bocha na tua cancha.'], ['x', 'Mas é só ligar a câmera que eu esqueço até como segura a bocha, rapaz.'], ['sadi', 'Finge que é só nós dois jogando, Lauro. Esquece o celular.']] },
       { title: 'Não me quebra, Lauro!', lines: [['x', 'Gravamos! Ficou bom… até eu sentar no banquinho da cancha.'], ['sadi', 'E o banquinho?'], ['x', 'Virou lenha pro teu costelão. O Gustavo gritou “não me quebra, Lauro!” e deixou no vídeo, ja.']] },
-      { title: 'Nasce o Lauro Boleador', lines: [['x', 'O vídeo passou de cem mil visualizações! O povo me chama de Lauro Boleador agora.'], ['sadi', 'E a cancha da bodega aparecendo no vídeo inteiro!'], ['x', 'Vem gente de Indaial só pra jogar aqui. Pela primeira vez o Gustavo disse que eu tô certo.']], reward: { rep: 4, xp: 100, bocha: 10, text: 'A cancha ficou famosa: +4 de reputação e +10 na fama de bocha.' } }
+      { title: 'Nasce o Lauro Bolador', lines: [['x', 'O vídeo passou de cem mil visualizações! O povo me chama de Lauro Bolador agora.'], ['sadi', 'E a cancha da bodega aparecendo no vídeo inteiro!'], ['x', 'Vem gente de Indaial só pra jogar aqui. Pela primeira vez o Gustavo disse que eu tô certo.']], reward: { rep: 4, xp: 100, bocha: 10, text: 'A cancha ficou famosa: +4 de reputação e +10 na fama de bocha.' } }
     ]
   },
   indavirus: {
@@ -63,10 +63,10 @@ const ARCS = {
   },
   dianho: {
     title: 'Gângster de galpão',
-    meet: [['x', 'É os guri! Dianho, gângster de galpão, direto de Santa Cruz. Tá todo Nicolas Cagezinho esse lugar!'], ['sadi', 'Seja bem-vindo! Vai uma cerveja?'], ['x', 'Álcool não, rapaz! Me vê um refri, que o gângster tá na dieta da cabeça boa. Hehehe.']],
+    meet: [['x', 'É os guri! Dianho, gângster de galpão, direto de Santa Cruz. Tá todo Nicolas Cagezinho esse lugar!'], ['sadi', 'Seja bem-vindo! O que vai ser?'], ['x', 'Um xis e um refri, rapaz! E se juntar os guri aqui dentro, vira revoada dos cupinxa, hehehe.']],
     chapters: [
       { title: 'A tábua torta', lines: [['x', 'Vi uma tábua torta ali no teu galpão e não consegui dormir, rapaz.'], ['sadi', 'Torta? Eu nem tinha reparado.'], ['x', 'Reforma é comigo! Trouxe martelo, prego e o celular pra filmar. Gângster de galpão não deixa tábua sofrendo, hehehe.']] },
-      { title: 'Revoada dos cupinxa', lines: [['x', 'Quero fazer uma revoada dos cupinxa aqui na bodega! Só os guri, refri e xis.'], ['sadi', 'Revoada sem cerveja?'], ['x', 'Sem cerveja e com muita risada! É os guri! A bodega vai ficar lotada, prepara a chapa.']] },
+      { title: 'Revoada dos cupinxa', lines: [['x', 'Quero fazer uma revoada dos cupinxa aqui na bodega! Só os guri, refri e xis.'], ['sadi', 'Revoada aqui? Cabe todo mundo?'], ['x', 'Se não couber, eu reformo o galpão na hora! É os guri! A bodega vai ficar lotada, prepara a chapa.']] },
       { title: 'Ídolo na Irlanda do Norte', lines: [['x', 'O vídeo da reforma da tua bodega bombou, rapaz! Comentaram até da Irlanda do Norte.'], ['sadi', 'Da Irlanda do Norte? Sério?'], ['x', 'Sério! Agora a bodega também é ídola lá. Tá todo Nicolas Cagezinho esse galpão, hehehe!']], reward: { rep: 4, xp: 100, stock: { refri: 12 }, text: 'O vídeo do Dianho bombou: +4 de reputação e 12 refris.' } }
     ]
   },

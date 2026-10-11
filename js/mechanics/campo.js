@@ -1,10 +1,10 @@
-// Costelão de domingo (cenário aberto, fogo de chão, maionese) e laçada de sábado.
+// Costelão de domingo (cenário aberto, fogo de chão, maionese) e a laçada no pasto do curral, a qualquer hora.
 'use strict';
 
 const CAMPO_IMG='assets/images/campo/';
 function campoImage(file){const image=new Image();image.src=CAMPO_IMG+file;return image;}
-const campoArt=campoImage('campo.png'),fogoArt=campoImage('fogo.png'),espetoArt=campoImage('espeto.png'),boisArt=campoImage('bois.png'),lenhaArt=campoImage('lenha.png'),queroArt=campoImage('queroquero.png');
-const CAMPO_ART=[[campoArt,'campo.png'],[fogoArt,'fogo.png'],[espetoArt,'espeto.png'],[boisArt,'bois.png'],[lenhaArt,'lenha.png'],[queroArt,'queroquero.png']];
+const campoArt=campoImage('campo.webp'),fogoArt=campoImage('fogo.png'),espetoArt=campoImage('espeto.png'),boisArt=campoImage('bois.png'),lenhaArt=campoImage('lenha.png'),queroArt=campoImage('queroquero.png');
+const CAMPO_ART=[[campoArt,'campo.webp'],[fogoArt,'fogo.png'],[espetoArt,'espeto.png'],[boisArt,'bois.png'],[lenhaArt,'lenha.png'],[queroArt,'queroquero.png']];
 const BOI_COATS=['angus','colorado','holandes','hereford','charoles','crioulo'],BOI_W=72,BOI_H=52,ESPETO_W=44,ESPETO_H=96;
 // Basta laçar um boi: cada laço certeiro enche a barra e com LASSO_HITS laços ele está laçado.
 const BOI_COST=120,MANTAS_PER_BOI=6,MANTA_GRAMS=2000,MIN_LASSO=1,LASSO_HITS=6,MANTA_BUY_COST=95;
@@ -77,7 +77,7 @@ function useEspeto(i){
 }
 
 // ---------- Tábua, mantas e maionese ----------
-function useCostelaCrua(){if(!freeHand()){say('Libere as mãos para pegar a manta.');return;}const item=consumeStock('costela_crua');if(!item){say('Acabaram as mantas. Os bois são laçados no sábado.');return;}putHeld(item);AudioEngine.tick();save();}
+function useCostelaCrua(){if(!freeHand()){say('Libere as mãos para pegar a manta.');return;}const item=consumeStock('costela_crua');if(!item){say('Acabaram as mantas. Lace e carneie um boi no curral.');return;}putHeld(item);AudioEngine.tick();save();}
 function useTabua(){
  const h=held();
  if(h?.key==='costela_assada'){
@@ -92,6 +92,8 @@ function useTabua(){
 function useMaionese(){
  const b=campoState().bowl,h=held();
  if(h){
+  // Pegou maionese a mais? E na tigela devolve a porção.
+  if(h.pid==='maionese'||h.key==='maionese'){takeHeld();G.avg.maionese=G.stock.maionese>0?G.avg.maionese:(h.cost||G.avg.maionese);G.stock.maionese++;effect('Maionese de volta à tigela',G.player.x,G.player.y-90,'#fff2b0');AudioEngine.tick();save();return;}
   if(h.key==='ovo'&&!h.ready&&!h.burned){if(b.ovo){say('O ovo já está na tigela. Agora o óleo.');return;}takeHeld();b.ovo=true;b.cost+=h.cost;AudioEngine.tick();save();return;}
   if(h.key==='azeite'){if(b.azeite){say('O óleo já está na tigela. Agora o ovo.');return;}takeHeld();b.azeite=true;b.cost+=h.cost;AudioEngine.tick();save();return;}
   say('Na tigela vão ovo e óleo.');return;
@@ -259,8 +261,10 @@ function costelaoTutorialActive(){const t=costelaoTutorial();return isCampo()&&!
 function costelaoStep(){return COSTELAO_STEPS[costelaoTutorial()?.step||0];}
 function costelaoTutorialEvent(id){const t=costelaoTutorial();if(!costelaoTutorialActive()||costelaoStep()?.id!==id)return;costelaoAdvance();}
 function costelaoAdvance(){const t=costelaoTutorial();t.step++;t.actor=null;t.introduced=false;if(t.step>=COSTELAO_STEPS.length){t.done=true;G.costelaoTaught=true;showBanner('Costelão liberado!','Agora a freguesia chega à vontade. Bom domingo!','level');}save();}
+// O primeiro costelão nunca trava: se faltar ovo ou óleo para a maionese, o Valter traz do galinheiro dele.
+function costelaoSupplies(){let given=[];if(G.stock.ovo<2&&!campoState().bowl.ovo){G.stock.ovo=2;given.push('2 ovos');}if(G.stock.azeite<1&&!campoState().bowl.azeite){G.stock.azeite=1;given.push('óleo');}if(given.length)say('O Valter trouxe '+given.join(' e ')+' para a maionese do costelão.');}
 function costelaoTutorialTick(){
- const t=costelaoTutorial();let s=costelaoStep();if(!s)return;
+ const t=costelaoTutorial();let s=costelaoStep();if(!s)return;if(s.id==='maionese'&&!G.task)costelaoSupplies();
  // Pula o que o jogador já fez por conta (lenha rachada, fogo aceso, manta no espeto).
  const c=campoState(),done={rachar:()=>held()?.key==='lenha'||c.fuel>0||c.lit,fogo:()=>c.fuel>0||c.lit,acender:()=>c.lit,espeto:()=>c.espetos.some(Boolean)};
  while(s&&done[s.id]?.()){t.step++;t.introduced=false;s=costelaoStep();}if(!s){costelaoAdvance();return;}
@@ -288,30 +292,31 @@ function costelaoTarget(){
 }
 // Seta amarela pulando sobre a estação que o tutorial pede (costelão e primeiro dia).
 function drawTutorialArrow(){
- if(modal)return;const id=costelaoTutorialActive()?costelaoTarget():costelaoPrepFirst()||doorReminder()?'door':tutorialActive()&&['open','prep'].includes(G.phase)?tutorialTarget():null;
+ if(modal)return;const id=prologueActive()?prologueBodegaTarget():sportState().waiting?'door':costelaoTutorialActive()?costelaoTarget():costelaoPrepFirst()||doorReminder()?'service':tutorialActive()&&['open','prep'].includes(G.phase)?tutorialTarget():null;
  const f=id==='door'?{id:'door',x:ENTRY.x-20,y:H-60,w:40,h:20}:id&&furniture().find(f=>f.id===id);if(!f)return;
  const x=f.x+f.w/2,y=f.y-(f.id==='fogo'?150:f.id.startsWith('espeto')?95:f.id.startsWith('table')?60:40)-Math.abs(Math.sin(frameClock*5))*12;
  ctx.fillStyle='#ffd34a';ctx.strokeStyle='#5a3a10';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-16,y-22);ctx.lineTo(x+16,y-22);ctx.lineTo(x+16,y-6);ctx.lineTo(x+26,y-6);ctx.lineTo(x,y+16);ctx.lineTo(x-26,y-6);ctx.lineTo(x-16,y-6);ctx.closePath();ctx.fill();ctx.stroke();
 }
 function costelaoTutorialDelivered(c){const t=costelaoTutorial();if(costelaoTutorialActive()&&c.id===t.actor){t.actor=null;costelaoAdvance();}}
 function costelaoPrepFirst(){return isCampo()&&!G.lasso&&G.phase==='prep'&&!G.costelaoTaught&&!scene;}
-function costelaoTutorialHint(){if(costelaoPrepFirst())return '<b>Primeiro costelão · abra o domingo</b><p>Vá até a <b>porta</b>, embaixo, e aperte <span class="keycap">E</span>. Depois o passo a passo mostra cada etapa: lenha, fogo, espeto, corte e maionese.</p>';const t=costelaoTutorial(),s=costelaoStep();return s?'<b>Costelão '+(t.step+1)+' / '+COSTELAO_STEPS.length+' · '+s.title+'</b><p>'+s.text+'</p>':'';}
+function costelaoTutorialHint(){if(costelaoPrepFirst())return '<b>Primeiro costelão · abra o domingo</b><p>Vá ao <b>caixa</b> (o balcão), aperte <span class="keycap">E</span> e escolha <b>Abrir a bodega</b>. Depois o passo a passo mostra cada etapa: lenha, fogo, espeto, corte e maionese.</p>';const t=costelaoTutorial(),s=costelaoStep();return s?'<b>Costelão '+(t.step+1)+' / '+COSTELAO_STEPS.length+' · '+s.title+'</b><p>'+s.text+'</p>':'';}
 function resetCampoDay(){const c=campoState();c.mantasUsed=0;G.stock.costela_crua=Math.min(G.stock.costela_crua||0,MANTAS_PER_BOI);c.fuel=0;c.lit=false;c.espetos=[null,null,null,null];c.bowl={ovo:false,azeite:false,cost:0};}
 function costelaoWelcome(){
  const first=!G.costelaoTaught;
  // O fogo, os espetos e a tigela são zerados quando o domingo começa (resetCampoDay): o que foi feito antes de abrir continua valendo.
  {const c=campoState();c.firstOrders=0;c.firstDay=first?G.day:0;}
- if(first){campoState().tutorial={step:0,done:false,actor:null};if(G.stock.costela_crua<2){G.stock.costela_crua=2;G.avg.costela_crua=BOI_COST/MANTAS_PER_BOI;}}
- openDialog(first?'Primeiro costelão de domingo!':'Domingo de costelão',`<p>A bodega vai para o campo: costela no fogo de chão, maionese caseira e chimarrão.</p><div class="callout">Rache lenha · ponha no fogo e segure E para acender · manta no espeto · vire quando ficar verde · retire, leve à tábua e corte no peso. Maionese: ovo + óleo, A e D alternados.</div><p>${first?'Hoje é passo a passo: os fregueses esperam você ficar pronto.':'Mantas no estoque: <b>'+G.stock.costela_crua+'</b> · costela na tábua: <b>'+formatWeight(G.stock.costela)+'</b>. Faltou carne? Celular → Fornecedor → Campo.'}</p><button class="primary" data-act="close">Acender o fogo</button>`,'costelao');
+ if(first){campoState().tutorial={step:0,done:false,actor:null};if(G.stock.costela_crua<2){G.stock.costela_crua=2;G.avg.costela_crua=BOI_COST/MANTAS_PER_BOI;}costelaoSupplies();}
+ openDialog(first?'Primeiro costelão de domingo!':'Domingo de costelão',`<p>A bodega vai para o campo: costela no fogo de chão, maionese caseira e chimarrão.</p><div class="callout">Rache lenha · ponha no fogo e segure E para acender · manta no espeto · vire quando ficar verde · retire, leve à tábua e corte no peso. Maionese: ovo + óleo, A e D alternados.</div><p>${first?'Hoje é passo a passo: os fregueses esperam você ficar pronto.':'Mantas no estoque: <b>'+G.stock.costela_crua+'</b> · costela na tábua: <b>'+formatWeight(G.stock.costela)+'</b>. Faltou carne? Laça um boi na cerca do campo.'}</p><button class="primary" data-act="close">Acender o fogo</button>`,'costelao');
 }
 
-// ---------- Laçada de sábado ----------
-function lassoNeeded(){return G.phase==='closed'&&calendar().weekday===5&&G.lassoDay!==G.day&&!tutorialActive();}
+// ---------- Laçada ----------
+// Laçar não tem mais dia marcado: o boi se laça a qualquer hora no pasto do curral e depois é carneado (prologue.js).
+function lassoNeeded(){return false;}
 function lassoIntro(){
  const herd=G.herd||0,need=Math.min(MIN_LASSO,herd);
  openDialog(G.lassoTaught?'Laçada de sábado':'Hora de laçar os bois!',`<p>Amanhã tem costelão: lace <b>pelo menos um boi</b>. Cada laço certeiro enche a barra; com <b>${LASSO_HITS} laços</b> o boi está laçado e rende ${MANTAS_PER_BOI} mantas.</p><div class="callout"><b>Segure Q</b> para girar o laço e <b>solte</b> com o círculo sobre o boi. Quando aparecer um <b>alvo vermelho</b> no chão, é rasante de quero-quero: saia dele ou aperte <b>Espaço</b>.</div><p>Rebanho: <b>${herd===1?'1 boi':herd+' bois'}</b>${herd<MIN_LASSO?' · faltam bois! '+(physicalShopping()?'Compre na Casa do Campeiro, saindo pela porta.':'Compre no celular (Fornecedor → Campo).'):''}</p><div class="actions"><button class="primary" data-act="lassoStart" ${herd<1?'disabled':''}>Ir ao campo laçar</button>${herd<MIN_LASSO?'<button data-act="lassoBuy">Comprar bois</button>':''}${herd<1&&!hasCash(BOI_COST)?'<button data-act="lassoSkip">Sem bois nem dinheiro · pular</button>':''}</div>`,'lassoIntro');
 }
-function buyBoi(){if(!hasCash(BOI_COST)){say('Um boi custa '+money(BOI_COST)+'.');AudioEngine.bad();return;}spendCash(BOI_COST);G.stats.purchases+=BOI_COST;G.herd=(G.herd||0)+1;AudioEngine.heart();say('Boi comprado! Rebanho: '+G.herd+'.');save();if(phoneOpen)renderPhone();else if(modal==='lassoIntro')lassoIntro();}
+function buyBoi(){if(!hasCash(BOI_COST)){say('Um boi custa '+money(BOI_COST)+'.');AudioEngine.bad();return;}spendCash(BOI_COST);G.stats.purchases+=BOI_COST;G.herd=(G.herd||0)+1;G.herdValue=(G.herdValue||0)+BOI_COST;AudioEngine.heart();say('Boi comprado! Rebanho: '+G.herd+'.');save();if(phoneOpen)renderPhone();else if(modal==='lassoIntro')lassoIntro();}
 function startLasso(){
  if(!G.herd){lassoIntro();return;}closeDialog(true);if(phoneOpen)togglePhone(false);
  const n=G.lassoTaught?Math.min(G.herd,8):1,bois=Array.from({length:n},(_,i)=>({id:i,coat:Math.floor(Math.random()*BOI_COATS.length),x:420+Math.random()*900,y:480+Math.random()*330,dx:Math.random()<.5?-1:1,dy:0,state:'free',t:Math.random()*3,speed:40}));
@@ -331,6 +336,8 @@ function lassoTick(dt){
  else if(len&&!L.throw&&!L.stun){dx/=len;dy/=len;L.fx=dx;L.fy=dy;G.player.dx=dx;G.player.dy=dy;const sp=L.charging?90:230;G.player.x=clamp(G.player.x+dx*sp*dt,60,1340);G.player.y=clamp(G.player.y+dy*sp*dt,450,870);}
  if(L.charging){L.charge+=dt;L.whirl=(L.whirl||0)-dt;if(L.whirl<=0){L.whirl=.3;AudioEngine.whirl();}}
  for(const b of L.bois){
+  // Caçada de javali (map-events.js): o bicho não foge, investe.
+  if(L.mode==='javali'){if(b.state==='free')boarTick(L,b,dt);continue;}
   if(b.state==='caught'){const tx=CURRAL.x+40+(b.id%4)*40,ty=CURRAL.y+60+Math.floor(b.id/4)*60,d=Math.hypot(tx-b.x,ty-b.y);if(d<4){b.state='pen';continue;}b.dx=(tx-b.x)/d;b.x+=b.dx*70*dt;b.y+=(ty-b.y)/d*70*dt;continue;}
   if(b.state!=='free')continue;
   const pd=Math.hypot(b.x-G.player.x,b.y-G.player.y);
@@ -344,14 +351,16 @@ function lassoTick(dt){
   if(t.time>=t.total&&!t.done){
    t.done=true;const hit=L.bois.filter(b=>b.state==='free').map(b=>({b,d:Math.hypot(b.x-t.tx,b.y-28-t.ty)})).filter(o=>o.d<52).sort((a,b)=>a.d-b.d)[0];
    if(hit){const b=hit.b;b.rope=(b.rope||0)+1;AudioEngine.ropeHit();
-    if(b.rope>=LASSO_HITS){b.state='caught';L.caught++;AudioEngine.heart();AudioEngine.moo(.11,fxRand(.85,1.1));burst(b.x,b.y-40,'leaf');effect('Laçou! '+L.caught+(L.caught>1?' bois':' boi'),b.x,b.y-90,'#e1ff9e');gainXP(8);}
-    else{const d=Math.hypot(b.x-G.player.x,b.y-G.player.y)||1;b.dx=(b.x-G.player.x)/d;b.dy=(b.y-G.player.y)/d*.6;b.speed=170;b.t=1.3;AudioEngine.moo(.06,1.1+Math.random()*.15);effect('Laço! '+b.rope+'/'+LASSO_HITS,b.x,b.y-100,'#ffe9a8');}}
+    const need=L.mode==='rodeio'?RODEO_HITS:LASSO_HITS;
+    if(b.javali)javaliRoped(L,b);else if(b.rope>=need){b.state='caught';L.caught++;if(L.mode==='rodeio')L.doneTime??=L.time;AudioEngine.heart();AudioEngine.moo(.11,fxRand(.85,1.1));burst(b.x,b.y-40,'leaf');effect(L.mode==='rodeio'?'Laçou o terneiro!':'Laçou! '+L.caught+(L.caught>1?' bois':' boi'),b.x,b.y-90,'#e1ff9e');gainXP(8);}
+    else{const d=Math.hypot(b.x-G.player.x,b.y-G.player.y)||1;b.dx=(b.x-G.player.x)/d;b.dy=(b.y-G.player.y)/d*.6;b.speed=170;b.t=1.3;AudioEngine.moo(.06,1.1+Math.random()*.15);effect('Laço! '+b.rope+'/'+need,b.x,b.y-100,'#ffe9a8');}}
    else{AudioEngine.thud();effect('Errou o laço',t.tx,t.ty-20,'#ffc0a0');}
    updateLassoUI();save();
   }
   if(t.time>=t.total+.35)L.throw=null;
  }
  // Boi laçado: ele vai para o curral e a laçada encerra sozinha (no costelão vai a carne de um boi só).
+ if(L.mode==='rodeio'){if(!L.caught&&L.time>=RODEO_LIMIT){finishRodeio(L);return;}if(Math.floor(L.time*10)!==L.shown){L.shown=Math.floor(L.time*10);rodeioUI(L);}}
  if(L.caught>=L.need){L.endT=(L.endT||0)+dt;if(L.endT>.6&&L.bois.every(b=>b.state!=='caught')||L.endT>3)finishLasso();}
 }
 function lassoCharge(){const L=G.lasso;if(!L||L.throw||L.charging||L.stun>0||L.knock>0)return;L.charging=true;L.charge=0;}
@@ -367,15 +376,14 @@ function lassoKeyDown(e){
  keys.add(key);
 }
 function lassoKeyUp(e){const key=e.key.length===1?e.key.toLowerCase():e.key;keys.delete(key);if(key==='q'||key==='e')lassoRelease();if(key==='f')slingRelease();}
-function updateLassoUI(){const L=G.lasso;if(!L)return;const best=Math.max(0,...L.bois.filter(b=>b.state==='free').map(b=>b.rope||0));$('lassoCount').textContent=(L.caught?L.caught+(L.caught>1?' bois laçados':' boi laçado'):'Nenhum boi laçado')+(best?' · laço '+best+'/'+LASSO_HITS:'');$('lassoHerd').textContent='Rebanho no campo: '+L.bois.filter(b=>b.state==='free').length;$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught<L.need?'Lace um boi':'Levando o boi pro curral…';}
+function updateLassoUI(){const L=G.lasso;if(!L)return;if(L.mode==='rodeio'){rodeioUI(L);return;}$('lassoUI').querySelector('b').textContent=L.mode==='javali'?'Caçada de javali':'Laçada';$('lassoUI').querySelectorAll('small')[1].innerHTML=L.mode==='javali'?'WASD anda · segure <b>Q</b> e solte em cima do javali · <b>Espaço</b> esquiva da cabeçada':'WASD anda · segure <b>Q</b> para girar · solte em cima do boi · <b>Espaço</b> esquiva do quero-quero · <b>F</b> bodoque';if(L.mode==='javali'){const b=L.bois[0],st=mapEvState('javali');$('lassoCount').textContent=L.caught?'Javali abatido!':'Laços no javali: '+(b.rope||0)+'/'+JAVALI_HITS;$('lassoHerd').textContent='Javalis abatidos esta noite: '+st.kills+'/'+JAVALI_NEED+' · cabeçadas: '+(L.hits||0)+'/5';$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught?'Levando o javali…':'Lace o javali';return;}const best=Math.max(0,...L.bois.filter(b=>b.state==='free').map(b=>b.rope||0));$('lassoCount').textContent=(L.caught?L.caught+(L.caught>1?' bois laçados':' boi laçado'):'Nenhum boi laçado')+(best?' · laço '+best+'/'+LASSO_HITS:'');$('lassoHerd').textContent='Rebanho no campo: '+L.bois.filter(b=>b.state==='free').length;$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught<L.need?'Lace um boi':'Levando o boi pro curral…';}
+// Boi laçado: volta para o campo (ou para a bodega) e a carne sai na hora: mantas de costela e hambúrguer.
 function finishLasso(){
- const L=G.lasso;if(!L||L.caught<L.need)return;const firstLasso=!G.lassoTaught;
- const mantas=Math.min(L.caught*MANTAS_PER_BOI,Math.max(0,MANTAS_PER_BOI-G.stock.costela_crua)),units=G.stock.costela_crua;
- G.avg.costela_crua=(G.avg.costela_crua*units+L.caught*BOI_COST)/(units+mantas);G.stock.costela_crua+=mantas;G.herd-=L.caught;G.bullsLassoed=(G.bullsLassoed||0)+L.caught;
+ const L=G.lasso;if(L?.mode==='javali'){if(L.caught>=L.need)finishHunt(L);return;}if(L?.mode==='rodeio'){finishRodeio(L);return;}if(!L||L.caught<L.need)return;
+ G.herd-=L.caught;G.bullsLassoed=(G.bullsLassoed||0)+L.caught;
  G.player={...L.saved};G.lasso=null;G.lassoDay=G.day;G.lassoTaught=true;keys.clear();$('lassoUI').classList.add('hidden');
- showBanner(L.caught+(L.caught>1?' bois laçados!':' boi laçado!'),mantas+' mantas de costela prontas para o costelão de amanhã.','gift');save();refreshHUD();
- // Na primeira vez, antes do domingo: a cena da montagem do costelão.
- if(firstLasso&&scenesEnabled())playScene('montagem',()=>nextDay());else nextDay();
+ save();refreshHUD();
+ butcherBoi(L.caught);
 }
 // ---------- Quero-queros ----------
 // Cada quero-quero guarda um ninho. Perto dele, levanta voo, circula, marca um alvo no chão e dá o rasante.
@@ -509,11 +517,11 @@ function discardCostelao(){
 function skipLasso(){G.lassoDay=G.day;closeDialog(true);say('Sem bois, o costelão de amanhã fica só com o que sobrou no estoque.');nextDay();}
 function drawLasso(){
  const L=G.lasso;if(!L){if(scene)drawScene();else draw();return;}beginWorld();drawCampoBackground();
- // curral
- const c=CURRAL;rect(c.x,c.y+c.h-8,c.w,10,'#5a3a20');for(let k=0;k<=5;k++){wood(c.x+k*(c.w/5)-4,c.y,9,c.h,true);}for(const y of [c.y+30,c.y+90,c.y+150])wood(c.x,y,c.w,9);txt('CURRAL',c.x+c.w/2,c.y-12,13,'#fff0c3');
+ // curral (na caçada de javali é de noite e não tem curral)
+ if(L.mode==='javali')huntBackdrop();else{const c=CURRAL;rect(c.x,c.y+c.h-8,c.w,10,'#5a3a20');for(let k=0;k<=5;k++){wood(c.x+k*(c.w/5)-4,c.y,9,c.h,true);}for(const y of [c.y+30,c.y+90,c.y+150])wood(c.x,y,c.w,9);txt('CURRAL',c.x+c.w/2,c.y-12,13,'#fff0c3');}
  drawQueroGround(L);
- const layers=L.bois.map(b=>({y:b.y,draw:()=>{ellipse(b.x,b.y+2,40,9,'#1c140c44');drawBoi(b.coat,b.state==='free'&&b.speed===0?2:Math.floor(L.time*(b.speed>60?9:4)+b.id)%2,b.x,b.y,1.6,b.dx<0);if(b.state==='free'&&b.rope){bar(b.x-32,b.y-100,64,b.rope/LASSO_HITS,'#e8cc8a');}if(b.state==='caught'){ctx.strokeStyle='#d8b878';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x+(b.dx<0?-40:40),b.y-60,12,6,0,0,Math.PI*2);ctx.stroke();}}}));
- layers.push({y:G.player.y,draw:()=>personDraw(avatarSprite(),G.player.x,G.player.y,G.player.walk,true,G.player.dx)});
+ const layers=L.bois.map(b=>({y:b.y,draw:()=>{if(b.javali){drawHuntBoar(L,b);return;}ellipse(b.x,b.y+2,40,9,'#1c140c44');drawBoi(b.coat,b.state==='free'&&b.speed===0?2:Math.floor(L.time*(b.speed>60?9:4)+b.id)%2,b.x,b.y,b.terneiro?1.15:1.6,b.dx<0);if(b.state==='free'&&b.rope){bar(b.x-32,b.y-(b.terneiro?80:100),64,b.rope/(L.mode==='rodeio'?RODEO_HITS:LASSO_HITS),'#e8cc8a');}if(b.state==='caught'){ctx.strokeStyle='#d8b878';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x+(b.dx<0?-40:40),b.y-60,12,6,0,0,Math.PI*2);ctx.stroke();}}}));
+ layers.push({y:G.player.y,draw:()=>personDraw(avatarSprite(),G.player.x,G.player.y,G.player.walk,true,G.player.dx,false,0,G.player.dy)});
  for(const q of activeQueros(L))if(q.state==='guard')layers.push({y:q.y,draw:()=>drawQuero(0,q.x,q.y-30,1.8,q.face<0)});
  layers.sort((a,b)=>a.y-b.y).forEach(l=>l.draw());
  drawQueroAir(L);drawFx();
@@ -521,6 +529,7 @@ function drawLasso(){
  if(L.charging){const a=lassoAim(),ang=L.time*14;ctx.beginPath();ctx.ellipse(G.player.x+Math.cos(ang)*8,G.player.y-132,30,10,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([8,8]);ctx.strokeStyle='#fff4c488';ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-60);ctx.lineTo(a.x,a.y);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#ffe28a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y,52,20,0,0,Math.PI*2);ctx.stroke();}
  if(L.throw){const t=L.throw,k=clamp(t.time/t.total,0,1),x=t.sx+(t.tx-t.sx)*k,y=t.sy+(t.ty-t.sy)*k-Math.sin(k*Math.PI)*90;ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-80);ctx.quadraticCurveTo((G.player.x+x)/2,Math.min(y,G.player.y)-60,x,y);ctx.stroke();ctx.beginPath();ctx.ellipse(x,y,34*(.5+k*.5),12*(.5+k*.5),0,0,Math.PI*2);ctx.stroke();}
  for(const e of sparks){ctx.globalAlpha=Math.min(1,e.life);txt(e.text,e.x,e.y-(2.2-e.life)*16,15,e.color);}ctx.globalAlpha=1;
+ if(L.mode==='rodeio')drawRodeioHUD(L);
  ctx.setTransform(1,0,0,1,0,0);
 }
 function campoSupplierHTML(){return `<div class="supply"><span class="icon"><span class="pixel-item boi-icon" aria-hidden="true"></span></span><div><b>Boi para o costelão</b><p>Rebanho: <b>${G.herd||0} bois</b><br>Cada boi laçado no sábado rende ${MANTAS_PER_BOI} mantas (${formatWeight(MANTAS_PER_BOI*MANTA_GRAMS)}).</p></div><button class="primary" data-act="buyBoi" ${hasCash(BOI_COST)?'':'disabled'}>Comprar · ${money(BOI_COST)}</button></div><div class="supply"><span class="icon">${itemIconHTML('costela_crua')}</span><div><b>Manta do açougue</b><p>Para quando faltar carne no costelão. Chega em 8 s, mas custa bem mais que laçar: ${money(MANTA_BUY_COST)} contra ${money(BOI_COST/MANTAS_PER_BOI)}.</p></div><button class="primary" data-act="buyManta" ${hasCash(MANTA_BUY_COST)&&G.costelaoTaught?'':'disabled'}>${G.costelaoTaught?'Comprar · '+money(MANTA_BUY_COST):'Depois do primeiro costelão'}</button></div><div class="supply"><span class="icon">${itemIconHTML('costela_crua')}</span><div><b>No estoque</b><p>${G.stock.costela_crua} mantas cruas · ${formatWeight(G.stock.costela)} na tábua · ${G.stock.maionese} maioneses</p></div></div>`;}

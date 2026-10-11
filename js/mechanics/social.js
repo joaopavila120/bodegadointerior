@@ -7,7 +7,7 @@ const CONTACT_AT=15;          // afeto para ganhar o contato
 const GIFT_AT=50;             // afeto para ganhar o presente
 const MAX_FRIENDSHIP=100;     // afeto para poder jogar com o personagem
 const GIFTS={
- manolima:[{at:'tutorial',decor:['bandeira'],text:'“Pra tua bodega ter cara de galpão de verdade. E treina, que um dia tu enfrenta o Lauro Boleador!”'},{at:GIFT_AT,decor:['prateleira','gaita'],text:'“Essa gaita já tocou muito baile no Arvoredo.”'}],
+ manolima:[{at:'tutorial',decor:['bandeira'],text:'“Pra tua bodega ter cara de galpão de verdade. E treina, que um dia tu enfrenta o Lauro Bolador!”'},{at:GIFT_AT,decor:['prateleira','gaita'],text:'“Essa gaita já tocou muito baile no Arvoredo.”'}],
  badin:[{at:GIFT_AT,decor:['chapeu'],text:'“Um chapéu campeiro pra receber a freguesia.”'}],
  guri:[{at:GIFT_AT,decor:['laco'],text:'“Laço trançado pelo meu avô. Cuida bem.”'}],
  marcio:[{at:GIFT_AT,decor:['poncho'],text:'“Pro inverno da bodega.”'}],
@@ -19,7 +19,6 @@ const GIFTS={
  loligebien:[{at:GIFT_AT,decor:['prateleira_potes','frigideiras'],text:'“Panelas da oma, de Pomerode. Prosit!”'}],
  jayme:[{at:GIFT_AT,decor:['comoda','kit_chimarrao'],text:'“Cômoda e cuia: todo galpão precisa de um canto pro mate e pro verso.”'}],
  valter:[{at:GIFT_AT,decor:['planta_dir'],text:'“Da horta da minha patroa. Teu pai sempre dizia que galpão sem planta é galpão triste.”'}],
- gaudencio:[{at:GIFT_AT,decor:['fogao_lenha'],text:'“Fogão a lenha de verdade, não essas modernagem. Agora sim é galpão!”'}],
  baitaca:[{at:GIFT_AT,decor:['lampiao_centro'],text:'“Um lampião pra iluminar os bailes da bodega.”'}],
  peixinhonabrasa:[{at:GIFT_AT,decor:['lampiao_dir'],text:'“Um lampião pra noite não ficar escura.”'}]
 };
@@ -34,7 +33,7 @@ function isSpecial(i){return ALWAYS_TALK.has(PEOPLE[i]?.id);}
 function specialPeople(){return PEOPLE.map((p,i)=>i).filter(i=>isSpecial(i)&&PEOPLE[i].id!==G.avatarId);}
 function hasContact(i){return !!G.contacts?.[PEOPLE[i]?.id];}
 function contactPeople(){return specialPeople().filter(hasContact);}
-function addFriendship(person,n){if(!isSpecial(person))return;G.friends[person]=clamp((G.friends[person]||0)+n,0,MAX_FRIENDSHIP);}
+function addFriendship(person,n){if(!isSpecial(person))return;const before=G.friends[person]||0;G.friends[person]=clamp(before+n,0,MAX_FRIENDSHIP);if(before<QUADRO_AT&&G.friends[person]>=QUADRO_AT&&PORTRAIT_FILES[PEOPLE[person].id])showBanner('Quadro de '+PEOPLE[person].name+' liberado!','A amizade rendeu um retrato: pendure na parede pela aba Estética do celular.','friend',{world:true});}
 function unlockContact(person,silent=false){
  const id=PEOPLE[person]?.id;if(!id||G.contacts[id])return;G.contacts[id]=G.day;
  if(!silent)showBanner('Novo contato: '+PEOPLE[person].name,'Agora dá para convidar para truco e bocha.','friend');
@@ -104,7 +103,7 @@ function socialCheck(){
 }
 // Lições depois do expediente: quem ensina vira contato e volta com um presente em mãos.
 function lessonGift(id){const i=PEOPLE.findIndex(p=>p.id===id);unlockContact(i);queueGift(i,GIFTS[id][0]);const key=id+':tutorial';G.giftQueue.sort((a,b)=>(b.key===key)-(a.key===key));}
-// Bocha com o Lauro Boleador (fim do primeiro dia): lâmpada de coração.
+// Bocha com o Lauro Bolador (fim do primeiro dia): lâmpada de coração.
 function finishBocceTutorial(){lessonGift('lauro');}
 // Truco com o Mano Lima (primeira segunda): bandeira do Rio Grande, mesmo se o jogador desistir.
 function finishTrucoTutorial(){sportState().trucoTutorialDone=true;lessonGift('manolima');}

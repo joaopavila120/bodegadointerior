@@ -106,6 +106,14 @@ async function main() {
       await evaluate(`action('zoomOut');draw()`);
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
+      const worldArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'world-art-scenarios.js'), 'utf8'));
+      for (const result of worldArtResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
+      const tourismResults = await evaluate(fs.readFileSync(path.join(__dirname, 'tourism-scenarios.js'), 'utf8'));
+      for (const result of tourismResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
+      const animationResults = await evaluate(fs.readFileSync(path.join(__dirname, 'player-animation-scenarios.js'), 'utf8'));
+      for (const result of animationResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
+      const penaltyResults = await evaluate(fs.readFileSync(path.join(__dirname, 'penalty-scenarios.js'), 'utf8'));
+      for (const result of penaltyResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
       await evaluate('localStorage.clear()');
       await click('#start [data-act="new"]'); assert(await evaluate('scene?.id==="intro"&&document.body.classList.contains("intro-playing")'), 'Jogo novo começa com a introdução da história'); await click('#sceneSkip'); await click('#overlay [data-act="close"]');
       await waitUntil(() => evaluate('AudioEngine.tracks.every(t=>!t.audio.error&&t.audio.duration>0)'), 'As músicas externas não carregaram');
@@ -115,7 +123,7 @@ async function main() {
       await evaluate('save()');
       await load(protocol === 'file' ? pathToFileURL(path.join(root, entry)).href : base + '/' + entry);
       await click('#continue'); await click('#overlay [data-act="close"]');
-      assert(await evaluate('started&&!G.testMode&&G.stock.pao_xis===0&&G.cash>480&&tutorialStockMissing().includes("pao_xis")'), 'Jogo novo começa sem estoque e com dinheiro para comprar');
+      assert(await evaluate('started&&!G.testMode&&prologueActive()&&G.stock.pao_xis===0&&G.stock.erva===0&&hortaState().trees[0]?.crop==="erva"&&G.herd===1'), 'Jogo novo começa pelo prólogo da roça, com a bodega vazia');
       console.log('PASS iniciar, andar, abrir celular e continuar: ' + protocol + ' / ' + entry);
     }
 
@@ -143,6 +151,10 @@ async function main() {
     for (const result of dialogue) console.log('PASS ' + result);
     const tournament = await evaluate(fs.readFileSync(path.join(__dirname, 'tournament-scenarios.js'), 'utf8'));
     for (const result of tournament) console.log('PASS ' + result);
+    const prologue = await evaluate(fs.readFileSync(path.join(__dirname, 'prologue-scenarios.js'), 'utf8'));
+    for (const result of prologue) console.log('PASS ' + result);
+    const missions = await evaluate(fs.readFileSync(path.join(__dirname, 'missions-scenarios.js'), 'utf8'));
+    for (const result of missions) console.log('PASS ' + result);
     const tutorial = await evaluate(fs.readFileSync(path.join(__dirname, 'tutorial-scenarios.js'), 'utf8'));
     for (const result of tutorial) console.log('PASS ' + result);
     const interfaceReturns = await evaluate(fs.readFileSync(path.join(__dirname, 'interface-returns-scenarios.js'), 'utf8'));
@@ -175,18 +187,18 @@ async function main() {
     for(const result of bocce)console.log('PASS '+result);
     const bx=await evaluate('G.bocce.playerX');await key('d',150);
     assert(await evaluate('G.bocce.playerX')>bx);
-    await key(' ');assert.equal(await evaluate('G.bocce.phase'),'power');
-    await delay(500);await key(' ');assert.equal(await evaluate('G.bocce.used[0]'),1);
+    await key('e');assert.equal(await evaluate('G.bocce.phase'),'power');
+    await delay(500);await key('e');assert.equal(await evaluate('G.bocce.used[0]'),1);
     await evaluate('save()');await load(base+'/index.html');await click('#continue');
     assert(await evaluate(`G.bocce?.used[0]===1&&G.bocce.paused&&!$('bocceScreen').classList.contains('hidden')`));
     await click('#bocceConfirm');assert(await evaluate('!G.bocce.paused'));
     await evaluate('settleBocce(0)');await click('#bocceExit');await click('#overlay [data-act="close"]');
     assert(await evaluate(`!G.bocce&&G.phase==='closed'`));
-    console.log('PASS teclado, lançamento em duas etapas e retomada real da bocha após recarregar');
+    console.log('PASS teclado (E trava e lança), lançamento em duas etapas e retomada real da bocha após recarregar');
 
     await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     await evaluate(`enterCancha(true)`);
-    await evaluate('canchaOptions()');await click('#overlay [data-act="bocce"]');await click('[data-act="startBocce"]');
+    await evaluate('G.contacts={...(G.contacts||{}),manolima:1}');await evaluate('canchaOptions()');await click('#overlay [data-act="bocce"]');await click('[data-act="startBocce"]');
     await waitUntil(()=>evaluate(`G.bocce.phase==='direction'`),'O bolim não chegou no celular');
     await click('#bocceConfirm');assert(await evaluate(`G.bocce.phase==='power'`));
     assert(await evaluate(`(()=>{const r=$('bocceConfirm').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;})()`));
@@ -195,7 +207,7 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
     console.log('PASS cancha e lançamentos por botões no celular');
 
-    assert(await evaluate(`$('testModes').classList.contains('hidden')`), 'Modos de teste ficam escondidos no endereço normal');
+    assert(await evaluate(`!$('testModes').classList.contains('hidden')`), 'Modos de teste aparecem na tela inicial');
     await evaluate('G.testMode=true;G.testRules=TEST_RULES;G.cash=0;save()');
     await load(base + '/index.html?testes');
     assert(await evaluate(`!$('testModes').classList.contains('hidden')`), 'Com ?testes os modos de teste aparecem');
@@ -214,10 +226,10 @@ async function main() {
     await send('Page.navigate', { url: base + '/index.html' });
     await waitUntil(() => evaluate(`document.documentElement?.dataset.gameReady==='error'`), 'Faltou diagnóstico de script ausente');
     assert(await evaluate(`$('startupStatus').textContent.includes('card-game.js')&&document.querySelector('#start [data-act="new"]').disabled`));
-    blockedPath = '/assets/images/room2.png';
+    blockedPath = '/assets/images/room2.webp';
     await send('Page.navigate', { url: base + '/index.html' });
     await waitUntil(() => evaluate(`document.documentElement?.dataset.gameReady==='error'`), 'Faltou diagnóstico de imagem ausente');
-    assert(await evaluate(`$('startupStatus').textContent.includes('room2.png')`));
+    assert(await evaluate(`$('startupStatus').textContent.includes('room2.webp')`));
     console.log('PASS arquivos ausentes mostram diagnóstico em vez de botões sem ação');
   } finally {
     if (send) { try { await Promise.race([send('Browser.close'),delay(2000)]); } catch (_) {} }

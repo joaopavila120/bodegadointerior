@@ -4,11 +4,14 @@
 'use strict';
 
 let scene = null, sceneForcesCampo = false, NEWS_DEFAULT = null;
+// Vistas de cena de outros arquivos (ex.: a beira do rio, em map-events.js).
+const SCENE_VIEWS = {};
 // Os testes automáticos desligam as cenas do meio do jogo (a introdução continua testável).
 function scenesEnabled() { return !window.NO_SCENES; }
 
 const SCENES = {
-  // Jogo novo: a chegada ao galpão herdado, a carta e a foto do vô, a faxina, o jornal, o telefonema do atacado e o primeiro vizinho.
+  // Jogo novo: a chegada ao galpão herdado, a carta e a foto do vô, a faxina, a bodega montada e vazia, e o Valter, que
+  // propõe a roça: horta atrás do galpão, um boi e a vaca de leite de presente. O prólogo começa no fim da cena.
   intro: () => [
     { caption: 'Interior do Rio Grande do Sul…', time: 2.4 },
     { view: 'galpao' }, { actor: 'sadi', x: ENTRY.x, y: ENTRY.y - 10, dx: -1 }, { fade: 'in', time: 1 },
@@ -31,14 +34,18 @@ const SCENES = {
     { say: 'sadi', text: '…depois um balcão firme, que bodega sem balcão não é bodega.' },
     { fade: 'out', time: 1 }, { caption: 'Algumas semanas depois…', time: 2 },
     { overlay: 'news' },
-    { do: () => AudioEngine.phone() },
-    { say: 'fornecedor', text: 'Seu Sadi? Aqui é do atacado. A primeira entrega chega amanhã cedo: pão, erva, cerveja… O resto é só pedir pelo celular!' },
     { view: 'bodega' }, { do: () => { G.player = { ...G.player, x: 800, y: 640, dx: 0, dy: 1, walk: false }; } }, { fade: 'in', time: .6 },
     { build: true },
+    { say: 'sadi', text: 'Bodega pronta! Balcão, chapa, mesas… só falta uma coisa: mercadoria. Gastei tudo na reforma.' },
     { actor: 'valter', x: ENTRY.x, y: ENTRY.y, dx: -1 }, { do: () => AudioEngine.doorChime() },
     { walk: 'valter', to: { x: 900, y: 670 } },
-    { say: 'valter', text: 'Vai abrir mesmo, vivente? Já tava na hora de ter uma bodega por aqui!' },
-    { say: 'sadi', text: 'Amanhã, portas abertas! E dizem que por aqui passa gente conhecida: o Mano Lima, o Lauro Boleador, o Indavirus… Se eu tratar bem, viram amigos e até trazem presente.' }
+    { say: 'valter', text: 'Ô de casa! Bodega nova e prateleira vazia, vivente?' },
+    { say: 'sadi', text: 'Pois é, Valter. Não sobrou um pila pro estoque.' },
+    { say: 'valter', text: 'Teu vô quase não comprava nada: o que ele vendia saía da terra e do curral. Do lado do galpão tem chão bom pra uma horta.' },
+    { say: 'valter', text: 'De presente de inauguração te deixei no curral um boi gordo e a Mimosa, uma vaca de leite. As galinhas e as codornas do teu vô seguem lá, faceiras.' },
+    { say: 'valter', text: 'Trouxe também erva da minha erveira e uns potes de conserva de codorna da patroa, pra tu não começar do zero.' },
+    { say: 'sadi', text: 'Bah, Valter, nem sei como agradecer!' },
+    { say: 'valter', text: 'Agradece trabalhando, guri! Primeiro: sementes. O Armazém Querência fica descendo a estrada. Compra alface e trigo, que eu te ensino o resto.' }
   ],
   // Fim do primeiro dia: o vizinho Valter traz uma TV de presente.
   tv: () => [
@@ -48,6 +55,7 @@ const SCENES = {
     { say: 'valter', text: 'Opa, vizinho! Fechou o primeiro dia? Trouxe uma coisa pra ti.' },
     { say: 'valter', text: 'Uma TV! Bodega que se preze precisa passar os Gre-Nal. Ela fica guardada e vai pra parede em dia de jogo.' },
     { say: 'valter', text: 'Me criei junto com o teu pai, guri. Ver esse galpão aceso de novo me deixou faceiro.' },
+    { say: 'valter', text: 'E amanhã cedo, antes de abrir: rega a horta, ração no cocho, ovo dos ninhos e leite da Mimosa. O pão sai do forno e o queijo do tacho.' },
     { say: 'sadi', text: 'Bah, Valter, muito obrigado! O primeiro Gre-Nal aqui é por conta da casa.' },
     { say: 'dica', text: 'Amizade rende presente! Atendendo bem, jogando truco ou bocha com os fregueses conhecidos, a amizade cresce e eles trazem presentes no fim do dia.' },
     { walk: 'valter', to: { x: ENTRY.x, y: ENTRY.y } }
@@ -187,6 +195,7 @@ function drawScene() {
   } else {
     if (s.view === 'galpao') drawGalpao(); else if (s.view === 'campo') drawSceneCampo();
     else if (s.view === 'bodega') { draw(); ctx.setTransform(1, 0, 0, 1, 0, 0); }
+    else if (SCENE_VIEWS[s.view]) SCENE_VIEWS[s.view]();
     else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch); }
     if (s.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${s.fade})`; ctx.fillRect(0, 0, cw, ch); }
   }

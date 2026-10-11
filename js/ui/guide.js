@@ -33,13 +33,15 @@ function upgradeCatalog(){
 function guideContent(){
  return `<div class="callout"><b>${escapeHTML(G.bodegaName)} · ${PEOPLE.find(p=>p.id===G.avatarId)?.name||'Sadi'}</b> · ${improvementCount()} melhorias · ${decorCount()} de ${DECOR.length} peças de decoração</div>${achievementsHTML()}
  <div class="guide-grid">
+ ${tourismJournalHTML()}
  <article class="panel"><h3>Atendimento</h3><p>Balcão: ${COUNTER_WAIT} s de paciência. Mesas: ${ORDER_WAIT} s por pessoa, e cada um paga o que recebeu. A reputação sobe devagar com atendimento rápido e cai rápido com desistências, brigas, derrotas no truco e na bocha e portas fechadas cedo; reputação alta traz mais gente e gorjetas maiores. Com os dias chegam grupos maiores e pedidos com mais itens.</p><button data-act="help">Receitas e controles</button></article>
  <article class="panel"><h3>Dinheiro</h3><p>Sem aluguel: o galpão é herança do vô. No fim do dia sai a luz; no costelão, lenha e sal. O fiado fica no caderninho do celular. O estoque não estraga.</p></article>
- <article class="panel"><h3>Semana gaúcha</h3><p>Quarta tem futebol na TV; sábado, baile ou campeonato de truco e, depois de fechar, a laçada; domingo, costelão no campo. Os outros dias são sorteados.</p><button data-act="event">Programação do dia</button></article>
+ <article class="panel"><h3>Semana gaúcha</h3><p>Quarta tem futebol na TV; sábado, baile ou campeonato de truco; domingo, costelão no campo. A bodega abre e fecha no caixa; dormir no caixa passa o dia. Os outros dias são sorteados.</p><button data-act="event">Programação do dia</button></article>
  <article class="panel"><h3>Laçada e costelão</h3><p>Laçada: ${LASSO_HITS} laços certeiros laçam um boi, que rende ${MANTAS_PER_BOI} mantas; Q laça e Espaço esquiva do quero-quero. Costelão: acenda o fogo com lenha rachada, asse as mantas virando os lados e corte no peso. Sobras vão fora no fim do dia.</p></article>
  <article class="panel"><h3>Truco e bocha</h3><p>Truco na mesa fixa: Y joga com quem está sentado. Bocha pela porta da cancha, à direita: melhor de 3 rodadas. Os dois pausam o atendimento e podem valer aposta.</p></article>
+ <article class="panel"><h3>Pênaltis no campinho</h3><p>Na Serra Gaúcha, chegue perto do campo e aperte E. Escolha um personagem especial para uma série de cinco cobranças, com alternadas em caso de empate. WASD mira, Q/E dá efeito e segurar/soltar Espaço define a força. Na vez do rival, escolha o lado e aperte Espaço para defender. Há controles por toque; o expediente fica pausado e a partida é salva.</p></article>
  <article class="panel"><h3>Contatos e presentes</h3><p>Todo dia aparece um personagem especial. Com amizade ele vira contato, traz presentes ao fim do dia e, no máximo de afeto, dá para jogar com ele.</p></article>
- <article class="panel"><h3>Melhorias e Estética</h3><p>No celular: melhorias por abas (algumas pedem nível ou reputação) e decoração na aba Estética.</p></article>
+ <article class="panel"><h3>Melhorias e Estética</h3><p>Melhorias se compram nas lojas: Ferragem da Fronteira (móveis, cozinha, balcão) e Casa do Campeiro (botas e bodoque). Algumas pedem nível ou reputação. A decoração fica na aba Estética do celular.</p></article>
  </div><div class="actions"><button class="primary" data-act="close">Voltar à bodega</button></div>`;
 }
 function gameGuide(){if(G.game||G.bocce)return;openDialog('Guia e progresso',guideContent(),'guide');}

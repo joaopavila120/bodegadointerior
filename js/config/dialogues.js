@@ -169,7 +169,7 @@ const DEFAULT_DIALOGUES={
   {"player": "E aí, quem é tu?", "reply": "É os guri! Dianho, gângster de galpão, direto de Santa Cruz do Sul. Tá todo Nicolas Cagezinho esse lugar!"},
   {"player": "Que história é essa de Nicolas Cagezinho?", "reply": "Era verão, eu tava bronzeado, de chapéu, cabelo penteado… me achei bonitão. Pronto: todo Nicolas Cagezinho!"},
   {"player": "Por que Dianho?", "reply": "No serviço da estrada eu não lembrava o nome de ninguém, chamava todo mundo de dianho. Aí o apelido voltou pra mim, hehehe."},
-  {"player": "Vai uma cerveja?", "reply": "Não, não! Álcool eu não tomo. Me dá um refri bem gelado que o gângster de galpão tá na dieta da cabeça boa."},
+  {"player": "Me conta um causo da estrada.", "reply": "Uma vez chamei o chefe de dianho na frente da firma inteira. Desde então o dianho sou eu, hehehe."},
   {"player": "O que tu faz da vida?", "reply": "Reformo galpão, cuido da roça, viajo e filmo tudo. O povo gosta de ver o Dianho martelando torto, hehehe."},
   {"player": "E essa revoada?", "reply": "Revoada dos cupinxa, rapaz! Quando junta os guri tudo, é revoada. Ninguém segura."},
   {"player": "Tu é famoso mesmo?", "reply": "Sou ídolo na Irlanda do Norte! Lá eles não sabem quem eu sou, mas eu sei que sou ídolo, hehehe."},

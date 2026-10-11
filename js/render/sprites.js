@@ -2,6 +2,10 @@
 'use strict';
 
 const roomArt = new Image(), peopleArt = new Image();
+const SADI_BACK = characterSprite('sadi-back', [200,69,627,1399], [[0,0],[627,0],[627,1399],[0,1399]]);
+function playerFacingSprite(sprite, dy) {
+  return sprite === 0 && dy < -.25 && CHARACTER_ART['sadi-back'].naturalWidth ? SADI_BACK : sprite;
+}
 roomArt.src = ROOM_DATA;
 peopleArt.src = PEOPLE_DATA;
 
@@ -36,18 +40,24 @@ function drawDining(f,cards){cards=cards||isTableTruco(G.tables[Number(f.id.spli
  if(t.plates||t.dirty){for(let j=0;j<Math.min(3,t.plates);j++){ellipse(x+32+j*33,y+ 30,18,11,'#e1d7b5');ellipse(x+32+j*33,y+29,13,8,t.dirty?'#a3986e':'#ede5c3');if(t.dirty)for(let k=0;k<3;k++)rect(x+22+j*33+k*7,y+25+k%2*5,4,3,'#776344');}}else{rect(x+w/2-18,y+16,36,25,'#d3b57a',2,'#8e693d');rect(x+w/2-14,y+11,28,18,'#f0dec0',2,'#b0986b');}food('cachaca',x+w-21,y+19,23);if(t?.dirty){txt('⌁',x+w/2,y-12,25,'#efdb9a');} }
 
 // Sadi com as mãos erguidas segurando a bandeja (mesmo recorte do sprite original).
-function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0){const custom=typeof index==='object'?index:null,art=custom?CHARACTER_ART[custom.file]:peopleArt,s=custom?{x:custom.crop[0],y:custom.crop[1],w:custom.crop[2],h:custom.crop[3]}:SPRITES[index%6],height=chef?130:124,seed=x*.05+(custom?3:index);ellipse(x,y+1,seated?22:18,7,'#271c1755');ctx.save();ctx.translate(x,y);if(chef?dx>.05:dx<-.05)ctx.scale(-1,1);if(art.complete&&art.naturalWidth){const t=ctx.getTransform(),f=characterFrame(custom||index,height*Math.hypot(t.a,t.b)),dw=height*s.w/s.h,part=(fx,fy,fw,fh,px,py,pw,ph)=>ctx.drawImage(f,fx*f.width,fy*f.height,fw*f.width,fh*f.height,px,py,pw,ph);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';const breath=Math.sin(frameClock*2.3+seed);
+function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0,dy=0){if(chef)index=playerFacingSprite(index,dy);const facingBack=index===SADI_BACK,pose=chef?playerWalkPose(x,y):null,reach=chef?playerReachPose():{lean:0,dip:0};const custom=typeof index==='object'?index:null,art=custom?CHARACTER_ART[custom.file]:peopleArt,s=custom?{x:custom.crop[0],y:custom.crop[1],w:custom.crop[2],h:custom.crop[3]}:SPRITES[index%6],height=chef?130:124,seed=x*.05+(custom?3:index);if(chef&&facingBack)drawPlayerCarry(x,y,true);ellipse(x,y+1,seated?22:18,7,'#271c1755');ctx.save();ctx.translate(x,y);if(!facingBack&&(chef?dx>.05:dx<-.05))ctx.scale(-1,1);if(art.complete&&art.naturalWidth){const t=ctx.getTransform(),baseFrame=characterFrame(custom||index,height*Math.hypot(t.a,t.b)),f=chef&&playerCarrying()?playerCarryFrame(custom||index,baseFrame):baseFrame,dw=height*s.w/s.h,part=(fx,fy,fw,fh,px,py,pw,ph)=>ctx.drawImage(f,fx*f.width,fy*f.height,fw*f.width,fh*f.height,px,py,pw,ph);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';const breath=Math.sin(frameClock*2.3+seed);
  if(seated){
   // Sentado: respira e, perto de desistir, se remexe na cadeira.
   if(mood>.7)ctx.translate(Math.sin(frameClock*16+seed)*1.5,0);
   part(0,.72,1,.28,-dw/2,-height*.28+15,dw,height*.28-15);ctx.save();ctx.translate(0,-height*.28+15);ctx.scale(1,1+breath*.012);part(0,0,1,.72,-dw/2,-height*.72,dw,height*.72);ctx.restore();
- }else if(walking){
-  // Caminhada: as pernas balançam no quadril com os pés no chão, o corpo sobe de leve a cada passo
-  // e o tronco inclina para o lado em que anda (na tela, não no desenho, para nunca inclinar para trás).
-  const ph=frameClock*(chef&&G.boost>0?19:13)+(custom?3:index)*1.7,swing=Math.sin(ph),bob=Math.abs(Math.cos(ph))*1.6,hip=-height*.3,legLen=height*.3,flip=t.a<0?-1:1,lean=.05*Math.sign(dx||0)*flip;
-  for(let leg=0;leg<2;leg++){const a=swing*(leg?1:-1)*.3;ctx.save();ctx.translate(-dw/4+leg*dw/2,hip+legLen*(1-Math.cos(a)));ctx.rotate(a);part(leg*.5,.7,.5,.3,-dw/4,0,dw/2,height*.3);ctx.restore();}
-  // O tronco vai até um pouco abaixo do quadril e cobre a junta com as pernas (o avental não se parte).
-  ctx.save();ctx.translate(0,hip-bob);ctx.rotate(lean+swing*.02);part(0,0,1,.78,-dw/2,-height*.7,dw,height*.78);ctx.restore();
+ }else if(chef||walking){
+  const stride=chef?pose.stride:1,ph=chef?pose.phase:frameClock*10+(custom?3:index)*1.7;
+  const swing=Math.sin(ph)*stride,bob=chef?pose.bob:(1-Math.cos(ph*2))*.65;
+  const hip=-height*.25,legLen=height*.25,flip=t.a<0?-1:1;
+  for(let leg=0;leg<2;leg++){
+   const step=swing*(leg?1:-1),angle=step*.19,lift=Math.max(0,step)*2.5;
+   ctx.save();ctx.translate(-dw/4+leg*dw/2,hip+legLen*(1-Math.cos(angle))-lift);ctx.rotate(angle);
+   part(leg*.5,.75,.5,.25,-dw/4,0,dw/2,legLen);ctx.restore();
+  }
+  ctx.save();ctx.translate(0,hip-bob+reach.dip);
+  ctx.rotate((.025*Math.sign(dx||0)*stride+reach.lean)*flip+swing*.009);
+  ctx.scale(1,1+breath*.004*(1-stride));
+  part(0,0,1,.78,-dw/2,-height*.75,dw,height*.78);ctx.restore();
  }else if(mood>.65){
   // Impaciente: bate o pé da frente e balança o corpo.
   const tap=Math.max(0,Math.sin(frameClock*11+seed))**2;part(0,.7,.5,.3,-dw/2,-height*.3,dw/2,height*.3);
@@ -56,7 +66,7 @@ function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0)
  }else{
   // Parado: respira e troca o peso de uma perna para a outra.
   ctx.save();ctx.rotate(Math.sin(frameClock*.8+seed*1.7)*.012);ctx.scale(1,1+breath*.012);ctx.drawImage(f,-dw/2,-height,dw,height);ctx.restore();
- }}else{rect(-13,-60,26,48,chef?'#e6d6ac':'#688657',5);ellipse(0,-72,12,15,'#c9935d');}ctx.restore();if(chef&&['bootsGaucho','bootsBagual'].includes(G.gear)){const color=G.gear==='bootsBagual'?'#42382b':'#b58147';rect(x-15,y-10,10,7,color,3,'#44341f');rect(x+5,y-9,10,7,color,3,'#44341f');}if(chef&&G.task?.type==='mate'){food('mate',x+17,y- 70,34);}if(chef&&G.boost>0&&!['mate','clean','mop'].includes(G.task?.type)){bar(x-24,y+10,48,G.boost/mateStats().duration,'#b8e67a');txt(Math.ceil(G.boost)+'s',x,y+27,12,'#e1ffae');}if(chef){const a=G.hands.filter(Boolean);if(a.length){ellipse(x,y-65,31,10,'#ddc290');for(let j=0;j<G.hands.length;j++){const i=G.hands[j];if(i)food(i.pid||i.key,x+(G.up.tray?(j?13:-13):0),y-70, 38,i);}}if(G.cosmetic)txt('★',x,y-106,17,'#ffd36b');}}
+ }}else{rect(-13,-60,26,48,chef?'#e6d6ac':'#688657',5);ellipse(0,-72,12,15,'#c9935d');}ctx.restore();if(chef&&['bootsGaucho','bootsBagual'].includes(G.gear)){const color=G.gear==='bootsBagual'?'#42382b':'#b58147';rect(x-15,y-10,10,7,color,3,'#44341f');rect(x+5,y-9,10,7,color,3,'#44341f');}if(chef){drawPlayerTask(x,y);}if(chef&&G.boost>0&&!['mate','clean','mop'].includes(G.task?.type)){bar(x-24,y+10,48,G.boost/mateStats().duration,'#b8e67a');txt(Math.ceil(G.boost)+'s',x,y+27,12,'#e1ffae');}if(chef){drawPlayerCarry(x,y,false);drawPlayerTransfers();if(G.cosmetic)txt('★',x,y-106,17,'#ffd36b');}}
 
 
 function bubble(items,x,y,ratio=1,waiting=false){const width=items.length*43+20,left=x-width/2;ctx.save();ctx.shadowColor='#39230b66';ctx.shadowBlur=5;ctx.shadowOffsetY=3;rect(left,y-60,width,57,'#fff1c9',7,'#71512a');ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.fillStyle='#fff1c9';ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+4);ctx.lineTo(x+6,y-4);ctx.fill();if(waiting){txt('⌛',x,y-34,25,'#e8be62');}else items.forEach((k,i)=>food(k,left+30+i*43,y-35,39));bar(left+9,y-14,width-18,ratio,ratio<.25?'#d7754b':ratio<.5?'#d2b44e':'#83a94c');ctx.restore();}
@@ -97,4 +107,75 @@ function characterFrame(sprite,pixels){
   const n=next.getContext('2d');n.imageSmoothingEnabled=true;n.imageSmoothingQuality='high';n.drawImage(source,0,0,next.width,next.height);source=next;
  }
  sizes.set(height,source);return source;
+}
+
+// Só o jogador usa a pose de carregar. Os antebraços originais do Sadi saem
+// do recorte para não aparecerem quatro mãos; mangas, avental e NPCs ficam intactos.
+const playerCarryFrames = new WeakMap();
+function playerCarryFrame(sprite, base) {
+ if(sprite!==0 && sprite!==SADI_BACK)return base;
+ if(playerCarryFrames.has(base))return playerCarryFrames.get(base);
+ const canvas=document.createElement('canvas');canvas.width=base.width;canvas.height=base.height;
+ const c=canvas.getContext('2d');c.drawImage(base,0,0);c.globalCompositeOperation='destination-out';
+ const back=sprite===SADI_BACK, crop=back?[200,69,627,1399]:[190,26,244,483];
+ const arms=back?[
+  [[207,711],[316,722],[308,803],[317,850],[299,930],[279,959],[211,944],[201,885],[210,818]],
+  [[702,722],[819,712],[824,828],[830,932],[793,959],[736,955],[715,913],[722,857],[711,804]]
+ ]:[
+  [[210,232],[246,237],[239,267],[238,304],[226,322],[207,312],[201,288]],
+  [[367,253],[403,252],[400,301],[404,330],[391,345],[373,345],[357,331],[364,301]]
+ ];
+ for(const arm of arms){c.beginPath();arm.forEach(([x,y],i)=>{x=(x-crop[0])*canvas.width/crop[2];y=(y-crop[1])*canvas.height/crop[3];if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.closePath();c.fill();}
+ playerCarryFrames.set(base,canvas);return canvas;
+}
+
+function carryArm(ex,ey,hx,hy,back=false){
+ // Cotovelo abaixo da mão: a palma sustenta o peso da bandeja.
+ const bx=ex+(hx-ex)*.30,by=Math.max(ey+9,hy+5);
+ const stroke=(color,width,offset=0)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();ctx.moveTo(ex+offset,ey);ctx.lineTo(bx+offset,by);ctx.lineTo(hx+offset,hy);ctx.stroke();};
+ ctx.save();stroke('#4c2b1b',8);stroke('#c9874d',5.7);stroke(back?'#e2a262':'#eab078',2.2,-.8);ctx.restore();
+}
+function carryHand(x,y,side,thumb=false){
+ // Silhueta pequena com palma, dedos sob a borda e polegar por cima.
+ if(thumb){rect(x-side*2-1,y-3,5,4,'#714626',1);rect(x-side*2,y-3,3,2,'#efba83',1);return;}
+ rect(x-4,y-1,8,6,'#55321d',2);
+ rect(x-3,y-1,6,5,'#c98954',1);rect(x-2,y-1,5,2,'#efba83',1);
+ rect(x-2,y+3,1,1,'#8e542f');rect(x+1,y+3,1,1,'#8e542f');
+}
+
+function drawPlayerCarry(x,y,behind=false){
+ if(!playerCarrying())return;
+ const carry=playerCarryPose(x,y),p=worldOut||G.player,pose=playerWalkPose(x,y),reach=playerReachPose();
+ const sadi=avatarSprite()===0,flip=!carry.back&&p.dx>.05?-1:1;
+ const transfer=playerAnimationState().transfers.at(-1);
+ const wave=transfer?Math.sin(clamp((frameClock-transfer.start)/transfer.duration,0,1)*Math.PI):0;
+ const activeSide=transfer&&transfer.point.x<carry.x?-1:1;
+ // De costas, bandeja e produtos ficam à frente do corpo (camada de trás).
+ if(behind!==carry.back){
+  if(carry.back&&sadi)drawArms();
+  return;
+ }
+ if(!carry.back)drawArms();
+ ctx.save();ctx.translate(carry.x,carry.y);ctx.rotate(carry.roll);
+ // Borda grossa, superfície recuada e brilho: já não é uma elipse lisa.
+ ellipse(0,2,30,8,'#4a3422');ellipse(0,0,30,8,'#bb8e53');
+ ellipse(0,-1,27,5.8,'#e5cc94');ellipse(0,-1,23,4,'#cfb57d');
+ ctx.strokeStyle='#f5dda6';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,-1,27,5.8,0,Math.PI,Math.PI*2);ctx.stroke();
+ G.hands.forEach((item,j)=>{if(item)food(item.pid||item.key,G.up.tray?(j?13:-13):0,-9,38,item);});
+ if(!carry.back){carryHand(-22,4,-1,true);carryHand(22,4,1,true);}
+ ctx.restore();
+
+ function drawArms(){
+  for(const side of [-1,1]){
+   const local=side*22, hx=carry.x+local*Math.cos(carry.roll),hy=carry.y+local*Math.sin(carry.roll)+4;
+   if(sadi){
+    const sourceSide=side*flip;
+    const ex=x+side*(carry.back?22:sourceSide<0?23:20),ey=y-(carry.back?69:sourceSide<0?74:69)-pose.bob+reach.dip;
+    carryArm(ex,ey,hx,hy,carry.back);
+   }
+   carryHand(hx,hy,side);
+   // A mão ajusta a pegada quando recebe/entrega; a outra continua apoiando.
+   if(side===activeSide&&wave>.05){rect(hx-side*3,hy-4-wave*2,4,3,'#efba83',1,'#714626');}
+  }
+ }
 }

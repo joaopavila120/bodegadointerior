@@ -50,7 +50,7 @@ function snackPool(){return ['codorna','pepino','salame','amendoim'].filter(k=>u
 function drinkPool(){return ['refri','cerveja','cachaca','cafe','bitter'].filter(unlocked);}
 
 // Preferências de cada especial: sem álcool, sem bebida nenhuma ou chopp sempre que der.
-const DRINKS=['refri','cerveja','cachaca','cafe','bitter'],ALCOHOL=['cerveja','cachaca','bitter'];
+const DRINKS=['refri','cerveja','cachaca','cafe','bitter'],ALCOHOL=['cerveja','cachaca','bitter','vinho'];
 function fitOrder(person,key){
  const p=PEOPLE[person];if(!p||!key)return key;
  if(p.noDrinks&&(DRINKS.includes(key)||key==='cigarro')){const food=snackPool();return food.length?pick(food):'codorna';}
@@ -59,7 +59,7 @@ function fitOrder(person,key){
  return key;
 }
 // Reputação: sobe devagar com bom atendimento e cai rápido com descaso. O saldo do dia vai pro relatório.
-function repChange(delta){if(!G||!delta)return;const before=G.rep;G.rep=clamp(round(G.rep+delta),0,100);if(G.stats)G.stats.repDelta=round((G.stats.repDelta||0)+G.rep-before);}
+function repChange(delta){if(!G||!delta)return;if(G.testMode){G.rep=100;return;}const before=G.rep;G.rep=clamp(round(G.rep+delta),0,100);if(G.stats)G.stats.repDelta=round((G.stats.repDelta||0)+G.rep-before);}
 // A fama da bodega traz mais gente e gorjetas melhores (60 é o ponto neutro).
 function repArrival(){return clamp(1.3-G.rep/200,.8,1.3);}
 function repTips(){return clamp(.5+G.rep/120,.5,1.35);}

@@ -31,7 +31,7 @@ function creditLimit(level=bodegaLevel()){return 40+20*level;}
 
 // ---------- Metas e conquistas ----------
 const ACHIEVEMENTS=[
- {id:'portas',name:'Portas abertas',desc:'Concluir o primeiro dia.',xp:50,test:()=>G.day>1||G.phase==='closed'&&G.day===1&&!tutorialActive()},
+ {id:'portas',name:'Portas abertas',desc:'Concluir o primeiro dia.',xp:50,test:()=>G.day>(G.tutorial?.day||1)||G.phase==='closed'&&firstDay()&&!tutorialActive()&&!prologueActive()},
  {id:'freguesia',name:'Freguesia fiel',desc:'Fazer 100 atendimentos.',xp:120,test:()=>G.totalServed>=100},
  {id:'casacheia',name:'Casa cheia',desc:'Fazer 500 atendimentos.',xp:300,test:()=>G.totalServed>=500},
  {id:'caixa',name:'Caixa forrado',desc:'Juntar R$ 1.000 no caixa.',xp:150,test:()=>!G.testMode&&G.cash>=1000},
@@ -87,10 +87,13 @@ function dailyCosts(){
 const WEEKDAYS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
 const MONTHS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 // O jogo começa numa sexta-feira: dois dias depois vem o primeiro costelão.
-function calendar(day=G.day){const i=Math.max(0,day-1)+4,weekday=i%7,week=Math.floor(i/7),month=(2+week)%12;return {weekday,week,month,name:WEEKDAYS[weekday],monthName:MONTHS[month],label:WEEKDAYS[weekday]+' · semana de '+MONTHS[month]};}
+// calOffset: dias da roça antes da bodega abrir (o prólogo). O dia do tutorial da bodega é sempre uma sexta.
+function calOffset(){return (typeof G!=='undefined'&&G?.calOffset)||0;}
+function dayNumber(day=G.day){return Math.max(1,day-calOffset());}
+function calendar(day=G.day){const i=Math.max(0,day-1-calOffset())+4,weekday=i%7,week=Math.floor(i/7),month=(2+week)%12;return {weekday,week,month,name:WEEKDAYS[weekday],monthName:MONTHS[month],label:WEEKDAYS[weekday]+' · semana de '+MONTHS[month]};}
 const WINTER=[5,6,7];
 function fixedEventFor(day){
- if(day===1)return 'normal';
+ if(day-calOffset()<=1)return 'normal';
  const{weekday,week,month}=calendar(day);
  if(weekday===6)return 'costelao';                       // domingo: costelão no campo
  if(weekday===2)return ['grenal','gremio','inter'][(week+2)%3]; // quarta: futebol na TV

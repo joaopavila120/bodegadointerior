@@ -6,14 +6,14 @@
   const reset=()=>{G=fresh();G.xp=99999;G.levelSeen=7;G.contacts=Object.fromEntries([...ALWAYS_TALK].map(id=>[id,1]));G.tutorial.guided=false;started=true;paused=false;modal=null;phoneOpen=false;keys.clear();G.spawnShop=G.spawnGroup=999;for(const id of ['start','overlay','phone'])$(id).classList.add('hidden');};
   const approach=id=>{const f=furniture().find(f=>f.id===id);for(let x=f.x-50;x<=f.x+f.w+50;x+=8)for(let y=f.y-50;y<=f.y+f.h+50;y+=8)if(canWalk(x,y)){G.player={x,y,dx:1,dy:0};if(nearest()?.id===id)return;}throw Error('Não alcançou '+id);};
   reset();
-  check(typeof ROOMS==='undefined'&&roomArt.src.endsWith('assets/images/room2.png')&&roomArt.naturalWidth===1672,'cenário único e vazio carregado');
+  check(typeof ROOMS==='undefined'&&roomArt.src.endsWith('assets/images/room2.webp')&&roomArt.naturalWidth===1672,'cenário único e vazio carregado');
   check(DECOR.length>=20&&DECOR.every(d=>DECOR_ART[d.id].naturalWidth>0)&&rainWindowArt.naturalWidth>0,'sprites de decoração e janela de chuva carregam');
   check(decorCount()===0&&!DECOR.some(decorVisible),'bodega nova começa sem decoração');
   G.rep=100;G.cash=10000;
   for(const id of ['coffee','bootsGaucho','mateCuiudo','tray'])buyUpgrade(id);
   check(improvementCount()===4&&decorCount()===0,'melhorias não contam como decoração');
   togglePhone(true);phoneTab='decor';renderPhone();
-  check(document.querySelector('[data-act="tab"][data-id="decor"]').classList.contains('active')&&$('phoneContent').querySelectorAll('[data-act="decorBuy"]').length===DECOR.filter(d=>!d.gift).length&&$('phoneContent').textContent.includes('Presente de Lauro Boleador'),'aba Estética lista todas as peças, e as de presente sem compra');
+  check(document.querySelector('[data-act="tab"][data-id="decor"]').classList.contains('active')&&!$('phoneContent').querySelector('[data-act="decorBuy"]')&&[...$('phoneContent').querySelectorAll('button')].filter(b=>b.textContent==='À venda na Casa do Campeiro').length===DECOR.filter(d=>!d.gift).length&&$('phoneContent').textContent.includes('Presente de Lauro Bolador'),'aba Estética lista todas as peças: as de venda apontam a Casa do Campeiro, as de presente não se compram');
   const cash=G.cash;buyDecor('kit_chimarrao');check(!decorOwned('kit_chimarrao')&&G.cash===cash,'kit do chimarrão exige a cômoda');
   buyDecor('comoda');buyDecor('kit_chimarrao');buyDecor('bandeira');
   check(decorCount()===3&&G.cash===cash-90-40-60&&decorVisible(DECOR.find(d=>d.id==='kit_chimarrao')),'compra desconta o caixa e expõe a peça');

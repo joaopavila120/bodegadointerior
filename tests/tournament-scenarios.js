@@ -28,7 +28,7 @@
   check(G.groups.flatMap(g=>g.diners).map(d=>JSON.stringify([d.person,d.orders,d.patience])).sort().join()===orders,'troca de mesa mantém pedidos, pessoas e prazos');
   save();G=readSave();check(G.tournament.round===2&&G.groups.every(g=>g.travel?.length===4),'salvamento mantém rodízio e deslocamentos em andamento');advance(15);
   check(G.groups.every(g=>g.pairs.every((id,i)=>g.members.slice(i*2,i*2+2).join()===G.tournament.pairs[id].members.join())),'parceiros permanecem juntos depois de caminhar e recarregar');
-  const g=G.groups[0];g.diners.forEach(d=>{d.patience=.01;});tickDiners(g,.05);check(g.state==='chat'&&G.groups.length===count,'pedidos vencidos não expulsam as duplas');advance(9);
+  const g=G.groups[0];g.diners.forEach(d=>{d.patience=.01;});tickDiners(g,.05);check(g.state==='chat'&&G.groups.length===count,'pedidos vencidos não expulsam as duplas');for(const k of ['cerveja','cachaca','bitter','codorna','amendoim'])G.stock[k]=60;advance(9);
   check(g.diners.some(d=>d.status==='waiting')&&g.orders.length>0,'mesmos participantes fazem novos pedidos após a pausa');
   const t=G.tables.find(t=>t.id===g.table);triggerFight(t);if(t.fight)resolveFight(t,false);
   check(g.table===t.id&&t.group===g.id&&g.state!=='leave','prejuízo de briga não remove a dupla do campeonato');

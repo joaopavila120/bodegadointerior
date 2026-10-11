@@ -408,9 +408,9 @@ SCENE_VIEWS.rio = drawSceneRio;
   sceneSpeaker = function (who) { return who === 'negrinho' ? { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">🕯️</span>', name: 'O guri da vela' } : speaker(who); };
 }
 
-// ---------- Prateleira de lembranças (bodega, embaixo da janela) ----------
-// Troféus dos eventos e a cuia do vô: só aparece quando tem alguma coisa para mostrar.
-const LEMBRANCAS = { x: 1096, y: 318, w: 270 };
+// ---------- Prateleira de lembranças (bodega, à direita da janela) ----------
+// Troféus dos eventos e a cuia do vô, em duas prateleirinhas: só aparece quando tem alguma coisa para mostrar.
+const LEMBRANCAS = { x: 1436, y: 250, w: 100, gap: 72 };
 function lembrancas() { const t = G.trophies || {}; return [t.rodeio && 'rodeio', t.penalti && 'penalti', t.uva && 'uva', G.relics?.cuia_vo && 'cuia'].filter(Boolean); }
 function drawTrophy(x, y, color, deco) {
   rect(x - 14, y - 8, 28, 8, '#4a3018', 2); rect(x - 4, y - 22, 8, 14, color); ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x - 17, y - 50); ctx.lineTo(x + 17, y - 50); ctx.quadraticCurveTo(x + 15, y - 22, x, y - 22); ctx.quadraticCurveTo(x - 15, y - 22, x - 17, y - 50); ctx.fill();
@@ -419,10 +419,10 @@ function drawTrophy(x, y, color, deco) {
 }
 function drawLembrancas() {
   const items = lembrancas(); if (!items.length || worldOut) return;
-  const { x, y, w } = LEMBRANCAS; rect(x, y, w, 9, '#6a4424', 2, '#3a2412'); rect(x + 14, y + 9, 6, 14, '#4a2e16'); rect(x + w - 20, y + 9, 6, 14, '#4a2e16');
-  const gap = w / (items.length + 1);
+  const { x, w, gap } = LEMBRANCAS, levels = items.length > 2 ? 2 : 1;
+  for (let l = 0; l < levels; l++) { const y = LEMBRANCAS.y + l * gap; rect(x, y, w, 9, '#6a4424', 2, '#3a2412'); rect(x + 8, y + 9, 6, 12, '#4a2e16'); rect(x + w - 14, y + 9, 6, 12, '#4a2e16'); }
   items.forEach((id, k) => {
-    const cx = x + gap * (k + 1);
+    const y = LEMBRANCAS.y + Math.floor(k / 2) * gap, cx = x + (k % 2 ? 74 : 26);
     if (id === 'cuia') { ellipse(cx, y - 2, 16, 4, '#1c140c55'); ellipse(cx, y - 20, 17, 19, '#8a5a2a'); ellipse(cx - 5, y - 26, 5, 8, 'rgba(255,230,180,.25)'); rect(cx - 14, y - 40, 28, 6, '#5a3a1a', 3); ellipse(cx, y - 40, 11, 4, '#4a7a2a'); rect(cx + 4, y - 64, 3, 26, '#d8d8d8'); }
     else drawTrophy(cx, y, id === 'uva' ? '#c8ccd4' : '#e0b040', id === 'rodeio' ? (a, b) => { ctx.strokeStyle = '#7a4a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(a, b, 6, 4, 0, 0, Math.PI * 2); ctx.stroke(); } : id === 'penalti' ? (a, b) => { ellipse(a, b, 5, 5, '#f4f4f4'); ellipse(a, b, 2, 2, '#222'); } : (a, b) => { for (const [ox, oy] of [[-3, -2], [3, -2], [0, 2], [-3, 5], [3, 5], [0, 8]]) ellipse(a + ox, b + oy - 3, 2.6, 2.6, '#6a2a7a'); });
   });

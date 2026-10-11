@@ -120,8 +120,12 @@
   sunday();G.phase='open';G.stock.costela=1500;G.stock.costela_crua=2;campoState().espetos[1]={heat:[1,0],fire:1,burned:false,cost:40,turns:1};finishDay(true);
   check(!G.stock.costela&&!G.stock.costela_crua&&!campoState().espetos[1]&&!G.report.waste,'carne que sobra no fim do costelão sai sem contar como prejuízo');check(G.report.power===0&&G.report.supplies===COSTELAO_SUPPLIES&&!G.report.rent,'no costelão não há luz: vão lenha e sal');closeDialog(true);
   // sem carne e sem dinheiro, o domingo vira dia normal (menos no primeiro costelão)
-  reset();G.costelaoTaught=true;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.stock.costela=0;G.cash=20;nextDay('automatic');
-  check(G.day===3&&G.event.id==='normal'&&G.event.noCostelao,'sem carne nem dinheiro, o domingo vira dia normal');{const f=furniture().find(f=>f.id==='service');G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};interact();check(modal==='caixa'&&$('dialogContent').textContent.includes('Sem costelão hoje'),'o caixa avisa que não tem costelão hoje');}closeDialog(true);
+  reset();G.costelaoTaught=true;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.stock.costela=0;G.cash=20;G.herd=0;nextDay('automatic');closeDialog(true);
+  check(G.day===3&&G.event.id==='costelao','o domingo de costelão continua no calendário');openDay();check(modal==='costelaoMeat'&&$('dialogContent').innerHTML.includes('costelaoSkip'),'sem manta, sem boi e sem dinheiro: o caixa oferece pular o costelão');
+  action('costelaoSkip');check(G.event.id==='normal'&&G.event.noCostelao&&G.phase==='open'&&$('floatNotes').textContent.includes('Sem costelão hoje'),'pulando, a bodega abre como um dia normal');closeDialog(true);
+  reset();G.costelaoTaught=true;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.stock.costela=0;G.cash=20;G.herd=1;nextDay('automatic');closeDialog(true);openDay();
+  check(modal==='costelaoMeat'&&$('dialogContent').innerHTML.includes('lassoStart')&&!$('dialogContent').innerHTML.includes('costelaoSkip'),'com boi na cerca, o caixa manda laçar antes de abrir');closeDialog(true);
+  G.herd=0;G.cash=500;openDay();check(modal==='costelaoMeat'&&$('dialogContent').textContent.includes('Casa do Campeiro')&&G.phase==='prep','sem boi mas com dinheiro: comprar um boi na Casa do Campeiro e laçar');closeDialog(true);
   reset();G.costelaoTaught=false;G.day=2;G.phase='closed';G.lassoDay=2;G.event={id:'normal',seen:true,fired:{}};G.stock.costela_crua=0;G.cash=0;nextDay('automatic');check(G.event.id==='costelao','o primeiro costelão acontece sempre (o tutorial dá a carne)');closeDialog(true);
   // mate sem reposição no campo
   sunday();approach('mate');keys.add('e');interact();tick(1.2,holdTick);keys.clear();check(G.boost>0,'campo tem estação de mate, sem reposição de erva');

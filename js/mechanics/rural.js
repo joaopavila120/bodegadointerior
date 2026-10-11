@@ -233,6 +233,7 @@ function reminderTick() {
   if (morningActive()) {
     const m = G.morning || 0, low = m >= 60 ? lowStock() : [];
     if (low.length) remindOnce('estoque', '📦 Acabando: ' + low.slice(0, 3).map(k => nameOf(k).toLowerCase()).join(', ') + '.');
+    if (G.event.id === 'costelao' && !costelaoMeatReady()) remindOnce('costelao', '🔥 Costelão sem manta: ' + costelaoNoMeatText() + '.');
     if (m >= 180) remindOnce('abrir', '🕘 9h: abra a bodega no caixa.');
     if (m >= 300 && m < 360 && G.event.id !== 'costelao') remindOnce('abrir2', '🕚 11h: freguês esperando na porta da bodega!');
     if (m >= 540) remindOnce('tarde', '🌇 Bodega fechada: ainda dá para abrir à noite.');

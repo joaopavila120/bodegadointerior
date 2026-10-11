@@ -168,6 +168,19 @@ function campoHint(n){
 const FIRST_COSTELAO_ORDERS=3;
 function firstCostelao(){return G.event.id==='costelao'&&campoState().firstDay===G.day&&!costelaoTutorialActive();}
 // Depois do primeiro costelão, sem carne e sem dinheiro para boi ou manta, o domingo vira dia normal.
+// Domingo de costelão sem carne: antes de abrir, o caixa explica o que fazer (laçar um boi da cerca ou comprar um boi
+// na Casa do Campeiro) e, sem boi nem dinheiro, deixa pular o costelão (o domingo vira dia normal).
+function costelaoMeatReady(){return !G.costelaoTaught||mantasToday()>0||G.stock.costela>0||campoState().espetos.some(Boolean);}
+function costelaoNoMeatText(){const herd=G.herd||0;return herd>0?'lace um boi da cerca antes de abrir':hasCash(BOI_COST)?'compre um boi na Casa do Campeiro e lace antes de abrir':'sem boi e sem dinheiro, dá para pular o costelão no caixa';}
+function costelaoNoMeat(){
+ const herd=G.herd||0,btn=[];let text;
+ if(herd>0){text=`Não tem manta de costela na despensa. Tem <b>${herd===1?'1 boi':herd+' bois'}</b> na cerca: lace e carneie um antes de abrir.`;btn.push('<button class="primary" data-act="lassoStart">Ir laçar</button>');}
+ else if(hasCash(BOI_COST)){text=`Não tem manta nem boi. Compre um boi na <b>Casa do Campeiro</b> (${money(BOI_COST)}), volte e lace antes de abrir.`;}
+ else{text=`Não tem manta, nem boi, nem dinheiro para um boi (${money(BOI_COST)}). Dá para pular o costelão: hoje a bodega abre como um dia normal.`;btn.push('<button class="primary" data-act="costelaoSkip">Pular o costelão</button>');}
+ btn.push('<button data-act="close">Voltar</button>');
+ openDialog('Domingo de costelão sem carne',`<p>${text}</p><div class="actions">${btn.join('')}</div>`,'costelaoMeat');
+}
+function skipCostelao(){if(G.event.id!=='costelao'||G.phase!=='prep')return;G.event={id:'normal',seen:true,fired:{},noCostelao:true};closeDialog(true);floatNote('🔥 Sem costelão hoje: a bodega abre como um dia normal.');save();refreshHUD();openDay();}
 function costelaoPossible(){if(!G.costelaoTaught||G.testMode)return true;return G.stock.costela_crua>0||G.stock.costela>0||hasCash(Math.min(BOI_COST,MANTA_BUY_COST));}
 // O primeiro costelão fecha sozinho depois dos três pedidos: não conta como fechar cedo.
 function firstCostelaoDone(){return firstCostelao()&&campoState().firstOrders>=FIRST_COSTELAO_ORDERS;}

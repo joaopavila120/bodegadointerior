@@ -146,7 +146,7 @@
    for(let k=0;k<300&&modal!=='sportChallenge';k++)simulate(.05);check(modal==='sportChallenge'&&$('floatNotes').textContent.includes('chegou na bodega'),'antes de dormir, o Mano Lima chega com o convite (e o jogo avisa)');action('sportDecline');
    for(let k=0;k<400&&G.day===d;k++){simulate(.05);if(modal==='giftVisit')action('giftAccept');}check(G.day===d+1&&!G.challengeVisit,'recusando, ele vai embora e o dia passa');closeDialog(true);}
   // encerrar o expediente com freguês no balcão
-  {G.phase='prep';G.event.seen=true;openDay();closeDialog(true);let c=null;for(let k=0;k<20&&!c;k++)c=spawnShop({pid:'cigarro'});for(let k=0;k<300;k++)customersTick(.05);G.hands=[null,null];
+  {G.phase='prep';G.event={id:'normal',seen:true,fired:{}};openDay();closeDialog(true);let c=null;for(let k=0;k<20&&!c;k++)c=spawnShop({pid:'cigarro'});for(let k=0;k<300;k++)customersTick(.05);G.hands=[null,null];
    const f=furniture().find(f=>f.id==='service');G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};interact();check(modal==='caixa'&&$('dialogContent').innerHTML.includes('caixaClose'),'com freguês no balcão e mãos vazias, E abre o caixa');
    action('caixaClose');check(G.phase==='closing','e dá para encerrar o expediente com gente esperando');G.shop=[];G.groups=[];G.phase='prep';}
   // eventos novos: pênaltis, rodeio, Oktoberfest e Festa da Uva (cada um começa com uma cena)
@@ -199,6 +199,18 @@
   // Mesa de tragos comprada antes do Valter pedir: o capítulo 1 conclui sozinho
   {const before=G.missions,up=G.up.trago,owned=G.upOwned;G.missions={};G.up.trago=false;G.upOwned={};check(currentChapter()?.id==='trago'&&/Mesa de tragos/.test(trackerLines()[0]?.goal||''),'antes do Valter, o canto da tela já diz para comprar a Mesa de tragos');
    G.up.trago=true;G.upOwned={trago:true};worldOut=null;G.phase='prep';closeDialog(true);talkState=null;while(scene)sceneSkip();missionsTick();check(missionDone('trago'),'comprar a Mesa de tragos antes do Valter conclui o capítulo 1');G.missions=before;G.up.trago=up;G.upOwned=owned;closeDialog(true);}
+  // ajudantes: depois de uma semana o Valter conta; amigos contratados atendem e recebem salário
+  {G.staffUnlocked=false;G.staff={};G.phase='prep';worldOut=null;closeDialog(true);talkState=null;while(scene)sceneSkip();staffIntroTick();
+   check(scene?.id==='ajudantes'&&G.staffUnlocked,'depois de uma semana, o Valter conta que dá para contratar ajudantes');while(scene)sceneSkip();talkAll();
+   caixaMenu();check($('dialogContent').innerHTML.includes('data-act="staffMenu"'),'no caixa do balcão: Ajudantes');action('staffMenu');
+   const gi=PEOPLE.findIndex(p=>p.id==='guri'),li=PEOPLE.findIndex(p=>p.id==='loligebien');G.friends[gi]=10;action('staffHire','balcao:guri');check(!G.staff.balcao,'sem amizade, ninguém topa');
+   G.friends[gi]=HIRE_AT;G.friends[li]=HIRE_AT+10;action('staffHire','balcao:guri');action('staffHire','garcom:loligebien');check(G.staff.balcao?.person===gi&&G.staff.garcom?.person===li&&!visitorAvailable(gi),'amigos contratados como balconista e garçom (e não vêm como fregueses)');closeDialog(true);
+   G.event={id:'normal',seen:true,fired:{}};G.phase='open';G.elapsed=0;G.shop=[];G.groups=[];G.stock.cigarro=10;let c=null;for(let k=0;k<20&&!c;k++)c=spawnShop({pid:'cigarro'});for(let k=0;k<600&&c.state==='queue';k++)customersTick(.05);
+   check(c.state==='leave'&&G.stats.staffServed>=1,'o balconista atende o freguês do balcão sozinho');
+   G.stock.cerveja=10;const g={id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders:['cerveja'],later:[],delivered:[],patience:200,maxPatience:200,status:'waiting'}]};G.groups.push(g);const before=G.stock.cerveja;for(let k=0;k<800&&g.diners[0].status==='waiting';k++)customersTick(.05);
+   check(g.diners[0].status!=='waiting'&&G.stock.cerveja===before-1,'o garçom tira a cerveja e leva à mesa');G.groups=[];
+   G.openedDay=G.day;G.phase='open';G.shop=[];finishDay(true);while(scene)sceneSkip();check(G.report.wages===staffWages()&&G.report.wages>0&&G.staff.balcao.days===1,'o salário sai no fechamento e conta um dia de casa');closeDialog(true);
+   action('staffMenu');action('staffFire','garcom');check(!G.staff.garcom&&visitorAvailable(li),'dispensado, volta a ser freguês');closeDialog(true);G.staff={};}
   check(!JSON.stringify(PEOPLE).includes('Boleador')&&GIFTS.lauro.some(g=>/Bolador/.test(g.text+JSON.stringify(DECOR)))||!JSON.stringify(DECOR).includes('Boleador'),'Lauro Bolador (não mais Boleador)');
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;window.difficulty=difficultyBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();closeDialog(true);worldOut=null;}
  return results;

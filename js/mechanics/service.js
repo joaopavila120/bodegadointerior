@@ -20,6 +20,7 @@ function caixaMenu(){
  else{note='<p>A bodega já fechou hoje: abrir de novo, só amanhã. Antes de dormir, dá para dar uma volta lá fora.</p>';btn.push('<button class="primary" data-act="caixaSleep">Dormir (passar para o próximo dia)</button>');if(G.report)btn.push('<button data-act="caixaReport">Ver o caixa de hoje</button>');}
  if(G.testMode||G.eventMode)btn.push('<button data-act="testSkip" data-id="1">⏭ Pular 1 dia (teste)</button><button data-act="testSkip" data-id="7">⏭ Pular 7 dias (teste)</button>');
  if(!tut)btn.push('<button data-act="personalizar">🎨 Personalizar bodega</button>');
+ if(!tut&&G.staffUnlocked)btn.push('<button data-act="staffMenu">👥 Ajudantes</button>');
  btn.push('<button data-act="close">Voltar</button>');
  const me=mapEventToday();if(me&&!me.st.done)note+=`<p class="small-note">${me.def.icon} De noite: <b>${me.def.name}</b> · ${me.def.place.split(',')[0]}</p>`;
  openDialog('Caixa da bodega',`<div class="event-card"><span class="event-symbol">${e.icon}</span><div><h3>Dia ${dayNumber()} · ${calendar().name}</h3><p><b>${e.name}</b></p></div></div>${note}<div class="actions">${btn.join('')}</div>`,'caixa');

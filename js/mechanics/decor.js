@@ -92,7 +92,8 @@ function drawDecor(){
  ctx.restore();drawFriendPortrait();
 }
 // Quadros dos amigos: amizade 25 libera o retrato de cada especial; cabe um na parede da direita, ao lado da janela.
-const QUADRO_AT=25,QUADRO_SPOT=[1500,200,100,125],QUADRO_ART={};
+// Quadro do amigo: pequeno, embaixo da janela.
+const QUADRO_AT=25,QUADRO_SPOT=[1260,258,64,80],QUADRO_ART={};
 function quadroPeople(){return Object.keys(PORTRAIT_FILES).map(id=>PEOPLE.findIndex(p=>p.id===id)).filter(i=>i>=0&&!PEOPLE[i].removed);}
 function quadroUnlocked(i){return (G.friends[i]||0)>=QUADRO_AT;}
 function toggleQuadro(id){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;G.quadro=G.quadro===id?null:id;say(G.quadro?'Quadro de '+PEOPLE[i].name+' na parede!':'Quadro guardado.');AudioEngine.heart();save();renderPhone();refreshCustomize();}

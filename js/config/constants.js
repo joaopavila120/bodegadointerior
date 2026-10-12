@@ -4,7 +4,8 @@
 const ROOM_DATA = 'assets/images/room2.webp';
 const PEOPLE_DATA = 'assets/images/people.webp';
 const FURNITURE_DATA = 'assets/images/furniture.webp';
-const MUSIC_DATA = ['assets/audio/1.mp3', 'assets/audio/2.mp3'];
+// 0: fora do expediente · 1: bodega aberta · 2: Santa Catarina (mapa, bailes e Oktoberfest) · 3: Serra Gaúcha
+const MUSIC_DATA = ['assets/audio/1.mp3', 'assets/audio/2.mp3', 'assets/audio/sc.mp3', 'assets/audio/serra.mp3'];
 
 // A arte, a colisão e as rotas usam o mesmo mundo lógico de 1600 x 900 (16:9, o formato da arte).
 const W = 1600, H = 900;

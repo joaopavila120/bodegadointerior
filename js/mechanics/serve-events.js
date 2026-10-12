@@ -24,7 +24,7 @@ const SERVE_EVENTS = {
 // Balcão do baile perto da entrada, com os mesmos móveis da bodega: chopeira e mesa de tragos (no baile de capela, a
 // pipa de vinho e o tacho de polenta). Um de cada lado da porta.
 const SERVE_STATION = { chope: { w: 55, h: 92 }, trago: { w: 90, h: 87 }, vinho: { w: 90, h: 87 }, polenta: { w: 110, h: 50 } };
-function serveBar(def) { return def.items.map((item, k) => { const st = SERVE_STATION[item], x = k === 0 ? 860 - st.w : 1040, y = 990 - st.h; return { item, fx: x, fy: y, w: st.w, h: st.h, x: x + st.w / 2, y: 1016 }; }); }
+function serveBar(def) { if (def.bar) return def.bar.map(b => { const st = SERVE_STATION[b.item]; return { item: b.item, fx: b.x - st.w / 2, fy: b.y - 26 - st.h, w: st.w, h: st.h, x: b.x, y: b.y }; }); return def.items.map((item, k) => { const st = SERVE_STATION[item], x = k === 0 ? 860 - st.w : 1040, y = 990 - st.h; return { item, fx: x, fy: y, w: st.w, h: st.h, x: x + st.w / 2, y: 1016 }; }); }
 function drawServeStation(b) {
   const f = { id: b.item === 'chope' ? 'tap:evento' : 'pour', x: b.fx, y: b.fy, w: b.w, h: b.h }, { x, y, w, h } = f;
   if (b.item === 'chope') { counter(f, 'wood'); rect(x + 9, y - 15, w - 18, h - 25, '#94632f', 12, '#4c3c25'); for (let j = 0; j < 3; j++) rect(x + 8, y - 6 + j * 24, w - 16, 5, '#a2a18c', 2, '#5c5f4d'); rect(x + w / 2 - 3, y + 30, 20, 7, '#c6c3a1', 2, '#535745'); rect(x + w / 2 + 10, y + 35, 6, 10, '#c6c3a1', 2); food('cerveja', x + w / 2 + 8, y + 60, 35); }
@@ -35,7 +35,8 @@ function drawServeStation(b) {
 function serveActive(map = worldOut?.map) { const s = G.serve; return !!s && !s.done && s.day === G.day && s.map === map; }
 function startServe(ev) {
   const def = SERVE_EVENTS[ev]; if (!def || worldOut?.map !== def.map) return;
-  const seats = shuffle(SERVE_SEATS.slice()).slice(0, 6), crowd = PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed && PEOPLE[i].id !== G.avatarId);
+  // Convidados: fregueses comuns nos salões; só especiais quando o evento pede (a laje da Casona).
+  const seats = shuffle((def.seats || SERVE_SEATS).slice()).slice(0, 6), crowd = def.crowd === 'specials' ? shuffle(specialPeople().filter(i => !PEOPLE[i].removed && !(def.hosts || []).includes(PEOPLE[i].id))) : PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].removed && PEOPLE[i].id !== G.avatarId);
   G.serve = { ev, day: G.day, map: def.map, t: def.time, total: def.time, served: 0, perfect: 0, missed: 0, hand: null, pour: null, done: false,
     patrons: seats.map(([x, y], n) => ({ x, y, person: crowd[n % crowd.length], want: null, wait: .6 + n * .8, patience: 0, max: 16 })) };
   closeDialog(true); AudioEngine.ready(); floatNote('⏱ Valendo! Sirva no balcão (segure E) e leve a quem pediu.'); save();
@@ -88,7 +89,7 @@ function finishServe() {
   const def = SERVE_EVENTS[s.ev], ev = MAP_EVENTS[s.ev], st = mapEvState(s.ev), tier = s.served >= def.target ? 0 : s.served >= def.target * .6 ? 1 : 2;
   const rw = scaleReward(ev.reward, [1, .6, .3][tier]); st.done = true; st.served = s.served;
   grantReward(rw); AudioEngine.ready(); save(); refreshHUD();
-  talk([['card', `<p><b>${s.served}</b> servidos (${s.perfect} no ponto) · ${s.missed} cansaram de esperar · meta: ${def.target}</p>`, ev.name + ' · fim do baile'], [def.host, def.lines[tier]], ['reward', rw, ev.name]], null, 'Receber');
+  talk([['card', `<p><b>${s.served}</b> servidos (${s.perfect} no ponto) · ${s.missed} cansaram de esperar · meta: ${def.target}</p>`, ev.name + ' · ' + (def.end || 'fim do baile')], [def.host, def.lines[tier]], ['reward', rw, ev.name]], null, 'Receber');
 }
 // Bolinha de pedido sobre a cabeça, com a paciência embaixo.
 function drawOrderBubble(x, y, item, k = 1) {

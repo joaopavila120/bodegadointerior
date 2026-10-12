@@ -246,7 +246,7 @@ function ruralOnOpen() {
   G.openAt = morningActive() ? morningMinutes() : null;
   if (hortaCells().some(cellThirsty)) showBanner('As plantas ainda não foram regadas hoje', 'Passe na horta com o regador antes que sequem.', 'info');
 }
-function ruralNewDay(prevDay) { G.morning = 0; G.openAt = null; if (!G.testMode) hortaPests(); ranchNewDay(prevDay); if (calendar().weekday === 5) valterTip('sabado'); }
+function ruralNewDay(prevDay) { G.morning = 0; G.openAt = null; if (!G.testMode && G.boitataBless !== G.day) hortaPests(); ranchNewDay(prevDay); if (calendar().weekday === 5) valterTip('sabado'); }
 // Ícone no topo: estado da horta e do curral, de qualquer lugar.
 function updateFarmStatus() {
   const el = $('farmStatus'); if (!el) return;

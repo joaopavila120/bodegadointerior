@@ -74,7 +74,7 @@ const MAP_EVENTS = {
 function mapEventFor(day = G.day) {
   if (!G?.missions || !G.tutorial?.complete && day <= (G.tutorial?.day || 1)) return null;
   const n = dayNumber(day);
-  return Object.values(MAP_EVENTS).find(e => e.days(n) && e.requires())?.id || null;
+  return Object.values(MAP_EVENTS).find(e => e.days(n, day) && e.requires())?.id || null;
 }
 function mapEvState(id) {
   if (G.mapEv?.day !== G.day || G.mapEv.id !== id) G.mapEv = { day: G.day, id, intro: false, done: false, kills: 0, dead: {}, told: false };
@@ -408,23 +408,32 @@ SCENE_VIEWS.rio = drawSceneRio;
   sceneSpeaker = function (who) { return who === 'negrinho' ? { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">🕯️</span>', name: 'O guri da vela' } : speaker(who); };
 }
 
-// ---------- Prateleira de lembranças (bodega, à direita da janela) ----------
-// Troféus dos eventos e a cuia do vô, em duas prateleirinhas: só aparece quando tem alguma coisa para mostrar.
-const LEMBRANCAS = { x: 1436, y: 250, w: 100, gap: 72 };
-function lembrancas() { const t = G.trophies || {}; return [t.rodeio && 'rodeio', t.penalti && 'penalti', t.uva && 'uva', G.relics?.cuia_vo && 'cuia'].filter(Boolean); }
+// ---------- Estante de lembranças (bodega, à direita da janela) ----------
+// Troféus dos eventos, a cuia e as coisas do vô e as lembranças do folclore: três por prateleira, só aparece quando tem
+// alguma coisa para mostrar.
+const LEMBRANCAS = { x: 1430, y: 206, w: 112, gap: 44 };
+function lembrancas() { const t = G.trophies || {}, r = G.relics || {}; return [t.rodeio && 'rodeio', t.penalti && 'penalti', t.uva && 'uva', r.cuia_vo && 'cuia', r.foto1968 && 'foto1968', r.retrato && 'retrato', r.ticao && 'ticao', r.fita && 'fita', r.escama && 'escama', r.freio && 'freio'].filter(Boolean); }
 function drawTrophy(x, y, color, deco) {
   rect(x - 14, y - 8, 28, 8, '#4a3018', 2); rect(x - 4, y - 22, 8, 14, color); ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x - 17, y - 50); ctx.lineTo(x + 17, y - 50); ctx.quadraticCurveTo(x + 15, y - 22, x, y - 22); ctx.quadraticCurveTo(x - 15, y - 22, x - 17, y - 50); ctx.fill();
   ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x - 18, y - 40, 7, Math.PI * .5, Math.PI * 1.5); ctx.stroke(); ctx.beginPath(); ctx.arc(x + 18, y - 40, 7, -Math.PI * .5, Math.PI * .5); ctx.stroke();
   rect(x - 10, y - 48, 4, 18, 'rgba(255,255,255,.35)'); deco(x, y - 38);
 }
+function drawLembranca(id, x, y) {
+  if (id === 'cuia') { ellipse(x, y - 2, 16, 4, '#1c140c55'); ellipse(x, y - 20, 17, 19, '#8a5a2a'); ellipse(x - 5, y - 26, 5, 8, 'rgba(255,230,180,.25)'); rect(x - 14, y - 40, 28, 6, '#5a3a1a', 3); ellipse(x, y - 40, 11, 4, '#4a7a2a'); rect(x + 4, y - 64, 3, 26, '#d8d8d8'); }
+  else if (id === 'foto1968' || id === 'retrato') { const oval = id === 'retrato'; rect(x - 18, y - 52, 36, 48, '#6a4424', oval ? 18 : 3, '#3a2412'); rect(x - 13, y - 47, 26, 38, '#c8a878', oval ? 13 : 2); ellipse(x, y - 34, 6, 7, '#8a6a48'); rect(x - 9, y - 26, 18, 14, '#7a5a3a', 4); if (oval) { ellipse(x + 7, y - 33, 5, 6, '#8a6a48'); rect(x + 3, y - 26, 12, 14, '#a88a6a', 4); } rect(x - 4, y - 4, 8, 4, '#3a2412'); }
+  else if (id === 'ticao') { ctx.save(); ctx.translate(x, y - 6); ctx.rotate(-.5); rect(-4, -40, 9, 44, '#3a2416', 3); rect(-5, -46, 11, 10, '#1a1210', 3); ellipse(0, -44, 4, 3, '#ff7a2a'); ctx.restore(); }
+  else if (id === 'fita') { ctx.strokeStyle = '#d8202a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x - 14, y - 40); ctx.quadraticCurveTo(x, y - 20, x - 6, y - 4); ctx.moveTo(x + 14, y - 40); ctx.quadraticCurveTo(x, y - 20, x + 6, y - 4); ctx.stroke(); ellipse(x, y - 40, 7, 6, '#a8181e'); }
+  else if (id === 'escama') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 22, 30, .3, '255,160,60'); ctx.restore(); ctx.fillStyle = '#f0b030'; ctx.beginPath(); ctx.moveTo(x, y - 44); ctx.quadraticCurveTo(x + 16, y - 26, x, y - 6); ctx.quadraticCurveTo(x - 16, y - 26, x, y - 44); ctx.fill(); rect(x - 1, y - 40, 2, 30, '#fff0a0'); }
+  else if (id === 'freio') { ctx.strokeStyle = '#8a8a90'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y - 22, 13, 0, Math.PI * 2); ctx.stroke(); rect(x - 20, y - 26, 40, 5, '#6a6a70', 2); ctx.beginPath(); ctx.moveTo(x + 13, y - 22); ctx.quadraticCurveTo(x + 24, y - 8, x + 16, y - 2); ctx.stroke(); }
+  else drawTrophy(x, y, id === 'uva' ? '#c8ccd4' : '#e0b040', id === 'rodeio' ? (a, b) => { ctx.strokeStyle = '#7a4a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(a, b, 6, 4, 0, 0, Math.PI * 2); ctx.stroke(); } : id === 'penalti' ? (a, b) => { ellipse(a, b, 5, 5, '#f4f4f4'); ellipse(a, b, 2, 2, '#222'); } : (a, b) => { for (const [ox, oy] of [[-3, -2], [3, -2], [0, 2], [-3, 5], [3, 5], [0, 8]]) ellipse(a + ox, b + oy - 3, 2.6, 2.6, '#6a2a7a'); });
+}
 function drawLembrancas() {
   const items = lembrancas(); if (!items.length || worldOut) return;
-  const { x, w, gap } = LEMBRANCAS, levels = items.length > 2 ? 2 : 1;
-  for (let l = 0; l < levels; l++) { const y = LEMBRANCAS.y + l * gap; rect(x, y, w, 9, '#6a4424', 2, '#3a2412'); rect(x + 8, y + 9, 6, 12, '#4a2e16'); rect(x + w - 14, y + 9, 6, 12, '#4a2e16'); }
+  const { x, w, gap } = LEMBRANCAS, levels = Math.ceil(items.length / 3);
+  for (let l = 0; l < levels; l++) { const y = LEMBRANCAS.y + l * gap; rect(x, y, w, 8, '#6a4424', 2, '#3a2412'); rect(x + 8, y + 8, 6, 10, '#4a2e16'); rect(x + w - 14, y + 8, 6, 10, '#4a2e16'); }
   items.forEach((id, k) => {
-    const y = LEMBRANCAS.y + Math.floor(k / 2) * gap, cx = x + (k % 2 ? 74 : 26);
-    if (id === 'cuia') { ellipse(cx, y - 2, 16, 4, '#1c140c55'); ellipse(cx, y - 20, 17, 19, '#8a5a2a'); ellipse(cx - 5, y - 26, 5, 8, 'rgba(255,230,180,.25)'); rect(cx - 14, y - 40, 28, 6, '#5a3a1a', 3); ellipse(cx, y - 40, 11, 4, '#4a7a2a'); rect(cx + 4, y - 64, 3, 26, '#d8d8d8'); }
-    else drawTrophy(cx, y, id === 'uva' ? '#c8ccd4' : '#e0b040', id === 'rodeio' ? (a, b) => { ctx.strokeStyle = '#7a4a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(a, b, 6, 4, 0, 0, Math.PI * 2); ctx.stroke(); } : id === 'penalti' ? (a, b) => { ellipse(a, b, 5, 5, '#f4f4f4'); ellipse(a, b, 2, 2, '#222'); } : (a, b) => { for (const [ox, oy] of [[-3, -2], [3, -2], [0, 2], [-3, 5], [3, 5], [0, 8]]) ellipse(a + ox, b + oy - 3, 2.6, 2.6, '#6a2a7a'); });
+    const y = LEMBRANCAS.y + Math.floor(k / 3) * gap, cx = x + 20 + (k % 3) * 36;
+    ctx.save(); ctx.translate(cx, y); ctx.scale(.7, .7); drawLembranca(id, 0, 0); ctx.restore();
   });
 }
 { const decor = drawDecor; drawDecor = function () { decor(); drawLembrancas(); }; }

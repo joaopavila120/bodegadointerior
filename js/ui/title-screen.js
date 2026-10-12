@@ -5,6 +5,9 @@ const SHOWCASE = [
   { img: 'bodega', title: 'Toque a bodega do galpão', text: 'Xis na chapa, trago no ponto, fila no balcão e mesa cheia de gauchada.' },
   { img: 'bocha', title: 'Cancha de bocha com possibilidade de organizar campeonatos', text: 'Desafie o Lauro Bolador e os fregueses da casa.' },
   { img: 'truco', title: 'Truco gaudério valendo aposta', text: 'O Mano Lima ensina a jogar, mas não alivia na mesa.' },
+  { img: 'mundo-fronteira', title: 'Mundo aberto: a Fronteira', text: 'Saia da bodega e ande a pé: lojas, vizinhos, CTG e, de noite, o Boitatá no banhado.' },
+  { img: 'mundo-serra', title: 'Suba a Serra Gaúcha', text: 'Parreirais, Maria Fumaça, baile de capela e festa na laje da Casona.' },
+  { img: 'mundo-sc', title: 'Visite o Vale Europeu', text: 'Casas enxaimel, árvore de Páscoa e chope na Oktoberfest de Pomerode.' },
   { img: 'costelao', title: 'Costelão de domingo no fogo de chão', text: 'Rache a lenha, vire as mantas e bata a maionese caseira.' },
   { img: 'laco', title: 'Laçar boi no campo', text: 'Gire o laço e desvie dos rasantes do quero-quero.' },
   { img: 'historia', title: 'A história do galpão do vô', text: 'Vizinhos, amizades, presentes e um capítulo novo a cada nível.' }

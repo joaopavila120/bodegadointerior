@@ -8,8 +8,8 @@ function deliveryConversation(person,actor,diner=null){
  G.dialogueQueue=[];
  // Primeiro atendimento de um especial: a conversa de apresentação do arco dele.
  if(arcMeet(person)){save();return;}
- // Fregueses comuns falam em 20% das entregas; especiais sempre têm uma fala.
- if(!ALWAYS_TALK.has(PEOPLE[person].id)&&Math.random()>=.2){save();return;}
+ // Na bodega só os especiais puxam conversa; os fregueses comuns só proseiam no mundo aberto.
+ if(!ALWAYS_TALK.has(PEOPLE[person].id)){save();return;}
  const line=nextProse(person);
  G.dialogue={person,name:PEOPLE[person].name,player:line.player,reply:line.reply,title:line.title||'Prosa de balcão',source:line.source||null,life:15};
  AudioEngine.heart();save();updateDialogue();

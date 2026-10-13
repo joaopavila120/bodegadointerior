@@ -12,11 +12,11 @@
   deliveryConversation(0,{});
   check(G.dialogue===special&&G.friends[0]===0,'entrega comum silenciosa preserva fala atual; fregueses comuns não somam afeto');
   Math.random=()=>.1;deliveryConversation(0,{});
-  check(G.dialogue!==special&&G.dialogue.name===PEOPLE[0].name&&!G.dialogueQueue.length,'sorteio permite fala comum e substitui a atual');
+  check(G.dialogue===special&&!G.dialogueQueue.length,'na bodega, freguês comum não puxa conversa nem com sorte (só no mundo aberto)');
   progressionTick(14);
   check(G.dialogue?.life===1,'fala permanece durante seus primeiros 14 segundos');
-  deliveryConversation(1,{});progressionTick(1);
-  check(G.dialogue?.name===PEOPLE[1].name&&G.dialogue.life===14,'nova fala reinicia prazo completo');
+  const badin=PEOPLE.findIndex(p=>p.id==='badin');deliveryConversation(badin,{});progressionTick(1);
+  check(G.dialogue?.name===PEOPLE[badin].name&&G.dialogue.life===14,'nova fala reinicia prazo completo');
   progressionTick(14);
   check(!G.dialogue&&$('dialogueUI').classList.contains('hidden'),'fala desaparece após 15 segundos sem outra conversa');
   G.dialogue={name:'Antiga',life:18};G.dialogueQueue=[{name:'Pendente',life:10}];

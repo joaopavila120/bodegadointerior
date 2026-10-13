@@ -285,7 +285,6 @@ WORLD_MAPS.vila = {
     add({ ...V.missoes, h: V.missoes.h + 20 }, drawMissoes); add(V.pouso, drawPouso);
     drawRail(1690, V.W, V.rail); rect(1676, V.rail - 14, 16, 40, '#a83a24', 3);   // fim de linha na estação
     add(V.estacao, () => { const s = V.estacao; if (worldBuilding(9, s, "ESTAÇÃO DA FRONTEIRA")) return; gable(s.x, s.y + 10, s.w, 50, '#7a3a24', 16); rect(s.x, s.y + 56, s.w, s.h - 56, '#f0d8a8', 0, '#6a5a3a'); for (const x of [s.x + 20, s.x + s.w - 70]) windowPane(x, s.y + 74, 50, 40); rect(s.x + s.w / 2 - 20, s.y + s.h - 56, 40, 56, '#6a4424'); signBoard(s.x + s.w / 2, s.y + 20, 200, 'ESTAÇÃO DA FRONTEIRA', 12); });
-    layers.push({ y: V.rail + 20, draw: () => { ctx.save(); ctx.beginPath(); ctx.rect(1690, 0, V.W, V.H); ctx.clip(); drawTrain(trainX(1690, V.W, 120, 300), V.rail + 10); ctx.restore(); } });
     for (const h of V.houses) add(h, () => worldHouse(h, null, h));
     for (const [x, y, kind] of VILA_TREES) if (seen(x, y) && worldDressing(this).clear(x,y,310,440)) layers.push({ y, draw: () => drawWorldTree(x, y, kind) });
   }

@@ -33,10 +33,10 @@
   const pose={stride:0,phase:5};
   check(playerSideSprite(0,1,0,pose)===SADI_SIDE[8]&&playerSideSprite(0,-1,0,pose)===SADI_SIDE[8],'Idle must preserve side orientation');
   check(!playerSideSprite(1,1,0,pose)&&!playerSideSprite(0,0,1,pose),'Side poses must not affect NPCs or vertical walking');
-  const original=characterFrame,transforms=[];
-  try{characterFrame=(s,p)=>{transforms.push(ctx.getTransform().a);return original(s,p);};
+  const original=ctx.drawImage,transforms=[];
+  try{ctx.drawImage=function(...args){transforms.push(this.getTransform().a);return original.apply(this,args);};
    personDraw(0,1620,845,false,true,1,false,0,0);personDraw(0,1620,845,false,true,-1,false,0,0);
-  }finally{characterFrame=original;}
+  }finally{ctx.drawImage=original;}
   check(transforms.length===2&&transforms[0]*transforms[1]<0,'Left and right must mirror correctly');
   worldOut=null;check(!playerSideSprite(0,1,0,pose),'Kitchen animation must stay independent');
   return ['edificações sem sobreposição, pedestres e caminhos até as portas livres nas três regiões','cinco lojas com entradas e retornos funcionais','oito poses laterais, espelhamento e pose de descanso do Sadi sem afetar os demais personagens'];

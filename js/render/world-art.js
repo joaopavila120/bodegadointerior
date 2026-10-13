@@ -2,6 +2,7 @@
 // Geometry, collision rectangles and interaction points stay in the map definitions.
 'use strict';
 const WORLD_ART = {};
+const bodegaGalpaoArt=new Image();bodegaGalpaoArt.src='assets/images/world/architecture-bodega-galpao-v1.png';WORLD_ART['architecture-bodega-galpao-v1']=bodegaGalpaoArt;
 const RURAL_ART_SHEETS = ['rural-workstations-v2','folklore-v2','keepsakes-v2','mates-v2','butia-v2','harvest-items-v2','interior-details-v2','interior-materials-v2','interior-flags-v2','interior-fittings-v2'];
 for(const key of RURAL_ART_SHEETS){const im=new Image();im.src='assets/images/world/'+key+'.png';WORLD_ART[key]=im;}
 for (const key of ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-atacado', 'architecture-shop-pecuaria', 'buildings', 'nature', 'furniture', 'terrain', 'grass', 'rural', 'garden', 'architecture0', 'architecture1', 'architecture2', 'architecture3', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest', 'frontier-terrain', 'frontier-flora', 'architecture-fronteira', 'architecture-bolichos', 'store-shelves', 'landscape', 'meadow', 'pew', 'overhead']) {
@@ -110,7 +111,20 @@ useWorldArt('drawCasona', (r, name) => worldBuilding(5, r, name));
 useWorldArt('drawIgreja', r => worldSprite('architecture-igreja',0,r.x,r.y-170,r.w,r.h+170));
 useWorldArt('drawLuterana', r => worldBuilding(7, r, null, 180));
 useWorldArt('drawSalao', r => worldBuilding(8, r, 'SALÃO DA COMUNIDADE'));
-useWorldArt('drawWorldBodega', () => worldBuilding(0, VILA.bodega, G.bodegaName || 'Bodega do Sadi', 40));
+function worldBodegaBounds(){
+  const r=VILA.bodega,crop=WORLD_ART_CROPS['architecture-bodega-galpao-v1'][0],scale=Math.min(r.w/crop[2],r.h/crop[3]);
+  const w=crop[2]*scale,h=crop[3]*scale;
+  return {x:r.x+(r.w-w)/2,y:r.y+r.h-h,w,h,scale,crop};
+}
+function worldBodegaLights(){
+  const b=worldBodegaBounds();
+  return [[584,632],[948,632],[355,638],[1154,638]].map(([x,y])=>[b.x+(x-b.crop[0])*b.scale,b.y+(y-b.crop[1])*b.scale]);
+}
+useWorldArt('drawWorldBodega', () => {
+  const b=worldBodegaBounds();
+  if(!worldSprite('architecture-bodega-galpao-v1',0,b.x,b.y,b.w,b.h))return worldBuilding(0,VILA.bodega,G.bodegaName||'Bodega do Sadi',40);
+  return true;
+});
 useWorldArt('drawWorldCancha', () => worldBuilding(1, VILA.cancha, 'CANCHA DE BOCHA', 20));
 useWorldArt('drawWorldShop', (r, name) => {
   const shop = [VILA.agro, VILA.gado, VILA.atacado, VILA.acougue].indexOf(r);

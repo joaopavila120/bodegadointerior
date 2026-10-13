@@ -40,6 +40,7 @@ function visitorWalkDirection(id,x,y,dx,dy) {
 function drawDirectionalPerson(sprite,x,y,walking,chef,dx,seated,mood,dy){
   const id=walkCharacterId(sprite);
   if(!id||seated||!WALK_ART[id]?.naturalWidth)return false;
+  if(id==='sadi'&&chef&&typeof drawSadiPose==='function'&&drawSadiPose(x,y,dx,dy))return true;
   // Preserve Sadi's already registered eight-pose outdoor profile cycle.
   if(id==='sadi'&&chef&&worldOut&&!worldMap().indoor&&walkDirection(dx,dy)===1&&!playerCarrying())return false;
   const pose=chef?playerWalkPose(x,y):null,moving=chef?pose.stride>.15:walking;

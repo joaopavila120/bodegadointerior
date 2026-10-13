@@ -21,7 +21,8 @@
     G.up.tray = 1;
     const carryPose = playerCarryPose(G.player.x,G.player.y);
     const first = playerItemAnchor(0), second = playerItemAnchor(1);
-    check(Math.abs(Math.hypot(second.x-first.x,second.y-first.y)-26)<.001 && Math.abs((first.y+second.y)/2-(carryPose.y-9*Math.cos(carryPose.roll)))<.001, 'Os dois espaços acompanham a inclinação real da bandeja');
+    const spacing=carryPose.spriteTray?2*Math.hypot(carryPose.slotX,carryPose.slotY):26,lift=carryPose.itemLift??9;
+    check(Math.abs(Math.hypot(second.x-first.x,second.y-first.y)-spacing)<.001 && Math.abs((first.y+second.y)/2-(carryPose.y-lift*Math.cos(carryPose.roll)))<.001, 'Os dois espaços acompanham a inclinação real da bandeja');
     const count = playerAnimationState().transfers.length;
     check(!putHeld({ key: 'salame' }) && playerAnimationState().transfers.length === count, 'Mão ocupada não cria animação falsa');
     const snapshot = JSON.stringify(G), start = playerAnimationState().transfers[0].start;

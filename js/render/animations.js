@@ -41,6 +41,7 @@ function playerWalkPose(x, y) {
 function playerItemAnchor(slot = G.slot) {
   const p = worldOut || G.player;
   const carry = playerCarryPose(p.x, p.y), offset = G.up.tray ? (slot ? 13 : -13) : 0;
+  if(carry.spriteTray)return sadiTrayItemAnchor(carry,slot);
   return { x: carry.x + offset * Math.cos(carry.roll) + 9 * Math.sin(carry.roll),
     y: carry.y + offset * Math.sin(carry.roll) - 9 * Math.cos(carry.roll) };
 }
@@ -49,6 +50,9 @@ function playerCarrying() {
   return G.hands.some(Boolean) || playerAnimationState().transfers.length > 0;
 }
 function playerCarryPose(x, y) {
+  if(avatarSprite()===0&&typeof sadiTrayPose==='function'){
+    const spritePose=sadiTrayPose(x,y);if(spritePose)return spritePose;
+  }
   const pose = playerWalkPose(x, y), reach = playerReachPose(), p = worldOut || G.player;
   const back = playerFacingSprite(avatarSprite(), p.dy) === SADI_BACK;
   return { x: x + Math.sin(pose.phase) * pose.stride * .8 + (back ? 8 : 0),

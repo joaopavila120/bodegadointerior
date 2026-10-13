@@ -107,6 +107,8 @@ async function main() {
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
       await evaluate('Promise.all([worldArtLoaded,walkArtLoaded])');
+      const trayResults=await evaluate(fs.readFileSync(path.join(__dirname,'sadi-tray-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+trayResults.length+' verificações do Sadi com bandeja e galpão');
       const interiorWalkResults = await evaluate(fs.readFileSync(path.join(__dirname, 'interior-walk-scenarios.js'), 'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+interiorWalkResults.length+' verificações de interiores e caminhada');
       const worldArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'world-art-scenarios.js'), 'utf8'));

@@ -4,7 +4,7 @@
 function placeWorld(r,x,y,w,h){Object.assign(r,{x,y,w,h});}
 Object.assign(VILA,{W:4200,H:3000,roadY:800,roadH:110,marketY:1510,border:2680});
 VILA.rail=VILA.roadY+132;
-placeWorld(VILA.bodega,1230,70,780,620);
+placeWorld(VILA.bodega,1220,80,860,610);
 placeWorld(VILA.cancha,2180,190,740,500);
 placeWorld(VILA.ferragem,3120,260,720,430);
 placeWorld(VILA.horta,920,350,260,330);placeWorld(VILA.fogo,580,340,300,340);

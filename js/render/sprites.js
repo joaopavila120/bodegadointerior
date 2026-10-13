@@ -165,6 +165,10 @@ function carryHand(x,y,side,thumb=false){
 function drawPlayerCarry(x,y,behind=false){
  if(!playerCarrying())return;
  const carry=playerCarryPose(x,y),p=worldOut||G.player,pose=playerWalkPose(x,y),reach=playerReachPose();
+ if(carry.spriteTray){
+  if(behind===carry.back)G.hands.forEach((item,slot)=>{if(item){const a=sadiTrayItemAnchor(carry,slot);food(item.pid||item.key,a.x,a.y,G.up.tray?30:34,item);}});
+  return;
+ }
  const sadi=avatarSprite()===0,flip=!carry.back&&p.dx>.05?-1:1;
  const transfer=playerAnimationState().transfers.at(-1);
  const wave=transfer?Math.sin(clamp((frameClock-transfer.start)/transfer.duration,0,1)*Math.PI):0;

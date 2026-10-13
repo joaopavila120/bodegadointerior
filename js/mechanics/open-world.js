@@ -266,7 +266,7 @@ WORLD_MAPS.vila = {
       ...secretSpots(), ...forageSpots()
     ];
   },
-  lights() { const V = VILA; return [[V.bodega.x + 100, V.bodega.y + 210], [V.bodega.x + 240, V.bodega.y + 210], [V.bodega.x + V.bodega.w - 220, V.bodega.y + 210], [V.bodega.x + V.bodega.w - 80, V.bodega.y + 210], [V.agro.x + 90, V.agro.y + 150], [V.gado.x + 90, V.gado.y + 150], [V.atacado.x + 90, V.atacado.y + 150], [V.ferragem.x + 90, V.ferragem.y + 150], [V.acougue.x + 90, V.acougue.y + 140], ...V.houses.map(h => [h.x + 50, h.y + 116])]; },
+  lights() { const V = VILA; return [...worldBodegaLights(), [V.agro.x + 90, V.agro.y + 150], [V.gado.x + 90, V.gado.y + 150], [V.atacado.x + 90, V.atacado.y + 150], [V.ferragem.x + 90, V.ferragem.y + 150], [V.acougue.x + 90, V.acougue.y + 140], ...V.houses.map(h => [h.x + 50, h.y + 116])]; },
   draw(view, seen, layers) {
     const V = VILA;
     grassField(this, view, seen, '#6f9a45', ['#5f8a3a', '#86ad55'], V.river);

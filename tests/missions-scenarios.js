@@ -209,6 +209,13 @@
    check(c.state==='leave'&&G.stats.staffServed>=1,'o balconista atende o freguês do balcão sozinho');
    G.stock.cerveja=10;const g={id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders:['cerveja'],later:[],delivered:[],patience:200,maxPatience:200,status:'waiting'}]};G.groups.push(g);const before=G.stock.cerveja;for(let k=0;k<800&&g.diners[0].status==='waiting';k++)customersTick(.05);
    check(g.diners[0].status!=='waiting'&&G.stock.cerveja===before-1,'o garçom tira a cerveja e leva à mesa');G.groups=[];
+   G.up.coffee=true;G.up.amendoim=true;G.stock.cafe=10;G.stock.amendoim=10;G.shop=[];let cf=null;for(let k=0;k<20&&!cf;k++)cf=spawnShop({pid:'cafe'});const cafeBefore=G.stock.cafe;for(let k=0;k<900&&cf.state==='queue';k++)customersTick(.05);
+   check(cf.state==='leave'&&G.stock.cafe===cafeBefore-1,'o balconista passa o café na cambona e serve no balcão');G.shop=[];
+   const table=(orders)=>{const t={id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders,later:[],delivered:[],patience:300,maxPatience:300,status:'waiting'}]};G.groups=[t];return t;};
+   const g2=table(['cafe','amendoim']),snack=G.stock.amendoim;for(let k=0;k<1400&&g2.diners[0].status==='waiting';k++)customersTick(.05);
+   check(g2.diners[0].status!=='waiting'&&G.stock.amendoim===snack-1,'o garçom leva café e amendoim à mesa');
+   for(const k of RECIPES.xis_salada.parts)G.stock[k]=Math.max(G.stock[k]||0,5);const g3=table(['xis_salada','cerveja']),d3=g3.diners[0];for(let k=0;k<900&&!d3.delivered.some(i=>i.pid==='cerveja');k++)customersTick(.05);
+   check(d3.orders.join()==='xis_salada'&&d3.delivered.some(i=>i.pid==='cerveja')&&d3.status==='waiting','o garçom leva a cerveja e deixa o xis para o Sadi');G.groups=[];
    G.openedDay=G.day;G.phase='open';G.shop=[];finishDay(true);while(scene)sceneSkip();check(G.report.wages===staffWages()&&G.report.wages>0&&G.staff.balcao.days===1,'o salário sai no fechamento e conta um dia de casa');closeDialog(true);
    action('staffMenu');action('staffFire','garcom');check(!G.staff.garcom&&visitorAvailable(li),'dispensado, volta a ser freguês');closeDialog(true);G.staff={};}
   // história do vô: gaita, baú, carta e o último trago

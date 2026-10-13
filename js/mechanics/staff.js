@@ -1,16 +1,17 @@
 // Ajudantes da bodega: depois da primeira semana, o Valter conta que dá para contratar os amigos especiais.
-// · Balconista: atende o balcão (cigarro, conservas, salame, erva e pinhão na balança).
-// · Garçom: tira chope, refri e trago e leva às mesas.
+// · Balconista: atende tudo que se pede no balcão (prateleiras, erva e granel na balança, vinho e café da cambona).
+// · Garçom: leva às mesas tudo que não sai da cozinha: chope, refri, trago, bitter, café e os petiscos das prateleiras.
 // Mais lentos que o Sadi e sem o "no ponto" (gorjeta menor); usam o estoque da bodega; o salário sai no fechamento de
 // cada dia aberto. Com os dias de casa, pegam prática e ficam um pouco mais rápidos. Xis, cozinha e roça seguem com o Sadi.
 'use strict';
 
 const HIRE_AT = 40, STAFF_UNLOCK_DAYS = 8;
 const STAFF_ROLES = {
-  balcao: { name: 'Balconista', icon: '🧾', job: 'atende o balcão: cigarro, conservas, salame, erva e pinhão na balança' },
-  garcom: { name: 'Garçom', icon: '🍺', job: 'tira chope, refri e trago e leva às mesas' }
+  balcao: { name: 'Balconista', icon: '🧾', job: 'atende tudo do balcão: cigarro, conservas, salame, erva e granel na balança, vinho e café' },
+  garcom: { name: 'Garçom', icon: '🍺', job: 'leva às mesas chope, refri, trago, bitter, café e petiscos (o xis e a torrada seguem contigo)' }
 };
-const STAFF_DRINKS = ['cerveja', 'refri', 'cachaca'];
+// Onde buscar cada pedido que não fica numa prateleira do balcão (as prateleiras são "shop:" + o produto).
+const STAFF_STATIONS = { erva: 'bag', refri: 'bottle:refri', cerveja: 'tap:cerveja', cachaca: 'pour', bitter: 'bitter', cafe: 'coffee' };
 const STAFF_TRAITS = {
   guri: { wage: 24, speed: .85, note: 'ligeiro que nem potro novo' }, manolima: { wage: 28, speed: 1.05, note: 'caprichoso, proseia com todo mundo' },
   baitaca: { wage: 26, speed: 1, note: 'canta enquanto serve' }, badin: { wage: 30, speed: .95, note: 'trabalhador da colônia' },
@@ -62,8 +63,13 @@ function staffTick(dt) {
 }
 // Anda até o ponto; true quando chegou.
 function staffMove(w, to, dt, speed = 170) { const d = Math.hypot(to.x - w.x, to.y - w.y); w.walk = d > 4; if (d > 4) { const k = Math.min(d, speed * dt); w.dx = to.x < w.x ? -1 : 1; w.x += (to.x - w.x) / d * k; w.y += (to.y - w.y) / d * k; } return d <= 4; }
-// Onde está cada produto do balcão: a prateleira dele (a erva, na balança).
-function staffStation(k) { const f = furniture().find(f => f.id === 'shop:' + k) || (k === 'erva' ? furniture().find(f => f.id === 'bag') : null); return f ? { x: f.x + f.w / 2, y: f.y + f.h + 34 } : null; }
+// Onde está cada produto: a prateleira dele, a balança (erva), a geladeira, a chopeira, a mesa de tragos, o bitter ou a cambona.
+// Sem a estação (melhoria ainda não comprada), o ajudante deixa o pedido para o Sadi.
+function staffStation(k) { const id = STAFF_STATIONS[k] || 'shop:' + k, f = furniture().find(f => f.id === id); return f ? { x: f.x + f.w / 2, y: f.y + f.h + 34 } : null; }
+// O garçom leva tudo que não é receita da cozinha (xis e torrada).
+function staffTableItem(k) { return !RECIPES[k] && unlocked(k) && !!staffStation(k) && staffStock(k); }
+// Quanto demora para buscar: o granel é pesado na balança e o café passa na cambona.
+function staffFetchTime(k) { return bulk(k) ? 6 : k === 'cafe' ? 4.5 : 3.5; }
 // Desistiu no meio do caminho: o que já saiu da prateleira volta para o estoque.
 function staffDrop(w) { const t = w.task; if (t?.item) G.stock[t.k] = (G.stock[t.k] || 0) + (t.item.weight || 1); if (t) staffClaims.delete(t.c || t.d); w.task = null; w.hand = null; }
 // Balconista: pega o pedido de quem está no balcão, vai buscar na prateleira (ou pesa na balança) e volta para entregar.
@@ -72,7 +78,7 @@ function balconistaTick(s, w, dt) {
   if (!t) {
     const c = G.shop.find(c => c.state === 'queue' && atCounter(c) && !c.path?.length && !c.missing && !c.training && !c.extra?.length && !staffClaims.has(c) && staffStation(c.pid) && staffStock(c.pid, bulk(c.pid) ? c.grams || bulk(c.pid).unit : 1));
     if (!c) { staffMove(w, STAFF_HOME.balcao, dt); return; }
-    staffClaims.add(c); const left = staffTime(s, bulk(c.pid) ? 6 : 3.5);
+    staffClaims.add(c); const left = staffTime(s, staffFetchTime(c.pid));
     w.task = { c, k: c.pid, grams: bulk(c.pid) ? c.grams || bulk(c.pid).unit : 0, stage: 'fetch', at: staffStation(c.pid), left, total: left }; return;
   }
   const c = t.c; if (c.state !== 'queue' || !atCounter(c)) { staffDrop(w); return; }
@@ -87,19 +93,19 @@ function balconistaTick(s, w, dt) {
   pay(items, c.person, c.patience / c.maxPatience, true, c.x, c.y, c.fiado); G.stats.staffServed = (G.stats.staffServed || 0) + 1;
   c.state = 'leave'; c.dest = null; setDestination(c, EXIT); resetQueuePaths(); effect(PEOPLE[s.person].name + ' atendeu', w.x, w.y - 150, '#d8ffac'); save();
 }
-// Garçom: tira a bebida na chopeira, na geladeira ou na mesa de tragos e leva até quem pediu.
+// Garçom: busca o pedido (chopeira, geladeira, mesa de tragos, bitter, cambona ou prateleira) e leva até quem pediu.
 function garcomTick(s, w, dt) {
   const t = w.task;
   if (!t) {
     const free = [];
-    for (const g of G.groups) if (g.state === 'seated' && !g.training) (g.diners || []).forEach((d, n) => { const k = d.orders[0]; if (d.status === 'waiting' && STAFF_DRINKS.includes(k) && unlocked(k) && !staffClaims.has(d) && staffStock(k)) free.push({ g, d, n, k }); });
+    for (const g of G.groups) if (g.state === 'seated' && !g.training) (g.diners || []).forEach((d, n) => { if (d.status !== 'waiting' || staffClaims.has(d)) return; const k = d.orders.find(staffTableItem); if (k) free.push({ g, d, n, k }); });
     free.sort((a, b) => a.d.patience - b.d.patience);
     const o = free[0]; if (!o) { staffMove(w, STAFF_HOME.garcom, dt); return; }
-    staffClaims.add(o.d); const left = staffTime(s, 3.5); w.task = { ...o, stage: 'tap', left, total: left }; return;
+    staffClaims.add(o.d); const left = staffTime(s, staffFetchTime(o.k)); w.task = { ...o, stage: 'tap', at: staffStation(o.k), left, total: left }; return;
   }
   const valid = t.g.state === 'seated' && G.groups.includes(t.g) && t.d.status === 'waiting' && t.d.orders.includes(t.k);
   if (!valid) { staffDrop(w); return; }
-  if (t.stage === 'tap') { if (!staffMove(w, STAFF_TAPS, dt)) return; t.left -= dt; if (t.left > 0) return; if (!staffStock(t.k)) { staffDrop(w); return; } t.item = staffItem(t.k); w.hand = t.k; t.stage = 'walk'; return; }
+  if (t.stage === 'tap') { if (!staffMove(w, t.at || STAFF_TAPS, dt)) return; t.left -= dt; if (t.left > 0) return; if (!staffStock(t.k)) { staffDrop(w); return; } t.item = staffItem(t.k); w.hand = t.k; t.stage = 'walk'; return; }
   const seat = groupSeatPosition(t.g, t.n); if (!staffMove(w, { x: seat.x, y: seat.y + 20 }, dt)) return;
   const d = t.d, table = G.tables.find(x => x.id === t.g.table);
   d.orders.splice(d.orders.indexOf(t.k), 1); d.delivered.push(t.item); if (table) table.plates++; staffClaims.delete(d); w.task = null; w.hand = null; AudioEngine.tick();
@@ -140,7 +146,7 @@ function staffIntroTick() {
     { say: 'sadi', text: 'E como eu chamo alguém?' },
     { say: 'valter', text: 'No caixa, em Ajudantes. Quanto mais amizade, mais gente topa. Escolhe bem!' },
     { walk: 'valter', to: { x: ENTRY.x, y: ENTRY.y } }], 'ajudantes',
-    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão: contrate um <b>balconista</b> (atende o balcão) e um <b>garçom</b> (tira chope, refri e trago e leva às mesas). Só os amigos topam (amizade ${HIRE_AT}+). O salário sai no fechamento de cada dia aberto. O xis e a cozinha continuam contigo.`, 'Novidade na bodega']], null, 'Entendi'));
+    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão: contrate um <b>balconista</b> (atende tudo do balcão, até o café) e um <b>garçom</b> (leva às mesas bebidas, café e petiscos). Só os amigos topam (amizade ${HIRE_AT}+). O salário sai no fechamento de cada dia aberto. O xis e a cozinha continuam contigo.`, 'Novidade na bodega']], null, 'Entendi'));
 }
 
 // ---------- Ligações ----------

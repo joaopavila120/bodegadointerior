@@ -5,6 +5,8 @@
 'use strict';
 
 const ARC_AT = [20, 45, 75];
+// Capítulos 1 a 3 desligados por enquanto: fica só a conversa de apresentação no primeiro atendimento.
+const ARC_CHAPTERS = false;
 const ARCS = {
   manolima: {
     title: 'A milonga da bodega',
@@ -154,6 +156,7 @@ let arcPlaying = null;
 // Capítulos liberados pela amizade ficam na fila para o fim do expediente.
 function arcCheck() {
   G.arcQueue ??= [];
+  if (!ARC_CHAPTERS) { G.arcQueue.length = 0; return; }
   for (const arc of Object.keys(ARCS)) {
     const st = arcState(arc); if (!st.met) continue;
     const f = arcFriendship(arc);
@@ -171,6 +174,7 @@ function arcReward(arc, i) {
 }
 // Depois do expediente: quem tem capítulo novo entra pela porta e conversa.
 function playNextArc(after) {
+  if (!ARC_CHAPTERS) { if (G.arcQueue) G.arcQueue.length = 0; return false; }
   const q = G.arcQueue?.shift(); if (!q) return false;
   const st = arcState(q.arc), ch = ARCS[q.arc].chapters[q.i], members = arcMembers(q.arc).map(i => PEOPLE[i].id);
   arcPlaying = q;
@@ -188,7 +192,7 @@ function playNextArc(after) {
 }
 // Texto curto para a aba Contatos.
 function arcProgressText(person) {
-  const arc = arcIdOf(person); if (!arc || !arcState(arc).met) return '';
+  const arc = arcIdOf(person); if (!ARC_CHAPTERS || !arc || !arcState(arc).met) return '';
   const n = arcState(arc).done.filter(Boolean).length;
   return `<small class="arc-progress">📖 ${ARCS[arc].title}: ${n}/3${n < 3 ? ' · próximo com afeto ' + ARC_AT[n] : ' · completa'}</small>`;
 }

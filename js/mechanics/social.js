@@ -50,7 +50,8 @@ const GIFT_GOODS=[
  {key:'salame',qty:4,name:'4 salames coloniais',text:'“Salame curado no galpão, receita do nono.”'},
  {key:'pepino',qty:4,name:'4 potes de pepino em conserva',text:'“Conserva da patroa, pra vender no balcão.”'}
 ];
-const GOODS_GIFT_AT=[25,75,100],VISIT_GIFT_CHANCE=.2;
+// Presente de visita: raro (8%), no máximo um por noite e o mesmo amigo só volta com presente depois de uma semana.
+const GOODS_GIFT_AT=[25,75,100],VISIT_GIFT_CHANCE=.08,VISIT_GIFT_GAP=7;
 function giftGoodsOptions(){return GIFT_GOODS.filter(g=>GOODS[g.key]&&unlocked(g.key));}
 function giftKey(person,at){return PEOPLE[person].id+':'+at;}
 function queueGift(person,gift){
@@ -73,7 +74,8 @@ function giveGift(person,gift){const key=giftKey(person,gift.at);G.giftQueue=(G.
 // Depois do expediente: presentes de visita e a bandeira do Mano Lima no fim do segundo dia.
 function queueAfterHoursGifts(){
  const today=G.visitedToday?.day===G.day?G.visitedToday.ids:[];
- for(const id of today){const i=PEOPLE.findIndex(p=>p.id===id);if(i>=0&&(G.friends[i]||0)>=25&&Math.random()<VISIT_GIFT_CHANCE)queueGift(i,{at:'dia'+G.day});}
+ G.visitGiftDay??={};
+ for(const id of shuffle(today.slice())){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||(G.friends[i]||0)<25||G.day-(G.visitGiftDay[id]??-99)<VISIT_GIFT_GAP||Math.random()>=VISIT_GIFT_CHANCE)continue;if(queueGift(i,{at:'dia'+G.day})){G.visitGiftDay[id]=G.day;break;}}
 }
 function showGiftVisit(){
  const item=G.giftQueue?.[0];if(!item)return false;const p=PEOPLE[item.person];

@@ -1,6 +1,6 @@
 // PNGs compartilhados pelo cenário, pedidos, bandeja e catálogo do celular.
 'use strict';
-const ITEM_SPRITE_KEYS = ['erva','pao_xis','burger','burger_pronto','ovo','ovo_pronto','queijo','salada','bacon','coracao','refri','cerveja','cachaca','cigarro','cigarro_py','codorna','pepino','salame','amendoim','pinhao','bergamota','cafe','bitter','torrada','xis_montado','xis_prensado','mate','wait','costela_crua','costela_assada','costela_queimada','costela','maionese','azeite','lenha','vinho'];
+const ITEM_SPRITE_KEYS = ['erva','pao_xis','burger','burger_pronto','ovo','ovo_pronto','queijo','salada','bacon','coracao','refri','cerveja','cachaca','cigarro','cigarro_py','codorna','pepino','salame','amendoim','pinhao','bergamota','cafe','bitter','torrada','xis_montado','xis_prensado','mate','wait','costela_crua','costela_assada','costela_queimada','costela','maionese','azeite','lenha','vinho','pastel','cuca','polenta_frita','galeto','galeto_cru','farinha','fuba','ametista','agata'];
 const ITEM_ART = Object.fromEntries(ITEM_SPRITE_KEYS.map(key => {
   const image = new Image();
   image.src = 'assets/images/items/' + key + '.png';
@@ -39,6 +39,7 @@ function itemBadge(key) { return {xis_bacon:'bacon',xis_coracao:'coracao',torrad
 
 function itemArtKey(key, item) {
   if (key === 'queijo_colonial') return 'queijo';
+  if (key === 'pinhao_quente') return 'pinhao';
   if (key?.startsWith('xis_') && !['xis_montado','xis_prensado'].includes(key)) return item && !item.ready ? 'xis_montado' : 'xis_prensado';
   if (key === 'cigarro' && G?.up.cigarro_py) return 'cigarro_py';
   if (key === 'costela_assada' && item?.burned) return 'costela_queimada';

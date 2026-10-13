@@ -120,3 +120,41 @@ One traditional Brazilian chimarrao dark brown round gourd, wide tan rim filled 
 
 One simple small wooden hourglass with golden sand, dark brown frame.
 
+## Pratos do caderno do vô (ícones provisórios desenhados no código; trocar pela arte final)
+
+### pastel.png
+
+One golden fried Brazilian pastel, half-moon shaped pastry with fork-crimped edge and small fried bubbles on the crust.
+
+### cuca.png
+
+One rectangular slice of German-Brazilian cuca cake with a thick crumbly white sugar streusel topping and purple grapes.
+
+### polenta_frita.png
+
+A small pile of crispy golden fried polenta sticks, rectangular, crossed over each other.
+
+### galeto.png
+
+One small whole roasted golden-brown chicken (galeto al primo canto) with two drumsticks up and a sprig of green sage.
+
+### galeto_cru.png
+
+One small whole raw seasoned pink chicken with two drumsticks up, no plate.
+
+### farinha.png
+
+A cream cloth flour sack tied at the top, beige band with a small wheat emblem, NO lettering.
+
+### fuba.png
+
+A yellow cloth cornmeal sack tied at the top, orange band with a small corn emblem, NO lettering.
+
+
+### ametista.png
+
+One raw purple amethyst crystal cluster, pointed shards with light facets, on a small dark rock base.
+
+### agata.png
+
+One polished round orange agate stone sliced open, showing concentric cream and orange bands.

@@ -85,7 +85,7 @@
   phoneTab='decor';togglePhone(true);check($('phoneContent').textContent.includes('À venda no balcão')&&!$('phoneContent').innerHTML.includes('data-act="decorBuy"'),'no celular, a aba Estética só mostra e guarda: comprar é no balcão');togglePhone(false);
   phoneTab='upgrades';togglePhone(true);check(phoneTab==='supplier'&&document.querySelector('[data-act="tab"][data-id="upgrades"]').classList.contains('hidden'),'o celular não tem mais a aba Melhorias');togglePhone(false);
   storeShop('ferragem');const up=$('dialogContent').innerHTML;closeDialog(true);
-  check(!/Bergamota do pomar|Pinhão a granel|Amendoim torrado|Conserva de pepino/.test(up)&&/Xis bacon/.test(up),'a Ferragem não vende bergamota, pinhão, amendoim e pepino: vêm da roça');
+  check(!/Bergamota do pomar|Pinhão a granel|Amendoim torrado|Conserva de pepino|Xis bacon|Xis coração/.test(up)&&/Terceira mesa/.test(up),'a Ferragem não vende bergamota, pinhão, amendoim e pepino (vêm da roça) nem xis bacon e xis coração (vêm do caderno do vô)');
   check(unlocked('amendoim'),'amendoim torrado começa liberado');
   G.up.bergamota=false;G.bag={bergamota:{q:3000,c:0}};goOutside();goInside();check(unlocked('bergamota')&&G.stock.bergamota===3000,'a primeira bergamota colhida libera a venda no balcão');
   G.ranch.milkedDay=null;G.bag={leite:{q:4,c:0}};near('tacho');interact();action('makeQueijo','colonial');for(let i=0;i<80&&farmGame;i++)farmGameKey(i%2?'d':'a');

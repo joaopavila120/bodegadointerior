@@ -430,3 +430,53 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .farm-timer{font-size:1.4em;font-weight:bold;text-align:center;margin:0 0 .3em;color:#7a4a1a;font-variant-numeric:tabular-nums}.farm-timer.low{color:#b8321e}
 /* Ação da última fala na caixa RPG das conversas (ex.: "E · Aceitar") */
 .rpg-action{position:absolute;right:34px;bottom:6px;color:#ffd96a;font-size:13px;font-weight:bold;text-shadow:1px 1px 0 #0a0e26}
+
+/* ---------- Caderno de receitas do vô ---------- */
+.vo-note{background:#f3e6c4;color:#3a2a18;border:2px solid #b8955a;border-radius:6px;padding:14px 16px;box-shadow:inset 0 0 24px #c9a86a55;font-family:Georgia,serif}
+.vo-note small{display:block;color:#7a5a30;letter-spacing:.06em;text-transform:uppercase;font:bold 11px/1.3 Arial,sans-serif;margin-bottom:6px}
+.vo-note b{display:block;font-size:20px;margin-bottom:6px}
+.vo-note p{margin:0;font-style:italic;line-height:1.5}
+.caderno-page .vo-hand{font:italic 14px/1.45 Georgia,serif;color:#5a4024}
+.caderno-page.missing{opacity:.72}
+
+/* ---------- Álbum de cartas ---------- */
+.album-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.album-tabs button{padding:6px 10px;font-size:13px}
+.album-tabs button.active{background:#4a6b3a;color:#fff6dc;border-color:#2e4524}
+.album-tabs small{opacity:.8;margin-left:4px}
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px}
+.album-slot{position:relative;aspect-ratio:2/3;padding:0;border:0;background:none;cursor:pointer;border-radius:10px;transition:transform .15s}
+.album-slot:hover{transform:translateY(-3px) rotate(-1deg)}
+.album-slot.missing{cursor:default;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:repeating-linear-gradient(45deg,#3a2a1c,#3a2a1c 8px,#33251a 8px,#33251a 16px);border:2px dashed #8a6a42;color:#d9c79f;text-align:center;padding:8px}
+.album-slot.missing span{font:bold 34px Georgia,serif;color:#a88a5a}
+.album-slot.missing small{font-weight:bold}
+.album-slot.missing em{font-size:10.5px;line-height:1.25;opacity:.85}
+.album-slot .tcard-face{position:absolute;inset:0}
+.album-slot .tcard-name b{font-size:11.5px}
+.album-slot .tcard-name small{font-size:9.5px}
+.album-slot .tcard-top{font-size:10px;padding:3px 6px}
+.album-slot .tcard-ph b{font-size:30px}
+.tcard-stage{display:flex;justify-content:center;padding:6px 0 14px;perspective:1100px}
+.tcard{width:min(270px,70vw);aspect-ratio:2/3;cursor:pointer;outline:none}
+.tcard-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.tcard.flipped .tcard-inner{transform:rotateY(180deg)}
+.tcard-face{position:absolute;inset:0;border-radius:12px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 10px 26px #000a;border:3px solid #e8cc8a;outline:3px solid var(--set,#5a3a20);outline-offset:-9px}
+.tcard-front{display:flex;flex-direction:column;background:linear-gradient(#f4e6c2,#e2cc98)}
+.tcard-top{display:flex;justify-content:space-between;align-items:center;padding:6px 12px 4px;background:var(--set,#5a3a20);color:#ffe9b0;font:bold 12px Georgia,serif;letter-spacing:.04em}
+.tcard-art{position:relative;flex:1;margin:6px 10px 0;border:2px solid #5a3a20;border-radius:4px;overflow:hidden;background:radial-gradient(circle at 50% 35%,#f8ecd0,#c9a46a)}
+.tcard-art .portrait{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover;border:0;border-radius:0;background-size:cover}
+.tcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tcard-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--set,#5a3a20)}
+.tcard-ph b{font:bold 64px Georgia,serif;opacity:.75}
+.tcard-ph small{font:italic 11px Georgia,serif;opacity:.7}
+.tcard-name{padding:6px 10px 10px;text-align:center;color:#3a2414}
+.tcard-name b{display:block;font:bold 17px/1.15 Georgia,serif}
+.tcard-name small{display:block;font:italic 12px/1.2 Georgia,serif;color:#6a4a28}
+.tcard-back{transform:rotateY(180deg);background:#efe0bb;background-image:repeating-linear-gradient(0deg,#0000 0 22px,#c9a86a22 22px 23px)}
+.tcard-back-in{position:absolute;inset:12px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid #b8955a;color:#3a2414;font-family:Georgia,serif}
+.tcard-back-in small{font:bold 10.5px Arial,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--set,#5a3a20)}
+.tcard-back-in h4{margin:0;font-size:19px;line-height:1.15}
+.tcard-back-in em{font-size:13px;color:#6a4a28}
+.tcard-back-in p{margin:0;font-size:13.5px;line-height:1.5;flex:1}
+.tcard-back-in footer{font:11px/1.35 Arial,sans-serif;color:#6a4a28;border-top:1px solid #c9a86a;padding-top:6px}
+@media (prefers-reduced-motion:reduce){.tcard-inner{transition:none}}

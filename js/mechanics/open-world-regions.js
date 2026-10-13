@@ -11,10 +11,12 @@ function drawRail(x0, x1, y) { for (let x = x0; x < x1; x += 22) rect(x, y - 6, 
 // Maria Fumaça: passa de tempos em tempos pelo trilho, soltando fumaça.
 function trainX(x0, x1, speed, phase) { const margin = 1800, span = x1 - x0 + margin * 2; return x0 - margin + ((frameClock * speed + phase) % span); }
 function drawTrain(x, y) {
+  const p = worldOut; ctx.save(); if (p && p.x > x - 600 && p.x < x + 30 && p.y < y + 10 && p.y > y - 130) ctx.globalAlpha = .42;
   for (let k = 0; k < 2; k++) { const cx = x - 210 - k * 190; rect(cx, y - 70, 170, 62, k ? '#7a2a1a' : '#8a3a24', 4, '#3a1a10'); for (let w = 0; w < 4; w++) windowPane(cx + 14 + w * 38, y - 60, 26, 22, '#3a1a10'); for (const wx of [cx + 30, cx + 140]) ellipse(wx, y - 4, 13, 13, '#2a2a2a'); }
   rect(x - 150, y - 76, 120, 70, '#1e1e22', 6); rect(x - 40, y - 100, 50, 94, '#2a2a30', 4); rect(x - 46, y - 108, 62, 10, '#7a2a1a'); rect(x - 140, y - 110, 18, 36, '#1e1e22'); rect(x - 146, y - 116, 30, 8, '#3a3a40');
   rect(x - 154, y - 30, 160, 8, '#c8a040'); for (const wx of [x - 128, x - 92, x - 56]) { ellipse(wx, y - 4, 16, 16, '#a82a1a'); ellipse(wx, y - 4, 6, 6, '#2a2a2a'); }
   for (let k = 0; k < 5; k++) { const a = (frameClock * 1.2 + k * .2) % 1; ellipse(x - 131 + a * 70, y - 120 - a * 90, 10 + a * 26, 8 + a * 18, `rgba(235,235,230,${.6 * (1 - a)})`); }
+  ctx.restore();
 }
 function drawVineyard(p) {
   const rows = Math.max(2, Math.round(p.h / 60)); rect(p.x, p.y, p.w, p.h, '#8a6a3a', 4); const gap = p.h / rows;

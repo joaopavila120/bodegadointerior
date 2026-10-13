@@ -10,7 +10,20 @@ const GOODS={
  costela_crua:{name:'Manta de costela crua',cost:40,initial:0,cat:'Campo',noSupplier:true},
  costela:{name:'Costela assada',cost:.02,price:18,initial:0,cat:'Campo',noSupplier:true},
  lenha:{name:'Lenha rachada',cost:0,initial:0,cat:'Campo',noSupplier:true},
- maionese:{name:'Maionese caseira',cost:1.2,price:9,initial:0,cat:'Campo',noSupplier:true,sealed:true}
+ maionese:{name:'Maionese caseira',cost:1.2,price:9,initial:0,cat:'Campo',noSupplier:true,sealed:true},
+ // Ingredientes dos pratos do caderno do vô: liberados quando a página da receita aparece.
+ farinha:{name:'Farinha de trigo',cost:1.2,initial:0,cat:'Cozinha',unlock:'farinha'},
+ fuba:{name:'Fubá',cost:1,initial:0,cat:'Cozinha',unlock:'fuba'},
+ galeto_cru:{name:'Galeto temperado',cost:9,initial:0,cat:'Cozinha',unlock:'galeto'}
+};
+// Pratos do caderno de receitas do vô: cada página achada no mapa libera um. Saem do fogão do vô (segure E),
+// que prepara o prato da mesa que pediu primeiro; parts = ingredientes (pinhão em gramas).
+const DISHES={
+ pastel:{name:'Pastel de queijo',price:13,parts:{farinha:1,queijo:1,azeite:1},time:2.4},
+ cuca:{name:'Cuca da oma',price:10,parts:{farinha:1,ovo:1},time:2.6},
+ polenta_frita:{name:'Polenta frita',price:11,parts:{fuba:1,azeite:1},time:2.2},
+ galeto:{name:'Galeto al primo canto',price:30,parts:{galeto_cru:1},time:3.4},
+ pinhao_quente:{name:'Pinhão quente',price:9,parts:{pinhao:400},time:2}
 };
 const RECIPES={torrada:{name:'Torrada de salame',price:14,unlock:'salame',parts:['pao_xis','salame']},xis_salada:{name:'Xis salada',price:22,parts:['pao_xis','salada','burger','ovo','queijo']},xis_bacon:{name:'Xis bacon',price:27,unlock:'bacon',parts:['pao_xis','salada','burger','ovo','queijo','bacon']},xis_coracao:{name:'Xis coração',price:29,unlock:'coracao',parts:['pao_xis','salada','burger','ovo','queijo','coracao']}};
 const BULK={costela:{unit:500,weights:[500,1000,1500],capacity:40000},erva:{unit:500,weights:[250,500,750],capacity:9000},pinhao:{unit:1000,weights:[500,1000,2000,3000],capacity:16000},bergamota:{unit:1000,weights:[1000,2000,3000,6000],capacity:24000}};
@@ -36,10 +49,10 @@ const UPGRADES=[
  {id:'pinhao',level:2,goods:'pinhao',shop:'colheita',name:'Pinhão a granel',cost:90,rep:68,desc:'Libera venda por peso e inclui 6 kg de pinhão.'},
  {id:'bitter',level:3,goods:'bitter',name:'Bitter da casa',cost:220,rep:72,desc:'Libera a estação de bitter. Inclui 4 doses; sirva segurando E.'},
  {id:'capacity',level:2,name:'Estações maiores',cost:220,rep:64,desc:'30 unidades por estação e 15 kg de erva-mate.'},
- {id:'bacon',name:'Xis bacon',cost:160,rep:63,desc:'Libera bacon e uma nova receita. O bacon vem do Açougue da Fronteira.'},
+ {id:'bacon',shop:'caderno',name:'Xis bacon',cost:160,rep:63,desc:'Receita do caderno do vô: libera bacon e o xis bacon. O bacon vem do Açougue da Fronteira.'},
  {id:'table3',level:2,name:'Terceira mesa',cost:260,rep:66,desc:'Mais uma mesa de quatro lugares no salão.'},
  {id:'grill3',level:3,name:'Terceiro espaço da chapa',cost:200,rep:65,desc:'Mais uma boca independente para cozinhar em paralelo.'},
- {id:'coracao',level:4,name:'Xis coração',cost:260,rep:70,desc:'Libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
+ {id:'coracao',shop:'caderno',level:4,name:'Xis coração',cost:260,rep:70,desc:'Receita do caderno do vô: libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
 ];
 const EVENTS={
  campeonato:{name:'Campeonato de truco',icon:'♠',desc:'Duas duplas por mesa entram na abertura e ficam até fechar. Os parceiros permanecem juntos, trocam de adversários e continuam pedindo petiscos e bebidas. Não há outras chegadas.',prep:'Organize e amplie as mesas antes de abrir. Reponha cerveja, cachaça, bitter e petiscos. As duplas trocam de mesa entre rodadas; pedidos pendentes vão junto. Brigas exigem 10 teclas em 24 s.'},

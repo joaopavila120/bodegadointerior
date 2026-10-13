@@ -308,7 +308,10 @@ useWorldArt('drawRail', (x0,x1,y) => {
 useWorldArt('drawTrain', (x,y) => {
   if (!WORLD_ART.rural.naturalWidth) return false;
   // A 296px locomotive towers over the 124px player; wheels stay on the rails.
-  ctx.save(); ctx.translate(x,y+12); ctx.scale(2.6,2.6); ctx.translate(-x,-y-12);
+  ctx.save();
+  // Como as árvores: com o Sadi atrás do trem (mais acima na tela e dentro da área do desenho), ele fica transparente.
+  const p=worldOut;if(p&&p.x>x-2070&&p.x<x+60&&p.y<y+10&&p.y>y-290)ctx.globalAlpha=.42;
+  ctx.translate(x,y+12); ctx.scale(2.6,2.6); ctx.translate(-x,-y-12);
   for (let k=0;k<2;k++) worldSprite('rural',1,x-390-k*202,y-99,204,110);
   worldSprite('rural',0,x-190,y-102,210,114);
   for(let k=0;k<5;k++){const a=(frameClock*1.2+k*.2)%1;ellipse(x-30+a*70,y-105-a*90,8+a*22,6+a*15,`rgba(235,235,230,${.5*(1-a)})`);}

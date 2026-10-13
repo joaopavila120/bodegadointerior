@@ -12,16 +12,8 @@ function worldDressingRoads(id) {
   if(id==='vila') return [...VILA_ROADS,[1690,VILA.rail-35,VILA.W-1690,80],...worldFootpaths()];
   return [];
 }
-function worldFootpaths() {
-  const paths=[],rx=VILA.roadX+40, solids=WORLD_MAPS.vila.obstacles();
-  for(const r of [VILA.acougue,VILA.pouso,...VILA.houses.slice(1)]){
-    const y=Math.min(r.y+r.h+48,VILA.border-65),cx=r.x+r.w/2;
-    const side={x:Math.min(cx,rx),y,w:Math.abs(cx-rx),h:30};
-    if(solids.some(b=>b!==r&&side.x<b.x+b.w+20&&side.x+side.w>b.x-20&&side.y<b.y+b.h+20&&side.y+side.h>b.y-20))continue;
-    paths.push([cx-15,r.y+r.h,30,y-r.y-r.h+30],[side.x,side.y,side.w,side.h]);
-  }
-  return paths;
-}
+function worldFootpaths() { return worldDoorPaths(WORLD_MAPS.vila); }
+
 function worldDressing(M) {
   if(worldDressingCache.has(M.id)) return worldDressingCache.get(M.id);
   const buildings=worldDressingBuildings(M.id), roads=[...worldDressingRoads(M.id),...worldApproachRects(M)], props=[], patches=[],ground=[];
@@ -46,16 +38,26 @@ function worldDressing(M) {
     return !props.some(p=>Math.hypot(p.x-x,p.y-y)<Math.min(w,p.w)*.65);
   };
   result.clear=clear;
+  const treeClear=(x,y,w,h)=>{
+    const crown={x:x-w*.43,y:y-h*.85,w:w*.86,h:h*.85};
+    if(!M.canWalk(x,y)||!M.canWalk(x-25,y)||!M.canWalk(x+25,y))return false;
+    if(roads.some(([rx,ry,rw,rh])=>overlaps({x:x-35,y:y-25,w:70,h:55},{x:rx,y:ry,w:rw,h:rh},12)))return false;
+    if(buildings.some(r=>overlaps(crown,{x:r.x+r.w/2-95,y:r.y+r.h-150,w:190,h:280})))return false;
+    if(reserved.some(r=>overlaps(crown,r,20)))return false;
+    return !props.some(p=>Math.hypot(p.x-x,(p.y-y)*1.5)<(p.sheet==='nature'?w*.72:60));
+  };
   const put=(sheet,index,x,y,w,h)=>{
     if(['vila','serra','sc'].includes(M.id)&&sheet==='landscape'&&[1,2,3].includes(index)){
       sheet='frontier-flora';index=({1:0,2:4,3:1})[index];
     }
-    if(clear(x,y,w,h,sheet==='landscape'&&index!==4))props.push({sheet,index,x,y,w,h});
+    if(sheet==='nature'&&index<3){w*=1.55;h*=1.55;}
+    if((sheet==='nature'&&index<3?treeClear(x,y,w,h):clear(x,y,w,h,sheet==='landscape'&&index!==4)))props.push({sheet,index,x,y,w,h});
   };
   // Establish groves first, then nest low planting around them.
   const groves=M.id==='vila'?[[720,1070,1,240],[1320,1045,0,220],[2270,1060,1,190],[2270,1320,2],[735,1990,1],[1290,1930,0],[2370,2140,1],[3270,1750,0],[1400,1780,1,250],[2880,2210,0,230],[750,2190,0,260],[1230,2290,1,250]]
     :M.id==='serra'?[[1540,880,1],[2040,820,0],[140,1750,1],[950,1910,2],[2080,1730,0],[2390,1900,1],[1160,2350,1]]
     :[[410,830,1],[1820,820,2],[1190,830,0],[1180,1560,1],[2530,1730,0]];
+  if(M.id==='vila')groves.push([1130,300,1],[2110,690,0],[3030,650,1],[4090,1020,0],[3500,1430,1],[3490,2150,0],[740,2540,1],[790,2350,0],[1290,2030,1],[1500,1950,0],[3750,1420,0],[1110,1000,1]);
   for(const [x,y,index,h=280] of groves)put('nature',index,x,y,h*.7,h);
   // Designed garden borders follow each foundation; a clear central approach remains.
   for(const r of buildings){
@@ -104,12 +106,12 @@ function worldDressing(M) {
   if(M.id==='vila'){
     // Riparian vegetation follows the banks; dry grass collects in open meadows.
     // Keep the landing, roads, doors and historic marker accessible.
-    for(let y=190;y<2270;y+=105){
+    for(let y=190;y<VILA.border-110;y+=105){
       if(y>805&&y<1010)continue;
       const x=580+random()*52;
       put('frontier-flora',y%2?5:1,x,y,95+random()*40,65+random()*25);
     }
-    for(let x=650;x<M.W-100;x+=115)put('frontier-flora',random()<.45?5:1,x,2310+random()*28,95+random()*50,65+random()*20);
+    for(let x=650;x<M.W-100;x+=115)put('frontier-flora',random()<.45?5:1,x,VILA.border-70+random()*28,95+random()*50,65+random()*20);
     for(const [cx,cy] of [[780,1630],[1260,2150],[2350,2030],[3060,2200],[1160,980],[2900,1490]]){
       for(let i=0;i<10;i++){
         const a=random()*Math.PI*2,r=40+random()*125;
@@ -124,7 +126,7 @@ function worldDressing(M) {
     ground.length=0;
     for(let i=props.length-1;i>=0;i--)if(props[i].sheet==='ground')props.splice(i,1);
     if(M.id==='serra')for(let x=180;x<M.W-80;x+=145){
-      if(Math.abs(x-1800)<160||random()<.35)continue;
+      if(Math.abs(x-(SERRA.roadX+SERRA.roadW/2))<160||random()<.35)continue;
       for(const side of [-1,1]){
         const px=x+(random()-.5)*80,py=SERRA.arroio+side*(85+random()*50);
         put('frontier-flora',random()<.5?0:1,px,py,65+random()*35,45+random()*25);
@@ -217,6 +219,6 @@ function worldDressingLayers(M,seen,layers,view){
   if(M.indoor)return;
   drawWorldDressingSurface(M,view);
   for(const p of worldDressing(M).props)if(p.sheet!=='ground'&&seen(p.x,p.y,p.h+40)){
-    layers.push({y:p.y,draw:()=>worldSprite(p.sheet,p.index,p.x-p.w/2,p.y-p.h,p.w,p.h)});
+    layers.push({y:p.y,draw:()=>p.sheet==='nature'&&p.index<3?worldTreeSprite(p.index,p.x,p.y,p.w,p.h):worldSprite(p.sheet,p.index,p.x-p.w/2,p.y-p.h,p.w,p.h)});
   }
 }

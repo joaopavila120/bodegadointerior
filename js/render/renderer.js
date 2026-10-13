@@ -8,7 +8,7 @@ function draw(){if(worldOut){drawOutside();return;}beginWorld();
  if(isCampo()){drawCampoBackground();drawWeather();}else{const currentRoom=roomArt;if(currentRoom.complete&&currentRoom.naturalWidth){ctx.imageSmoothingEnabled=false;ctx.drawImage(currentRoom,0,0,W,H);ctx.imageSmoothingEnabled=true;}else rect(0,0,W,H,'#7d7955');
  // Signs remain small and belong to the room; the nearby station gets the detailed instruction.
 
- drawDecor();drawRainWindow();drawNightWindow();drawDecorLights();drawTelevision();drawCanchaDoor();drawWeather();rect(ENTRY.x-70,H-25,139,23,'#624c2e',3,'#ae9253');txt('BEM-VINDO',ENTRY.x,H-14,11,'#d9bd7c');if(G.up.placaFiado&&placaFiadoArt.complete&&placaFiadoArt.naturalWidth){ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(placaFiadoArt,1362,700,96,84);ctx.restore();}}const active=furniture(),near=started&&!modal&&!phoneOpen?nearest():null;
+ drawDecor();drawRainWindow();drawNightWindow();drawDecorLights();drawTelevision();drawCanchaDoor();drawWeather();rect(ENTRY.x-70,H-25,139,23,'#624c2e',3,'#ae9253');txt('BEM-VINDO',ENTRY.x,H-14,11,'#d9bd7c');if(G.up.placaFiado)drawFiadoSign(1362,700,110,88);}const active=furniture(),near=started&&!modal&&!phoneOpen?nearest():null;
  if(near?.kind==='station'){const f=near.obj;rect(f.x-6,f.y-6,f.w+12,f.h+16,'#ffdb6825',7,'#fce497');}
  // Draw stools first, then furniture and standing people in depth order.
  for(const t of availableTables()){chair(t.x-27,t.y+t.h/2+57);chair(t.x+t.w+27,t.y+t.h/2+57);chair(t.x+32,t.y+t.h+27);chair(t.x+t.w-32,t.y+t.h+27);}

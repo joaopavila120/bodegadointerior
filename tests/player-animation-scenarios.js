@@ -54,6 +54,24 @@
     check(true, 'Mate sobe até a boca e rodo acompanha a limpeza');
     G = fresh();
     check(!playerAnimationState().transfers.length && playerAnimationState().stride === 0, 'Novo jogo reinicia apenas o estado visual');
+    const sideCycles=(fps,speed)=>{
+      worldOut={map:'vila',x:1620,y:845,dx:1,dy:0};playerAnimation=null;frameClock=100;
+      let last=playerWalkPose(worldOut.x,worldOut.y),travel=0;
+      for(let i=0;i<fps*2;i++){
+        worldOut.x+=speed/fps;frameClock+=1/fps;
+        const next=playerWalkPose(worldOut.x,worldOut.y);
+        travel+=(next.sidePhase-last.sidePhase+Math.PI*2)%(Math.PI*2);last=next;
+      }
+      return travel/(Math.PI*2);
+    };
+    const slow=sideCycles(60,110),normal=sideCycles(60,BASE_SPEED*1.4),fast=sideCycles(60,BASE_SPEED*1.4*1.65);
+    check(Math.abs(slow-1)<.00001&&normal<=3.30001&&fast<=3.30001,'Passos laterais seguem a distância com cadência limitada, inclusive com boost');
+    check(Math.abs(sideCycles(30,392)-sideCycles(120,392))<.00001,'Cadência lateral permanece igual a 30 e 120 FPS');
+    const before=playerWalkPose(worldOut.x,worldOut.y).sidePhase;
+    for(let i=0;i<20;i++){frameClock+=.02;playerWalkPose(worldOut.x,worldOut.y);}
+    const idle=playerWalkPose(worldOut.x,worldOut.y);
+    check(idle.sidePhase===before&&playerSideSprite(0,1,0,idle)===SADI_SIDE[8],'Soltar a direção ou esbarrar interrompe os passos e planta os dois pés');
+    for(const f of SADI_SIDE){const [x,y,w,h]=f.crop,im=CHARACTER_ART[f.file];check(im.naturalWidth&&x>=0&&y>=0&&x+w<=im.naturalWidth&&y+h<=im.naturalHeight,'Recorte lateral completo dentro do atlas');}
     return results;
   } finally {
     G = previous.G; worldOut = previous.worldOut; started = previous.started; frameClock = previous.frameClock;

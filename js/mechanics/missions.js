@@ -476,6 +476,7 @@ function drawForage(layers, seen) {
   for (const f of FORAGE) {
     if (worldOut?.map !== f.map || !seen(f.x, f.y)) continue;
     layers.push({ y: f.y + 30, draw: () => {
+      if(typeof drawForageArt==='function'&&drawForageArt(f))return;
       ellipse(f.x, f.y + 30, 34, 9, '#1c140c44'); rect(f.x - 4, f.y - 20, 8, 50, '#6a4424', 2);
       ellipse(f.x, f.y - 34, 38, 28, '#3f7a36'); ellipse(f.x - 16, f.y - 26, 22, 18, '#2f6a2a'); ellipse(f.x + 16, f.y - 28, 22, 18, '#4f8a3a');
       if (forageReady(f)) for (let k = 0; k < 7; k++) ellipse(f.x - 26 + (k * 37) % 52, f.y - 46 + (k * 13) % 30, 4, 4, f.color);

@@ -12,12 +12,12 @@ let playerAnimation = null;
 function playerAnimationState() {
   const actor = worldOut || G.player, place = worldOut ? worldOut.map : G.room;
   if (!playerAnimation || playerAnimation.game !== G || playerAnimation.actor !== actor || playerAnimation.place !== place || playerAnimation.day !== G.day || frameClock < playerAnimation.clock) {
-    playerAnimation = { game: G, actor, place, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, stride: 0, transfers: [] };
+    playerAnimation = { game: G, actor, place, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, sidePhase: 0, stride: 0, transfers: [] };
   }
   const a = playerAnimation;
   // Entrar em outra sala/teletransportar não produz um passo enorme ou itens voadores.
   if (Math.hypot(actor.x - a.x, actor.y - a.y) > 100) {
-    a.x = actor.x; a.y = actor.y; a.stride = 0; a.transfers.length = 0;
+    a.x = actor.x; a.y = actor.y; a.stride = 0; a.sidePhase = 0; a.transfers.length = 0;
   }
   for (let i = a.transfers.length - 1; i >= 0; i--) if (frameClock - a.transfers[i].start >= a.transfers[i].duration) a.transfers.splice(i, 1);
   return a;
@@ -27,11 +27,15 @@ function playerWalkPose(x, y) {
   const a = playerAnimationState(), dt = Math.min(.1, Math.max(0, frameClock - a.clock));
   if (dt > 0) {
     const distance = Math.hypot(x - a.x, y - a.y), moving = distance > .05 && distance < 100;
-    if (moving) a.phase = (a.phase + distance * Math.PI / 44) % (Math.PI * 2);
+    if (moving) {
+      a.phase = (a.phase + distance * Math.PI / 44) % (Math.PI * 2);
+      // Longer, readable side strides. Boots/mate must not turn it into a flicker.
+      a.sidePhase = (a.sidePhase + Math.min(distance / 220, dt * 1.65) * Math.PI * 2) % (Math.PI * 2);
+    }
     a.stride += ((moving ? 1 : 0) - a.stride) * (1 - Math.exp(-dt * 20));
     a.x = x; a.y = y; a.clock = frameClock;
   }
-  return { phase: a.phase, stride: a.stride, bob: (1 - Math.cos(a.phase * 2)) * .85 * a.stride };
+  return { phase: a.phase, sidePhase: a.sidePhase, stride: a.stride, bob: (1 - Math.cos(a.phase * 2)) * .85 * a.stride };
 }
 
 function playerItemAnchor(slot = G.slot) {
@@ -97,7 +101,9 @@ function drawPlayerTask(x, y) {
   const t = task.time || 0, side = G.player.dx < 0 ? -1 : 1;
   if (task.type === 'mate') {
     const lift = Math.sin(clamp(t / 1.1, 0, 1) * Math.PI), cx = x + side * (19 - lift * 9), cy = y - 71 - lift * 30;
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-side * lift * .12); food('mate', 0, 0, 32); ctx.restore();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-side * lift * .12);
+    if(typeof drawRuralMate!=='function'||!drawRuralMate(0,14,19))food('mate',0,0,32);
+    ctx.restore();
   } else if (task.type === 'clean' || task.type === 'mop') {
     const f = furniture().find(f => f.id === task.target), floor = task.type === 'mop';
     const cx = floor ? x + side * 23 : f ? clamp(x, f.x + 14, f.x + f.w - 14) : x + side * 25;

@@ -90,7 +90,7 @@ function walkersTick(dt) {
     if (w.wait > 0 || near) { w.wait = Math.max(0, w.wait - dt); w.walk = false; if (near) w.dx = worldOut.x > w.x ? 1 : -1; continue; }
     const target = w.line[w.seg + (w.dir > 0 ? 1 : 0)], d = Math.hypot(target[0] - w.x, target[1] - w.y), step = 70 * dt;
     if (d <= step) { w.x = target[0]; w.y = target[1]; w.seg += w.dir; if (w.seg < 0 || w.seg >= w.line.length - 1) { w.dir = -w.dir; w.seg = clamp(w.seg, 0, w.line.length - 2); } if (Math.random() < .4) w.wait = 1 + Math.random() * 3; w.walk = false; continue; }
-    w.dx = target[0] > w.x ? 1 : target[0] < w.x ? -1 : w.dx; w.x += (target[0] - w.x) / d * step; w.y += (target[1] - w.y) / d * step; w.walk = true;
+    w.dx = (target[0]-w.x)/d; w.dy = (target[1]-w.y)/d; w.x += (target[0] - w.x) / d * step; w.y += (target[1] - w.y) / d * step; w.walk = true;
   }
 }
 function walkerSpots() { return worldWalkers.map(w => ({ id: 'walker:' + w.person, x: w.x, y: w.y, label: 'Prosear com ' + PEOPLE[w.person].name, act: () => worldTalk(w) })); }
@@ -162,7 +162,7 @@ function drawOutside() {
   const layers = [];
   M.draw(view, seen, layers);
   worldLandscape(M, seen, layers, view);
-  for (const w of worldWalkers) if (seen(w.x, w.y)) layers.push({ y: w.y, draw: () => personDraw(PEOPLE[w.person].sprite, w.x, w.y, w.walk, false, w.dx) });
+  for (const w of worldWalkers) if (seen(w.x, w.y)) layers.push({ y: w.y, draw: () => personDraw(PEOPLE[w.person].sprite, w.x, w.y, w.walk, false, w.dx, false, 0, w.dy||0) });
   layers.push({ y: worldOut.y, draw: () => { personDraw(avatarSprite(), worldOut.x, worldOut.y, worldOut.walk, true, worldOut.dx, false, 0, worldOut.dy); } });
   layers.sort((a, b) => a.y - b.y).forEach(l => l.draw());
   drawSecrets(); drawQuestMarkers(view); drawWorldGuide(view);
@@ -252,10 +252,10 @@ WORLD_MAPS.vila = {
       ...hortaSpots(),
       { id: 'campo', ...front(V.fogo), label: isCampo() ? 'Voltar ao costelão' : 'Entrar no campo · curral, laço e fogo de chão', act: () => { if (isCampo()) goInside(); else enterInterior('curral'); } },
       { id: 'calendario', ...front(V.quadro, 26), label: 'Calendário de eventos', act: () => teachFirst('calendario', calendarDialog) },
-      { id: 'atacado', ...front(V.atacado), label: 'Entrar no Atacado da Fronteira', act: () => enterInterior('atacado') },
-      { id: 'acougue', ...front(V.acougue), label: 'Entrar no Açougue da Fronteira', act: () => enterInterior('acougue') },
-      { id: 'agro', ...front(V.agro), label: 'Entrar no Armazém Querência', act: () => enterInterior('agro') },
-      { id: 'gado', ...front(V.gado), label: 'Entrar na Casa do Campeiro', act: () => enterInterior('gado') },
+      { id: 'atacado', ...front(V.atacado), label: 'Mercadorias para a bodega · Atacado da Fronteira', act: () => enterInterior('atacado') },
+      { id: 'acougue', ...front(V.acougue), label: 'Carnes e cortes · Açougue da Fronteira', act: () => enterInterior('acougue') },
+      { id: 'agro', ...front(V.agro), label: 'Sementes e ferramentas da horta · Armazém Querência', act: () => enterInterior('agro') },
+      { id: 'gado', ...front(V.gado), label: 'Pecuária e animais · Casa do Campeiro', act: () => enterInterior('gado') },
       { id: 'ferragem', ...front(V.ferragem), label: 'Entrar na Ferragem da Fronteira · melhorias', act: () => enterInterior('ferragem') },
       { id: 'missoes', x: V.missoes.x + V.missoes.w / 2, y: V.missoes.y + V.missoes.h + 26, label: 'Ruínas das Missões', info: true, text: 'Missões: entre os séculos XVII e XVIII, padres jesuítas e indígenas guaranis ergueram os Sete Povos das Missões no noroeste do Rio Grande. As ruínas de São Miguel Arcanjo são Patrimônio Mundial da UNESCO.' },
       { id: 'pouso', ...front(V.pouso, 24), label: 'Pouso de tropeiros', info: true, text: 'Tropeirismo: nos séculos XVIII e XIX, os tropeiros levavam tropas de mulas e gado do Rio Grande até Sorocaba, em São Paulo. Nos pousos a tropa descansava; pelo caminho nasceram vilas e se espalharam o charque e o chimarrão.' },
@@ -287,7 +287,7 @@ WORLD_MAPS.vila = {
     add(V.estacao, () => { const s = V.estacao; if (worldBuilding(9, s, "ESTAÇÃO DA FRONTEIRA")) return; gable(s.x, s.y + 10, s.w, 50, '#7a3a24', 16); rect(s.x, s.y + 56, s.w, s.h - 56, '#f0d8a8', 0, '#6a5a3a'); for (const x of [s.x + 20, s.x + s.w - 70]) windowPane(x, s.y + 74, 50, 40); rect(s.x + s.w / 2 - 20, s.y + s.h - 56, 40, 56, '#6a4424'); signBoard(s.x + s.w / 2, s.y + 20, 200, 'ESTAÇÃO DA FRONTEIRA', 12); });
     layers.push({ y: V.rail + 20, draw: () => { ctx.save(); ctx.beginPath(); ctx.rect(1690, 0, V.W, V.H); ctx.clip(); drawTrain(trainX(1690, V.W, 120, 300), V.rail + 10); ctx.restore(); } });
     for (const h of V.houses) add(h, () => worldHouse(h, null, h));
-    for (const [x, y, kind] of VILA_TREES) if (seen(x, y) && worldDressing(this).clear(x,y,220,295)) layers.push({ y, draw: () => drawWorldTree(x, y, kind) });
+    for (const [x, y, kind] of VILA_TREES) if (seen(x, y) && worldDressing(this).clear(x,y,310,440)) layers.push({ y, draw: () => drawWorldTree(x, y, kind) });
   }
 };
 // Ferragem da Fronteira: galpão de tábuas com telhado de zinco, tábuas empilhadas e a placa das melhorias.

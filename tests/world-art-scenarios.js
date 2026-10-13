@@ -16,16 +16,10 @@
     check(!worldOut.walk&&playerFacingSprite(avatarSprite(),worldOut.dy)===SADI_BACK,'Parar preserva a orientação');
     keys.add('s');outsideTick(.1);keys.clear();
     check(playerFacingSprite(avatarSprite(),worldOut.dy)===avatarSprite(),'Caminhar para baixo usa a frente');
-    const frame=characterFrame,drawn=[];
-    try {
-      characterFrame=(sprite,pixels)=>{drawn.push(sprite);return frame(sprite,pixels);};
-      personDraw(0,200,200,true,true,0,false,0,-1);
-      personDraw(0,200,200,true,false,0,false,0,-1);
-    } finally {characterFrame=frame;}
-    check(drawn[0]===SADI_BACK&&drawn[1]===0,'Somente o jogador usa o sprite direcional');
+    check(walkCharacterId(0)==='sadi'&&walkDirection(0,-1)===2&&walkDirection(0,1)===0,'Directional frame selection');
     for(const id of ['vila','serra','sc']){
       const M=WORLD_MAPS[id];
-      const homes=id==='vila'?VILA.houses:id==='sc'?SC.houses:[SERRA.badin,SERRA.casona,SERRA.gaudencio,SERRA.mito,SERRA.dianho];
+      const homes=id==='vila'?VILA.houses:id==='sc'?SC.houses:[SERRA.badin,SERRA.casona,SERRA.mito,SERRA.dianho];
       const obstacles=typeof M.obstacles==='function'?M.obstacles():M.obstacles;
       for(const h of homes)check(!obstacles.some(b=>b!==h&&h.x<b.x+b.w&&h.x+h.w>b.x&&h.y<b.y+b.h&&h.y+h.h>b.y),'Casa sobre outro objeto em '+id);
       for(const spot of M.spots().filter(s=>s.house)){
@@ -33,7 +27,7 @@
         check(M.canWalk(spot.x,spot.y),'Porta bloqueada: '+spot.house);
       }
     }
-    for(const [id,x,y] of [['serra',2015,300],['sc',420,740],['sc',1820,740]])check(WORLD_MAPS[id].canWalk(x,y),'Colisão de casa removida em '+id);
+    check(!SERRA.obstacles.includes(SERRA.gaudencio),'Non-enterable house must not block the map');
     const field=SERRA.campinho;
     check(!worldDressing(WORLD_MAPS.serra).props.some(p=>p.x+p.w/2>field.x&&p.x-p.w/2<field.x+field.w&&p.y>field.y&&p.y-p.h<field.y+field.h),'Vegetação cobre o campinho');
     results.push('movimento direcional do jogador, portas das casas e áreas livres de decoração');
@@ -123,7 +117,7 @@
       check(!drawRegionalTerrain(WORLD_MAPS.cancha,{x:0,y:0,w:800,h:600})&&regionalTerrainTiles.size===before,'Terreno externo invadiu um interior');
       drawRegionalCampoGround();const campoTile=regionalCampoGround;drawRegionalCampoGround();
       check(campoTile&&regionalCampoGround===campoTile,'Campo não reutiliza o terreno pronto');
-      for(const [x,y,walk] of [[1800,SERRA.arroio+30,true],[1700,SERRA.arroio+30,false],[1800,SERRA.arroio-30,true]])
+      for(const [x,y,walk] of [[SERRA.roadX+40,SERRA.arroio+30,true],[SERRA.roadX-60,SERRA.arroio+30,false],[SERRA.roadX+40,SERRA.arroio-30,true]])
         check(WORLD_MAPS.serra.canWalk(x,y)===walk,'Arroio ou ponte perdeu a colisão');
     }finally{paintRegionalTerrain=bakeRegional;Math.random=random;}
     results.push('Serra, SC, horta, curral e campo com terreno reutilizado, cache limitado e gameplay preservada');

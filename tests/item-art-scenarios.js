@@ -6,7 +6,8 @@
    const art=ITEM_ART[itemArtKey(key)];
    check(art?.complete&&art.naturalWidth>0&&art.src.endsWith('.png'),'sprite PNG carregado: '+key);
    const div=document.createElement('div');div.innerHTML=itemIconHTML(key);
-   check(div.querySelector('img')?.getAttribute('src').endsWith('.png')&&!div.querySelector('svg'),'mesma arte no catálogo: '+key);
+   const raster=div.querySelector('img,svg image');
+   check((raster?.getAttribute('src')||raster?.getAttribute('href')||'').endsWith('.png'),'mesma arte PNG no catálogo: '+key);
    food(key,32,32,32);
   }
   check(itemArtKey('burger',{ready:false})==='burger'&&itemArtKey('burger',{ready:true})==='burger_pronto','carne crua e pronta têm sprites distintos');

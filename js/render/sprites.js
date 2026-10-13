@@ -3,6 +3,24 @@
 
 const roomArt = new Image(), peopleArt = new Image();
 const SADI_BACK = characterSprite('sadi-back', [200,69,627,1399], [[0,0],[627,0],[627,1399],[0,1399]]);
+// Register poses by the head/hip axis, not by the changing bounds of the boots.
+// Eight walk poses followed by an idle pose with both feet on the ground.
+const SADI_SIDE = [[208,13,332],[626,13,330],[1041,13,330],[207,354,322],[629,355,321],[1041,354,322],[210,686,327],[627,686,326],[1041,686,330]]
+  .map(([x,y,h])=>characterSprite('sadi-side-walk-v3',[x,y,280,h],[[0,0],[280,0],[280,h],[0,h]]));
+function playerSideSprite(sprite,dx,dy,pose){
+  if(sprite!==0||!worldOut||worldMap().indoor||Math.abs(dx)<=Math.abs(dy)||!CHARACTER_ART['sadi-side-walk-v3'].naturalWidth||playerCarrying())return null;
+  const phase=(((pose.sidePhase||0)%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  return SADI_SIDE[pose.stride>.15?Math.floor(phase/(Math.PI/4)):8];
+}
+function personHeight(sprite,chef){
+  if(chef&&worldOut&&!worldMap().indoor){
+    // Same visible stature as the adults nearby. The original front crop has
+    // 17 transparent rows; the back and side crops are already tightly fitted.
+    if(sprite===0)return 124*483/466;
+    if(sprite===SADI_BACK||SADI_SIDE.includes(sprite))return 124;
+  }
+  return chef?130:124;
+}
 function playerFacingSprite(sprite, dy) {
   return sprite === 0 && dy < -.25 && CHARACTER_ART['sadi-back'].naturalWidth ? SADI_BACK : sprite;
 }
@@ -40,8 +58,9 @@ function drawDining(f,cards){cards=cards||isTableTruco(G.tables[Number(f.id.spli
  if(t.plates||t.dirty){for(let j=0;j<Math.min(3,t.plates);j++){ellipse(x+32+j*33,y+ 30,18,11,'#e1d7b5');ellipse(x+32+j*33,y+29,13,8,t.dirty?'#a3986e':'#ede5c3');if(t.dirty)for(let k=0;k<3;k++)rect(x+22+j*33+k*7,y+25+k%2*5,4,3,'#776344');}}else{rect(x+w/2-18,y+16,36,25,'#d3b57a',2,'#8e693d');rect(x+w/2-14,y+11,28,18,'#f0dec0',2,'#b0986b');}food('cachaca',x+w-21,y+19,23);if(t?.dirty){txt('⌁',x+w/2,y-12,25,'#efdb9a');} }
 
 // Sadi com as mãos erguidas segurando a bandeja (mesmo recorte do sprite original).
-function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0,dy=0){if(chef)index=playerFacingSprite(index,dy);const facingBack=index===SADI_BACK,pose=chef?playerWalkPose(x,y):null,reach=chef?playerReachPose():{lean:0,dip:0};const custom=typeof index==='object'?index:null,art=custom?CHARACTER_ART[custom.file]:peopleArt,s=custom?{x:custom.crop[0],y:custom.crop[1],w:custom.crop[2],h:custom.crop[3]}:SPRITES[index%6],height=chef?130:124,seed=x*.05+(custom?3:index);if(chef&&facingBack)drawPlayerCarry(x,y,true);ellipse(x,y+1,seated?22:18,7,'#271c1755');ctx.save();ctx.translate(x,y);if(!facingBack&&(chef?dx>.05:dx<-.05))ctx.scale(-1,1);if(art.complete&&art.naturalWidth){const t=ctx.getTransform(),baseFrame=characterFrame(custom||index,height*Math.hypot(t.a,t.b)),f=chef&&playerCarrying()?playerCarryFrame(custom||index,baseFrame):baseFrame,dw=height*s.w/s.h,part=(fx,fy,fw,fh,px,py,pw,ph)=>ctx.drawImage(f,fx*f.width,fy*f.height,fw*f.width,fh*f.height,px,py,pw,ph);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';const breath=Math.sin(frameClock*2.3+seed);
- if(seated){
+function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0,dy=0){if(typeof drawDirectionalPerson==='function'&&drawDirectionalPerson(index,x,y,walking,chef,dx,seated,mood,dy))return;const pose=chef?playerWalkPose(x,y):null,side=chef?playerSideSprite(index,dx,dy,pose):null;if(chef)index=side||playerFacingSprite(index,dy);const facingBack=index===SADI_BACK,reach=chef?playerReachPose():{lean:0,dip:0};const custom=typeof index==='object'?index:null,art=custom?CHARACTER_ART[custom.file]:peopleArt,s=custom?{x:custom.crop[0],y:custom.crop[1],w:custom.crop[2],h:custom.crop[3]}:SPRITES[index%6],height=personHeight(index,chef),seed=x*.05+(custom?3:index);if(chef&&facingBack)drawPlayerCarry(x,y,true);ellipse(x,y+1,seated?22:18,7,'#271c1755');ctx.save();ctx.translate(x,y);if(!facingBack&&(side?dx<0:chef?dx>.05:dx<-.05))ctx.scale(-1,1);if(art.complete&&art.naturalWidth){const t=ctx.getTransform(),baseFrame=characterFrame(custom||index,height*Math.hypot(t.a,t.b)),f=chef&&playerCarrying()?playerCarryFrame(custom||index,baseFrame):baseFrame,dw=height*s.w/s.h,part=(fx,fy,fw,fh,px,py,pw,ph)=>ctx.drawImage(f,fx*f.width,fy*f.height,fw*f.width,fh*f.height,px,py,pw,ph);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';const breath=Math.sin(frameClock*2.3+seed);
+ if(side){ctx.drawImage(f,-dw/2,-height,dw,height);
+ }else if(seated){
   // Sentado: respira e, perto de desistir, se remexe na cadeira.
   if(mood>.7)ctx.translate(Math.sin(frameClock*16+seed)*1.5,0);
   part(0,.72,1,.28,-dw/2,-height*.28+15,dw,height*.28-15);ctx.save();ctx.translate(0,-height*.28+15);ctx.scale(1,1+breath*.012);part(0,0,1,.72,-dw/2,-height*.72,dw,height*.72);ctx.restore();
@@ -66,7 +85,7 @@ function personDraw(index,x,y,walking=false,chef=false,dx=1,seated=false,mood=0,
  }else{
   // Parado: respira e troca o peso de uma perna para a outra.
   ctx.save();ctx.rotate(Math.sin(frameClock*.8+seed*1.7)*.012);ctx.scale(1,1+breath*.012);ctx.drawImage(f,-dw/2,-height,dw,height);ctx.restore();
- }}else{rect(-13,-60,26,48,chef?'#e6d6ac':'#688657',5);ellipse(0,-72,12,15,'#c9935d');}ctx.restore();if(chef&&['bootsGaucho','bootsBagual'].includes(G.gear)){const color=G.gear==='bootsBagual'?'#42382b':'#b58147';rect(x-15,y-10,10,7,color,3,'#44341f');rect(x+5,y-9,10,7,color,3,'#44341f');}if(chef){drawPlayerTask(x,y);}if(chef&&G.boost>0&&!['mate','clean','mop'].includes(G.task?.type)){bar(x-24,y+10,48,G.boost/mateStats().duration,'#b8e67a');txt(Math.ceil(G.boost)+'s',x,y+27,12,'#e1ffae');}if(chef){drawPlayerCarry(x,y,false);drawPlayerTransfers();if(G.cosmetic)txt('★',x,y-106,17,'#ffd36b');}}
+ }}else{rect(-13,-60,26,48,chef?'#e6d6ac':'#688657',5);ellipse(0,-72,12,15,'#c9935d');}ctx.restore();if(chef&&!side&&['bootsGaucho','bootsBagual'].includes(G.gear)){const color=G.gear==='bootsBagual'?'#42382b':'#b58147';rect(x-15,y-10,10,7,color,3,'#44341f');rect(x+5,y-9,10,7,color,3,'#44341f');}if(chef){drawPlayerTask(x,y);}if(chef&&G.boost>0&&!['mate','clean','mop'].includes(G.task?.type)){bar(x-24,y+10,48,G.boost/mateStats().duration,'#b8e67a');txt(Math.ceil(G.boost)+'s',x,y+27,12,'#e1ffae');}if(chef){drawPlayerCarry(x,y,false);drawPlayerTransfers();if(G.cosmetic)txt('★',x,y-106,17,'#ffd36b');}}
 
 
 function bubble(items,x,y,ratio=1,waiting=false){const width=items.length*43+20,left=x-width/2;ctx.save();ctx.shadowColor='#39230b66';ctx.shadowBlur=5;ctx.shadowOffsetY=3;rect(left,y-60,width,57,'#fff1c9',7,'#71512a');ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.fillStyle='#fff1c9';ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+4);ctx.lineTo(x+6,y-4);ctx.fill();if(waiting){txt('⌛',x,y-34,25,'#e8be62');}else items.forEach((k,i)=>food(k,left+30+i*43,y-35,39));bar(left+9,y-14,width-18,ratio,ratio<.25?'#d7754b':ratio<.5?'#d2b44e':'#83a94c');ctx.restore();}

@@ -130,7 +130,7 @@ function drawMonument(m, plaque, stone, figures) {
 }
 function forestEdge(M, roadX, roadW) { rect(0, 0, M.W, 110, '#2f5a2a'); for (let x = 0; x < M.W; x += 70) ellipse(x + 35, 110, 50, 30, '#3a6a32'); poly([[roadX - 10, 110], [roadX + roadW + 10, 110], [roadX + roadW / 2 + 16, 0], [roadX + roadW / 2 - 16, 0]], '#b08a58'); }
 // Mapa de região: tamanho, obstáculos, lugares para o E, desenho e as saídas.
-function regionMap(def) { return { ...def, canWalk(x, y) { if (x < -30 || y < -30 || x > def.W + 30 || y > def.H + 30) return false; if (def.blocked?.(x, y)) return false; return !hitRect(def.obstacles, x, y); } }; }
+function regionMap(def) { return { ...def, canWalk(x, y) { if (x < -30 || y < -30 || x > this.W + 30 || y > this.H + 30) return false; if (this.blocked?.(x, y)) return false; return !hitRect(this.obstacles, x, y); } }; }
 const addLayer = (layers, seen) => (r, fn) => { if (seen(r.x + r.w / 2, r.y + r.h / 2, Math.max(r.w, r.h))) layers.push({ y: r.y + r.h, draw: fn }); };
 
 // =================== MAPA 2 · SERRA GAÚCHA ===================

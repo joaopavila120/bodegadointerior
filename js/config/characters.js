@@ -3,7 +3,7 @@
 // Recortes em coordenadas da arte original. Os PNGs fornecidos ficam intactos.
 const CHARACTER_ART = {};
 function characterSprite(file, crop, outline) {
-  if (!CHARACTER_ART[file]) { const image = new Image(); image.src = 'assets/images/' + file + '.webp'; CHARACTER_ART[file] = image; }
+  if (!CHARACTER_ART[file]) { const image = new Image(); image.src = 'assets/images/' + file + (file.startsWith('sadi-side-walk')?'.png':'.webp'); CHARACTER_ART[file] = image; }
   return { file, crop, outline };
 }
 const originalIds = ['lucia','anselmo','rosa','nair','valter','arlindo'];

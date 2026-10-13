@@ -2,9 +2,11 @@
 // Geometry, collision rectangles and interaction points stay in the map definitions.
 'use strict';
 const WORLD_ART = {};
-for (const key of ['buildings', 'nature', 'furniture', 'terrain', 'grass', 'rural', 'garden', 'architecture0', 'architecture1', 'architecture2', 'architecture3', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest', 'frontier-terrain', 'frontier-flora', 'architecture-fronteira', 'architecture-bolichos', 'store-shelves', 'landscape', 'meadow', 'pew', 'overhead']) {
+const RURAL_ART_SHEETS = ['rural-workstations-v2','folklore-v2','keepsakes-v2','mates-v2','butia-v2','harvest-items-v2','interior-details-v2','interior-materials-v2','interior-flags-v2','interior-fittings-v2'];
+for(const key of RURAL_ART_SHEETS){const im=new Image();im.src='assets/images/world/'+key+'.png';WORLD_ART[key]=im;}
+for (const key of ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-atacado', 'architecture-shop-pecuaria', 'buildings', 'nature', 'furniture', 'terrain', 'grass', 'rural', 'garden', 'architecture0', 'architecture1', 'architecture2', 'architecture3', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest', 'frontier-terrain', 'frontier-flora', 'architecture-fronteira', 'architecture-bolichos', 'store-shelves', 'landscape', 'meadow', 'pew', 'overhead']) {
   const image = new Image();
-  image.src = 'assets/images/world/' + key + '.webp';   // WebP q92: ~25% do PNG, sem diferença visível
+  image.src = 'assets/images/world/' + key + (key.startsWith('architecture-shop-')?'.png':'.webp');   // WebP q92: ~25% do PNG, sem diferença visível
   WORLD_ART[key] = image;
 }
 const worldTextureCache = new Map();
@@ -19,7 +21,7 @@ function worldSprite(sheet, index, x, y, w, h) {
   if(sheet==='garden'&&index===8){sheet='overhead';index=2;}
   const im = WORLD_ART[sheet], crop = WORLD_ART_CROPS[sheet]?.[index];
   if (!im?.naturalWidth || !crop) return false;
-  if (sheet.startsWith('architecture') || (sheet==='store-shelves'||sheet==='frontier-flora') || sheet==='overhead' || (sheet === 'furniture' && index !== 5) ||
+  if (RURAL_ART_SHEETS.includes(sheet) || sheet.startsWith('architecture') || (sheet==='store-shelves'||sheet==='frontier-flora') || sheet==='overhead' || (sheet === 'furniture' && index !== 5) ||
       (sheet === 'garden' && index !== 3 && index !== 8) ||
       (sheet === 'nature' && [0,1,2,3,8,9,15].includes(index))) {
     const center=x+w/2,bottom=y+h,scale=Math.min(w/crop[2],h/crop[3]);
@@ -28,7 +30,7 @@ function worldSprite(sheet, index, x, y, w, h) {
   ctx.save();
   ctx.imageSmoothingEnabled = (sheet.startsWith('architecture') || (sheet==='store-shelves'||sheet==='frontier-flora') || sheet==='landscape') && w < crop[2];
   ctx.imageSmoothingQuality = 'high';
-  if(sheet==='landscape'||(sheet==='store-shelves'||sheet==='frontier-flora')||sheet.startsWith('architecture')){
+  if(RURAL_ART_SHEETS.includes(sheet)||(sheet==='nature'&&index<3)||sheet==='landscape'||(sheet==='store-shelves'||sheet==='frontier-flora')||sheet.startsWith('architecture')){
     const cw=Math.max(8,Math.round(w/8)*8),ch=Math.max(8,Math.round(h/8)*8),key=sheet+':'+index+':'+cw+':'+ch;
     if(!worldSpriteCache.has(key)){
       const tile=document.createElement('canvas');tile.width=cw;tile.height=ch;
@@ -48,6 +50,16 @@ function worldSprite(sheet, index, x, y, w, h) {
   }else ctx.drawImage(im, ...crop, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
   ctx.restore();
   return true;
+}
+function worldTreeSprite(index,x,y,w,h){
+  ctx.save();
+  ellipse(x+12,y+2,w*.3,17,'#17291930');
+  const p=worldOut;
+  // Fade the canopy only where it would hide the player. No extra collision.
+  if(p&&Math.abs(p.x-x)<w*.43&&p.y<y+6&&p.y>y-h*.8)ctx.globalAlpha=.42;
+  ctx.translate(Math.sin(frameClock*.85+x*.017+y*.009)*1.2,0);
+  const drawn=worldSprite('nature',index,x-w/2,y-h,w,h);
+  ctx.restore();return drawn;
 }
 function worldTexture(index, x, y, w, h, size = 192) {
   if(index===0)size=Math.max(96,Math.round(size*.65));
@@ -103,10 +115,11 @@ useWorldArt('drawWorldCancha', () => worldBuilding(1, VILA.cancha, 'CANCHA DE BO
 useWorldArt('drawWorldShop', (r, name) => {
   const shop = [VILA.agro, VILA.gado, VILA.atacado, VILA.acougue].indexOf(r);
   return shop < 0 ? worldBuilding(10, r, name) :
-    worldSprite('architecture-bolichos', shop, r.x, r.y - 30, r.w, r.h + 30);
+    worldSprite('architecture-shop-'+['sementes','pecuaria','atacado','carnes'][shop],0,r.x,r.y,r.w,r.h);
 });
+useWorldArt('drawFerragem',()=>{const r=VILA.ferragem;return worldSprite('architecture-shop-melhorias',0,r.x,r.y,r.w,r.h);});
 useWorldArt('drawMissoes', () => worldBuilding(12, VILA.missoes, 'RUÍNAS DAS MISSÕES', 40));
-useWorldArt('drawWorldTree', (x, y, kind) => worldSprite('nature', kind === 'a' ? 1 : kind === 'ipe' ? 2 : 0, x - 110, y - 290, 220, 295));
+useWorldArt('drawWorldTree', (x,y,kind)=>worldTreeSprite(kind==='a'?1:kind==='ipe'?2:0,x,y,310,440));
 useWorldArt('drawCoreto', r => worldSprite('nature', 4, r.x, r.y - 40, r.w, r.h + 40));
 useWorldArt('drawCapitel', r => worldSprite('nature', 7, r.x, r.y - 20, r.w, r.h + 20));
 useWorldArt('wineBarrels', (x, y) => worldSprite('nature', 9, x - 24, y - 65, 140, 95));
@@ -197,7 +210,8 @@ const worldStoreShelfFallback = FURN.storeShelf;
 FURN.storeShelf = i => {
   const index = {agro:0, gado:1, atacado:2, acougue:3}[i.goods];
   // Keep the feet on the collision footprint and aisles clear of merchandise.
-  if (index === undefined || !worldSprite('store-shelves', index, i.x, i.y + i.h - 205, i.w, 205)) {
+  const height=i.y<350?180:205;
+  if (index === undefined || !worldSprite('store-shelves', index, i.x, i.y + i.h - height, i.w, height)) {
     worldStoreShelfFallback(i);
   }
 };
@@ -221,6 +235,7 @@ useWorldArt('signBoard', (x, y, w, title, size = 15) => {
 });
 
 function worldApproachRects(M) {
+  if(worldMainRoads(M.id).length)return worldDoorPaths(M);
   const paths=tourismPaths(M.id),path=(...r)=>{if(r[2]>0&&r[3]>0)paths.push(r);};
   if (M.id === 'vila') {
     for (const r of [VILA.bodega, VILA.cancha, VILA.ferragem]) path(r.x + r.w / 2 - 28, r.y + r.h, 56, VILA.roadY - r.y - r.h);
@@ -252,11 +267,11 @@ function worldLandscape(M, seen, layers, view) {
   const places = M.id === 'serra' ? [[400,1260,0],[800,1300,1],[1300,1210,0],[1660,1195,1],[420,1810,0],[1260,1800,2],[1960,1150,1],[840,800,0],[2150,720,1]]
     : M.id === 'sc' ? [[170,820,0],[595,830,1],[1080,800,0],[2040,825,2],[2780,810,1],[160,1340,0],[1060,1420,1],[2420,1430,0]]
     : M.id === 'vila' ? [[1250,580,0],[1985,560,1],[2580,575,0],[965,1340,2],[2880,1360,1]] : [];
-  for (const [x,y,index] of places) if (seen(x,y,300)&&worldDressing(M).clear?.(x,y,190,275)) layers.push({ y, draw: () => worldSprite('nature', index, x-95,y-275,190,275) });
-  if (M.id === 'serra' || M.id === 'sc') for (let x = 40; x < M.W; x += 105) {
-    if (M.id === 'serra' && Math.abs(x - 1800) < 160) continue;
+  for (const [x,y,index] of places) if (seen(x,y,470)&&worldDressing(M).clear?.(x,y,280,390)) layers.push({ y, draw: () => worldTreeSprite(index,x,y,300,430) });
+  if (M.id === 'serra' || M.id === 'sc') for (let x = 40; x < M.W; x += 180) {
+    if (M.id === 'serra' && Math.abs(x - (SERRA.roadX+SERRA.roadW/2)) < 200) continue;
     const y = M.id === 'serra' ? 90 : 190;
-    if (seen(x,y,300)) layers.push({y,draw:()=>worldSprite('nature',1,x-100,y-280,200,310)});
+    if (seen(x,y,300)) layers.push({y,draw:()=>worldTreeSprite(1,x,y,315,450)});
   }
 }
 
@@ -297,4 +312,15 @@ function worldFence(x,y,w) {
   const n=Math.max(1,Math.ceil(w/100));
   for(let k=0;k<n;k++) worldSprite('rural',8,x+k*w/n,y-26,w/n+2,38);
   return true;
+}
+
+function drawForageArt(f){
+ if(!WORLD_ART.nature.naturalWidth)return false;
+ const y=f.y+30,h=340,w=310;
+ worldTreeSprite(0,f.x,y,w,h);
+ if(forageReady(f))for(let k=0;k<12;k++){
+  const x=f.x-90+(k*47)%180,fy=y-h+70+(k*37)%130;
+  rect(x,fy,5,6,'#302d1c',1);rect(x,fy-1,4,5,f.color,1);rect(x,fy-1,2,2,'#e6d9a4',1);
+ }
+ return true;
 }

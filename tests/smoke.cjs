@@ -106,10 +106,17 @@ async function main() {
       await evaluate(`action('zoomOut');draw()`);
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
+      await evaluate('Promise.all([worldArtLoaded,walkArtLoaded])');
+      const interiorWalkResults = await evaluate(fs.readFileSync(path.join(__dirname, 'interior-walk-scenarios.js'), 'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+interiorWalkResults.length+' verificações de interiores e caminhada');
       const worldArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'world-art-scenarios.js'), 'utf8'));
+      const ruralArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'rural-art-scenarios.js'), 'utf8'));
+      for(const result of ruralArtResults)console.log('PASS '+protocol+' / '+entry+': '+result);
       for (const result of worldArtResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
       const tourismResults = await evaluate(fs.readFileSync(path.join(__dirname, 'tourism-scenarios.js'), 'utf8'));
       for (const result of tourismResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
+      const layoutResults = await evaluate(fs.readFileSync(path.join(__dirname, 'world-layout-scenarios.js'), 'utf8'));
+      for (const result of layoutResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
       const animationResults = await evaluate(fs.readFileSync(path.join(__dirname, 'player-animation-scenarios.js'), 'utf8'));
       for (const result of animationResults) console.log('PASS ' + protocol + ' / ' + entry + ': ' + result);
       const penaltyResults = await evaluate(fs.readFileSync(path.join(__dirname, 'penalty-scenarios.js'), 'utf8'));

@@ -19,7 +19,8 @@ function upgradeIconHTML(id){
  const icon=UPGRADE_ICONS[id];if(!icon)return '';const[kind,arg]=icon.split(':');
  if(kind==='item')return `<span class="upgrade-icon">${itemIconHTML(arg)}</span>`;
  if(kind==='emoji')return `<span class="upgrade-icon"><span class="bag-emoji">${arg}</span></span>`;
- if(kind==='mate')return `<span class="upgrade-icon">${itemIconHTML('mate')}<b class="upgrade-stars">${'★'.repeat(Number(arg))}</b></span>`;
+ if(kind==='mate')return `<span class="upgrade-icon">${itemIconHTML('mate:'+arg)}</span>`;
+ if(icon==='placa_fiado')return `<span class="upgrade-icon">${itemIconHTML('placa_fiado')}</span>`;
  return `<span class="upgrade-icon"><img src="assets/images/icons/${icon}.png" alt="" draggable="false"></span>`;
 }
 function upgradeCatalog(){

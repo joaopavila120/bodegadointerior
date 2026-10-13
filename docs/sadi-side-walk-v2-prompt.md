@@ -1,0 +1,11 @@
+# Caminhada lateral do Sadi — revisão
+
+Arte gerada com a ferramenta integrada imagegen, usando a primeira folha lateral como referência.
+
+Arquivo final: [assets/images/sadi-side-walk-v2.png](../assets/images/sadi-side-walk-v2.png).
+
+O renderizador alinha cada pose pelo eixo da cabeça e do quadril; usa oito quadros de caminhada e o nono como descanso. A cadência lateral acompanha o deslocamento, limitada a 1,65 ciclos por segundo.
+
+## Prompt final
+
+Create a corrected animation sheet for the SAME pixel art Sadi character in the reference: brown curly hair, brown short beard, red neckerchief, ivory apron and shirt, dark bombacha pants, brown boots. Genuine transparent background. EXACTLY NINE full body sprites on a strict THREE BY THREE equal cell grid. Facing RIGHT in SIDE PROFILE, not frontal. This is a practical walk-cycle sprite atlas: eight successive walk frames, then ONE neutral standing idle in cell9. Same head and torso image/proportions in every cell, aligned at the SAME horizontal center inside each cell, SAME body height, shared ground baseline. Camera locked. The MAIN CORRECTION is that BOTH LEGS TAKE TURNS stepping forward: near leg (lighter shading) swings forward in frames1-4; far leg (dark shading) swings forward in frames5-8. Never repeat the same leading leg throughout. Clear opposite arm swings, small relaxed natural walking steps with knees bending, not an exaggerated marching stride. Frame1 near-foot forward heel contact and far foot behind. Frame2 near-foot flat bearing weight as body moves over it, far heel raised. Frame3 far knee passing forward while near foot supports body. Frame4 far foot reaching forward. Frame5 FAR FOOT forward heel contact, NEAR FOOT behind, visibly opposite frame1; also reverse arms. Frame6 far foot flat bearing weight, near heel raised. Frame7 near knee passes forward with far foot supporting. Frame8 near foot reaches forward, preparing frame1. Frame9 IDLE: BOTH boots planted on the ground parallel with natural slight spacing, legs straight, arms relaxed. No floor, no shadows, no letters or numbers, no grid lines. Complete figures with generous empty transparent margins in each cell. Keep head height stable with only a tiny walk bob. Detailed crisp pixel clusters, same original Sadi identity, no image style change.

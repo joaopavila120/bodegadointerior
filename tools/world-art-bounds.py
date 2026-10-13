@@ -16,6 +16,17 @@ regions['furniture'] = [
  (10,1018,200,1254),(202,1016,403,1254),(405,1021,595,1254),(595,1057,814,1254),(811,1028,1004,1254),(1005,1030,1254,1254)
 ]
 out = {}
+regions['interior-details-v2'] = [(0,0,430,325),(430,0,790,325),(790,0,1160,325),(1160,0,1536,325),(0,326,430,625),(430,325,790,657),(790,326,1160,644),(1160,326,1536,644),(0,625,430,1024),(430,658,790,1024),(790,645,1160,1024),(1160,645,1536,1024)]
+regions['interior-flags-v2'] = [(0,0,384,316),(384,0,768,316),(768,0,1152,316),(1152,0,1536,316),(0,317,384,666),(384,317,704,666),(704,317,1084,666),(1084,317,1536,666),(0,667,370,1024),(370,667,753,1024),(753,667,1320,1024),(1320,667,1536,1024)]
+regions['interior-fittings-v2'] = [(0,0,595,490),(595,0,1120,510),(1120,0,1536,520),(0,491,510,1024),(510,521,1120,1024),(1120,521,1536,1024)]
+regions['interior-materials-v2'] = [(x,y,x+512,y+512) for y in (0,512) for x in (0,512,1024)]
+regions['rural-workstations-v2'] = [(x0,y0,x1,y1) for y0,y1 in [(0,350),(350,679),(679,1024)] for x0,x1 in [(0,560),(560,974),(974,1536)]]
+regions['folklore-v2'] = [(0,0,610,514),(620,0,925,514),(938,0,1536,510),(0,514,600,1024),(603,514,1045,1024),(1110,530,1536,1024)]
+regions['keepsakes-v2'] = [(x0,y0,x1,y1) for y0,y1 in [(0,351),(351,690),(690,1024)] for x0,x1 in [(0,384),(384,768),(768,1152),(1152,1536)]]
+regions['mates-v2'] = [(0,0,540,464),(540,0,1024,464),(1024,0,1536,464),(0,464,550,1024),(550,464,1024,1024),(1024,464,1536,1024)]
+regions['harvest-items-v2'] = [(x0,y0,x1,y1) for y0,y1 in [(0,350),(350,652),(652,1024)] for x0,x1 in [(0,384),(384,768),(768,1170),(1170,1536)]]
+with Image.open(root / 'assets/images/world/butia-v2.png') as image:
+    regions['butia-v2'] = [(0, 0, *image.size)]
 for key in ['architecture-fronteira', 'architecture-bolichos', 'store-shelves']:
     with Image.open(root / 'assets/images/world' / (key + '.png')) as image:
         w, h = image.size
@@ -29,7 +40,7 @@ with Image.open(root / 'assets/images/world/frontier-flora.png') as image:
     # The top-left bush extends slightly into the first gutter.
     regions['frontier-flora'][0] = (0, 0, 550, h // 2)
     regions['frontier-flora'][1] = (552, 0, 1022, h // 2)
-for key in ['architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest']:
+for key in ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-atacado', 'architecture-shop-pecuaria', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest']:
     with Image.open(root / 'assets/images/world' / (key + '.png')) as image:
         regions[key] = [(0, 0, *image.size)]
 with Image.open(root / 'assets/images/world/pew.png') as pew:
@@ -47,7 +58,7 @@ regions['rural'][12] = (0,938,377,1254)
 regions['rural'][13] = (377,938,670,1254)
 for key, cells in regions.items():
     im = Image.open(root / 'assets/images/world' / (key + '.png'))
-    alpha = im.getchannel('A')
+    alpha = im.getchannel('A') if 'A' in im.getbands() else Image.new('L',im.size,255)
     out[key] = []
     for x0,y0,x1,y1 in cells:
         bbox = alpha.crop((x0,y0,x1,y1)).point(lambda p: 255 if p > 100 else 0).getbbox()

@@ -22,12 +22,12 @@ const frontierNoise = (x, y) => {
   n = Math.imul(n ^ n >>> 13, 1274126177); return ((n ^ n >>> 16) >>> 0) / 4294967296;
 };
 const frontierWestBank = y => 478 + Math.sin(y / 173) * 16 + Math.sin(y / 61) * 7;
-const frontierSouthBank = x => 2425 + Math.sin(x / 211) * 18 + Math.sin(x / 71) * 7;
+const frontierSouthBank = x => VILA.border + 45 + Math.sin(x / 211) * 18 + Math.sin(x / 71) * 7;
 function frontierLandPath(inset = 0) {
-  const p = new Path2D(), bottom = 2300;
+  const p = new Path2D(), bottom = VILA.border - 80;
   p.moveTo(frontierWestBank(0) + inset, 0);
   for (let y = 0; y <= bottom; y += 16) p.lineTo(frontierWestBank(y) + inset, y);
-  p.quadraticCurveTo(460 + inset, 2410 - inset, 650, frontierSouthBank(650) - inset);
+  p.quadraticCurveTo(460 + inset, VILA.border + 30 - inset, 650, frontierSouthBank(650) - inset);
   for (let x = 650; x <= VILA.W + 32; x += 16) p.lineTo(x, frontierSouthBank(x) - inset);
   p.lineTo(VILA.W + 32, 0); p.closePath(); return p;
 }
@@ -51,7 +51,7 @@ function frontierRoadPath(r, expansion = 0) {
   p.lineTo(...point(0,1)); p.closePath(); return p;
 }
 function frontierRoads() {
-  return [...VILA_ROADS, ...worldFootpaths(), ...worldApproachRects(WORLD_MAPS.vila),
+  return [...VILA_ROADS, ...worldApproachRects(WORLD_MAPS.vila),
     [505,885,95,65], [1690,VILA.rail-20,VILA.W-1690,48]];
 }
 function paintFrontierTerrain(view) {
@@ -90,7 +90,7 @@ function paintFrontierTerrain(view) {
   }
   ctx.restore();
   // Pebbles and low grasses cluster along the bank, with a gap at the landing.
-  for(let py=95;py<2300;py+=76){
+  for(let py=95;py<VILA.border-80;py+=76){
     if(py>835&&py<1000)continue;
     const n=frontierNoise(71,py),sy=py+(n-.5)*55,px=frontierWestBank(sy)+15+n*28;
     if(n<.18)continue;
@@ -128,7 +128,7 @@ useWorldArt('drawVilaRiver', () => {
   for(let i=0;i<36;i++){
     const py=(i*71+frameClock*7)%VILA.H,px=100+(i*97)%280;
     ctx.fillRect(px,py,13+i%13,1.5);
-    const sx=650+(i*137+frameClock*5)%(VILA.W-700),sy=2490+i%5*26;
+    const sx=650+(i*137+frameClock*5)%(VILA.W-700),sy=VILA.border+110+i%5*26;
     ctx.fillRect(sx,sy,17+i%9,1.5);
   }
   ctx.restore();

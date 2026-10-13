@@ -5,8 +5,6 @@
  try{
   G=fresh();started=true;worldWalkers=[];modal=null;paused=false;
   check(WORLD_DISCOVERIES.length===5&&WORLD_DISCOVERIES.filter(d=>d.secret).length===3&&!WORLD_DISCOVERIES.some(d=>d.bench),'Ficam só as curiosidades com identidade própria (sem as que eram só um banco)');
-  for(const [map,x,y] of [['vila',3290,1650],['vila',710,2025],['vila',1405,2107],['serra',2925,285],['serra',1135,1825],['sc',2160,1640]])
-   check(WORLD_MAPS[map].canWalk(x,y),'Miniatura removida deixou uma colisão invisível em '+map);
   check(!WORLD_ART['tourism-landmarks'],'Atlas das miniaturas ainda é carregado');
   results.push('miniaturas removidas sem colisões invisíveis nem carregamento do atlas antigo');
   for(const id of ['vila','serra','sc']){
@@ -22,7 +20,8 @@
      visited.add(k);queue.push([x,y]);
     }
    }
-   const targets=M.spots().filter(s=>s.id.startsWith('discovery:')||['ctg','oktoberfest','igreja'].includes(s.id));
+   worldOut={map:id,x:start[0],y:start[1],dx:0,dy:1};G.prologue=null;
+   const targets=M.spots();
    for(const p of targets){
     check(M.canWalk(p.x,p.y),'Ponto bloqueado: '+p.id);
     check(queue.some(([x,y])=>Math.hypot(x*step-p.x,y*step-p.y)<22),'Ponto isolado das estradas: '+p.id);

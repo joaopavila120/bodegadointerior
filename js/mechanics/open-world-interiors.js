@@ -150,6 +150,7 @@ function interiorMap(def) {
     draw(view, seen, layers) {
       rect(view.x, view.y, view.w, view.h, def.bg || '#1a120c');
       drawFloor(b, def.floor); for (const r of def.rooms || []) if (r.floor) drawFloor(r, r.floor);
+      if(typeof drawInteriorAtmosphere==='function')drawInteriorAtmosphere(b,def);
       // parede do fundo, janelas e o que está pendurado nela
       if (def.open) { rect(b.x - 20, b.y - 120, b.w + 40, 120, '#4a3a2a'); for (let x = b.x; x < b.x + b.w; x += 90) rect(x, b.y - 120, 14, 120, '#3a2a1e'); }
       else { rect(b.x - 20, b.y - 120, b.w + 40, 120, def.wallColor || '#c8a878'); rect(b.x - 20, b.y - 18, b.w + 40, 18, '#5a3a22'); rect(b.x - 20, b.y - 124, b.w + 40, 8, '#3a2414'); }

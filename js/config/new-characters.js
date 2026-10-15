@@ -15,7 +15,7 @@ PEOPLE.push(
  {id:'gaudencio',placeholder:true,removed:true,name:'Gaudêncio',retailFav:'erva',fav:'cachaca',exclusiveVoice:true,origin:'Gaúcho bagual da campanha · bombacha, bigode e paciência curta',sprite:4},
  {id:'baitaca',name:'Baitaca',retailFav:'erva',fav:'cachaca',exclusiveVoice:true,origin:'Cantor do fundo da grota · Rincão dos Pintos, São Luiz Gonzaga',sprite:characterSprite('baitaca',[225, 2, 677, 1441],[[0, 0], [677, 0], [677, 1441], [0, 1441]])}
 );
-const UNIQUE_VISITORS = new Set(['badin','marcio','marcelo','peixinhonabrasa','indavirus','lauro','dianho','mitodosul','loligebien','jayme','baitaca','gaudencio','valter']);
+const UNIQUE_VISITORS = new Set(['badin','guri','manolima','marcio','marcelo','peixinhonabrasa','indavirus','lauro','dianho','mitodosul','loligebien','jayme','baitaca','gaudencio','valter']);
 PEOPLE.forEach(p=>p.unique=UNIQUE_VISITORS.has(p.id));
 
 function avatarSprite(){return PEOPLE.find(p=>p.id===G.avatarId)?.sprite??0;}

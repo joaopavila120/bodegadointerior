@@ -431,14 +431,6 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 /* Ação da última fala na caixa RPG das conversas (ex.: "E · Aceitar") */
 .rpg-action{position:absolute;right:34px;bottom:6px;color:#ffd96a;font-size:13px;font-weight:bold;text-shadow:1px 1px 0 #0a0e26}
 
-/* ---------- Caderno de receitas do vô ---------- */
-.vo-note{background:#f3e6c4;color:#3a2a18;border:2px solid #b8955a;border-radius:6px;padding:14px 16px;box-shadow:inset 0 0 24px #c9a86a55;font-family:Georgia,serif}
-.vo-note small{display:block;color:#7a5a30;letter-spacing:.06em;text-transform:uppercase;font:bold 11px/1.3 Arial,sans-serif;margin-bottom:6px}
-.vo-note b{display:block;font-size:20px;margin-bottom:6px}
-.vo-note p{margin:0;font-style:italic;line-height:1.5}
-.caderno-page .vo-hand{font:italic 14px/1.45 Georgia,serif;color:#5a4024}
-.caderno-page.missing{opacity:.72}
-
 /* ---------- Álbum de cartas ---------- */
 .album-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
 .album-tabs button{padding:6px 10px;font-size:13px}
@@ -480,3 +472,21 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .tcard-back-in p{margin:0;font-size:13.5px;line-height:1.5;flex:1}
 .tcard-back-in footer{font:11px/1.35 Arial,sans-serif;color:#6a4a28;border-top:1px solid #c9a86a;padding-top:6px}
 @media (prefers-reduced-motion:reduce){.tcard-inner{transition:none}}
+
+/* ---------- Tiro aos javalis ---------- */
+.shoot-ui{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:#03040a}
+.shoot-ui canvas{display:block;width:min(100vw,calc(100vh*16/9));height:auto;aspect-ratio:16/9;cursor:none;touch-action:none;user-select:none}
+.shoot-buttons{position:absolute;right:16px;bottom:16px;display:flex;gap:8px}
+.shoot-buttons button{padding:8px 14px;border-radius:20px;background:#3a2414ee;color:#ffe2a6;border:2px solid #d9b25e;font-size:14px}
+
+
+/* ---------- Falas com escolha (arco dos gêmeos) ---------- */
+.choice-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.choice-list .choice{text-align:left;padding:10px 14px;font-size:15px;line-height:1.35;white-space:normal}
+.choice-reply{margin:10px 0;font-style:italic}
+
+/* ---------- Carta recebida na bodega ---------- */
+.carta-letter{background:#f3e6c4;color:#3a2a18;border:2px solid #b8955a;border-radius:6px;padding:16px 18px;box-shadow:inset 0 0 24px #c9a86a55;font:15px/1.55 Georgia,serif;transform:rotate(-.6deg)}
+.carta-letter small{display:block;text-align:right;color:#7a5a30;font-style:italic;margin-bottom:6px}
+.carta-letter p{margin:0 0 8px}
+.carta-letter .carta-sign{text-align:right;font-style:italic;margin:10px 0 0}

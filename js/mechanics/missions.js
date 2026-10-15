@@ -106,7 +106,7 @@ function unlockRegion(map) {
   if (!G.regions || G.regions[map]) return; G.regions[map] = true;
   showBanner('Nova região: ' + (map === 'serra' ? 'Serra Gaúcha' : 'Santa Catarina'), map === 'serra' ? 'Siga a estrada da Fronteira para a direita.' : 'Na Serra, pegue a estrada que sobe para o norte, no meio da vila.', 'level', { world: true }); AudioEngine.ready(); save();
 }
-function regionLockText(map) { return map === 'serra' ? 'A estrada da Serra abre quando o Valter confiar na bodega: abra a bodega <b>três noites seguidas</b> (missão do Valter).' : 'Santa Catarina abre com a missão do <b>Badin</b>, na Serra: organizar um campeonato de bocha.'; }
+function regionLockText(map) { return map === 'serra' ? 'A estrada da Serra abre quando o Valter confiar na bodega: abra a bodega <b>três noites seguidas</b> (missão do Valter).' : 'Santa Catarina abre com o <b>convite de Indaial</b>: uma carta do Lauro que chega na bodega, depois das missões do Badin.'; }
 // Campeonatos de bocha e truco já encerrados (ganhando ou perdendo).
 function sportCups(type) { return G.sportCups?.[type] || 0; }
 // Segunda missão do Badin: a despensa da colônia abre (salame e muda de uva).
@@ -154,11 +154,10 @@ const MISSIONS = [
     start: () => { G.missions.campeonato.base = sportCups('bocha'); },
     goal: () => 'Organize um campeonato de bocha na cancha da bodega (Cancha → Jogar campeonato). Ganhar ou perder, tanto faz',
     done: () => sportCups('bocha') > (G.missions.campeonato?.base || 0),
-    reward: { cash: 70, xp: 60, rep: 3, friend: { badin: 10 }, unlock: 'Estrada de Santa Catarina liberada' },
-    onDone: () => unlockRegion('sc'),
-    outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'O Lauro, lá de Indaial, ficou sabendo e quer te conhecer. A estrada de Santa Catarina tá liberada: na Serra, pega a estrada que sobe pro norte, no meio da vila.']] },
+    reward: { cash: 70, xp: 60, rep: 3, friend: { badin: 10 } },
+    outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'Passa lá em casa um dia desses, que a nona quer te pedir uma coisa.']] },
   // Segunda missão do Badin: o queijo pra nona. Cumprida, ele passa a vender salame e muda de uva.
-  { id: 'queijo', chapter: 5, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
+  { id: 'queijo', chapter: 5, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha, casa de pedra do Badin',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: [['badin', 'A nona provou um xis da tua bodega e quer saber de onde vem esse queijo.'], ['badin', 'Me traz 10 fatias do queijo da tua vaca? Se ela aprovar, a despensa da colônia abre pra ti: salame curado e muda de uva.']],
     deliver: { to: 'badin', items: { queijo: 10 } },
@@ -179,20 +178,21 @@ const MISSIONS = [
     intro: [['jayme', 'Vivente, teu vô me mostrou uma vez um caderno: receita, causo, verso e o nome de cada boi.'], ['jayme', 'Dizem que o vento espalhou as páginas pela Fronteira, pela Serra e por Santa Catarina. Onde o chão brilhar de perto, olha com calma.']],
     goal: () => 'Encontre as 3 páginas do caderno do vô (' + pagesFound() + '/3)', done: () => pagesFound() >= 3,
     reward: { cash: 150, xp: 100, rep: 5 }, finale: () => playCadernoScene() },
-  { id: 'indaial', chapter: 6, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', where: 'Santa Catarina, casa do Lauro',
+  { id: 'indaial', chapter: 7, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
     guide: { region: 'sc', spot: 'house:lauro', inside: 'casa:lauro', insideSpot: 'home:lauro' },
-    intro: [['lauro', 'Opa, Sadi! O Gustavo quer gravar o Jornal Indavírus contigo lá em Indaial.'], ['lauro', 'Vai pela Serra e pega a estrada que sobe pro norte, no meio da vila: Santa Catarina. Traz uns pães de xis, que gravação dá fome, ja.']],
+    intro: [['card', '<div class="carta-letter"><small>Indaial, Santa Catarina</small><p>Opa, Sadi!</p><p>Aqui é o Lauro, o da bocha. O Gustavo, do Jornal Indavírus, quer gravar uma reportagem contigo aqui em Indaial: bodegueiro gaúcho é notícia, ja!</p><p>A estrada de Santa Catarina tá aberta pra ti: na Serra, pega a estrada que sobe pro norte, no meio da vila. E traz uns pães de xis, que gravação dá fome.</p><p class="carta-sign">Abraço do Lauro Bolador</p></div>', 'Chegou uma carta!'], ['sadi', 'Indaial! Bora pegar a estrada de Santa Catarina.']],
     start: () => unlockRegion('sc'), deliver: { to: 'lauro', items: { pao_xis: 6 } },
     goal: () => 'Leve 6 pães de xis à casa do Lauro, em Santa Catarina',
     thanks: [['lauro', 'Chegou o pão! O Gustavo já tá ligando a câmera, ja.'], ['indavirus', 'Atenção, Indaial: bodegueiro do Sul entrega pão de xis caseiro! Reportagem exclusiva do Jornal Indavírus!']],
     reward: { cash: 60, xp: 60, friend: { lauro: 10, indavirus: 6 } } },
-  { id: 'festa', chapter: 7, title: 'Festa no salão da comunidade', giver: 'badin', needs: 'badin', when: () => bodegaLevel() >= 3, waitText: () => 'quando a bodega chegar ao nível 3 (agora: nível ' + bodegaLevel() + ')', where: 'Serra Gaúcha, casa de pedra do Badin',
+  // Terceira e última do Badin: o baile da comunidade. Doa R$ 100, vai à missa na igreja e serve no salão; depois o
+  // baile de capela entra no calendário.
+  { id: 'festa', chapter: 6, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
-    intro: [['badin', 'Vai ter festa no salão da comunidade e a nona me botou de organizador!'], ['badin', 'Me ajuda com a comida? Preciso de 20 fatias de queijo, 10 pães de xis e 6 cervejas.']],
-    deliver: { to: 'badin', items: { queijo: 20, pao_xis: 10, cerveja: 6 } },
-    goal: () => 'Leve ao Badin 20 fatias de queijo, 10 pães de xis e 6 cervejas',
-    thanks: [['badin', 'A festa foi um sucesso! Até o padre repetiu o xis.'], ['badin', 'A comunidade fez uma vaquinha pra te agradecer. E a nona mandou um fogão a lenha que tava sobrando no porão!']],
-    reward: { cash: 150, xp: 100, rep: 6, decor: 'fogao_lenha' } },
+    intro: [['badin', 'A comunidade vai fazer um baile de capela, com missa e tudo: o primeiro baile no salão desde que a nona era moça!'], ['badin', 'Mas o padre precisa de doação pra banda e pra comida. Tu dá uma força? Cem pila pra comunidade, e tu ainda serve o vinho e a polenta no baile.']],
+    goal: () => festaGoal(), done: () => !!G.missions.festa?.baile,
+    reward: { cash: 150, xp: 100, rep: 6, decor: 'fogao_lenha', unlock: 'Baile de capela no calendário' }, outroBy: 'badin',
+    outro: [['badin', 'Que baile! Até o padre dançou vanerão.'], ['badin', 'A comunidade decidiu: de tempos em tempos agora tem baile de capela. E a nona mandou um fogão a lenha que tava sobrando no porão!']] },
   { id: 'horta5', title: 'Mão boa pra terra', giver: 'valter', after: 'pomar', side: true, skipIfDone: true,
     intro: ['Tua horta tá linda, guri. Teu vô chegou a ter a horta mais caprichada da Fronteira.', 'Chega no nível 5 e o espantalho reforçado acaba com as pragas de vez.'],
     goal: () => 'Leve a horta ao nível 5 (agora: nível ' + hortaLevel() + ')', done: () => hortaLevel() >= 5,
@@ -222,6 +222,11 @@ function storyChapters() { return MISSIONS.filter(m => m.chapter).sort((a, b) =>
 function currentChapter() { return storyChapters().find(m => !missionDone(m.id)) || null; }
 function activeChapter() { const m = currentChapter(); return m && missionActive(m.id) ? m : null; }
 function chapterWaiting() { const m = currentChapter(); return m && !missionState(m.id) && m.when && !m.when() ? m : null; }
+// Capítulo que chama o Sadi: "visit" começa falando com quem dá a missão (em casa ou na rua); "letter" é uma carta
+// que chega na bodega e só se lê lá dentro.
+function chapterCalling() { const m = currentChapter(); return m && (m.visit || m.letter) && !m.direct && !missionState(m.id) && (!m.when || m.when()) ? m : null; }
+function giverName(m) { return PEOPLE.find(p => p.id === m.giver)?.name || m.giver; }
+function chapterCallText(m) { return m.letter ? 'Chegou uma carta na bodega: volte pra ler' : giverName(m) + ' quer falar com você · ' + (m.callWhere || m.where); }
 // Quem a história precisa encontrar fica em casa esperando o Sadi.
 function storyNeeds(id) { const m = activeChapter(); return !!m && m.needs === questKey(id); }
 function startChapter(m) {
@@ -253,6 +258,7 @@ const OUTSIDE_MEET = {
 };
 function specialWorldStory(i) {
   if (!questsOn()) return false;
+  const call = chapterCalling(); if (call?.visit && call.giver === questKey(PEOPLE[i].id)) { startChapter(call); return true; }
   const id = PEOPLE[i].id, key = questKey(id), m = missionForGiver(id); G.metOutside ??= {};
   const first = !G.metOutside[key]; if (!m && !first) return false;
   G.metOutside[key] = G.day;
@@ -285,7 +291,13 @@ function missionsTick() {
   if (!talkState) for (const m of MISSIONS) if (missionState(m.id)?.status === 'offered') delete G.missions[m.id];
   const d = MISSIONS.find(m => m.direct && !missionState(m.id) && (!m.when || m.when())); if (d) { G.missions[d.id] = { status: 'offered', day: G.day }; d.direct(); return; }
   // O próximo capítulo começa sozinho: a história não depende de achar quem dá a missão.
-  const ch = currentChapter(); if (ch && !ch.direct && !missionState(ch.id) && (!ch.when || ch.when())) startChapter(ch);
+  const ch = currentChapter(); if (!ch || ch.direct || missionState(ch.id) || ch.when && !ch.when()) return;
+  // Visita: só começa com quem dá a missão por perto (na casa dele); senão, o aviso e o painel chamam o Sadi.
+  if (ch.visit && worldOut?.map !== 'casa:' + ch.giver || ch.letter && worldOut) {
+    G.calling ??= {}; if (!G.calling[ch.id]) { G.calling[ch.id] = G.day; showBanner(ch.letter ? 'Chegou uma carta na bodega!' : giverName(ch) + ' quer falar com você', ch.letter ? 'Volte pra bodega pra ler.' : (ch.callWhere || ch.where), 'info', { world: true }); AudioEngine.heart(); save(); }
+    return;
+  }
+  startChapter(ch);
 }
 
 // ---------- Pedidos dos especiais (arcos no mundo aberto) ----------
@@ -295,10 +307,7 @@ const HOUSE_QUESTS = {
     { want: { erva: 1000 }, ask: ['Ô, vizinho! Meu mate tá fraco que nem chá de hospital.', 'Me traz 1 kg da erva da tua erveira? Erva nova é outra coisa.'], thanks: ['Isso sim é erva! Verdinha, de carijo.', 'Toma uns trocos e uma muda: planta mais uma erveira, que tu não te arrepende.'], reward: { cash: 20, xp: 20, friend: { valter: 6 }, seeds: { erva: 1 } } },
     { want: { ovo: 8 }, ask: ['A patroa vai fazer ambrosia pro aniversário do neto.', 'Precisa de 8 ovos caipiras. Os teus são os melhores da Fronteira.'], thanks: ['A patroa mandou dizer que tu é o bodegueiro mais caprichoso do Rio Grande.', 'E mandou uns vidros de volta, pras tuas conservas.'], reward: { cash: 30, xp: 25, friend: { valter: 8 }, items: { vidro: 4 } } }
   ],
-  manolima: [
-    { want: { erva: 1000 }, ask: ['Buenas, vivente! Roda de truco sem mate é que nem gaita sem fole.', 'Me arruma 1 kg de erva da tua erveira? Pago em pila e em causo.'], thanks: ['Erva com cheiro de mato bom. Teu vô ia se orgulhar.', 'Toma o pila. O causo eu conto na bodega, que causo bom precisa de plateia.'], reward: { cash: 30, xp: 25, friend: { manolima: 8 } } },
-    { want: { cerveja: 6 }, ask: ['Vai ter roda de causo aqui em casa, e índio véio não serve água pra visita.', 'Me traz 6 canecas de cerveja? Pode ser do Atacado, que eu não sou exigente… muito.'], thanks: ['Cerveja gelada e prosa quente: tá feita a roda!', 'Leva a paga e uma milonga de presente: “Bodega do Sadi, que nunca deixa faltar…”'], reward: { cash: 45, xp: 30, friend: { manolima: 10 }, rep: 2 } }
-  ],
+  // Mano Lima não faz pedidos de itens: depois de achar a Baia, ele abre o balcão de melhorias do facão.
   baitaca: [
     { want: { peixe: 2 }, ask: ['Opa, vivente! Fim de semana tem baile e eu canto até o galo cantar.', 'Pra aguentar, preciso de peixe frito. Me traz 2 peixes do rio Uruguai? O trapiche fica ali na beira.'], thanks: ['Que peixe bonito! Vai ser fritado com farinha e cantado em verso.', 'Toma: cachê de cantor do fundo da grota.'], reward: { cash: 40, xp: 30, friend: { baitaca: 10 } } },
     { want: { codorna: 3 }, ask: ['Tô compondo uma música sobre a tua bodega.', 'Pra inspiração, me traz 3 potes de ovos de codorna em conserva. Música boa tem tempero.'], thanks: ['Saiu o refrão: “Na bodega do Sadi tem conserva e tem amor”…', 'Ainda falta rima, mas a paga tá aqui.'], reward: { cash: 40, xp: 30, friend: { baitaca: 10 }, rep: 2 } }
@@ -369,13 +378,14 @@ function takeItems(want) {
   for (const [k, q] of Object.entries(want)) { const fromBag = Math.min(q, bagQty(k)); if (fromBag) bagTake(k, fromBag); if (q > fromBag) G.stock[k] = Math.max(0, G.stock[k] - (q - fromBag)); }
 }
 function questMarker(id) {
-  if (missionForGiver(id)) return 'new';
+  if (missionForGiver(id) || chapterCalling()?.visit && chapterCalling().giver === questKey(id)) return 'new';
   const o = questOffer(id); if (!o) return null;
   if (o.kind === 'mission' || o.active) return canDeliver(o.want) ? 'deliver' : 'waiting';
   return 'new';
 }
 // Na casa: quem tem pedido abre a janela do pedido; os outros proseiam como sempre.
 function houseResidentTalk(i, x, y) {
+  const call = chapterCalling(); if (call?.visit && call.giver === questKey(PEOPLE[i].id) && storyCalm()) { startChapter(call); return; }
   if (specialWorldStory(i)) return;
   const id = PEOPLE[i].id, o = questOffer(id);
   if (!o) { worldTalk({ person: i, x, y, wait: 0, dx: 1 }); return; }
@@ -538,6 +548,7 @@ function trackerLines() {
   const lines = [], ch = activeChapter(), wait = chapterWaiting(), ev = mapEventToday(), t = ev?.def.tracker?.();
   if (ch) lines.push({ icon: '📖', title: 'Capítulo ' + ch.chapter + ' · ' + ch.title, goal: ch.goal(), kind: 'story' });
   else if (wait) lines.push({ icon: '📖', title: 'Próximo capítulo: ' + wait.title, goal: 'Começa ' + (wait.waitText?.() || 'em breve'), kind: 'story' });
+  else { const call = chapterCalling(); if (call) lines.push({ icon: call.letter ? '✉️' : '📣', title: 'Capítulo ' + call.chapter + ' · ' + call.title, goal: chapterCallText(call), kind: 'story' }); }
   if (t) lines.push({ ...t, kind: 'event' });
   const side = activeMissions().filter(m => !m.chapter)[0]; if (side && lines.length < 2) lines.push({ title: side.title, goal: side.goal(), kind: 'side' });
   return lines.slice(0, 2);

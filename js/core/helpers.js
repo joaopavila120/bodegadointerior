@@ -15,8 +15,8 @@ const freeHand = () => !held();
 const pick = values => values[Math.floor(Math.random() * values.length)];
 const unlocked = key => !GOODS[key]?.unlock || !!G.up[GOODS[key].unlock];
 const capacity = () => G.up.capacity ? 30 : 18;
-const price = key => key === 'cigarro' && G.up.cigarro_py ? 18 : RECIPES[key]?.price || DISHES[key]?.price || GOODS[key]?.price || 0;
-const nameOf = key => key === 'cigarro' && G.up.cigarro_py ? 'Cigarro do Paraguai' : RECIPES[key]?.name || DISHES[key]?.name || GOODS[key]?.name || key;
+const price = key => key === 'cigarro' && G.up.cigarro_py ? 18 : RECIPES[key]?.price || GOODS[key]?.price || 0;
+const nameOf = key => key === 'cigarro' && G.up.cigarro_py ? 'Cigarro do Paraguai' : RECIPES[key]?.name || GOODS[key]?.name || key;
 
 function bulk(k){return BULK[k]||null;}
 

@@ -139,9 +139,10 @@ function capelaMenu() {
 }
 function missaSteps() {
   const S = [], here = ['badin', 'marcio', 'marcelo', 'mitodosul', 'dianho'].filter(id => PEOPLE.some(p => p.id === id && !p.removed) && id !== G.avatarId);
-  const seats = [[420, 470], [560, 470], [1040, 470], [1180, 570], [420, 570]];
-  S.push({ caption: 'De noite, na capela da comunidade…', time: 2.2 }, { view: 'missa' }, { actor: 'padre', x: 800, y: 330, dx: 1 }, { actor: 'sadi', x: 600, y: 670, dx: 1 });
-  here.forEach((id, k) => S.push({ actor: id, x: seats[k][0], y: seats[k][1], dx: seats[k][0] < 800 ? 1 : -1 }));
+  // Na igreja da Serra (o mesmo cenário de quando se entra nela): padre no altar e a comunidade nos bancos.
+  const seats = [[400, 646], [480, 646], [720, 741], [800, 741], [420, 741]];
+  S.push({ caption: 'De noite, na igreja da comunidade…', time: 2.2 }, { view: 'missa' }, { actor: 'padre', x: 600, y: 452, dx: 1 }, { actor: 'sadi', x: 760, y: 836, dx: -1 });
+  here.forEach((id, k) => S.push({ actor: id, x: seats[k][0], y: seats[k][1], dx: seats[k][0] < 600 ? 1 : -1 }));
   S.push({ fade: 'in', time: 1 });
   const say = (who, text) => S.push({ say: who, text });
   say('padre', 'Irmãos, que a colheita deste ano seja farta e a mesa de cada casa, cheia.');
@@ -149,29 +150,28 @@ function missaSteps() {
   say('sadi', 'O vô também vinha aqui…');
   if (here.includes('badin')) say('badin', 'Vinha, e dançava a noite toda. Depois ainda ajudava a nona a mexer a polenta.');
   say('padre', 'Ide em paz… e o baile começa já!');
-  S.push({ walk: ['sadi', ...here], to: [{ x: 800, y: 860 }, ...here.map((_, k) => ({ x: 760 + (k % 3) * 40, y: 820 + k * 10 }))] });
+  S.push({ walk: ['sadi', ...here], to: [{ x: 600, y: 1150 }, ...here.map((_, k) => ({ x: 570 + (k % 3) * 30, y: 1080 + k * 12 }))] });
   S.push({ fade: 'out', time: .8 }, { caption: 'No salão, a gaita já está tocando…', time: 2 });
   return S;
 }
-// Capela por dentro: altar, cruz, vitrais, bancos dos dois lados e o corredor de tapete vermelho.
+// A missa se passa no cenário da igreja (o mapa de dentro dela): o desenho do mapa com a comunidade por cima.
+// Quem está num banco aparece sentado; o padre fica de batina escura no altar, com as velas acesas.
 function drawSceneMissa() {
-  const s = scene; beginWorld();
-  rect(0, 0, W, H, '#2a2018'); rect(160, 0, W - 320, 260, '#efe6d2'); rect(160, 250, W - 320, 12, '#8a7a5a');
-  for (const x of [330, 1190]) { rect(x, 50, 80, 150, '#3a2a1a', 30); rect(x + 6, 56, 68, 138, '#6a8ab8', 28); rect(x + 6, 56, 34, 69, '#b84a3a', 4); rect(x + 40, 125, 34, 69, '#e8c040', 4); }
-  rect(785, 40, 30, 150, '#6a4024'); rect(745, 80, 110, 26, '#6a4024');
-  rect(160, 262, W - 320, H - 262, '#b8ae9a'); for (let y = 300; y < H; y += 60) rect(160, y, W - 320, 2, '#a8a08c');
-  rect(560, 270, 480, 80, '#d8cfb8', 0, '#8a8070'); rect(720, 270, 160, 60, '#f4f2ee', 4, '#b8b0a0'); rect(720, 270, 160, 10, '#c8a040');
-  for (const x of [700, 900]) { rect(x - 3, 236, 6, 34, '#f4ecd8'); ellipse(x, 230, 3, 6, '#ffd36a'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, 230, 60, .25, '255,200,110'); ctx.restore(); }
-  rect(740, 360, 120, H - 360, '#8a2a2a'); rect(746, 360, 4, H - 360, '#c8a040'); rect(850, 360, 4, H - 360, '#c8a040');
-  for (const y of [430, 530, 630, 730]) { rect(240, y + 40, 460, 22, '#6a4024', 3, '#3a2414'); rect(900, y + 40, 460, 22, '#6a4024', 3, '#3a2414'); }
-  const list = [];
-  for (const [id, a] of Object.entries(s.actors)) list.push({ y: a.y, draw: () => {
-    if (id === 'sadi') personDraw(avatarSprite(), a.x, a.y, a.walk, false, a.dx, !a.walk);
-    else if (id === 'padre') { ctx.save(); ctx.filter = 'grayscale(.8) brightness(.55)'; personDraw(5, a.x, a.y, a.walk, false, a.dx); ctx.restore(); rect(a.x - 6, a.y - 96, 12, 4, '#f4f4f4'); }
-    else { const i = PEOPLE.findIndex(p => p.id === id); if (i >= 0) personDraw(PEOPLE[i].sprite, a.x, a.y, a.walk, false, a.dx, !a.walk); }
-  } });
-  list.sort((a, b) => a.y - b.y).forEach(l => l.draw());
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const s = scene, M = WORLD_MAPS.igreja, saved = worldOut;
+  worldOut = { ...(saved || {}), map: 'igreja', x: 600, y: 690, dx: 1, dy: 0, walk: false, back: saved?.back };
+  try {
+    const view = beginOutside(M), seen = (x, y, m = 300) => x > view.x - m && x < view.x + view.w + m && y > view.y - m && y < view.y + view.h + m, layers = [];
+    M.draw(view, seen, layers);
+    for (const [id, a] of Object.entries(s.actors)) layers.push({ y: a.y, draw: () => {
+      const seated = !a.walk && id !== 'padre';
+      if (id === 'sadi') personDraw(avatarSprite(), a.x, a.y, a.walk, false, a.dx, seated);
+      else if (id === 'padre') { ctx.save(); ctx.filter = 'grayscale(.8) brightness(.55)'; personDraw(5, a.x, a.y, a.walk, false, a.dx); ctx.restore(); rect(a.x - 6, a.y - 96, 12, 4, '#f4f4f4'); }
+      else { const i = PEOPLE.findIndex(p => p.id === id); if (i >= 0) personDraw(PEOPLE[i].sprite, a.x, a.y, a.walk, false, a.dx, seated); }
+    } });
+    layers.sort((a, b) => a.y - b.y).forEach(l => l.draw());
+    for (const x of [540, 660]) { rect(x - 3, 326, 6, 26, '#f4ecd8'); ellipse(x, 322, 3, 6, '#ffd36a'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, 322, 70, .3, '255,200,110'); ctx.restore(); }
+    rect(view.x, view.y, view.w, view.h, 'rgba(20,14,30,.18)');
+  } finally { ctx.setTransform(1, 0, 0, 1, 0, 0); worldOut = saved; }
 }
 SCENE_VIEWS.missa = drawSceneMissa;
 {

@@ -2,6 +2,8 @@
 'use strict';
 
 const ALWAYS_TALK = new Set(['badin','guri','marcio','marcelo','indavirus','lauro','peixinhonabrasa','manolima','dianho','mitodosul','loligebien','jayme','baitaca','valter']);
+// Especial é gente de verdade: nunca aparece duas vezes na bodega ao mesmo tempo.
+PEOPLE.forEach(p => { if (ALWAYS_TALK.has(p.id)) p.unique = true; });
 
 function deliveryConversation(person,actor,diner=null){
  G.conversations[person]++;addFriendship(person,3);

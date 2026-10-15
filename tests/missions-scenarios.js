@@ -29,7 +29,7 @@
   G.openStreak=3;tick(2);check(modal==='talk','três noites seguidas: vem a conversa de conclusão');talkAll();
   check(missionDone('abertura')&&!regionLocked('serra')&&regionLocked('sc'),'abrir três noites seguidas conclui a missão do Valter e abre a Serra');
   tick(4);check(modal==='talk'&&!!G.missions.conhecer,'capítulo 3 começa sozinho: conhecer o Badin, na Serra');talkAll();check(missionActive('conhecer'),'capítulo 3 em andamento');
-  // casa do Badin: primeiro encontro, o campeonato de bocha (abre Santa Catarina) e o queijo pra nona (abre a despensa)
+  // casa do Badin: primeiro encontro, o campeonato de bocha, o queijo pra nona (abre a despensa) e o baile da comunidade
   goOutside();switchMap({map:'serra',x:1800,y:200});check(worldOut.map==='serra'&&!worldGuidePoint(),'a Serra já abre; fora dos tutoriais não tem seta (o jogador explora)');
   check(atHome('badin'),'quem a história precisa encontrar espera em casa');
   const hb=WORLD_MAPS.serra.spots().find(s=>s.id==='house:badin');worldOut.x=hb.x;worldOut.y=hb.y;interact();check(worldOut.map==='casa:badin','entra na casa do Badin');
@@ -38,14 +38,23 @@
   for(let k=0;k<4&&!missionActive('campeonato');k++){tick(3);talkAll();}
   check(missionDone('conhecer')&&missionActive('campeonato'),'conhecido o Badin, o capítulo 4 começa: organizar um campeonato de bocha');
   G.cash=Math.max(G.cash,100);createSportTournament('bocha');closeDialog(true);recordSportMatch(false);check(sportState().bracket.finished,'perdendo na primeira partida, o campeonato se encerra');
-  tick(2);talkAll();check(missionDone('campeonato')&&!regionLocked('sc'),'ganhando ou perdendo, o campeonato conclui a missão e abre Santa Catarina');
-  for(let k=0;k<3&&!missionActive('queijo');k++){tick(3);talkAll();}check(missionActive('queijo'),'capítulo 5: o Badin pede o queijo pra nona');
+  goInside();tick(2);talkAll();check(missionDone('campeonato')&&regionLocked('sc'),'ganhando ou perdendo, o campeonato conclui a missão (Santa Catarina ainda fechada)');
+  for(let k=0;k<3;k++){tick(3);talkAll();}check(!missionState('queijo')&&questMarker('badin')==='new'&&trackerLines().some(t=>/Badin quer falar com você/.test(t.goal)),'longe do Badin: o aviso "Badin quer falar com você", sem começar o capítulo');
+  goOutside();switchMap({map:'serra',x:hb.x,y:hb.y+60});closeDialog(true);worldOut.x=hb.x;worldOut.y=hb.y;interact();for(let k=0;k<3&&!missionActive('queijo');k++){talkAll();tick(3);}check(worldOut.map==='casa:badin'&&missionActive('queijo'),'capítulo 5: na casa dele, o Badin pede o queijo pra nona');
   worldOut.x=home.x;worldOut.y=home.y;interact();talkAll();if(modal!=='quest')interact();check(modal==='quest'&&$('dialogTitle').textContent.includes('Queijo pra nona')&&$('dialogContent').textContent.includes('Recompensa'),'o pedido mostra o que levar e a recompensa');
   G.stock.queijo=10;showQuest(badin);const cash=G.cash;action('questDeliver',String(badin));
   check(G.cash-cash===50&&!G.stock.queijo&&modal==='talk'&&$('dialogContent').textContent.includes('Badin'),'entregue o queijo: R$ 50 e o agradecimento é do próprio Badin');talkAll();
   check(missionDone('queijo')&&G.badinShop&&G.up.salame&&!STORE_GOODS.acougue.includes('salame'),'duas missões do Badin: ele passa a vender salame (que saiu do açougue e das melhorias)');
-  for(let k=0;k<3&&!missionActive('indaial');k++){tick(3);talkAll();}check(missionActive('indaial'),'capítulo 6 começa em seguida');
-  {const it=WORLD_MAPS['casa:badin'].spots().find(s=>/Despensa/.test(s.label));worldOut.x=it.x;worldOut.y=it.y;interact();check(modal==='worldStore'&&$('dialogContent').innerHTML.includes('seed:uva')&&$('dialogContent').innerHTML.includes('data-id="salame"'),'na despensa da colônia: salame e muda de uva');
+  for(let k=0;k<3&&!missionActive('festa');k++){tick(3);talkAll();}check(missionActive('festa'),'capítulo 6, ali mesmo: o baile da comunidade');
+  {const h=()=>WORLD_MAPS['casa:badin'].spots().find(s=>s.id==='home:badin'),c0=G.cash;G.cash=FESTA_DONATION-1;check(/Doar/.test(h().label),'o Badin pede a doação pro baile');worldOut.x=h().x;worldOut.y=h().y;interact();talkAll();check(festaState().donated==null&&G.cash===FESTA_DONATION-1,'sem os R$ 100, não dá pra doar');
+   G.cash=FESTA_DONATION+50;interact();talkAll();check(festaState().donated===G.day&&G.cash===50&&mapEventFor()==='capela'&&!missionDone('festa'),'doados R$ 100: o baile de capela é hoje à noite');
+   check(![...Array(60).keys()].some(d=>d!==G.day&&mapEventFor(d)==='capela'),'antes do baile, o baile de capela não está no calendário');
+   G.phase='closed';G.report={};mapEvState('capela').intro=true;switchMap({map:'serra',x:600,y:1700});closeDialog(true);capelaMissa();check(scene?.id==='missa'||worldOut.map==='salao','a missa na igreja');let k=0;while(scene&&k++<99)sceneSkip();talkAll();
+   if(!G.serve){const hs=WORLD_MAPS.salao.spots().find(s=>s.act&&/Badin|servir|capela/i.test(s.label));worldOut.x=hs.x;worldOut.y=hs.y;interact();talkAll();}check(serveActive()&&G.serve.ev==='capela','e o baile no salão, servindo vinho e polenta');
+   G.serve.t=.01;tick(2);talkAll();for(let k=0;k<3&&!missionDone('festa');k++){tick(3);talkAll();}check(missionDone('festa')&&decorOwned('fogao_lenha'),'baile feito: capítulo concluído');
+   check([...Array(80).keys()].some(d=>d>G.day&&mapEventFor(d)==='capela'),'e o baile de capela entra no calendário');G.cash=c0;G.phase='prep';worldOut=null;goInside();}
+  {for(let k=0;k<3&&!missionActive('indaial');k++){tick(3);talkAll();}check(missionActive('indaial')&&!regionLocked('sc'),'capítulo 7: a carta de Indaial chega na bodega e abre Santa Catarina');}
+  {goOutside();switchMap({map:'casa:badin',x:600,y:700});closeDialog(true);skipWorldTalk();const it=WORLD_MAPS['casa:badin'].spots().find(s=>/Despensa/.test(s.label));worldOut.x=it.x;worldOut.y=it.y;interact();check(modal==='worldStore'&&$('dialogContent').innerHTML.includes('seed:uva')&&$('dialogContent').innerHTML.includes('data-id="salame"'),'na despensa da colônia: salame e muda de uva');
    action('hortaDo','seed:uva');check(hortaState().seeds.uva===CROPS.uva.pack,'compra muda de parreira');closeDialog(true);}
   {const f=G.friends[badin];G.friends[badin]=0;check(questMarker('badin')===null,'sem amizade, o pedido da casa ainda não aparece');G.friends[badin]=Math.max(f,QUEST_FRIEND[0]);check(questMarker('badin')==='new','com amizade, o Badin tem um pedido novo');}
   worldOut.x=home.x;worldOut.y=home.y;interact();check(modal==='quest'&&$('dialogContent').innerHTML.includes('questAccept'),'o pedido da casa aparece para aceitar');
@@ -106,7 +115,7 @@
   // horta mais lenta
   {const h=hortaState();h.xp=0;window.NO_SCENES=true;hortaGainXP(HORTA_LEVELS[1].xp-1);check(hortaLevel()===1,'a horta sobe de nível mais devagar');hortaGainXP(1);check(hortaLevel()===2,'e avisa quando sobe');window.NO_SCENES=false;}
   // dormir no caixa antes de abrir
-  goInside();G.phase='prep';G.giftQueue=[];G.arcQueue=[];sportState().challenge=null;G.challengeVisit=null;{const d=G.day,rep=G.rep;sleepDay();check(G.day===d+1&&G.phase==='prep'&&G.rep<rep&&modal!=='event','dormir sem abrir passa o dia (a freguesia estranha) e não abre menu de evento');}
+  goInside();G.phase='prep';G.giftQueue=[];G.arcQueue=[];sportState().challenge=null;G.challengeVisit=null;{let k=0;while(scene&&k++<99)sceneSkip();talkAll();closeDialog(true);}{const d=G.day,rep=G.rep;sleepDay();for(let j=0;j<5&&G.day===d;j++){let k=0;while(scene&&k++<99)sceneSkip();talkAll();continueSleep();}check(G.day===d+1&&G.phase==='prep'&&G.rep<rep&&modal!=='event','dormir sem abrir passa o dia (a freguesia estranha) e não abre menu de evento');}
   // parreira e vinho de garrafão
   {const h=hortaState();h.tiles[1]={crop:'uva',growth:CROPS.uva.days,water:null,fert:false,dry:0};G.bag={};hortaHarvest(h.tiles[1],{x:0,y:0});check(bagQty('uva')===CROPS.uva.yield,'a parreira dá cachos de uva');
    G.phase='prep';worldOut=null;goInside();bagAdd('garrafao',1);conservasMenu();check($('dialogContent').textContent.includes('Vinho de garrafão'),'a mesa de compota faz vinho de garrafão');makeConserva('vinho');closeDialog(true);
@@ -123,12 +132,16 @@
   G.tutorial.day=10;G.calOffset=9;check(mapEventFor(15)==='javali'&&calendar(15).name==='Quarta'&&mapEventFor(18)==='fandango'&&calendar(18).name==='Sábado','primeira quarta: invasão de javalis; segundo sábado: fandango no CTG');
   while(scene)sceneSkip();talkAll();G.day=15;G.phase='prep';G.mapEv=null;G.teachQueue=[];G.valterQueue=[];goInside();tick(3);check(scene?.id==='evento-javali','de manhã, uma cena: o Valter entra na bodega e explica a caçada');while(scene)sceneSkip();check(modal==='talk'&&$('dialogContent').textContent.includes('javali'),'depois da cena, o cartão do evento');talkAll();
   calendarDialog();check($('dialogContent').textContent.includes('Invasão de javalis'),'o calendário mostra o evento de mapa');closeDialog(true);
-  G.phase='closed';goOutside();check(javaliSpots().length>=JAVALI_NEED&&javaliSpots().every(s=>WORLD_MAPS.vila.canWalk(s.x,s.y)),'de noite, os javalis aparecem pela Fronteira');
-  {const sp=javaliSpots()[0];startHunt(Number(sp.id.split(':')[1]));const Lz=G.lasso,b=Lz.bois[0];check(Lz.mode==='javali'&&!activeQueros(Lz).length,'a caçada é a laçada, mas sem quero-quero');
-   b.mode='charge';b.x=G.player.x-120;b.y=G.player.y;b.vx=1;b.vy=0;b.left=300;for(let t=0;t<4&&!Lz.hits;t++)lassoTick(.05);check(Lz.hits===1&&Lz.knock>0,'o javali dá cabeçada e joga o Sadi longe');
-   Lz.immune=0;for(let r=0;r<JAVALI_HITS;r++){b.rope=r+1;javaliRoped(Lz,b);}for(let t=0;t<40&&G.lasso;t++)lassoTick(.05);check(!G.lasso&&mapEvState('javali').kills===1&&worldOut?.map==='vila','três laços: javali abatido, de volta ao mapa');}
-  {const cash=G.cash;for(let k=0;k<JAVALI_NEED-1;k++){const sp=javaliSpots()[0];startHunt(Number(sp.id.split(':')[1]));const Lz=G.lasso,b=Lz.bois[0];for(let r=0;r<JAVALI_HITS;r++){b.rope=r+1;javaliRoped(Lz,b);}for(let t=0;t<40&&G.lasso;t++)lassoTick(.05);}
-   check(mapEvState('javali').done&&modal==='talk'&&G.cash>cash,'três javalis: o Valter entrega a recompensa');talkAll();}
+  G.phase='closed';goOutside();switchMap({map:'vila',x:CUIUDOS.x,y:CUIUDOS.y+60});closeDialog(true);const cu=WORLD_MAPS.vila.spots().find(s=>s.id==='cuiudos');check(cu&&WORLD_MAPS.vila.canWalk(cu.x,cu.y),'de noite, o Valter e os cuiudos na frente da bodega');
+  {worldOut.x=cu.x;worldOut.y=cu.y;interact();talkAll();check(shootActive()&&modal==='shoot'&&!$('shootUI').classList.contains('hidden'),'o Valter entrega a espingarda: tiro aos javalis');
+   shootTick(2.5);const o=shoot.targets[4];Object.assign(o,{kind:'javali',hp:1,state:'up',rise:1,t:5});let p=shootPose(o);shoot.aim={x:p.x,y:p.y-26*p.js};shootFire();check(shoot.kills===1&&o.state==='dead','javali na mira: abatido');
+   shoot.aim={x:10,y:10};shootFire();check(shoot.shells===0&&shoot.reload>0,'dois canos: atirou duas vezes, recarrega');shootTick(1.1);check(shoot.shells===2,'recarregou');
+   const q=shoot.targets[8];Object.assign(q,{kind:'peao',state:'up',rise:1,t:5});p=shootPose(q);shoot.aim={x:p.x,y:p.y-34*p.js/1.6};shootFire();check(shoot.friendly===1&&shoot.kills===0,'tiro no chapéu do cuiudo tira ponto');
+   const c=shoot.targets[1];Object.assign(c,{kind:'cachaco',hp:2,state:'up',rise:1,t:5});p=shootPose(c);shoot.aim={x:p.x,y:p.y-26*p.js};shootFire();shootTick(1.1);check(c.state==='up',"o cachaço aguenta o primeiro tiro");shootFire();check(c.state==='dead'&&shoot.kills===2,'e cai no segundo, valendo 2');
+   let up=0;for(let i=0;i<200;i++){shootTick(.05);up=Math.max(up,shoot.targets.filter(o=>o.state!=='hidden').length);}check(up>=1&&up<=4,'os javalis aparecem e se escondem atrás das moitas');
+   shoot.kills=SHOOT.need-1;shootTick(60);check(!shootActive()&&!mapEvState('javali').done&&modal==='talk','abaixo da meta, dá pra tentar de novo');talkAll();}
+  {const cash=G.cash;worldOut.x=cu.x;worldOut.y=cu.y;interact();talkAll();shoot.kills=SHOOT.need+2;shootTick(60);
+   check(mapEvState('javali').done&&modal==='talk'&&G.cash>cash&&G.shootBest===SHOOT.need+2,'bateu a meta: o Valter entrega a recompensa e fica o recorde');talkAll();}
   G.day=18;G.phase='prep';G.mapEv=null;goInside();tick(3);check(scene?.id==='evento-fandango','no sábado do fandango, cena: o Jayme entra e chama para o balcão do CTG');while(scene)sceneSkip();check(modal==='talk'&&/fandango/i.test($('dialogContent').textContent),'e o cartão do fandango');talkAll();
   G.phase='closed';G.report={};goOutside();
   {const c=WORLD_MAPS.vila.spots().find(s=>s.id==='ctg');check(/fandango/.test(c.label)&&WORLD_MAPS.vila.canWalk(c.x,c.y)&&VILA.ctg.w>=900,'o CTG, maior, avisa que tem fandango');worldOut.x=c.x;worldOut.y=c.y;interact();
@@ -150,7 +163,7 @@
    const f=furniture().find(f=>f.id==='service');G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};interact();check(modal==='caixa'&&$('dialogContent').innerHTML.includes('caixaClose'),'com freguês no balcão e mãos vazias, E abre o caixa');
    action('caixaClose');check(G.phase==='closing','e dá para encerrar o expediente com gente esperando');G.shop=[];G.groups=[];G.phase='prep';}
   // eventos novos: pênaltis, rodeio, Oktoberfest e Festa da Uva (cada um começa com uma cena)
-  {G.regions={serra:true,sc:true};G.badinShop=true;G.trophies={};G.relics={};
+  {G.regions={serra:true,sc:true};G.badinShop=true;G.trophies={};G.relics={};G.missions.festa={status:'done',day:1};G.missions.oktober={status:'done',day:1};
    const dayOf=id=>{for(let d=G.day;d<G.day+90;d++)if(mapEventFor(d)===id)return d;};
    check(['penalti','oktoberfest','rodeio','uva'].every(dayOf),'pênaltis, Oktoberfest, rodeio e Festa da Uva entram no calendário');
    const night=id=>{G.day=dayOf(id);G.phase='closed';G.mapEv=null;mapEvState(id).intro=true;closeDialog(true);};
@@ -216,10 +229,15 @@
    check(g2.diners[0].status!=='waiting'&&G.stock.amendoim===snack-1,'o garçom leva café e amendoim à mesa');
    for(const k of RECIPES.xis_salada.parts)G.stock[k]=Math.max(G.stock[k]||0,5);const g3=table(['xis_salada','cerveja']),d3=g3.diners[0];for(let k=0;k<900&&!d3.delivered.some(i=>i.pid==='cerveja');k++)customersTick(.05);
    check(d3.orders.join()==='xis_salada'&&d3.delivered.some(i=>i.pid==='cerveja')&&d3.status==='waiting','o garçom leva a cerveja e deixa o xis para o Sadi');G.groups=[];
+   {const bi=PEOPLE.findIndex(p=>p.id==='badin');G.friends[bi]=HIRE_AT;action('staffHire','chapa:badin');closeDialog(true);check(G.staff.chapa?.person===bi,'dá pra contratar um chapeiro');
+    for(const k of RECIPES.xis_salada.parts)G.stock[k]=5;G.kitchen.parking=[null,null];const burger=G.stock.burger,cooked=G.stats.staffCooked||0,gx=table(['xis_salada']);G.tables[0].group=gx.id;for(let k=0;k<1500&&gx.diners[0].status==='waiting';k++)customersTick(.05);
+    check(gx.diners[0].status!=='waiting'&&G.stock.burger===burger-1&&G.stats.staffCooked===cooked+1,'o chapeiro faz um xis só, deixa no apoio e o garçom leva à mesa');
+    G.groups=[];G.tables[0].group=null;const t1=G.tables[1];t1.dirty=true;t1.group=null;for(let k=0;k<400&&t1.dirty;k++)customersTick(.05);check(!t1.dirty&&t1.plates===0,'sem pedido, o garçom limpa a mesa suja');
+    action('staffMenu');action('staffFire','chapa');closeDialog(true);}
    G.openedDay=G.day;G.phase='open';G.shop=[];finishDay(true);while(scene)sceneSkip();check(G.report.wages===staffWages()&&G.report.wages>0&&G.staff.balcao.days===1,'o salário sai no fechamento e conta um dia de casa');closeDialog(true);
    action('staffMenu');action('staffFire','garcom');check(!G.staff.garcom&&visitorAvailable(li),'dispensado, volta a ser freguês');closeDialog(true);G.staff={};}
   // história do vô: gaita, baú, carta e o último trago
-  check(storyChapters().map(m=>m.id).slice(-4).join()==='gaita,bau,carta,lendaria'&&MISSIONS.find(m=>m.id==='lendaria').chapter===11,'a história do vô fecha o jogo: gaita, baú, carta e a bodega lendária');
+  check(storyChapters().map(m=>m.id).slice(-5).join()==='gaita,bau,carta,oktober,lendaria'&&MISSIONS.find(m=>m.id==='lendaria').chapter===12,'a história do vô fecha o jogo: gaita, baú, carta e a bodega lendária');
   {const before=G.missions,vo=G.vo,upTo=n=>Object.fromEntries(storyChapters().filter(m=>m.chapter<n).map(m=>[m.id,{status:'done',day:1}]));G.missions={...before,...upTo(8),gaita:{status:'active',day:G.day}};G.vo={};check(/Valter/.test(gaitaGoal())&&storyNeeds('valter'),'capítulo 8: a gaita está com o Valter');G.vo.gaita='found';check(/Pomerode/.test(gaitaGoal())&&storyNeeds('loligebien'),'depois vai pro Seu Otto, o avô do Loli, em Pomerode');
    G.missions={...before,...upTo(9),bau:{status:'active',day:G.day}};worldOut=null;goOutside();switchMap({map:'vila',x:2330,y:1860});const pz=WORLD_MAPS.vila.spots().find(s=>s.id==='pouso');check(pz.label==='Abrir o baú do vô','capítulo 9: o baú fica no Pouso de tropeiros');worldOut.x=pz.x;worldOut.y=pz.y;interact();check(scene?.id==='bau'&&scene.steps.some(s=>s.overlay==='photo'),'no baú, a foto da bodega em 1968 e a carta');while(scene)sceneSkip();check(G.vo.bau&&G.relics.foto1968,'a foto vai pra estante');
    G.missions=before;G.voDream=true;G.phase='closed';G.report={};goInside();closeDialog(true);talkState=null;G.mapEv={day:G.day,id:mapEventFor(),intro:true};storyTick();check(scene?.id==='ultimoTrago'&&scene.steps.some(s=>s.say==='vo'),'no fim, o sonho com o vô: o último trago');while(scene)sceneSkip();talkAll();G.missions=before;G.vo=vo;}
@@ -252,40 +270,90 @@
   {const rnd=Math.random,ids=['guri','badin','jayme'];Math.random=()=>0;G.giftQueue=[];G.giftsGiven={};G.visitGiftDay={};G.visitedToday={day:G.day,ids};for(const id of ids)G.friends[PEOPLE.findIndex(p=>p.id===id)]=40;
    queueAfterHoursGifts();const first=G.giftQueue.length;G.giftQueue=[];queueAfterHoursGifts();const again=G.giftQueue.length;Math.random=rnd;G.giftQueue=[];
    check(first===1&&VISIT_GIFT_CHANCE<.1,'presente de visita: no máximo um por noite e bem mais raro');check(again<=1&&Object.keys(G.visitGiftDay).length<=2,'quem já trouxe presente espera uma semana');}
-  // o cusco véio: vira-lata da estação, adotado segue o Sadi e late pras assombrações
-  {G.cusco=null;G.phase='prep';worldOut=null;goOutside();switchMap({map:'vila',x:CUSCO_HOME.x,y:CUSCO_HOME.y+120});closeDialog(true);const sp=WORLD_MAPS.vila.spots().find(s=>s.id==='cusco');check(sp&&WORLD_MAPS.vila.canWalk(sp.x,sp.y),'um cusco véio magrinho perto da estação');
+  // o cusco véio: não adotado na caverna, vai parar na estação; adotado, segue o Sadi e late pras assombrações
+  {G.cusco=null;G.baiaArc={stage:'done',cuscoFree:true};G.phase='prep';worldOut=null;goOutside();switchMap({map:'vila',x:CUSCO_HOME.x,y:CUSCO_HOME.y+120});closeDialog(true);const sp=WORLD_MAPS.vila.spots().find(s=>s.id==='cusco');check(sp&&WORLD_MAPS.vila.canWalk(sp.x,sp.y),'um cusco véio magrinho perto da estação');
    worldOut.x=sp.x;worldOut.y=sp.y;interact();talkAll();check(cuscoAdopted()&&!WORLD_MAPS.vila.spots().some(s=>s.id==='cusco'),'adotado, o cusco véio é do Sadi');
    keys.add('d');for(let i=0;i<40;i++)simulate(.05);keys.clear();for(let i=0;i<30;i++)simulate(.05);check(cusco.map==='vila'&&Math.hypot(cusco.x-worldOut.x,cusco.y-worldOut.y)<120,'ele segue o Sadi pela rua');
    switchMap({map:'serra',x:1900,y:1130});closeDialog(true);simulate(.05);check(cusco.map==='serra','e troca de região junto');
    G.phase='closed';G.day=G.day+1;while(mapEventFor(G.day)||negrinhoTonight())G.day++;G.folk={};G.folkNight={day:G.day,id:'sanguanel'};const f=folkSpots('serra')[0];worldOut.x=f.x+260;worldOut.y=f.y+40;Object.assign(cusco,{x:worldOut.x-60,y:worldOut.y});cusco.bark=0;
    let barks=0;const fx=effect;effect=(t,...a)=>{if(/Au|Grrr/.test(t))barks++;return fx(t,...a);};for(let i=0;i<40;i++){closeDialog(true);simulate(.05);}effect=fx;check(barks>0&&G.cusco.warned===G.day,'late quando tem assombração por perto');G.folkNight=null;G.phase='prep';worldOut=null;}
-  // caderno de receitas do vô: páginas no mapa, fogão do vô e os pratos novos
-  {G.receitas={};G.up.fogao=false;G.up.farinha=false;check(RECEITAS.length===7&&RECEITAS.filter(r=>r.dish).length===5&&RECEITAS.some(r=>r.unlock==='bacon')&&RECEITAS.some(r=>r.unlock==='coracao'),'sete páginas: cinco pratos, xis bacon e xis coração');
-   goOutside();switchMap({map:'casa:valter',x:600,y:700});closeDialog(true);const pg=WORLD_MAPS['casa:valter'].spots().find(s=>s.id==='receita:pastel');check(pg&&WORLD_MAPS['casa:valter'].canWalk(pg.x,pg.y),'página do pastel no sótão do Valter');
-   worldOut.x=pg.x;worldOut.y=pg.y;interact();talkAll();check(receitaFound('pastel')&&G.up.fogao&&unlocked('farinha'),'achou: fogão do vô na cozinha e farinha no Atacado');
-   for(const r of RECEITAS.filter(r=>r.map!=='caverna')){if(r.map!==worldOut.map)switchMap({map:r.map,x:r.x,y:r.y+60});closeDialog(true);check(WORLD_MAPS[r.map].canWalk(r.x,r.y)&&WORLD_MAPS[r.map].spots().some(s=>s.id==='receita:'+r.id)===!receitaFound(r.id),'dá pra chegar na página: '+r.id);}
-   storeShop('ferragem');check(!/Xis bacon|Xis coração/.test($('dialogContent').textContent),'xis bacon e xis coração saíram da Ferragem');closeDialog(true);worldOut=null;
-   goInside();G.phase='open';G.elapsed=10;G.shop=[];G.groups=[];for(const k of ['farinha','queijo','azeite'])G.stock[k]=5;const g={id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders:['pastel'],later:[],delivered:[],patience:200,maxPatience:200,status:'waiting'}]};G.groups=[g];G.tables[0].group=g.id;
-   G.player.x=FOGAO.x+FOGAO.w+40;G.player.y=FOGAO.y+FOGAO.h-6;closeDialog(true);G.hands=G.hands.map(()=>null);interact();keys.add('e');for(let i=0;i<70&&G.task;i++)holdTick(.05);keys.clear();check(held()?.pid==='pastel'&&G.stock.farinha===4,'segurando E no fogão sai o pastel da mesa que pediu');
-   const t0=G.tables[0];G.player.x=t0.x+t0.w/2;G.player.y=t0.y+t0.h+30;const cash=G.cash;interact();check(g.diners[0].status!=='waiting'&&G.cash>cash,'a mesa paga o pastel');
-   let n=0;for(let i=0;i<200;i++)if(tableOrders({...g,person:0,size:1}).includes('pastel'))n++;check(n>20,'as mesas pedem os pratos do caderno');G.groups=[];G.tables[0].group=null;G.phase='prep';G.task=null;}
   // álbum de cartas: amizade, eventos, envelope do Atacado e a carta que vira
   {G.cards={};const gi=PEOPLE.findIndex(p=>p.id==='guri');G.friends[gi]=CARD_FRIEND;closeDialog(true);talkState=null;while(scene)sceneSkip();for(let k=0;k<20&&!hasCard('guri');k++)cardsTick();check(hasCard('guri')&&CARDS.filter(c=>c.person&&hasCard(c.id)).every(c=>G.friends[PEOPLE.findIndex(p=>p.id===c.person)]>=CARD_FRIEND),'com amizade 30 o amigo dá a carta dele (uma por vez)');
    check(CARDS.length>=40&&CARD_SETS.length===6&&CARDS.every(c=>c.text&&c.how&&c.title),'cartas com frente, verso e como conseguir');
    const owned=cardsOwned(),cash=G.cash;G.cash=Math.max(G.cash,100);storeShop('atacado');check($('dialogContent').innerHTML.includes('data-id="figurinha"'),'envelope de figurinhas no Atacado');storeExtra('figurinha');check(cardsOwned()===owned+1&&modal==='albumCard','o envelope dá uma carta nova e mostra ela');
    albumFlip();check($('tcardFlip').classList.contains('flipped')&&$('tcardFlip').querySelector('.tcard-back')&&$('tcardFlip').querySelector('.tcard-front'),'a carta vira: frente e verso');
    albumDialog('bodega');check(modal==='album'&&$('dialogContent').querySelectorAll('.album-slot').length===CARDS.filter(c=>c.set==='bodega').length,'álbum com as cartas da coleção');closeDialog(true);
-   gameGuide();check($('dialogContent').innerHTML.includes('data-act="caderno"')&&$('dialogContent').innerHTML.includes('data-act="album"'),'caderno e álbum no Guia e progresso');closeDialog(true);G.cash=cash;}
-  // caverna da Serra: facão, bichos, escada, desmaio e o baú do vô
-  {G.cave=null;G.phase='prep';worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);const d=WORLD_MAPS.serra.spots().find(s=>s.id==='caverna');check(d&&WORLD_MAPS.serra.canWalk(d.x,d.y),'a gruta da caverna na Serra');
+   gameGuide();check($('dialogContent').innerHTML.includes('data-act="album"')&&!$('dialogContent').innerHTML.includes('data-act="caderno"'),'álbum no Guia e progresso');closeDialog(true);G.cash=cash;}
+  // caverna da Serra: facão, bichos, escada, desmaio e o baú do vô (a gruta aparece com a missão da Baia)
+  {G.cave=null;G.missions.baia={status:'done',day:G.day};G.phase='prep';worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);const d=WORLD_MAPS.serra.spots().find(s=>s.id==='caverna');check(d&&WORLD_MAPS.serra.canWalk(d.x,d.y),'a gruta da caverna na Serra');
    worldOut.x=d.x;worldOut.y=d.y;interact();talkAll();check(worldOut.map==='caverna'&&caveState().facao&&WORLD_MAPS.caverna.canWalk(worldOut.x,worldOut.y),'o facão do vô e o primeiro andar');
    let run=caveFloorRun();for(const b of run.beasts){let n=0;while(b.hp>0&&n++<60){worldOut.x=b.x-60;worldOut.y=b.y+10;worldOut.dx=1;worldOut.dy=0;run.cd=0;caveAttack();}}check(run.beasts.every(b=>b.hp<=0)&&run.ladder.shown&&run.drops.length,'no facão, os bichos caem e a escada aparece');
    const lad=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:ladder');worldOut.x=lad.x;worldOut.y=lad.y;interact();check(caveState().floor===2&&caveState().deepest===2,'desce pro andar de baixo');
    run=caveFloorRun();const b=run.beasts[0],hp=caveState().hp;worldOut.x=b.x;worldOut.y=b.y+5;run.inv=0;caveTick(.05);check(caveState().hp<hp,'bicho machuca');
    caveState().hp=1;run.inv=0;caveHurt(10,{x:worldOut.x-10,y:worldOut.y});check(worldOut.map==='serra'&&caveState().hp===CAVE.maxHp&&modal==='talk','desmaiou: acorda na boca da gruta');talkAll();
    caveState().deepest=CAVE.deep;enterCave(CAVE.deep);run=caveFloorRun();check(run.chest?.vo,'no andar 10, o baú do vô');const ch=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:chest');worldOut.x=ch.x;worldOut.y=ch.y;interact();talkAll();
-   check(receitaFound('xis_coracao')&&G.up.coracao&&caveState().vo,'o baú do vô libera o xis coração');caveLeave();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);worldOut.x=d.x;worldOut.y=d.y;interact();
+   check(caveState().vo&&bagQty('ametista')>=3,'o baú do vô tem moedas, ametistas e o bilhete dele');caveLeave();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);worldOut.x=d.x;worldOut.y=d.y;interact();
    check(modal==='caveStops'&&$('dialogContent').querySelectorAll('[data-act="caveGo"]').length===3,'a corda desce direto pros andares 1, 5 e 10');closeDialog(true);worldOut=null;G.phase='prep';}
+  // cusco véio: fica, vem e a casinha no campo
+  {G.cusco={day:G.day};G.phase='prep';worldOut=null;goOutside();switchMap({map:'vila',x:1660,y:1000});closeDialog(true);worldOut.x=1660;worldOut.y=1000;for(let i=0;i<20;i++){closeDialog(true);simulate(.05);}
+   worldWalkers=[];const c0=WORLD_MAPS.vila.spots().find(s=>s.id==='cusco:follow');check(!$('cuscoButton')&&c0,'sem botão na tela: parado do lado dele, E dá os comandos');interact();check(modal==='cusco'&&$('dialogContent').innerHTML.includes('data-id="fica"'),'E abre os comandos do cusco');action('cusco','fica');check(cuscoMode()==='stay'&&G.cusco.at?.map==='vila','Fica! O cusco véio fica');keys.add('d');for(let i=0;i<30;i++)simulate(.05);keys.clear();const at=G.cusco.at;check(cuscoMode()==='stay'&&Math.hypot(worldOut.x-at.x,worldOut.y-at.y)>60,'e fica parado enquanto o Sadi anda');
+   worldOut.x=at.x;worldOut.y=at.y+24;const sp=WORLD_MAPS.vila.spots().find(s=>s.id==='cusco:place');check(!!sp,'perto dele parado, dá pra falar com ele');interact();check(modal==='cusco','E abre as opções do cusco');
+   action('cusco','casinha');check(cuscoMode()==='casinha'&&cuscoPlace().map==='curral','vai pra casinha no Campo e curral');
+   switchMap({map:'curral',x:800,y:820});closeDialog(true);check(WORLD_MAPS.curral.spots().some(s=>s.id==='cusco:place')&&!WORLD_MAPS.curral.canWalk(CUSCO_CASINHA.x+50,CUSCO_CASINHA.y+60),'a casinha fica no campo e ele deitado do lado');
+   talkAll();closeDialog(true);cuscoToggle();for(let i=0;i<40;i++){closeDialog(true);simulate(.05);}check(cuscoMode()==='follow'&&Math.hypot(cusco.x-worldOut.x,cusco.y-worldOut.y)<140,'V: vem correndo');
+   const ch=WORLD_MAPS.curral.spots().find(s=>s.id==='casinha');worldOut.x=ch.x;worldOut.y=ch.y;interact();check(cuscoMode()==='casinha','dá pra deixar ele na casinha');
+   switchMap({map:'serra',x:1900,y:1130});closeDialog(true);cuscoToggle();simulate(.05);check(cuscoMode()==='follow'&&cusco.map==='serra','chamado de longe, ele chega correndo');worldOut=null;}
+  // A Casona dividida: achar o Marcelo, convencer os dois escolhendo as falas e a cena na laje
+  {const mi=PEOPLE.findIndex(p=>p.id==='marcio'),ei=PEOPLE.findIndex(p=>p.id==='marcelo'),fr=[G.friends[mi],G.friends[ei]],ns=window.NO_SCENES;window.NO_SCENES=false;G.gemeos=null;G.friends[mi]=20;G.phase='prep';
+   const good=()=>GEMEOS_ROUNDS[gemeosRound.set][gemeosRound.n].a.findIndex(a=>a[2]),bad=()=>GEMEOS_ROUNDS[gemeosRound.set][gemeosRound.n].a.findIndex(a=>!a[2]),skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
+   check(gemeosReady()&&trackerLines().some(t=>/Casona/.test(t.goal)),'os gêmeos brigaram: o painel manda passar na Casona');
+   worldOut=null;goOutside();switchMap({map:'casa:marcio',x:700,y:840});talkAll();skipWorldTalk();for(let i=0;i<4;i++)simulate(.05);check(scene?.id==='gemeos-1'&&!atHome('marcelo'),'na Casona, o Márcio conta a briga (o Marcelo sumiu)');skip();talkAll();
+   check(gemeosStage()===1&&/chutar bola/.test(trackerLines().map(t=>t.goal).join()),'dica: ele vai chutar bola sozinho');
+   switchMap({map:'serra',x:GEMEOS_CAMPINHO.x,y:GEMEOS_CAMPINHO.y+90});closeDialog(true);for(let d=0;d<12;d++){G.day++;spawnWalkers(WORLD_MAPS.serra);check(!worldWalkers.some(w=>PEOPLE[w.person].id==='marcelo'),'sumido, o Marcelo não passeia pela Serra (dia '+G.day+')');}const m=WORLD_MAPS.serra.spots().find(s=>s.id==='gemeos:marcelo');check(m&&WORLD_MAPS.serra.canWalk(m.x,m.y),'o Marcelo no campinho da Serra');
+   worldOut.x=m.x;worldOut.y=m.y;interact();check(scene?.id==='gemeos-2','cena do campinho');skip();check(modal==='gemeosChoice'&&document.querySelectorAll('#dialogContent .choice').length===3,'escolha de falas');
+   for(let k=0;k<GEMEOS_PATIENCE;k++)action('gemeosChoice',String(bad()));check(gemeosState().tired===G.day&&modal==='talk','errou demais: ele cansa');talkAll();
+   G.day++;worldOut.x=m.x;worldOut.y=m.y;interact();for(let k=0;k<GEMEOS_ROUNDS.marcelo.length;k++)action('gemeosChoice',String(good()));check(gemeosStage()===3,'no outro dia, as falas certas convencem o Marcelo');talkAll();
+   switchMap({map:'casa:marcio',x:700,y:840});closeDialog(true);skipWorldTalk();const cm=WORLD_MAPS['casa:marcio'].spots().find(s=>s.id==='gemeos:marcio');worldOut.x=cm.x;worldOut.y=cm.y;interact();for(let k=0;k<GEMEOS_ROUNDS.marcio.length;k++)action('gemeosChoice',String(good()));
+   check(gemeosStage()===4&&scene?.id==='gemeos-laje','convencido o Márcio, a cena na laje');skip();action('gemeosChoice',String(good()));skip();action('gemeosChoice',String(good()));skip();
+   check(gemeosStage()===5&&modal==='talk'&&G.friends[ei]>=fr[1]+15,'os gêmeos fazem as pazes e o sonzão volta');talkAll();
+   check(!gemeosFighting()&&!trackerLines().some(t=>/Casona/.test(t.goal)),'Casona inteira de novo');window.NO_SCENES=ns;worldOut=null;}
+  // especial é um só: nunca dois Guris (nem dois de ninguém) na bodega ao mesmo tempo
+  {check(specialPeople().every(i=>PEOPLE[i].unique),'todo especial é único');goInside();G.event={id:'normal',seen:true,fired:{}};G.phase='open';G.elapsed=DAY*.5;G.shop=[];G.groups=[];G.staff={};closeDialog(true);
+   const sc=specialChance;specialChance=()=>1;let dup=0;for(let k=0;k<300;k++){if(k%2)spawnShop();else spawnGroup();const ids=[...G.shop.map(c=>c.person),...G.groups.flatMap(g=>g.members)].filter(i=>isSpecial(i));if(new Set(ids).size!==ids.length)dup++;if(G.shop.length>3)G.shop.shift();if(G.groups.length>4)G.groups.shift();}
+   specialChance=sc;check(dup===0,'nem com só especiais chegando aparece um repetido');G.shop=[];G.groups=[];G.phase='prep';}
+  // garçons diferentes: os gêmeos e o Peixinho são mais baratos, mais lentos e às vezes trocam o pedido
+  {check(['marcio','marcelo','peixinhonabrasa'].every(id=>STAFF_TRAITS[id].wage<STAFF_DEFAULT.wage&&STAFF_TRAITS[id].speed>1&&STAFF_TRAITS[id].mistake>0),'gêmeos e Peixinho: mais baratos, mais lentos e distraídos');
+   const mi=PEOPLE.findIndex(p=>p.id==='marcio');G.friends[mi]=HIRE_AT;G.staff={};action('staffHire','garcom:marcio');closeDialog(true);goInside();G.event={id:'normal',seen:true,fired:{}};G.phase='open';G.elapsed=10;G.shop=[];G.stock.cerveja=10;G.stock.refri=10;
+   const g={id:G.next++,person:0,size:1,state:'seated',table:G.tables[0].id,x:900,y:600,diners:[{person:0,orders:['cerveja'],later:[],delivered:[],patience:300,maxPatience:300,status:'waiting'}]};G.groups=[g];G.tables[0].group=g.id;
+   const rnd=Math.random;let n=0;Math.random=()=>n++===0?0:rnd();customersTick(.05);Math.random=rnd;const wrong=staffWork.garcom.task?.fetch;check(wrong&&wrong!=='cerveja','distraído, ele pega a coisa errada');
+   const mistakes=G.stats.staffMistakes||0,before=G.stock[wrong];for(let k=0;k<2000&&g.diners[0].status==='waiting';k++)customersTick(.05);
+   check(g.diners[0].status!=='waiting'&&G.stats.staffMistakes===mistakes+1&&G.stock[wrong]===before&&G.stock.cerveja===9,'o freguês reclama, ele devolve o errado e traz o certo');G.groups=[];G.tables[0].group=null;G.staff={};G.phase='prep';}
+  // a Baia, cadela do Mano Lima: em casa no tapete ou passeando junto com ele
+  {const mli=PEOPLE.findIndex(p=>p.id==='manolima'),qm=questMarker;questMarker=()=>null;let walk=null,home=null;for(let d=G.day;d<G.day+60&&(walk===null||home===null);d++){const keep=G.day;G.day=d;if(baiaWalksToday()&&manolimaOut())walk??=d;else home??=d;G.day=keep;}
+   const day=G.day;G.day=home;worldOut=null;goOutside();switchMap({map:'casa:manolima',x:560,y:700});closeDialog(true);skipWorldTalk();check(baiaAtHome()&&WORLD_MAPS['casa:manolima'].spots().some(s=>s.id==='baia'),'a Baia deitada no tapete da casa do Mano Lima');
+   G.day=walk;switchMap({map:'vila',x:1600,y:735});closeDialog(true);worldWalkersKey='';spawnWalkers(WORLD_MAPS.vila);for(let i=0;i<10;i++)simulate(.05);const w=baiaWalker();check(!baiaAtHome()&&w&&Math.hypot(baia.x-w.x,baia.y-w.y)<200,'em alguns dias ela passeia atrás do Mano Lima');
+   questMarker=qm;G.day=day;worldOut=null;}
+  // A Baia sumiu: o Mano Lima chama na bodega, a gruta só aparece aceitando, o rastro do sanguanel, a Baia e o cusco no
+  // andar 2, a volta (casa aberta até depois das 23h30) e o balcão de melhorias do facão
+  {const ns=window.NO_SCENES;window.NO_SCENES=false;const m=MISSIONS.find(m=>m.id==='baia'),skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};delete G.missions.baia;G.baiaArc=null;G.cusco=null;G.cave=null;G.phase='prep';worldOut=null;goInside();closeDialog(true);talkState=null;skip();
+   {const d=G.day;while(mapEventFor(G.day))G.day++;check(m.side&&m.after==='abertura'&&m.direct&&m.when(),'depois do capítulo 2, numa manhã sem evento, na bodega: a missão do Mano Lima');G.day=d;}
+   baiaCall();check(scene?.id==='baia-chamado','o Mano Lima entra na bodega: a Baia fugiu');skip();
+   check(baiaCalling()&&trackerLines().some(t=>/Mano Lima quer falar/.test(t.goal))&&!caveOpen(),'o painel chama pra casa dele e a gruta ainda não existe');
+   goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+300});closeDialog(true);check(!WORLD_MAPS.serra.spots().some(s=>s.id==='caverna'),'sem aceitar, nada de gruta na Serra');
+   switchMap({map:'casa:manolima',x:600,y:700});closeDialog(true);skipWorldTalk();const h=WORLD_MAPS['casa:manolima'].spots().find(s=>s.id==='home:manolima');worldOut.x=h.x;worldOut.y=h.y;interact();talkAll();check(modal==='baiaOffer','na casa, ele pergunta se o Sadi procura');
+   action('baiaAccept');talkAll();closeDialog(true);check(missionActive('baia')&&caveOpen(),'aceitou: a gruta aparece na Serra');
+   switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+300});worldOut.x=CAVE.door.x;worldOut.y=CAVE.door.y+120;for(let j=0;j<30&&!scene;j++){talkAll();closeDialog(true);skipWorldTalk();G.valterQueue=[];simulate(.05);}
+   check(scene?.id==='baia-rastro'&&/rastro do sanguanel/.test(scene.step?.caption||''),'perto da gruta: "Você pisou no rastro do sanguanel…"');skip();check(modal==='talk'&&/pelo/.test($('dialogContent').textContent),'o Sadi acha pelo de cachorro na entrada');talkAll();
+   caveState().facao=true;enterCave(2);closeDialog(true);const sp=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:baia');check(sp&&WORLD_MAPS.caverna.canWalk(sp.x,sp.y),'no segundo andar: a Baia e um cusco véio');
+   worldOut.x=sp.x;worldOut.y=sp.y;interact();talkAll();check(modal==='baiaCusco','dá pra escolher adotar o cusco');action('baiaCusco','sim');talkAll();check(cuscoAdopted()&&baiaStage()==='return','adotado: o cusco ganha a casinha e a Baia vai junto pra casa');
+   caveLeave();closeDialog(true);for(let i=0;i<10;i++){closeDialog(true);simulate(.05);}check(baiaTrail.map==='serra','a Baia segue o Sadi');
+   G.phase='closed';switchMap({map:'vila',x:1600,y:735});closeDialog(true);const hv=WORLD_MAPS.vila.spots().find(s=>s.id==='house:manolima');check(lateNight()&&!hv.house&&!/trancada/.test(spotLabel(hv)),'depois das 23h30, a casa do Mano Lima tá aberta pra devolver a Baia');
+   worldOut.x=hv.x;worldOut.y=hv.y;interact();closeDialog(true);skipWorldTalk();const h2=WORLD_MAPS['casa:manolima'].spots().find(s=>s.id==='home:manolima');worldOut.x=h2.x;worldOut.y=h2.y;interact();check(modal==='talk'&&/caverna/.test(JSON.stringify(talkState?.lines||'')),'o Sadi conta da caverna');talkAll();
+   check(missionDone('baia')&&baiaStage()==='done'&&baiaAtHome(),'a Baia em casa: missão concluída');
+   G.phase='prep';const bc=WORLD_MAPS['casa:manolima'].spots().find(s=>/Balcão/.test(s.label));check(!!bc&&!questOffer('manolima'),'o Mano Lima não pede mais itens: tem o balcão do facão');
+   const day=G.day;for(let k=0;k<30&&atHome('manolima');k++)G.day++;interact();check(modal!=='manoShop','com o Mano Lima fora de casa, o balcão fica fechado');for(let k=0;k<30&&!atHome('manolima');k++)G.day++;
+   const cash=G.cash;G.cash=500;worldOut.x=bc.x;worldOut.y=bc.y;interact();check(modal==='manoShop','com ele em casa: balcão de melhorias pro facão');action('facaoBuy','afiado');check(caveDmg()===18&&G.cash===380,'facão afiado: mais dano');
+   G.cash=cash;G.day=day;closeDialog(true);window.NO_SCENES=ns;worldOut=null;}
   check(!JSON.stringify(PEOPLE).includes('Boleador')&&GIFTS.lauro.some(g=>/Bolador/.test(g.text+JSON.stringify(DECOR)))||!JSON.stringify(DECOR).includes('Boleador'),'Lauro Bolador (não mais Boleador)');
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;window.difficulty=difficultyBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();closeDialog(true);worldOut=null;}
  return results;

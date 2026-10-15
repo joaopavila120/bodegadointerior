@@ -6,7 +6,7 @@
 'use strict';
 
 function voState() { return (G.vo ??= {}); }
-const GAITA_COST = 80;
+const GAITA_COST = 300;
 function gaitaGoal() {
   const v = voState();
   if (!v.gaita) return 'Peça a gaita do vô ao Valter, na casa dele (Fronteira)';
@@ -17,7 +17,7 @@ function gaitaGoal() {
 {
   const at = MISSIONS.findIndex(m => m.id === 'lendaria');
   MISSIONS.splice(at, 0,
-    { id: 'gaita', chapter: 8, title: 'A gaita do vô', giver: 'jayme', get needs() { return voState().gaita ? 'loligebien' : 'valter'; }, where: 'Casa do Valter → casa do Loli, em Pomerode → bodega',
+    { id: 'gaita', chapter: 8, title: 'A gaita do vô', giver: 'jayme', visit: true, callWhere: 'casa do Jayme, na Fronteira', get needs() { return voState().gaita ? 'loligebien' : 'valter'; }, where: 'Casa do Valter → casa do Loli, em Pomerode → bodega',
       when: () => bodegaLevel() >= 4, waitText: () => 'quando a bodega chegar ao nível 4 (agora: nível ' + bodegaLevel() + ')',
       intro: [['jayme', 'Vivente, teu vô tinha uma gaita de oito baixos que fazia o CTG inteiro levantar.'], ['jayme', 'Quando ele se foi, o Valter guardou a gaita. O fole rasgou, mas o coração dela segue lá dentro.'], ['jayme', 'Busca com o Valter e leva pro velho Otto, o avô do Loli, lá em Pomerode: ninguém conserta gaita como ele.']],
       goal: gaitaGoal, done: () => voState().gaita === 'ready' && !worldOut,
@@ -35,7 +35,7 @@ function gaitaGoal() {
       outro: [['loligebien', 'Primo! Ja, primo! A Oma não para de chorar de alegria.'], ['loligebien', 'Quando tu vier na Oktoberfest, tu é da família, viu? Chope por conta da casa… quer dizer, da minha casa!']] }
   );
   // O sonho fica para a noite, com a bodega fechada (não no meio do expediente).
-  const lend = MISSIONS.find(m => m.id === 'lendaria'); lend.chapter = 11; lend.finale = () => { G.voDream = true; save(); };
+  const lend = MISSIONS.find(m => m.id === 'lendaria'); lend.chapter = 12; lend.finale = () => { G.voDream = true; save(); };
   // Saves que já tinham começado a bodega lendária: os capítulos novos do vô vêm antes dela.
   const migrate = migrateMissions; migrateMissions = function () { migrate(); if (G.missions?.lendaria?.status === 'active' && !G.missions.gaita) delete G.missions.lendaria; };
   const story = storyTick; storyTick = function () { story(); if (G.voDream && G.phase === 'closed' && !worldOut && storyCalm()) { G.voDream = false; playUltimoTrago(); } };

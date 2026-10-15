@@ -67,14 +67,14 @@ function depositBag() {
 // Atacado (bebida, cigarro, amendoim e vidros), Açougue (carne de porco: bacon e salame), Armazém Querência (sementes,
 // mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração e equipamento).
 const STORE_GOODS = {
-  atacado: ['cerveja', 'refri', 'cachaca', 'bitter', 'cafe', 'cigarro', 'amendoim', 'azeite', 'farinha', 'fuba'],
-  acougue: ['bacon', 'galeto_cru'],
+  atacado: ['cerveja', 'refri', 'cachaca', 'bitter', 'cafe', 'cigarro', 'amendoim', 'azeite'],
+  acougue: ['bacon'],
   agro: [],
   badin: ['salame']
 };
 const STORE_INFO = {
   atacado: { name: 'Atacado da Fronteira', text: 'O que não dá na roça: bebida, cigarro, amendoim torrado e vidros de conserva.' },
-  acougue: { name: 'Açougue da Fronteira', text: 'Bacon e galeto temperado. O salame de colônia vem da nona do Badin, na Serra.' },
+  acougue: { name: 'Açougue da Fronteira', text: 'Carne de porco: bacon. O salame de colônia vem da nona do Badin, na Serra.' },
   badin: { name: 'Despensa da colônia do Badin', text: 'Salame curado pela nona e muda de parreira da colônia. A uva vira vinho de garrafão na mesa de compota da bodega.' },
   agro: { name: 'Armazém Querência', text: 'Sementes, mudas e adubo para a horta. Aqui também se vende a colheita.' },
   gado: { name: 'Casa do Campeiro', text: 'Animais, ração e equipamento de campo.' },
@@ -100,7 +100,7 @@ function storeShop(id) {
   if (id === 'badin') extra = '<h3>Para a horta</h3><div class="store-list">' + hortaSeedCards(k => CROPS[k].shop === 'badin', false) + '</div>';
   if (id === 'atacado') extra = '<h3>Para as conservas</h3><div class="store-list">' + extraCard('vidro', '🫙', 'Vidros de conserva (4)', 'Ovos de codorna ou pepino + vidro viram conserva na mesa de compota da cozinha · vidros vazios no inventário: ' + bagQty('vidro'), 4, 'Comprar · ' + money(4)) + (G.badinShop ? extraCard('garrafao', '🍶', 'Garrafões vazios (2)', 'Uva da parreira + garrafão vira vinho de garrafão na mesa de compota · no inventário: ' + bagQty('garrafao'), 6, 'Comprar · ' + money(6)) : '') + '</div>';
   if (id === 'ferragem') extra = ferragemCards();
-  if (id === 'acougue' && !goods.length) extra = '<p class="small-note">O bacon e o galeto aparecem aqui quando as receitas do caderno do vô forem achadas. Salame, só com a nona do Badin, na Serra.</p>';
+  if (id === 'acougue' && !goods.length) extra = '<p class="small-note">O bacon aparece aqui quando o xis bacon for liberado na Ferragem. Salame, só com a nona do Badin, na Serra.</p>';
   if (id === 'gado') extra = campeiroCards();
   openDialog(info.name, `<p>${info.text}</p>` + shopMissionNote(id) + (goods.length ? `<div class="store-list">${goods.map(goodCard).join('')}</div>` : '') + extra, 'worldStore');
   G.lastStore = id;

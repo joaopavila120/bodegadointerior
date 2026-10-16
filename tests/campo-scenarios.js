@@ -89,7 +89,7 @@
   {const L1=G.lasso;L1.queros=[];const b1=L1.bois[0];for(let k=0;k<LASSO_HITS;k++){G.player={x:b1.x-200,y:b1.y+40,dx:1,dy:0};L1.fx=1;L1.fy=0;lassoCharge();let best=0,bd=1e9;for(let t=0;t<1.4;t+=.01){L1.charge=t;const a=lassoAim(),d=Math.hypot(a.x-b1.x,a.y-(b1.y-28));if(d<bd){bd=d;best=t;}}L1.charge=best;b1.speed=0;b1.dx=b1.dy=0;b1.t=99;lassoRelease();for(let t=0;t<1;t+=.05){b1.t=99;lassoTick(.05);}}}
   finishLasso();check(!G.lasso&&G.herd===0&&!farmGame&&modal!=='farmGame','boi laçado: sem minigame de carnear');
   check(G.stock.costela_crua===MANTAS_PER_BOI&&G.stock.burger+bagQty('burger')===24&&G.carneacoes===1,'o boi vira na hora as mantas do costelão e o hambúrguer');
-  check(G.stock.burger===stationCapacity('burger')&&bagQty('burger')===24-stationCapacity('burger'),'carneando na bodega, a carne vai direto para a despensa; o que não cabe fica no inventário');
+  check(G.stock.burger===24&&!bagQty('burger'),'carneando, a carne toda vai pro inventário (um só, sem limite de estação)');
   reset();G.day=2;G.phase='prep';G.herd=5;G.lassoTaught=true;G.stock.burger=0;startLasso();const L=G.lasso;L.queros=[];check(L&&L.bois.length===5&&isCampo()&&!$('lassoUI').classList.contains('hidden'),'campo com o rebanho para laçar');
   finishLasso();check(G.lasso,'não termina sem laçar nenhum boi');
   const boi=L.bois.find(b=>b.state==='free');

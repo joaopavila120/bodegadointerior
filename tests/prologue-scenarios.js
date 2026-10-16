@@ -30,7 +30,7 @@
   switchMap({map:'vila',...front(VILA.agro)});const hs=hortaSpots()[0];worldOut.x=hs.x;worldOut.y=hs.y;interact();check(worldOut.map==='horta','a horta, do lado da bodega, abre no passo da erva');
   check(!!worldGuidePoint(),'dentro da horta a seta aponta o pé de erva-mate');
   const pit=GARDEN.pits[0];worldOut.x=pit.x;worldOut.y=pit.y+60;worldOut.dx=0;worldOut.dy=-1;interact();
-  check(bagQty('erva')===2000&&prologueFlagSet('erva'),'colhida a erva-mate: 2 kg no inventário');
+  check(G.stock.erva===2000&&prologueFlagSet('erva'),'colhida a erva-mate: 2 kg no inventário');
   tick(2);talk();check(step()==='plantar','depois da erva, plantar');
   const h=hortaState(),at=(c,r)=>{worldOut.x=GARDEN.gx+c*GARDEN.ts+GARDEN.ts/2;worldOut.y=GARDEN.gy+(r+1)*GARDEN.ts+30;worldOut.dx=0;worldOut.dy=-1;};
   hortaSelectTool(hortaTools().findIndex(t=>t.id==='alface'));at(0,0);interact();at(1,0);interact();
@@ -40,7 +40,7 @@
   const day=G.day;tick(2);talk();check(scene?.id==='pulo'&&G.day===day+3,'regado tudo: o jogo pula três dias');sceneSkip();
   check(h.tiles.slice(0,4).every(cellReady)&&ranchState().nests.ovo>0&&ranchState().nests.ovo_codorna>0,'três dias depois: a horta está pronta e os ninhos com ovos e ovinhos');talk();check(step()==='colher','depois do pulo, colher');
   for(let c=0;c<4;c++){at(c,0);interact();}
-  check(bagQty('trigo')===6&&bagQty('alface')===4,'a colheita vai para o inventário');tick(2);talk();check(step()==='pao','colhido: o pão no forno a lenha');
+  check(bagQty('trigo')===6&&G.stock.salada===8,'a colheita vai para o inventário (a alface já vira salada)');tick(2);talk();check(step()==='pao','colhido: o pão no forno a lenha');
   goInside();check(G.stock.salada===8&&G.stock.erva===2000&&bagQty('trigo')===6,'na bodega a alface vira salada, a erva vai para o balcão e o trigo fica para o forno');
   check(prologueBodegaTarget()==='forno','a seta da cozinha aponta o forno');
   const near=id=>{const f=furniture().find(f=>f.id===id);G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};return nearest()?.id;};
@@ -53,10 +53,10 @@
   check(/^Laçar/.test(spot('cerca').label),'na cerca do boi aparece a opção Laçar');
   go('cerca');check(!!G.lasso,'na cerca se laça a qualquer hora');G.lasso.caught=G.lasso.need;finishLasso();
   check(!G.lasso&&G.herd===0&&modal!=='farmGame','boi laçado: sem minigame de carnear');
-  check(bagQty('costela_crua')===MANTAS_PER_BOI&&bagQty('burger')===24&&worldOut.map==='curral','o boi vira na hora mantas de costela e 24 hambúrgueres no inventário');
+  check(G.stock.costela_crua===MANTAS_PER_BOI&&G.stock.burger===24&&worldOut.map==='curral','o boi vira na hora mantas de costela e 24 hambúrgueres no inventário');
   check(modal==='talk'&&$('dialogContent').innerHTML.includes('reward-card'),'a carne aparece num cartão de recompensa');
   talk();tick(2);talk();check(step()==='curral'&&bagQty('racao')===2,'o Valter deixa ração e manda cuidar do curral');
-  go('cocho');go('ninhos');go('codorneira');check(ranchState().fedDay===G.day&&bagQty('ovo')>0&&bagQty('ovo_codorna')>0,'ração no cocho, ovos dos ninhos e ovinhos da codorneira');
+  go('cocho');go('ninhos');go('codorneira');check(ranchState().fedDay===G.day&&G.stock.ovo>0&&bagQty('ovo_codorna')>0,'ração no cocho, ovos dos ninhos e ovinhos da codorneira');
   go('vaca');check(modal==='farmGame'&&farmGame.stages.length===1,'ordenhar é alternar as mãos');for(let i=0;i<80&&farmGame;i++)farmGameKey(i%2?'d':'a');check(bagQty('leite')===8&&ranchState().milkedDay===G.day,'vaca tratada dá 8 litros de leite');
   go('vaca');check(bagQty('leite')===8&&modal!=='farmGame','a vaca só é ordenhada uma vez por dia');
   tick(2);talk();check(step()==='queijo','depois do curral, o queijo no tacho');

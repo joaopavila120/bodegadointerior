@@ -1,7 +1,9 @@
 // Vida no campo: o inventário do Sadi, as compras nas lojas da Fronteira, o ritmo do dia, o curral (galinhas, codornas,
 // vaca e bois) e a mesa de conservas.
 // O que a bodega vende sai da roça: horta, curral, forno e tacho (prologue.js). Nas lojas só se compra o que não dá na
-// roça: bebida, cigarro, amendoim, vidros, bacon e salame. Ao entrar na bodega, o que é de balcão vai para a despensa.
+// roça: bebida, cigarro, amendoim, vidros, bacon e salame.
+// Inventário único: o que é da bodega (comprado, colhido, carneado ou feito na compota) entra direto no estoque, esteja o
+// Sadi onde estiver; o que é cru da roça (trigo, leite, vidro, uva, peixe…) fica guardado junto, na mesma lista.
 'use strict';
 
 // ---------- Inventário ----------
@@ -27,16 +29,23 @@ function bagName(k) { return BAG_RAW[k]?.name || nameOf(k); }
 function bagIcon(k) { return BAG_RAW[k] ? `<span class="bag-emoji">${BAG_RAW[k].icon}</span>` : itemIconHTML(k); }
 function bagBulk(k) { return !BAG_RAW[k] && !!bulk(k); }
 function bagText(k, q = bagQty(k)) { return bagBulk(k) ? formatWeight(q) : Math.floor(q) + ' un.'; }
-// Coloca no inventário (sem limite de carga).
-function bagAdd(k, q, cost = 0) { if (!(q > 0)) return 0; unlockGood(k); const e = bagState()[k] ??= { q: 0, c: 0 }; e.q += q; e.c += cost; return q; }
+// Coloca no inventário (sem limite de carga). Produto da bodega vai direto pro estoque; o cru que vira produto (alface →
+// salada, pote de conserva → conserva no balcão) já entra convertido.
+function bagAdd(k, q, cost = 0) {
+  if (!(q > 0)) return 0;
+  const raw = BAG_RAW[k], target = raw?.to || (GOODS[k] && !raw ? k : null);
+  if (target) { if (raw?.unlock && !G.up[raw.unlock]) { G.up[raw.unlock] = true; showBanner(nameOf(target) + ' liberado!', 'A conserva da casa já pode ser vendida no balcão.', 'level'); valterTip('compota'); } else unlockGood(target); stockAdd(target, q * (raw?.mult || 1), cost); return q; }
+  const e = bagState()[k] ??= { q: 0, c: 0 }; e.q += q; e.c += cost; return q;
+}
+function stockAdd(k, n, cost = 0) { const units = G.stock[k] || 0; G.avg[k] = units + n > 0 ? ((G.avg[k] ?? GOODS[k].cost) * units + cost) / (units + n) : GOODS[k].cost; G.stock[k] = units + n; }
 function bagTake(k, q) { const e = bagState()[k]; if (!e || e.q < q) return false; e.c -= e.c * q / e.q; e.q -= q; if (e.q <= .001) delete bagState()[k]; return true; }
 function showBag() {
-  const b = bagState(), keys = Object.keys(b), shelf = Object.keys(GOODS).filter(k => unlocked(k) && G.stock[k] > 0 && !GOODS[k].noSupplier);
-  openDialog('Inventário do Sadi', `<p>O que é de balcão vai para a despensa quando você entra na bodega.</p>` +
-    (keys.length ? `<div class="bag-grid">${keys.map(k => `<div class="bag-item">${bagIcon(k)}<b>${bagText(k)}</b><small>${bagName(k)}</small></div>`).join('')}</div>` : '<p class="small-note">O inventário está vazio.</p>') +
-    `<h3>Itens na bodega</h3>` + (shelf.length ? `<div class="bag-grid">${shelf.map(k => `<div class="bag-item">${itemIconHTML(k)}<b>${stockText(k)}</b><small>${nameOf(k)}</small></div>`).join('')}</div>` : '<p class="small-note">A despensa da bodega está vazia.</p>'), 'worldStore');
+  // Uma lista só: o estoque da bodega e o que está guardado da roça.
+  const goods = Object.keys(GOODS).filter(k => unlocked(k) && (G.stock[k] || 0) > 0 && !GOODS[k].removed), raws = Object.keys(bagState());
+  const cards = [...goods.map(k => `<div class="bag-item">${itemIconHTML(k)}<b>${stockText(k)}</b><small>${nameOf(k)}</small></div>`), ...raws.map(k => `<div class="bag-item">${bagIcon(k)}<b>${bagText(k)}</b><small>${bagName(k)}</small></div>`)];
+  openDialog('Inventário', cards.length ? `<div class="bag-grid">${cards.join('')}</div>` : '<p class="small-note">O inventário está vazio.</p>', 'worldStore');
 }
-// Ao entrar na bodega: o que é de balcão vai para a despensa (estoque). O que é cru fica no inventário.
+// Saves antigos: o que ainda estava "com o Sadi" e é da bodega vai pro estoque (sem limite de estação).
 // O que o Sadi ganha, colhe ou produz já fica liberado para vender no balcão (salame do Badin, pinhão, bergamota, vinho…).
 const HARVEST_UNLOCKS = ['bergamota', 'pinhao', 'vinho'];
 function unlockGood(k) {
@@ -47,6 +56,19 @@ function unlockGood(k) {
   if (HARVEST_UNLOCKS.includes(k)) valterTip(k);
   return true;
 }
+// Save antigo: o que estava "com o Sadi" e é da bodega passa pro estoque já ao carregar (inventário único).
+{
+  const norm = normalizeSave; normalizeSave = function (s) {
+    s = norm(s); const bag = s.bag || {};
+    for (const k of Object.keys(bag)) {
+      const raw = BAG_RAW[k], target = raw?.to || (GOODS[k] && !raw ? k : null); if (!target || !GOODS[target]) continue;
+      const e = bag[k], n = e.q * (raw?.mult || 1), units = s.stock[target] || 0; if (!(n > 0)) { delete bag[k]; continue; }
+      if (raw?.unlock) s.up[raw.unlock] = true; else if (GOODS[target].unlock) s.up[GOODS[target].unlock] = true;
+      s.avg[target] = ((s.avg[target] ?? GOODS[target].cost) * units + (e.c || 0)) / (units + n); s.stock[target] = units + n; delete bag[k];
+    }
+    return s;
+  };
+}
 function depositBag() {
   const b = bagState(), done = [], kept = [];
   for (const k of Object.keys(b)) {
@@ -54,9 +76,7 @@ function depositBag() {
     if (raw?.unlock && !G.up[raw.unlock]) { G.up[raw.unlock] = true; showBanner(nameOf(target) + ' liberado!', 'A conserva da casa já pode ser vendida no balcão.', 'level'); valterTip('compota'); }
     if (!raw?.unlock) unlockGood(target);
     if (!unlocked(target)) { kept.push(bagName(k)); continue; }
-    const e = b[k], room = Math.max(0, stationCapacity(target) - G.stock[target]), q = Math.min(e.q, Math.floor(room / mult)); if (q <= 0) continue;
-    const cost = e.c * q / e.q, units = G.stock[target], n = q * mult; G.avg[target] = (G.avg[target] * units + cost) / (units + n); G.stock[target] += n;
-    bagTake(k, q); done.push(stockText(target, n) + ' ' + nameOf(target).toLowerCase());
+    const e = b[k], q = e.q, n = q * mult; stockAdd(target, n, e.c); bagTake(k, q); done.push(stockText(target, n) + ' ' + nameOf(target).toLowerCase());
   }
   if (done.length) { showBanner('Guardado na despensa', done.slice(0, 4).join(' · ') + (done.length > 4 ? ' e mais ' + (done.length - 4) : ''), 'gift'); AudioEngine.coins(); }
   if (kept.length) say('Ficou no inventário: ' + kept.join(', ') + '.');
@@ -90,7 +110,7 @@ function goodSource(k) { const store = Object.keys(STORE_GOODS).find(s => STORE_
 function goodPack(k) { return GOODS[k].pack || 6; }
 function goodCard(k) {
   const g = GOODS[k], q = goodPack(k), cost = round(q * g.cost);
-  return `<div class="supply"><span class="icon">${itemIconHTML(k)}</span><div><b>${nameOf(k)}</b><p>Na bodega: <b>${stockText(k)}</b> · no inventário: <b>${bagText(k)}</b></p></div><button class="primary" data-act="storeBuy" data-id="${k}" ${hasCash(cost) ? '' : 'disabled'}>Comprar ${stockText(k, q)} · ${money(cost)}</button></div>`;
+  return `<div class="supply"><span class="icon">${itemIconHTML(k)}</span><div><b>${nameOf(k)}</b><p>No inventário: <b>${stockText(k)}</b></p></div><button class="primary" data-act="storeBuy" data-id="${k}" ${hasCash(cost) ? '' : 'disabled'}>Comprar ${stockText(k, q)} · ${money(cost)}</button></div>`;
 }
 function extraCard(id, icon, name, note, cost, label, ok = true) { return `<div class="supply"><span class="icon">${icon.startsWith('<') ? icon : '<span class="bag-emoji">' + icon + '</span>'}</span><div><b>${name}</b><p>${note}</p></div><button class="primary" data-act="storeExtra" data-id="${id}" ${ok && hasCash(cost) ? '' : 'disabled'}>${label}</button></div>`; }
 function storeShop(id) {
@@ -182,18 +202,25 @@ function campeiroCards() {
     '</div><h3>Equipamento</h3><div class="store-list">' + gear.map(gearCard).join('') + '</div>' + bootsPanel();
 }
 // Venda no Armazém: o que é colhido ou produzido e está no inventário.
-const SELLABLE = ['alface', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'conserva_pepino', 'conserva_codorna', 'bergamota', 'pinhao', 'erva'];
+// A alface colhida e os potes de conserva já entram no estoque como salada, pepino e codorna: vendem por esses nomes.
+const SELLABLE = ['salada', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'pepino', 'codorna', 'bergamota', 'pinhao', 'erva'];
 function sellPrice(k, q) { return round(BAG_RAW[k] ? BAG_RAW[k].value * q : (bagBulk(k) ? q / 1000 * (GOODS[k].price || GOODS[k].cost * 1000) * .4 : (GOODS[k].price || GOODS[k].cost * 2) * .35 * q)); }
+function sellHave(k) { return GOODS[k] && !BAG_RAW[k] ? G.stock[k] || 0 : bagQty(k); }
+function sellLot(k) { return GOODS[k] && !BAG_RAW[k] ? Math.min(sellHave(k), goodPack(k)) : sellHave(k); }
 function sellSection() {
-  const list = SELLABLE.filter(k => bagQty(k) > 0);
-  return '<h3>Vender a colheita</h3>' + (list.length ? '<div class="store-list">' + list.map(k => `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>No inventário: ${bagText(k)}</p></div><button class="primary" data-act="storeSell" data-id="${k}">Vender tudo · ${money(sellPrice(k, bagQty(k)))}</button></div>`).join('') + '</div>' : '<p class="small-note">Traga no inventário o que colher na horta e no curral para vender aqui.</p>');
+  const list = SELLABLE.filter(k => sellHave(k) > 0);
+  return '<h3>Vender a colheita</h3>' + (list.length ? '<div class="store-list">' + list.map(k => { const lot = sellLot(k), all = lot >= sellHave(k), text = GOODS[k] && !BAG_RAW[k] ? stockText(k, lot) : bagText(k, lot); return `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>No inventário: ${GOODS[k] && !BAG_RAW[k] ? stockText(k) : bagText(k)}</p></div><button class="primary" data-act="storeSell" data-id="${k}">${all ? 'Vender tudo' : 'Vender ' + text} · ${money(sellPrice(k, lot))}</button></div>`; }).join('') + '</div>' : '<p class="small-note">Traga o que sobrar da horta, do curral e do rio para vender aqui.</p>');
 }
-function storeSell(k) { const q = bagQty(k); if (!q) return; const v = sellPrice(k, q); bagTake(k, q); G.cash = round(G.cash + v); AudioEngine.coins(); worldSay('Vendeu ' + bagText(k, q) + ' de ' + bagName(k).toLowerCase() + ' por ' + money(v) + '.'); save(); refreshStore(); }
+function storeSell(k) {
+  const q = sellLot(k); if (!q) return; const v = sellPrice(k, q);
+  if (GOODS[k] && !BAG_RAW[k]) G.stock[k] = Math.max(0, (G.stock[k] || 0) - q); else bagTake(k, q);
+  G.cash = round(G.cash + v); AudioEngine.coins(); worldSay('Vendeu ' + (GOODS[k] && !BAG_RAW[k] ? stockText(k, q) : bagText(k, q)) + ' de ' + bagName(k).toLowerCase() + ' por ' + money(v) + '.'); save(); refreshStore();
+}
 // Celular: no lugar do fornecedor, a lista de compras (o que está acabando e onde comprar).
 function physicalShopping() { return !G.testMode; }
 function shoppingListHTML() {
   const low = Object.keys(GOODS).filter(k => unlocked(k) && goodSource(k) && !GOODS[k].noSupplier && G.stock[k] < stationCapacity(k) * .35).sort((a, b) => G.stock[a] / stationCapacity(a) - G.stock[b] / stationCapacity(b));
-  return `<div class="phone-note">O que a bodega vende sai da roça; nas lojas da Fronteira, só o que não dá para plantar nem criar. Ao voltar, o inventário vai para a despensa.</div>` +
+  return `<div class="phone-note">O que a bodega vende sai da roça; nas lojas da Fronteira, só o que não dá para plantar nem criar. Comprou, já está no inventário da bodega.</div>` +
     (low.length ? low.map(k => `<div class="supply"><span class="icon">${itemIconHTML(k)}</span><div><b>${nameOf(k)}</b><p>Bodega: ${stockText(k)} · ${goodSource(k)}</p></div></div>`).join('') : '<p>Estoque em dia. Nada faltando.</p>');
 }
 

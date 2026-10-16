@@ -15,11 +15,11 @@ function baiaCalling() { return missionState('baia')?.status === 'calling'; }
 function baiaMission() { return MISSIONS.find(m => m.id === 'baia'); }
 function baiaGoal() {
   const s = baiaStage();
-  if (s === 'trail') return 'Tem pelo da Baia na boca da gruta da Serra: desça e procure lá dentro';
-  if (s === 'return') return 'Leve a Baia de volta pro Mano Lima, na casa dele (Fronteira)';
-  return 'Procure a Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
+  if (s === 'trail') return 'Tem pelo da Cadela Baia na boca da gruta da Serra: desça e procure lá dentro';
+  if (s === 'return') return 'Leve a Cadela Baia de volta pro Mano Lima, na casa dele (Fronteira)';
+  return 'Procure a Cadela Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
 }
-MISSIONS.push({ id: 'baia', title: 'A Baia sumiu', giver: 'manolima', side: true, after: 'abertura',
+MISSIONS.push({ id: 'baia', title: 'A Cadela Baia sumiu', giver: 'manolima', side: true, after: 'abertura',
   // Uma manhã depois do capítulo 2, com o Sadi na bodega, o Mano Lima entra pela porta.
   // (num dia sem evento no mapa, pra não cruzar com a visita da manhã do evento)
   when: () => missionDone('abertura') && G.day > (missionState('abertura')?.day || 0) && !worldOut && G.phase === 'prep' && !tutorialActive() && !mapEventFor(),
@@ -37,20 +37,20 @@ function baiaCall() {
   playSteps([{ view: 'bodega' }, { do: () => { G.player = { ...G.player, x: 820, y: 640, dx: 1, dy: 0, walk: false }; } }, { fade: 'in', time: .4 },
     { actor: 'manolima', x: ENTRY.x, y: ENTRY.y, dx: -1 }, { do: () => AudioEngine.doorChime() }, { walk: 'manolima', to: { x: 930, y: 650 } },
     { say: 'manolima', text: 'Bah, vivente… desculpa entrar assim, de manhã cedo.' },
-    { say: 'manolima', text: 'A Baia, minha cadela, fugiu ontem de noite. Saiu correndo atrás de não sei o quê e não voltou mais.' },
-    { say: 'sadi', text: 'A Baia? Aquela de pelo baio, que dorme no teu tapete?' },
+    { say: 'manolima', text: 'A Cadela Baia fugiu ontem de noite. Saiu correndo atrás de não sei o quê e não voltou mais.' },
+    { say: 'sadi', text: 'A Cadela Baia? Aquela de pelo baio, que dorme no teu tapete?' },
     { say: 'manolima', text: 'Essa mesma. Passa lá em casa quando puder, que eu te conto onde ela costuma andar. Índio véio já não tem perna pra procurar sozinho.' },
     { walk: 'manolima', to: { x: ENTRY.x, y: ENTRY.y } }], 'baia-chamado', () => {
     G.missions.baia = { status: 'calling', day: G.day }; save();
-    showBanner('Mano Lima quer falar com você', 'Casa do Mano Lima, na Fronteira: a Baia sumiu', 'info', { world: true });
+    showBanner('Mano Lima quer falar com você', 'Casa do Mano Lima, na Fronteira: a Cadela Baia sumiu', 'info', { world: true });
   });
 }
 // ---------- 2. Na casa do Mano Lima: aceitar a missão ----------
 function baiaOffer() {
   const i = PEOPLE.findIndex(p => p.id === 'manolima'), m = baiaMission();
-  talk([['manolima', 'Chegou, vivente. Senta aí que o mate tá pronto.'], ['manolima', 'A Baia some às vezes, mas sempre volta no outro dia. Dessa vez já faz duas noites…'],
+  talk([['manolima', 'Chegou, vivente. Senta aí que o mate tá pronto.'], ['manolima', 'A Cadela Baia some às vezes, mas sempre volta no outro dia. Dessa vez já faz duas noites…'],
     ['manolima', 'Ela gosta de andar pela Fronteira e pela estrada da Serra, farejando bicho. Procura pelo mapa, olha nos cantos. Se achar, me traz ela de volta?']],
-  () => openDialog('A Baia sumiu', `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>Mano Lima</b></p><p>Procurar a Baia pelo mapa e levar ela de volta pra casa dele.</p></div></div><h3>Recompensa</h3>${rewardHTML(m.reward)}<div class="actions"><button class="primary" data-act="baiaAccept">Aceitar: procurar a Baia</button><button data-act="close">Agora não</button></div>`, 'baiaOffer'), 'Continuar');
+  () => openDialog('A Cadela Baia sumiu', `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>Mano Lima</b></p><p>Procurar a Cadela Baia pelo mapa e levar ela de volta pra casa dele.</p></div></div><h3>Recompensa</h3>${rewardHTML(m.reward)}<div class="actions"><button class="primary" data-act="baiaAccept">Aceitar: procurar a Cadela Baia</button><button data-act="close">Agora não</button></div>`, 'baiaOffer'), 'Continuar');
 }
 function baiaAccept() {
   if (!baiaCalling()) return; closeDialog(true); baiaArc().stage = 'search'; startMission(baiaMission());
@@ -62,7 +62,7 @@ function baiaTrailTick() {
   baiaArc().stage = 'trail'; keys.clear(); save();
   playSteps([{ caption: 'Você pisou no rastro do sanguanel…', time: 2.8 }], 'baia-rastro', () => talk([
     ['sadi', '(Um tufo de pelo amarelado preso na pedra, bem na boca da gruta…)'],
-    ['sadi', '(É pelo de cachorro. Pelo baio. A Baia deve ter entrado aí dentro, ou alguma coisa levou ela.)'],
+    ['sadi', '(É pelo de cachorro. Pelo baio. A Cadela Baia deve ter entrado aí dentro, ou alguma coisa levou ela.)'],
     ['sadi', '(Sai um vento frio lá de baixo, com cheiro de bicho. Ela deve estar por aí.)']], null, 'Descer na gruta'));
 }
 // ---------- 4. No segundo andar: a Baia e o cusco véio ----------
@@ -80,7 +80,7 @@ function baiaCaveSpot(run) {
 function baiaInCave() { return ['search', 'trail'].includes(baiaStage()) && inCave() && caveState().floor === BAIA_FLOOR; }
 function baiaFound() {
   const withCusco = !cuscoAdopted();
-  talk([['card', '<b>🐕 A Baia!</b><br>Encolhida atrás de uma pedra, tremendo de frio: a Baia, de pelo baio.' + (withCusco ? '<br><br>E do lado dela, sem largar um minuto, um cusco véio caramelo, magrinho, de orelha caída.' : ''), 'Caverna da Serra · andar ' + BAIA_FLOOR],
+  talk([['card', '<b>🐕 A Cadela Baia!</b><br>Encolhida atrás de uma pedra, tremendo de frio: a Cadela Baia, de pelo baio.' + (withCusco ? '<br><br>E do lado dela, sem largar um minuto, um cusco véio caramelo, magrinho, de orelha caída.' : ''), 'Caverna da Serra · andar ' + BAIA_FLOOR],
     ['sadi', 'Baia! O Mano Lima tá louco atrás de ti, guria.'], ...(withCusco ? [['sadi', 'E tu, cusco véio? Ficou cuidando dela aqui embaixo, é?']] : [])],
   () => withCusco ? openDialog('Um cusco véio', '<div class="rpg-speaker"><span class="portrait portrait-phone" style="width:88px;height:88px">🐕</span><div><p>O cusco véio te olha, abana o rabo devagar e encosta o focinho na tua mão. Não tem coleira, não tem dono.</p><p>Leva ele contigo?</p></div></div><div class="actions"><button class="primary" data-act="baiaCusco" data-id="sim">Adotar o cusco véio</button><button data-act="baiaCusco" data-id="nao">Deixar ele seguir o caminho dele</button></div>', 'baiaCusco') : baiaTake(), 'Continuar');
 }
@@ -92,7 +92,7 @@ function baiaCuscoChoice(yes) {
 }
 function baiaTake() {
   baiaArc().stage = 'return'; save();
-  talk([['dica', 'Leve a <b>Baia</b> de volta pro <b>Mano Lima</b>, na casa dele, na Fronteira: ela vai junto contigo. Mesmo depois das 23h30 ele vai estar te esperando, de luz acesa.', 'A Baia sumiu']], null, 'Bora pra casa');
+  talk([['dica', 'Leve a <b>Cadela Baia</b> de volta pro <b>Mano Lima</b>, na casa dele, na Fronteira: ela vai junto contigo. Mesmo depois das 23h30 ele vai estar te esperando, de luz acesa.', 'A Cadela Baia sumiu']], null, 'Bora pra casa');
 }
 function drawCaveDogs(layers) {
   if (!baiaInCave()) return; const p = baiaCaveSpot(caveFloorRun()); if (!p) return;
@@ -148,7 +148,7 @@ FURN.balcaoMano = i => {
   };
   const marker = questMarker; questMarker = function (id) { if (questKey(id) === 'manolima') { if (baiaCalling()) return 'new'; if (missionActive('baia') && baiaReturning()) return 'deliver'; } return marker(id); };
   const tl = trackerLines; trackerLines = function () {
-    const base = tl(), g = baiaCalling() ? { icon: '📣', title: 'A Baia sumiu', goal: 'Mano Lima quer falar com você · casa dele, na Fronteira', kind: 'side' } : missionActive('baia') ? { icon: '🐕', title: 'A Baia sumiu', goal: baiaGoal(), kind: 'side' } : null;
+    const base = tl(), g = baiaCalling() ? { icon: '📣', title: 'A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · casa dele, na Fronteira', kind: 'side' } : missionActive('baia') ? { icon: '🐕', title: 'A Cadela Baia sumiu', goal: baiaGoal(), kind: 'side' } : null;
     if (!g) return base; const k = base.findIndex(l => l.kind === 'side'); if (k >= 0) base[k] = g; else if (base.length < 2) base.push(g); else if (base[1].kind !== 'story') base[1] = g; return base;
   };
   // A casa do Mano Lima: aberta mesmo tarde da noite quando o Sadi traz a Baia; e o balcão nos fundos.
@@ -156,10 +156,10 @@ FURN.balcaoMano = i => {
   const casa = WORLD_MAPS['casa:manolima'];
   casa.items.push({ kind: 'balcaoMano', ...MANO_COUNTER, get label() { return 'Balcão do Mano Lima · melhorias pro facão'; }, get act() { return manoShopOpen() ? manoShop : undefined; } });
   const cwalk = casa.canWalk; casa.canWalk = function (x, y) { const c = MANO_COUNTER; if (x > c.x - 6 && x < c.x + c.w + 6 && y > c.y - 6 && y < c.y + c.h + 6) return false; return cwalk.call(this, x, y); };
-  const csp = casa.spots; casa.spots = function () { const list = csp.call(this), h = list.find(s => s.id === 'home:manolima'); if (h) { if (baiaCalling()) h.label = 'Falar com o Mano Lima (a Baia sumiu)'; else if (missionActive('baia') && baiaReturning()) h.label = 'Devolver a Baia pro Mano Lima'; } return list; };
+  const csp = casa.spots; casa.spots = function () { const list = csp.call(this), h = list.find(s => s.id === 'home:manolima'); if (h) { if (baiaCalling()) h.label = 'Falar com o Mano Lima (a Cadela Baia sumiu)'; else if (missionActive('baia') && baiaReturning()) h.label = 'Devolver a Cadela Baia pro Mano Lima'; } return list; };
   // Na caverna: os dois cachorros no segundo andar.
   const cave = WORLD_MAPS.caverna, cvsp = cave.spots, cvdraw = cave.draw;
-  cave.spots = function () { const list = cvsp.call(this); if (baiaInCave()) { const p = baiaCaveSpot(caveFloorRun()); if (p) list.push({ id: 'cave:baia', x: p.x + 20, y: p.y + 24, radius: 100, label: cuscoAdopted() ? 'A Baia!' : 'A Baia e um cusco véio', act: baiaFound }); } return list; };
+  cave.spots = function () { const list = cvsp.call(this); if (baiaInCave()) { const p = baiaCaveSpot(caveFloorRun()); if (p) list.push({ id: 'cave:baia', x: p.x + 20, y: p.y + 24, radius: 100, label: cuscoAdopted() ? 'A Cadela Baia!' : 'A Cadela Baia e um cusco véio', act: baiaFound }); } return list; };
   cave.draw = function (view, seen, layers) { cvdraw.call(this, view, seen, layers); drawCaveDogs(layers); };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); baiaTrailTick(); baiaFollowTick(dt); };
   document.addEventListener('DOMContentLoaded', () => { const land = worldLandscape; worldLandscape = function (M, seen, layers, view) { land(M, seen, layers, view); baiaFollowLayers(seen, layers); }; });

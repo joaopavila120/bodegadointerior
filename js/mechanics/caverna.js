@@ -17,7 +17,60 @@ const CAVE_BEASTS = {
 Object.assign(BAG_RAW, { ametista: { name: 'Ametista', icon: '💜', value: 18, note: 'pedra da caverna da Serra; o Armazém compra' }, agata: { name: 'Ágata', icon: '🟠', value: 10, note: 'pedra da caverna da Serra; o Armazém compra' } });
 SELLABLE.push('ametista', 'agata');
 
+// ---------- Sons da caverna ----------
+// Cada bicho tem a sua voz: o javali guincha, o sanguanel dá risadinha, o boitatá chia, o lobisomem rosna e uiva, a mula
+// relincha. O facão faz baque de carne ou estalo de pedra; o Sadi geme quando apanha e o coração bate com pouca vida.
+Object.assign(AudioEngine, {
+  // Voz de bicho: a altura corre pelos pontos dados, com vibrato e um filtro de "boca".
+  caveVoice(points, dur, { vol = .06, type = 'sawtooth', formant = 1200, q = 2, vib = 0, rate = 0, delay = 0 } = {}) {
+    if (!this.on || !this.ctx || this.ctx.state !== 'running') return;
+    const c = this.ctx, now = c.currentTime + delay, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(points[0], now); points.slice(1).forEach((p, i) => o.frequency.linearRampToValueAtTime(p, now + dur * (i + 1) / (points.length - 1)));
+    if (vib) { const l = c.createOscillator(), d = c.createGain(); l.frequency.value = rate; d.gain.value = vib; l.connect(d); d.connect(o.frequency); l.start(now); l.stop(now + dur + .05); }
+    f.type = 'bandpass'; f.frequency.value = formant; f.Q.value = q;
+    g.gain.setValueAtTime(.0001, now); g.gain.exponentialRampToValueAtTime(vol, now + .02); g.gain.setValueAtTime(vol, now + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, now + dur);
+    o.connect(f); f.connect(g); g.connect(this.out()); o.start(now); o.stop(now + dur + .05);
+  },
+  caveCry(kind, dead = false) {
+    if (kind === 'javali') { this.caveVoice([620, 1150, 820, 540], dead ? .55 : .2, { formant: 1400, q: 3, vol: .07, vib: 40, rate: 30 }); if (dead) this.caveVoice([170, 90], .4, { formant: 400, vol: .06, delay: .45 }); }
+    else if (kind === 'sanguanel') { for (let i = 0; i < (dead ? 3 : 2); i++) this.caveVoice([1100 - i * 120, 1400 - i * 150], .07, { type: 'triangle', formant: 1500, q: 1, vol: .05, delay: i * .09 }); if (dead) this.caveVoice([1600, 300], .7, { type: 'sine', formant: 900, q: .7, vol: .05, delay: .27 }); }
+    else if (kind === 'boitata') { this.hiss(dead ? .9 : .25, dead ? .1 : .06, 2400); this.pop(1800, .12, .04); if (dead) this.fireOut(); }
+    else if (kind === 'lobisomem') { if (dead) this.caveVoice([320, 560, 600, 380], 1.3, { formant: 900, q: 1.5, vol: .07, vib: 12, rate: 6 }); else this.caveGrowl(.3, .08); }
+    else if (kind === 'mula') this.caveVoice([520, 940, 780, 420], dead ? .8 : .35, { formant: 1300, q: 2.5, vol: .065, vib: 70, rate: 19 });
+  },
+  caveGrowl(dur = .4, vol = .07) { this.caveVoice([95, 120, 85], dur, { formant: 500, q: 1.2, vol, vib: 25, rate: 23 }); this.noise(dur * .8, vol * .8, 300); },
+  caveSnort() { this.noise(.16, .2, 650); this.note(130, .1, 'triangle', .06); setTimeout(() => this.noise(.12, .16, 800), 170); },
+  caveFireball() { this.swoosh(.06); this.hiss(.35, .05, 1800); },
+  caveGiggle() { for (let i = 0; i < 3; i++) this.caveVoice([1250 + i * 60, 1500 + i * 60], .06, { type: 'triangle', formant: 1600, q: 1, vol: .03, delay: i * .08 }); },
+  caveFlesh() { this.note(105 + Math.random() * 25, .08, 'triangle', .14); this.pop(800 + Math.random() * 400, .2, .05); this.noise(.07, .12, 1600); },
+  caveStone() { this.pop(3200 + Math.random() * 600, .18, .03); this.note(380, .05, 'square', .02); this.note(170, .07, 'triangle', .07); },
+  caveCrumble() { this.noise(.35, .24, 550); this.note(65, .22, 'triangle', .13); [0, 50, 110, 170].forEach(t => setTimeout(() => this.pop(1200 + Math.random() * 1800, .1, .04), t)); },
+  caveGem() { [1568, 2093, 2637, 3136].forEach((f, i) => { this.note(f, .3, 'sine', .05, i * .06); this.note(f * 2.01, .15, 'sine', .012, i * .06); }); },
+  caveHeal() { this.gulp(); [784, 988, 1318].forEach((f, i) => this.note(f, .16, 'triangle', .045, .12 + i * .07)); },
+  caveOuch() { this.punch(1.1); this.ouch(); this.note(70, .18, 'triangle', .1); },
+  caveHeartbeat() { this.note(58, .12, 'sine', .16); this.note(52, .12, 'sine', .12, .16); },
+  caveLadder() { this.scaleDone(); this.note(392, .3, 'triangle', .04, .25); },
+  caveSteps() { [0, .16, .32, .48].forEach(t => this.note(90 + Math.random() * 20, .06, 'triangle', .09, t)); this.creak(); },
+  caveChestOpen() { this.creak(); [659, 880, 1175, 1568].forEach((f, i) => this.note(f, .22, 'triangle', .05, .25 + i * .08)); setTimeout(() => this.coins(), 450); },
+  caveFaintSound() { [392, 330, 262, 196].forEach((f, i) => this.note(f, .3, 'triangle', .06, i * .16)); this.note(60, .8, 'sine', .1, .6); },
+  caveDrip() { this.bloop(1300 + Math.random() * 700, .022); }
+});
+
 let caveRun = null;
+// O que rendeu a descida, da boca da gruta até subir de volta (aparece no canto e no saldo ao sair).
+let caveTrip = null;
+function caveTripStart() { const f = caveState().floor; caveTrip = { cash: 0, ametista: 0, agata: 0, kills: 0, cards: [], from: f, deepest: f }; return caveTrip; }
+function caveTripNow() { return caveTrip || caveTripStart(); }
+// Quadradinhos de achado (baú, saldo da descida e desmaio): ícone, quanto e o quê.
+function caveLootTiles(t) {
+  const l = []; if (t.cash) l.push(['<span class="bag-emoji">🪙</span>', money(t.cash), 'moedas']);
+  for (const k of ['ametista', 'agata']) if (t[k]) l.push([bagIcon(k), t[k], BAG_RAW[k].name + (t[k] > 1 ? 's' : '')]);
+  if (t.heal) l.push(['<span class="bag-emoji">❤️</span>', '+' + t.heal, 'de vida']);
+  for (const c of t.cards || []) l.push(['<span class="bag-emoji">🃏</span>', cardDef(c).name, 'figurinha nova']);
+  if (t.kills) l.push(['<span class="bag-emoji">🔪</span>', t.kills, t.kills === 1 ? 'bicho derrubado' : 'bichos derrubados']);
+  return l;
+}
+function caveLootHTML(t) { const l = caveLootTiles(t); return l.length ? `<div class="bag-grid cave-loot">${l.map(([icon, big, small]) => `<div class="bag-item">${icon}<b>${big}</b><small>${small}</small></div>`).join('')}</div>` : ''; }
 function caveState() { G.cave ??= { facao: false, floor: 1, deepest: 1, hp: CAVE.maxHp, vo: false }; G.cave.up ??= {}; return G.cave; }
 // A gruta só aparece depois de aceitar procurar a Baia (ou pra quem já desceu nela antes).
 function caveOpen() { return !!G.cave?.facao || ['active', 'done'].includes(missionState('baia')?.status); }
@@ -92,19 +145,25 @@ function caveDoor() {
 }
 function enterCave(floor) {
   const st = caveState(); closeDialog(true); st.floor = Math.max(1, Number(floor) || 1); st.hp = Math.max(st.hp, caveMaxHp()); caveRun = null;
-  worldOut.back = { map: 'serra', x: CAVE.door.x, y: CAVE.door.y + 70 };
-  const s = caveCenter(...CAVE.start); switchMap({ map: 'caverna', x: s.x, y: s.y, title: 'Caverna da Serra · andar ' + st.floor }); save();
+  worldOut.back = { map: 'serra', x: CAVE.door.x, y: CAVE.door.y + 70 }; caveTripStart();
+  const s = caveCenter(...CAVE.start); switchMap({ map: 'caverna', x: s.x, y: s.y, title: 'Caverna da Serra · andar ' + st.floor }); AudioEngine.caveSteps(); save();
 }
 function caveDescend() {
   const st = caveState(), run = caveFloorRun(); if (!run.ladder.shown) return;
-  st.floor++; st.deepest = Math.max(st.deepest, st.floor); st.hp = Math.min(caveMaxHp(), st.hp + CAVE.heal); caveRun = null;
+  st.floor++; st.deepest = Math.max(st.deepest, st.floor); st.hp = Math.min(caveMaxHp(), st.hp + CAVE.heal); caveRun = null; const t = caveTripNow(); t.deepest = Math.max(t.deepest, st.floor);
   const s = caveCenter(...CAVE.start); switchMap({ map: 'caverna', x: s.x, y: s.y, title: 'Andar ' + st.floor + (st.floor === CAVE.deep && !st.vo ? ' · tem coisa do vô por aqui' : '') });
-  AudioEngine.swoosh(.05); save();
+  AudioEngine.caveSteps(); save();
 }
-function caveLeave(text) { const st = caveState(); st.hp = caveMaxHp(); caveRun = null; $('caveAttackButton')?.classList.add('hidden'); switchMap({ map: 'serra', x: CAVE.door.x, y: CAVE.door.y + 70, title: text || 'Serra Gaúcha' }); save(); }
+// Subiu pela corda: o saldo da descida, se rendeu alguma coisa.
+function caveLeave(text, quiet = false) {
+  const st = caveState(), t = caveTrip; st.hp = caveMaxHp(); caveRun = null; caveTrip = null; $('caveAttackButton')?.classList.add('hidden');
+  switchMap({ map: 'serra', x: CAVE.door.x, y: CAVE.door.y + 70, title: text || 'Serra Gaúcha' }); save();
+  if (!quiet && t && caveLootTiles(t).length) { AudioEngine.coins(); talk([['card', `<b>🪢 De volta à Serra</b><br>${t.deepest > t.from ? 'Desceu do andar ' + t.from + ' até o ' + t.deepest : 'Explorou o andar ' + t.from}. Trouxe:${caveLootHTML(t)}`, 'Saldo da descida']], null, 'Beleza'); }
+  return t;
+}
 function caveFaint() {
-  const st = caveState(), lost = Math.min(50, Math.round(G.cash * .1)); G.cash = round(G.cash - lost); st.floor = 1; caveLeave('Serra Gaúcha');
-  talk([['card', `<b>😵 Desmaiou na caverna</b><br>Acordou na boca da gruta, com a cabeça doendo e o bolso mais leve (−${money(lost)}). Dizem que foi o Badin que te puxou pela corda.`, 'Caverna da Serra'], ['badin', 'Ô, Sadi! Lá embaixo não é lugar de ir com a barriga vazia, capaz!']], null, 'Levantar');
+  const st = caveState(), lost = Math.min(50, Math.round(G.cash * .1)); G.cash = round(G.cash - lost); st.floor = 1; AudioEngine.caveFaintSound(); const t = caveLeave('Serra Gaúcha', true), kept = t ? caveLootHTML(t) : '';
+  talk([['card', `<b>😵 Desmaiou na caverna</b><br>Acordou na boca da gruta, com a cabeça doendo e o bolso mais leve (−${money(lost)}). Dizem que foi o Badin que te puxou pela corda.${kept ? '<br>O que você achou lá embaixo ficou com você:' + kept : ''}`, 'Caverna da Serra'], ['badin', 'Ô, Sadi! Lá embaixo não é lugar de ir com a barriga vazia, capaz!']], null, 'Levantar');
 }
 
 // ---------- Facão ----------
@@ -112,33 +171,39 @@ function caveAttack() {
   if (!inCave() || modal || scene || worldTalkOpen()) return;
   const run = caveFloorRun(), p = worldOut; if (run.cd > 0) return;
   run.cd = caveCd(); const ang = Math.atan2(p.dy || 0, p.dx || (p.dy ? 0 : 1)); run.swing = { t: .2, ang };
-  AudioEngine.swoosh(.08); let hit = false;
+  AudioEngine.swoosh(.08); let flesh = false, stone = false;
   const inArc = (x, y, reach) => { const d = Math.hypot(x - p.x, y - (p.y - 30)); if (d > reach) return false; const a = Math.atan2(y - (p.y - 30), x - p.x); return Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) < 1.25 || d < 40; };
   for (const b of run.beasts) if (b.hp > 0 && inArc(b.x, b.y - 20, caveReach())) {
-    hit = true; b.hp -= caveDmg(); b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
+    b.hp -= caveDmg(); b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
     if (b.state === 'charge' || b.state === 'lunge') b.state = 'rest', b.t = .5;
-    effect('−' + caveDmg(), b.x, b.y - 80, '#ffd2a0'); if (b.hp <= 0) caveKill(b);
+    // Acertou: baque, o grito do bicho, faísca do facão e uma travadinha na tela (só um grito por golpe).
+    if (!flesh) { AudioEngine.caveFlesh(); AudioEngine.caveCry(b.kind, b.hp <= 0); }
+    flesh = true; run.freeze = .06; fxStars(b.x, b.y - 50, 3);
+    effect('−' + caveDmg(), b.x + (Math.random() - .5) * 20, b.y - 80, '#ffd2a0', 21); if (b.hp <= 0) caveKill(b);
   }
-  for (const r of run.rocks) if (r.hp > 0 && inArc(r.x, r.y - 10, caveReach() - 15)) { hit = true; r.hp--; effect(r.hp ? '✦' : '', r.x, r.y - 30, '#e8e0d0'); if (r.hp <= 0) caveBreak(r); }
-  if (hit) AudioEngine.tick();
+  for (const r of run.rocks) if (r.hp > 0 && inArc(r.x, r.y - 10, caveReach() - 15)) { stone = true; r.hp--; fxPuffs(r.x, r.y - 20, 3, 50, '#8a7d70'); if (r.hp <= 0) caveBreak(r); }
+  if (stone) AudioEngine.caveStone();
 }
 function caveKill(b) {
   const run = caveFloorRun(), B = CAVE_BEASTS[b.kind], [lo, hi] = B.cash, cash = lo + Math.floor(Math.random() * (hi - lo + 1)) + Math.floor(run.floor / 3);
   run.drops.push({ x: b.x, y: b.y, k: 'moeda', q: cash }); if (Math.random() < .12) run.drops.push({ x: b.x + 20, y: b.y + 8, k: 'pinhao', q: 1 });
-  effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac'); AudioEngine.coins?.(); G.stats.caveKills = (G.stats.caveKills || 0) + 1;
+  const smoke = { boitata: '#ff9a40', sanguanel: '#b8a8d8', lobisomem: '#5a4a3a', mula: '#ffb060' }[b.kind] || '#8a7a6a';
+  fxPuffs(b.x, b.y - 30, 12, 140, smoke); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18); G.stats.caveKills = (G.stats.caveKills || 0) + 1; caveTripNow().kills++;
   caveReveal();
 }
+const CAVE_ROCK_LOOT = { ametista: 'Ametista!', agata: 'Ágata!', pinhao: 'Pinhão: recupera a vida' };
 function caveBreak(r) {
-  const run = caveFloorRun(); AudioEngine.bad?.();
-  if (r.loot) run.drops.push({ x: r.x, y: r.y, k: r.loot, q: 1 });
-  if (r.ladder) { run.ladder.shown = true; effect('Uma escada embaixo da pedra!', r.x, r.y - 70, '#fff2b0'); }
+  const run = caveFloorRun(); AudioEngine.caveCrumble(); fxPuffs(r.x, r.y - 16, 9, 110, '#8a7d70');
+  for (let i = 0; i < 8; i++) fxAdd('shard', r.x, r.y - 14, { vx: fxRand(-170, 170), vy: fxRand(-220, -80), g: 640, life: fxRand(.6, 1), size: fxRand(4, 8), vr: fxRand(-14, 14), floor: r.y + fxRand(2, 18), color: pick(['#6a5e52', '#7d7064', '#54473a']) });
+  if (r.loot) { run.drops.push({ x: r.x, y: r.y, k: r.loot, q: 1 }); effect((BAG_RAW[r.loot]?.icon || '🌰') + ' ' + CAVE_ROCK_LOOT[r.loot], r.x, r.y - 60, r.loot === 'pinhao' ? '#d8ffac' : '#e8d0ff', 17); if (r.loot !== 'pinhao') AudioEngine.caveGem(); }
+  if (r.ladder) { run.ladder.shown = true; run.ladderPing = 2.5; AudioEngine.caveLadder(); effect('Uma escada embaixo da pedra!', r.x, r.y - 90, '#fff2b0', 18); }
 }
 // Sem bicho no andar, a escada aparece.
-function caveReveal() { const run = caveFloorRun(); if (!run.ladder.shown && run.beasts.every(b => b.hp <= 0)) { run.ladder.shown = true; const { x, y } = run.ladder; effect('A escada pro andar de baixo!', x, y - 70, '#fff2b0'); for (const r of run.rocks) if (r.ladder) r.ladder = false; } }
+function caveReveal() { const run = caveFloorRun(); if (!run.ladder.shown && run.beasts.every(b => b.hp <= 0)) { run.ladder.shown = true; run.ladderPing = 2.5; AudioEngine.caveLadder(); const { x, y } = run.ladder; effect('A escada pro andar de baixo!', x, y - 70, '#fff2b0', 18); for (const r of run.rocks) if (r.ladder) r.ladder = false; } }
 function caveHurt(dmg, from) {
   const run = caveFloorRun(), st = caveState(); if (run.inv > 0) return;
-  st.hp = Math.max(0, st.hp - dmg); run.inv = .9; run.hurt = .3; AudioEngine.bad();
-  effect('−' + dmg, worldOut.x, worldOut.y - 130, '#ff8a7a');
+  st.hp = Math.max(0, st.hp - dmg); run.inv = .9; run.hurt = .3; run.shake = .3; AudioEngine.caveOuch();
+  effect('−' + dmg, worldOut.x, worldOut.y - 130, '#ff8a7a', 24);
   const d = Math.hypot(worldOut.x - from.x, worldOut.y - from.y) || 1; for (let k = 0; k < 6; k++) { const nx = worldOut.x + (worldOut.x - from.x) / d * 10, ny = worldOut.y + (worldOut.y - from.y) / d * 10; if (caveFree(nx, ny, 20)) { worldOut.x = nx; worldOut.y = ny; } }
   if (st.hp <= 0) caveFaint();
 }
@@ -147,16 +212,23 @@ function caveMove(b, dx, dy) { let ok = true; if (caveFree(b.x + dx, b.y, 26)) b
 
 // ---------- Bichos ----------
 function caveTick(dt) {
-  const run = caveFloorRun(), p = worldOut, st = caveState(); run.t += dt; run.cd = Math.max(0, run.cd - dt); run.inv = Math.max(0, run.inv - dt); run.hurt = Math.max(0, run.hurt - dt);
+  const run = caveFloorRun(), p = worldOut, st = caveState(), t = caveTripNow(); run.t += dt; run.cd = Math.max(0, run.cd - dt); run.inv = Math.max(0, run.inv - dt); run.hurt = Math.max(0, run.hurt - dt);
+  run.shake = Math.max(0, (run.shake || 0) - dt); run.ladderPing = Math.max(0, (run.ladderPing || 0) - dt);
   if (run.swing && (run.swing.t -= dt) <= 0) run.swing = null;
-  for (const b of run.beasts) if (b.hp > 0) caveBeastTick(b, dt, run, p);
-  for (const s of run.shots) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (caveWall(s.x, s.y)) s.life = 0; else if (Math.hypot(s.x - p.x, s.y - (p.y - 40)) < 30) { s.life = 0; caveHurt(s.dmg, s); } }
-  run.shots = run.shots.filter(s => s.life > 0);
+  // Pouca vida: o coração bate forte. De vez em quando, uma gota pinga do teto.
+  if (st.hp <= caveMaxHp() * .3) { run.beat = (run.beat ?? 0) - dt; if (run.beat <= 0) { run.beat = .85; AudioEngine.caveHeartbeat(); } }
+  run.drip = (run.drip ?? 2) - dt; if (run.drip <= 0) { run.drip = 2.5 + Math.random() * 4; AudioEngine.caveDrip(); }
+  if (run.freeze > 0) run.freeze -= dt;
+  else {
+    for (const b of run.beasts) if (b.hp > 0) caveBeastTick(b, dt, run, p);
+    for (const s of run.shots) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (caveWall(s.x, s.y)) s.life = 0; else if (Math.hypot(s.x - p.x, s.y - (p.y - 40)) < 30) { s.life = 0; caveHurt(s.dmg, s); } }
+    run.shots = run.shots.filter(s => s.life > 0);
+  }
   for (const d of run.drops) if (!d.got && Math.hypot(d.x - p.x, d.y - p.y) < 46) {
     d.got = true;
-    if (d.k === 'moeda') { G.cash = round(G.cash + d.q); effect('+' + money(d.q), d.x, d.y - 50, '#ffe27a'); AudioEngine.coins?.(); }
-    else if (d.k === 'pinhao') { st.hp = Math.min(caveMaxHp(), st.hp + 15); effect('+15 ❤ pinhão', d.x, d.y - 50, '#d8ffac'); AudioEngine.tick(); }
-    else { bagAdd(d.k, d.q); effect(BAG_RAW[d.k].icon + ' ' + BAG_RAW[d.k].name, d.x, d.y - 50, '#e8d0ff'); AudioEngine.heart(); }
+    if (d.k === 'moeda') { G.cash = round(G.cash + d.q); t.cash += d.q; effect('+' + money(d.q), d.x, d.y - 50, '#ffe27a', 18); AudioEngine.coins(); }
+    else if (d.k === 'pinhao') { st.hp = Math.min(caveMaxHp(), st.hp + 15); effect('+15 ❤ pinhão', d.x, d.y - 50, '#d8ffac', 18); fxHearts(p.x, p.y - 120, 2); AudioEngine.caveHeal(); }
+    else { bagAdd(d.k, d.q); t[d.k] = (t[d.k] || 0) + d.q; effect(BAG_RAW[d.k].icon + ' ' + BAG_RAW[d.k].name + ' · agora ' + bagQty(d.k), d.x, d.y - 50, '#e8d0ff', 18); AudioEngine.caveGem(); }
   }
   run.drops = run.drops.filter(d => !d.got);
   const btn = $('caveAttackButton'); if (btn) btn.classList.toggle('hidden', !inCave());
@@ -167,36 +239,43 @@ function caveBeastTick(b, dt, run, p) {
   const toward = sp => caveMove(b, dxp / dist * sp * dt, dyp / dist * sp * dt);
   const roam = () => { if (b.t <= 0) { const a = Math.random() * Math.PI * 2; b.vx = Math.cos(a); b.vy = Math.sin(a); b.t = 1 + Math.random() * 1.5; } if (!caveMove(b, b.vx * B.speed * .5 * dt, b.vy * B.speed * .5 * dt)) b.t = 0; if (Math.abs(b.vx) > .2) b.dx = b.vx < 0 ? -1 : 1; };
   if (b.kind === 'javali' || b.kind === 'mula') {
-    if (b.state === 'roam') { roam(); if (dist < 360) { b.state = 'windup'; b.t = b.kind === 'mula' ? .45 : .6; } }
+    if (b.state === 'roam') { roam(); if (dist < 360) { b.state = 'windup'; b.t = b.kind === 'mula' ? .45 : .6; AudioEngine.caveSnort(); } }
     else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'charge'; b.t = .75; b.vx = dxp / dist; b.vy = dyp / dist; b.dx = b.vx < 0 ? -1 : 1; } }
     else if (b.state === 'charge') { const sp = b.kind === 'mula' ? 480 : 420; if (!caveMove(b, b.vx * sp * dt, b.vy * sp * dt) || b.t <= 0) { b.state = 'rest'; b.t = .7; } }
     else if (b.t <= 0) b.state = 'roam';
   } else if (b.kind === 'sanguanel') {
     toward(B.speed * (.7 + .3 * Math.sin(run.t * 6 + b.x)));
-    if (b.t <= 0) { b.t = 3 + Math.random() * 1.5; for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, nx = p.x + Math.cos(a) * 170, ny = p.y + Math.sin(a) * 130; if (caveFree(nx, ny, 26)) { fxPuffs?.(b.x, b.y - 20, 6, 40, '#b8a8d8'); b.x = nx; b.y = ny; break; } } }
+    if (b.t <= 0) { b.t = 3 + Math.random() * 1.5; for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, nx = p.x + Math.cos(a) * 170, ny = p.y + Math.sin(a) * 130; if (caveFree(nx, ny, 26)) { fxPuffs(b.x, b.y - 20, 6, 40, '#b8a8d8'); b.x = nx; b.y = ny; AudioEngine.caveGiggle(); break; } } }
   } else if (b.kind === 'boitata') {
     if (dist < 220) toward(-B.speed); else if (dist > 320) toward(B.speed); else roam();
-    if (b.t <= 0 && dist < 520) { b.t = 2.6; const sp = 260; run.shots.push({ x: b.x, y: b.y - 30, vx: dxp / dist * sp, vy: (dyp - 30) / dist * sp, life: 2.6, dmg: B.dmg }); }
+    if (b.t <= 0 && dist < 520) { b.t = 2.6; const sp = 260; run.shots.push({ x: b.x, y: b.y - 30, vx: dxp / dist * sp, vy: (dyp - 30) / dist * sp, life: 2.6, dmg: B.dmg }); AudioEngine.caveFireball(); }
   } else if (b.kind === 'lobisomem') {
     if (b.state === 'lunge') { if (!caveMove(b, b.vx * 380 * dt, b.vy * 380 * dt) || b.t <= 0) { b.state = 'rest'; b.t = 1.1; } }
     else if (b.state === 'rest') { if (b.t <= 0) b.state = 'chase'; }
-    else { toward(dist < 520 ? B.speed : 0); if (dist < 170 && b.t <= 0) { b.state = 'lunge'; b.t = .35; b.vx = dxp / dist; b.vy = dyp / dist; } }
+    else { toward(dist < 520 ? B.speed : 0); if (dist < 170 && b.t <= 0) { b.state = 'lunge'; b.t = .35; b.vx = dxp / dist; b.vy = dyp / dist; AudioEngine.caveGrowl(.35, .08); } }
   }
   if (Math.hypot(p.x - b.x, (p.y - 30) - (b.y - 20)) < B.r + 22) caveHurt(B.dmg, b);
 }
 
 // ---------- Baús ----------
+// Abriu: a tampa range e uma janela mostra tudo o que tinha dentro.
+function caveChestLoot(loot) {
+  const t = caveTripNow(), st = caveState(); G.cash = round(G.cash + loot.cash); t.cash += loot.cash;
+  for (const k of ['ametista', 'agata']) if (loot[k]) { bagAdd(k, loot[k]); t[k] = (t[k] || 0) + loot[k]; }
+  if (loot.heal) st.hp = Math.min(caveMaxHp(), st.hp + loot.heal);
+  loot.cards = (loot.cards || []).filter(c => giveCard(c, 'caverna')); t.cards.push(...loot.cards); return loot;
+}
 function caveChest() {
-  const run = caveFloorRun(), c = run.chest; if (!c || c.open) return; c.open = true; AudioEngine.heart();
+  const run = caveFloorRun(), c = run.chest; if (!c || c.open) return; c.open = true; AudioEngine.caveChestOpen(); fxStars(c.x, c.y - 50, 6);
   if (c.vo) {
-    caveState().vo = true; const cash = 120; G.cash = round(G.cash + cash); bagAdd('ametista', 3); const card = randomLooseCard(); if (card) giveCard(card, 'caverna'); save();
-    talk([['card', `<b>🧰 O baú do vô</b><br>Lá no fundo da caverna, um baú de couro com as iniciais do vô gravadas na tampa. Dentro: moedas antigas (+${money(cash)}), três ametistas${card ? ', uma figurinha (<b>' + cardDef(card).name + '</b>)' : ''} e um bilhete.<br><br><i>“Se tu chegou até aqui, guri, é porque tem coragem. Agora sobe, que a bodega não abre sozinha.”</i>`, 'Andar ' + run.floor],
+    caveState().vo = true; const card = randomLooseCard(), loot = caveChestLoot({ cash: 120, ametista: 3, cards: card ? [card] : [] }); save();
+    talk([['card', `<b>🧰 O baú do vô</b><br>Lá no fundo da caverna, um baú de couro com as iniciais do vô gravadas na tampa. Dentro, moedas antigas, ametistas${loot.cards.length ? ', uma figurinha' : ''} e um bilhete.${caveLootHTML(loot)}<i>“Se tu chegou até aqui, guri, é porque tem coragem. Agora sobe, que a bodega não abre sozinha.”</i>`, 'Andar ' + run.floor],
       ['sadi', 'Bah, vô… até aqui embaixo tu deixou recado.']], null, 'Guardar');
     return;
   }
-  const card = Math.random() < .5 ? randomLooseCard() : null, cash = 15 + Math.floor(Math.random() * 25) + run.floor * 2;
-  G.cash = round(G.cash + cash); bagAdd(Math.random() < .5 ? 'ametista' : 'agata', 1); if (card) giveCard(card, 'caverna');
-  effect('Baú: +' + money(cash) + (card ? ' e uma figurinha' : ' e uma pedra'), c.x, c.y - 70, '#fff2b0'); save();
+  const gem = Math.random() < .4 ? 'ametista' : 'agata', card = Math.random() < .5 ? randomLooseCard() : null;
+  const loot = caveChestLoot({ cash: 15 + Math.floor(Math.random() * 25) + run.floor * 2, [gem]: 1 + (Math.random() < .3 ? 1 : 0), heal: Math.random() < .35 ? 25 : 0, cards: card ? [card] : [] }); save();
+  talk([['card', `<b>🧰 Baú do andar ${run.floor}</b><br>Um baú velho de tropeiro, meio enterrado na pedra. Dentro tinha:${caveLootHTML(loot)}${loot.heal ? '<small>Tinha um cantil de água fresca: +' + loot.heal + ' de vida.</small>' : ''}`, 'Achou um baú']], null, 'Guardar');
 }
 
 // ---------- Desenho ----------
@@ -232,7 +311,7 @@ function drawCaveBeast(b) {
   else if (b.kind === 'lobisomem') drawLobisomem(b.x, b.y, b.dx, .8);
   else { ctx.translate(b.x + shake, b.y); ctx.scale(.8, .8); if (b.kind === 'sanguanel') drawSanguanel(0, 0, b.dx); else if (b.kind === 'boitata') drawBoitata(0, 0); else drawMula(0, 0, b.dx); }
   ctx.restore();
-  if (b.hp < b.max) { rect(b.x - 26, b.y - 104, 52, 6, '#1a1008', 2); rect(b.x - 26, b.y - 104, 52 * b.hp / b.max, 6, '#e86a4a', 2); }
+  if (b.hp < b.max) { txt(CAVE_BEASTS[b.kind].name, b.x, b.y - 114, 11, '#ffe2a6'); rect(b.x - 26, b.y - 104, 52, 6, '#1a1008', 2); rect(b.x - 26, b.y - 104, 52 * b.hp / b.max, 6, '#e86a4a', 2); }
 }
 function drawCaveSwing() {
   const s = caveFloorRun().swing, p = worldOut; if (!s) return;
@@ -260,12 +339,28 @@ function drawCaveLight() {
   if (!inCave()) return;
   const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, caveUp('lampiao') ? 820 : 560);
   g.addColorStop(0, 'rgba(8,6,4,0)'); g.addColorStop(1, 'rgba(8,6,4,.92)'); ctx.fillStyle = g; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000);
+  // No escuro, o que interessa brilha de longe: a escada, o baú fechado e as pedras caídas.
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  if (run.ladder.shown) glow(run.ladder.x, run.ladder.y - 20, 90 + run.ladderPing * 40, .2 + .08 * Math.sin(frameClock * 3), '255,220,140');
+  if (run.chest && !run.chest.open) glow(run.chest.x, run.chest.y - 20, 70, .14 + .06 * Math.sin(frameClock * 2.4), '255,200,90');
+  for (const d of run.drops) if (d.k === 'ametista' || d.k === 'agata') glow(d.x, d.y - 12, 34, .35, d.k === 'ametista' ? '190,140,255' : '255,170,90');
+  ctx.restore();
+  // Escada longe: uma setinha do lado do Sadi aponta o caminho.
+  const ld = run.ladder, far = Math.hypot(ld.x - p.x, ld.y - p.y);
+  if (ld.shown && far > 380) {
+    const a = Math.atan2(ld.y - p.y, ld.x - p.x), r = 100 + Math.sin(frameClock * 6) * 7, ax = p.x + Math.cos(a) * r, ay = p.y - 50 + Math.sin(a) * r;
+    ctx.save(); ctx.translate(ax, ay); ctx.rotate(a); ctx.fillStyle = '#ffcf5a'; ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(24, 0); ctx.lineTo(-4, -16); ctx.lineTo(-4, -7); ctx.lineTo(-18, -7); ctx.lineTo(-18, 7); ctx.lineTo(-4, 7); ctx.lineTo(-4, 16); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
+    txt('escada', ax, ay + 28, 12, '#ffe2a6');
+  }
   if (run.hurt > 0) { ctx.fillStyle = `rgba(200,30,20,${run.hurt})`; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000); }
-  const dpr = canvas.width / Math.max(1, canvas.clientWidth), X = canvas.clientWidth - 264; ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const left = run.beasts.filter(b => b.hp > 0).length;
-  rect(X, 14, 250, 64, 'rgba(20,14,10,.82)', 8, '#a77439'); txt('Caverna da Serra · andar ' + run.floor, X + 12, 34, 14, '#ffe2a6', 'left', 'Georgia', false);
-  rect(X + 12, 46, 160, 14, '#2a1608', 5); rect(X + 12, 46, 160 * Math.min(1, st.hp / caveMaxHp()), 14, st.hp > 35 ? '#d84a3a' : '#ff7a3a', 5); txt('❤ ' + st.hp + '/' + caveMaxHp(), X + 178, 57, 12, '#ffe2a6', 'left', 'Arial', false);
-  txt(left ? left + (left === 1 ? ' bicho' : ' bichos') : 'andar limpo', X + 12, 72, 11, '#d9c79f', 'left', 'Arial', false);
+  const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, H = canvas.clientHeight, X = W - 264; ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (st.hp <= caveMaxHp() * .3) { const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); v.addColorStop(0, 'rgba(160,0,0,0)'); v.addColorStop(1, `rgba(180,10,10,${.42 + .16 * Math.sin(frameClock * 7)})`); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); }
+  const left = run.beasts.filter(b => b.hp > 0).length, t = caveTripNow(), got = [t.cash ? '🪙 ' + money(t.cash) : '', t.ametista ? '💜 ' + t.ametista : '', t.agata ? '🟠 ' + t.agata : '', t.cards.length ? '🃏 ' + t.cards.length : ''].filter(Boolean).join('  ');
+  rect(X, 14, 250, 84, 'rgba(20,14,10,.82)', 8, '#a77439'); txt('Caverna da Serra · andar ' + run.floor, X + 12, 34, 14, '#ffe2a6', 'left', 'Georgia', false);
+  rect(X + 12, 46, 160, 14, '#2a1608', 5); rect(X + 12, 46, 160 * Math.min(1, st.hp / caveMaxHp()), 14, st.hp > caveMaxHp() * .3 ? '#d84a3a' : '#ff7a3a', 5); txt('❤ ' + st.hp + '/' + caveMaxHp(), X + 178, 57, 12, '#ffe2a6', 'left', 'Arial', false);
+  txt(left ? left + (left === 1 ? ' bicho' : ' bichos') : run.ladder.shown ? 'andar limpo · ache a escada' : 'andar limpo', X + 12, 72, 11, '#d9c79f', 'left', 'Arial', false);
+  txt(got ? 'Nesta descida: ' + got : 'Nesta descida: nada ainda', X + 12, 89, 11, got ? '#ffe27a' : '#a8977a', 'left', 'Arial', false);
   ctx.restore();
 }
 
@@ -313,6 +408,7 @@ function drawCaveMouth(layers, seen) {
   const serra = WORLD_MAPS.serra, spots = serra.spots, draw = serra.draw;
   serra.spots = function () { return [...spots.call(this), ...caveDoorSpot()]; };
   serra.draw = function (view, seen, layers) { draw.call(this, view, seen, layers); drawCaveMouth(layers, seen); };
+  const begin = beginOutside; beginOutside = function (M) { const view = begin(M), k = inCave() ? (caveRun?.shake || 0) * 34 : 0; if (k) ctx.translate((Math.random() - .5) * k, (Math.random() - .5) * k); return view; };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inCave() && !modal && !scene) caveTick(dt); else { const b = $('caveAttackButton'); if (b && !b.classList.contains('hidden')) b.classList.add('hidden'); } };
   document.addEventListener('keydown', e => { if (!inCave() || e.repeat || modal || scene || worldTalkOpen()) return; const k = e.key.toLowerCase(); if (k === ' ' || k === 'f') { e.preventDefault(); caveAttack(); } });
 }

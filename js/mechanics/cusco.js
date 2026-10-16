@@ -25,7 +25,7 @@ function cuscoStraySpot() {
 }
 function meetCusco() {
   if (cuscoAdopted()) return;
-  talk([['card', '<b>🐕 O cusco véio na estação</b><br>O cusco caramelo que cuidava da Baia lá na caverna veio parar aqui. Fica deitado esperando o trem, que não traz ninguém pra ele.<br><br>Quando tu chega perto, ele abana o rabo e encosta o focinho na tua mão.', 'Vira-lata da estação'],
+  talk([['card', '<b>🐕 O cusco véio na estação</b><br>O cusco caramelo que cuidava da Cadela Baia lá na caverna veio parar aqui. Fica deitado esperando o trem, que não traz ninguém pra ele.<br><br>Quando tu chega perto, ele abana o rabo e encosta o focinho na tua mão.', 'Vira-lata da estação'],
     ['sadi', 'Bah, jaguara… tu também tá sozinho por aqui, é?'], ['sadi', 'Vem comigo, cusco véio. Na bodega sempre sobra um osso.']], adoptCusco, 'Levar o cusco véio');
 }
 function adoptCusco() {
@@ -180,10 +180,10 @@ function baiaTick(dt) {
 function baiaLayers(M, seen, layers) { const w = baiaWalker(); if (w && baia.with === w && seen(baia.x, baia.y)) layers.push({ y: baia.y, draw: () => drawCusco(baia.x, baia.y, baia.dx, baia.walk, false, false, BAIA.colors) }); }
 function baiaPet() {
   const i = manolimaIndex(); AudioEngine.heart(); effect('❤', BAIA.x, BAIA.y - 70, '#ffb3c0');
-  if (atHome('manolima')) { worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: PEOPLE[i].name, reply: pick(['Essa é a Baia, vivente. Mais braba que eu, mas só com quem não presta.', 'A Baia me acompanha nas tropeadas desde guaipeca. Baia de pelo, baia de alma.', 'Cuidado que ela gosta de carinho: se parar, ela cutuca com o focinho.']) }); }
-  else floatNote('A Baia abana o rabo e volta a cochilar no tapete.');
+  if (atHome('manolima')) { worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: PEOPLE[i].name, reply: pick(['Essa é a Cadela Baia, vivente. Mais braba que eu, mas só com quem não presta.', 'A Cadela Baia me acompanha nas tropeadas desde guaipeca. Baia de pelo, baia de alma.', 'Cuidado que ela gosta de carinho: se parar, ela cutuca com o focinho.']) }); }
+  else floatNote('A Cadela Baia abana o rabo e volta a cochilar no tapete.');
 }
-function baiaSpots() { if (worldOut?.map !== BAIA.home || !baiaAtHome()) return []; return [{ id: 'baia', x: BAIA.x, y: BAIA.y + 24, radius: 80, label: 'Baia, a cadela do Mano Lima', act: baiaPet }]; }
+function baiaSpots() { if (worldOut?.map !== BAIA.home || !baiaAtHome()) return []; return [{ id: 'baia', x: BAIA.x, y: BAIA.y + 24, radius: 80, label: 'Cadela Baia, do Mano Lima', act: baiaPet }]; }
 
 // ---------- Ligações ----------
 {

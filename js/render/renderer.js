@@ -23,7 +23,7 @@ function draw(){if(worldOut){drawOutside();return;}beginWorld();
  drawNight();
  drawCustomerOrders();
  if(G.task?.type==='clean')txt('Limpando…',G.player.x,G.player.y-171,14,'#fff4c4');
- drawFx();drawSlingAim();drawTutorialArrow();drawActionFeedback();drawSocialFeedback();for(const e of sparks){ctx.globalAlpha=Math.min(1,e.life);txt(e.text,e.x,e.y-(2.2-e.life)*16,15,e.color);}ctx.globalAlpha=1;
+ drawFx();drawSlingAim();drawTutorialArrow();drawActionFeedback();drawSocialFeedback();drawSparks();
  if(nearShopDoor()){const t=shopDoorLabel();ctx.font='bold 13px Arial';const w=ctx.measureText(t).width+44;rect(ENTRY.x-w/2,H-62,w,26,'#2b1d12dd',6,'#ffdf91');rect(ENTRY.x-w/2+6,H-58,18,18,'#ffdf91',4,'#614322');txt('E',ENTRY.x-w/2+15,H-49,12,'#38291b','center','Arial',false);txt(t,ENTRY.x+11,H-49,13,'#fff0c3','center','Arial',false);}
  if(near?.kind==='station'){const f=near.obj;rect(f.x+f.w/2-10,f.y+f.h+15,20,21,'#ffdf91',4,'#614322');ctx.fillStyle='#38291b';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.fillText('E',f.x+f.w/2,f.y+f.h+26);}
  ctx.setTransform(1,0,0,1,0,0);

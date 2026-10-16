@@ -368,6 +368,7 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .bag-item{display:grid;justify-items:center;gap:2px;padding:8px;background:#f4ecd8;border:2px solid #a8884a;border-radius:8px;text-align:center}
 .bag-item small{font-size:12px;line-height:1.2}
 .bag-emoji{font-size:30px;line-height:48px}
+.cave-loot{grid-template-columns:repeat(auto-fill,minmax(118px,140px))}.cave-loot .bag-item{grid-template-rows:48px auto auto;align-content:start}.cave-loot .bag-item>:first-child{height:48px;max-width:56px;display:grid;place-items:center;overflow:hidden}.cave-loot .bag-item img,.cave-loot .bag-item canvas{max-width:46px;max-height:46px}.cave-loot .bag-item b{font-size:15px}
 /* Minijogos da roça (ordenha, forno, tacho, carneação) */
 .farm-game{min-width:min(520px,80vw)}
 .farm-steps{display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:0 0 10px;list-style:none;counter-reset:farm}

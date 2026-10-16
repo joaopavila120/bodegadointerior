@@ -10,7 +10,8 @@ const fxRand = (a, b) => a + Math.random() * (b - a);
 // Estado visual transitório: nunca entra no save nem atrasa uma ação de gameplay.
 let playerAnimation = null;
 function playerAnimationState() {
-  const actor = worldOut || G.player, place = worldOut ? worldOut.map : G.room;
+  // Na laçada o Sadi anda no campo (G.player), mesmo com o mapa do curral aberto por baixo.
+  const lasso = !!G?.lasso, actor = lasso ? G.player : worldOut || G.player, place = lasso ? 'laco' : worldOut ? worldOut.map : G.room;
   if (!playerAnimation || playerAnimation.game !== G || playerAnimation.actor !== actor || playerAnimation.place !== place || playerAnimation.day !== G.day || frameClock < playerAnimation.clock) {
     playerAnimation = { game: G, actor, place, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, sidePhase: 0, stride: 0, transfers: [] };
   }
@@ -298,7 +299,7 @@ function drawFx() {
       default: {
         ctx.globalAlpha = fade; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
         if (p.type === 'star') fxStar(p.size, '#ffd75e');
-        else if (p.type === 'shard') { ctx.fillStyle = '#d7eef2'; ctx.strokeStyle = '#6d8f95'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -p.size); ctx.lineTo(p.size * .7, p.size * .6); ctx.lineTo(-p.size * .5, p.size * .4); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+        else if (p.type === 'shard') { ctx.fillStyle = p.color || '#d7eef2'; ctx.strokeStyle = p.color ? '#2a221c' : '#6d8f95'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -p.size); ctx.lineTo(p.size * .7, p.size * .6); ctx.lineTo(-p.size * .5, p.size * .4); ctx.closePath(); ctx.fill(); ctx.stroke(); }
         else if (p.type === 'card') { rect(-7, -10, 14, 20, '#f4e3b3', 2, '#8f7a4c'); txt(['♠', '♥', '♣', '♦'][Math.floor(p.total * 10) % 4], 0, 0, 10, '#9a3b2a', 'center', 'Arial', false); }
         else if (p.type === 'cup') food(p.key, 0, 0, p.size);
         else if (p.type === 'plank') { rect(-p.size / 2, -4, p.size, 8, '#9d6736', 2, '#4a2e18'); rect(-p.size / 2 + 3, -2, p.size - 6, 1, '#d8a868'); }

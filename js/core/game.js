@@ -66,7 +66,7 @@ function orderable(k,n=1){return unlocked(k)&&G.stock[k]+G.deliveries.filter(d=>
 // ou no apoio), menos o que outros fregueses já pediram e ainda não receberam. Assim dois não pedem a mesma última cerveja.
 function preparedUnits(k){return [...G.hands,...G.floor.map(f=>f.item),...(G.kitchen?.parking||[]),G.kitchen?.press].filter(i=>i?.pid===k).reduce((n,i)=>n+(bulk(k)?i.weight||bulk(k).unit:1),0);}
 function pendingUnits(k){let n=0;for(const g of G.groups)for(const d of g.diners||[])if(d.status==='waiting')n+=d.orders.filter(o=>o===k).length;for(const c of G.shop)if(c.state==='queue'&&!c.missing){if(c.pid===k)n+=bulk(k)?c.grams||bulk(k).unit:1;n+=(c.extra||[]).filter(o=>o===k).length;}return n;}
-function orderableFree(k,n=1){return orderable(k,n)&&G.stock[k]+G.deliveries.filter(d=>d.key===k).reduce((sum,d)=>sum+d.qty,0)+preparedUnits(k)-pendingUnits(k)>=n;}
+function orderableFree(k,n=1){return unlocked(k)&&stockUnits(k)+preparedUnits(k)-pendingUnits(k)>=n;}
 // Pedido que não dá mais para servir: acabou o produto (ou os ingredientes do xis, com a cozinha parada) e não há nada pronto.
 function kitchenBusy(){const K=G.kitchen;return !!(K&&(K.grill.some(Boolean)||K.bench.some(Boolean)||K.press||K.parking.some(Boolean)))||G.hands.some(Boolean)||G.floor.length>0;}
 function stockUnits(k){return (G.stock[k]||0)+G.deliveries.filter(d=>d.key===k).reduce((sum,d)=>sum+d.qty,0);}

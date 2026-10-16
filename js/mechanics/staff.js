@@ -56,13 +56,25 @@ function staffMenu() {
   openDialog('Ajudantes', `<p>Amigos com amizade ${HIRE_AT} ou mais topam trabalhar na bodega. O salário sai no fechamento de cada dia aberto.</p><h3>Na bodega</h3><div class="store-list">${Object.keys(STAFF_ROLES).map(slot).join('')}</div><h3>Quem pode trabalhar</h3><div class="store-list">${cand || '<p class="small-note">Todo mundo que é amigo já está trabalhando.</p>'}</div><div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`, 'staff');
   box.scrollTop = keep;
 }
-function staffHire(arg) {
+function staffHire(arg, after = staffMenu) {
   const [role, id] = String(arg).split(':'), i = PEOPLE.findIndex(p => p.id === id), st = staffState();
   if (!STAFF_ROLES[role] || i < 0 || st[role] || staffIds().includes(i) || (G.friends[i] || 0) < HIRE_AT) return;
   st[role] = { person: i, since: G.day, days: 0 }; AudioEngine.heart();
-  floatNote(PEOPLE[i].name + ' agora é ' + STAFF_ROLES[role].name.toLowerCase() + ' da bodega!'); save(); staffMenu();
+  floatNote(PEOPLE[i].name + ' agora é ' + STAFF_ROLES[role].name.toLowerCase() + ' da bodega!'); save(); after();
 }
-function staffFire(role) { const st = staffState(); if (!st[role]) return; const i = st[role].person; delete st[role]; if (staffWork[role]) staffDrop(staffWork[role]); staffWork[role] = null; floatNote(PEOPLE[i].name + ' foi dispensado. Amigos como antes.'); save(); staffMenu(); }
+function staffFire(role, after = staffMenu) { const st = staffState(); if (!st[role]) return; const i = st[role].person; delete st[role]; if (staffWork[role]) staffDrop(staffWork[role]); staffWork[role] = null; floatNote(PEOPLE[i].name + ' foi dispensado. Amigos como antes.'); save(); after(); }
+function staffRoleOf(i) { return Object.keys(staffState()).find(r => G.staff[r].person === i) || null; }
+// Contatos do celular: contratar direto pelo cartão do amigo, escolhendo pra quê.
+function contactsBack() { closeDialog(true); phoneTab = 'contacts'; togglePhone(true); }
+function contactHireMenu(i) {
+  i = Number(i); const p = PEOPLE[i]; if (!p || !G.staffUnlocked || staffIds().includes(i)) return;
+  const st = staffState(), t = staffTrait(i), f = Math.floor(G.friends[i] || 0), ok = f >= HIRE_AT;
+  const role = r => { const R = STAFF_ROLES[r], s = st[r]; return `<div class="supply"><span class="icon"><span class="bag-emoji">${R.icon}</span></span><div><b>${R.name}</b><p>${R.job}.${s ? ' <b>Vaga ocupada por ' + escapeHTML(PEOPLE[s.person].name) + '.</b>' : ''}</p></div><button class="primary" data-act="contactHireRole" data-id="${r}:${p.id}" ${s || !ok ? 'disabled' : ''}>Contratar como ${R.name.toLowerCase()}</button></div>`; };
+  togglePhone(false);
+  openDialog('Contratar ' + p.name, `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${escapeHTML(p.name)}</b><p>${ok ? money(t.wage) + ' por dia aberto · ' + t.note : 'Ainda não topa: amizade ' + f + '/' + HIRE_AT + '.'}</p></div></div><h3>Pra que você quer contratar?</h3><div class="store-list">${Object.keys(STAFF_ROLES).map(role).join('')}</div><p class="small-note">O salário sai no fechamento de cada dia aberto. Dá pra trocar a equipe também no caixa do balcão.</p><div class="actions"><button data-act="contactsBack">Voltar aos contatos</button><button data-act="close">Fechar</button></div>`, 'contactHire');
+}
+function contactHireRole(arg) { staffHire(arg, contactsBack); }
+function contactFire(i) { const r = staffRoleOf(Number(i)); if (r) staffFire(r, renderPhone); }
 
 // ---------- Trabalho durante o expediente ----------
 const STAFF_HOME = { balcao: { x: 1250, y: 742 }, garcom: { x: 700, y: 725 }, chapa: { x: 215, y: 610 } }, STAFF_TAPS = { x: 640, y: 690 };

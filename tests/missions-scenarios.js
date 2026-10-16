@@ -60,7 +60,7 @@
   worldOut.x=home.x;worldOut.y=home.y;interact();check(modal==='quest'&&$('dialogContent').innerHTML.includes('questAccept'),'o pedido da casa aparece para aceitar');
   action('questAccept',String(badin));check(questState('badin').active&&questMarker('badin')==='waiting','pedido aceito: o Badin espera');
   bagAdd('ovo',8);worldOut.x=home.x;worldOut.y=home.y;interact();check($('dialogContent').innerHTML.includes('questDeliver'),'com os ovos no inventário, dá para entregar');
-  action('questDeliver',String(badin));check($('dialogContent').textContent.includes('Badin')&&!$('dialogContent').textContent.includes('Valter'),'o agradecimento do pedido é de quem pediu');talkAll();check(questState('badin').step===1&&!questState('badin').active&&bagQty('salame')===2&&G.questsDone===1,'pedido entregue: salame de recompensa e o próximo pedido fica para outro dia');
+  const sal0=G.stock.salame||0;action('questDeliver',String(badin));check($('dialogContent').textContent.includes('Badin')&&!$('dialogContent').textContent.includes('Valter'),'o agradecimento do pedido é de quem pediu');talkAll();check(questState('badin').step===1&&!questState('badin').active&&(G.stock.salame||0)-sal0===2&&G.questsDone===1,'pedido entregue: salame de recompensa e o próximo pedido fica para outro dia');
   // relíquias e frutas do mato, nos três mapas
   switchMap({map:'serra',x:1800,y:985});check(WORLD_MAPS.serra.spots().some(s=>s.id==='secret:rolha')&&WORLD_MAPS.serra.spots().some(s=>s.id==='forage:guabirobeira'),'a Serra também esconde relíquias e tem guabirobeira');
   switchMap({map:'vila',x:1600,y:700});const sec=SECRETS.find(s=>s.id==='pagina1');worldOut.x=sec.x;worldOut.y=sec.y;check(worldNearest()?.id==='secret:pagina1','perto do brilho no chão dá para investigar');
@@ -110,7 +110,7 @@
   {const bi=badin;G.friends[bi]=QUADRO_AT-1;addFriendship(bi,2);check(quadroUnlocked(bi),'amizade libera o quadro do especial');toggleQuadro('badin');check(G.quadro==='badin','o quadro vai para a parede');const li=PEOPLE.findIndex(p=>p.id==='lauro');G.friends[li]=QUADRO_AT;toggleQuadro('lauro');check(G.quadro==='lauro','só cabe um quadro: o novo substitui o anterior');}
   check(typeof drawHorse==='undefined'&&typeof ridingHorse==='undefined','o cavalo saiu do jogo');
   // inventário (B) mostra também o que está na bodega; mesa de compota diz o que falta
-  closeDialog(true);showBag();check($('dialogContent').textContent.includes('Itens na bodega'),'B mostra o inventário e os itens na bodega');closeDialog(true);
+  closeDialog(true);showBag();check($('dialogTitle').textContent==='Inventário'&&!$('dialogContent').textContent.includes('Itens na bodega'),'B mostra o inventário: uma lista só');closeDialog(true);
   G.bag={ovo_codorna:{q:13,c:0},conserva_codorna:{q:5,c:0}};conservasMenu();check($('dialogContent').textContent.includes('vidro vazio')&&$('dialogContent').textContent.includes('Pote pronto não é vidro vazio'),'a mesa de compota mostra que falta vidro vazio (pote pronto é outra coisa)');closeDialog(true);
   // horta mais lenta
   {const h=hortaState();h.xp=0;window.NO_SCENES=true;hortaGainXP(HORTA_LEVELS[1].xp-1);check(hortaLevel()===1,'a horta sobe de nível mais devagar');hortaGainXP(1);check(hortaLevel()===2,'e avisa quando sobe');window.NO_SCENES=false;}
@@ -235,7 +235,16 @@
     G.groups=[];G.tables[0].group=null;const t1=G.tables[1];t1.dirty=true;t1.group=null;for(let k=0;k<400&&t1.dirty;k++)customersTick(.05);check(!t1.dirty&&t1.plates===0,'sem pedido, o garçom limpa a mesa suja');
     action('staffMenu');action('staffFire','chapa');closeDialog(true);}
    G.openedDay=G.day;G.phase='open';G.shop=[];finishDay(true);while(scene)sceneSkip();check(G.report.wages===staffWages()&&G.report.wages>0&&G.staff.balcao.days===1,'o salário sai no fechamento e conta um dia de casa');closeDialog(true);
-   action('staffMenu');action('staffFire','garcom');check(!G.staff.garcom&&visitorAvailable(li),'dispensado, volta a ser freguês');closeDialog(true);G.staff={};}
+   action('staffMenu');action('staffFire','garcom');check(!G.staff.garcom&&visitorAvailable(li),'dispensado, volta a ser freguês');closeDialog(true);
+   // contatos do celular: Contratar no cartão do amigo, escolhendo pra quê
+   {const ji=PEOPLE.findIndex(p=>p.id==='jayme');G.contacts??={};G.contacts.jayme=true;G.contacts.guri=true;G.friends[ji]=HIRE_AT;G.friends[gi]=Math.max(G.friends[gi],HIRE_AT);phoneTab='contacts';togglePhone(true);
+    const card=n=>[...$('phoneContent').querySelectorAll('.contact-card')].find(c=>c.querySelector(`[data-contact="${n}"]`));
+    check(!!card(ji)?.querySelector('[data-act="contactHire"]')&&/Trabalha de balconista/.test(card(gi)?.textContent),'nos contatos: botão Contratar no amigo; quem já trabalha mostra a função');
+    action('contactHire',String(ji));const btn=r=>$('dialogContent').querySelector(`[data-act="contactHireRole"][data-id="${r}:jayme"]`);
+    check(modal==='contactHire'&&!phoneOpen&&btn('balcao').disabled&&!btn('garcom').disabled&&!btn('chapa').disabled,'escolhe pra quê: balconista ocupado, garçom e chapeiro livres');
+    action('contactHireRole','garcom:jayme');check(G.staff.garcom?.person===ji&&phoneOpen&&phoneTab==='contacts'&&/Trabalha de garçom/.test(card(ji)?.textContent),'contratado de garçom pelo celular, volta pros contatos');
+    action('contactFire',String(ji));check(!G.staff.garcom&&!!card(ji)?.querySelector('[data-act="contactHire"]'),'e dispensa pelo cartão também');togglePhone(false);}
+   G.staff={};}
   // história do vô: gaita, baú, carta e o último trago
   check(storyChapters().map(m=>m.id).slice(-5).join()==='gaita,bau,carta,oktober,lendaria'&&MISSIONS.find(m=>m.id==='lendaria').chapter===12,'a história do vô fecha o jogo: gaita, baú, carta e a bodega lendária');
   {const before=G.missions,vo=G.vo,upTo=n=>Object.fromEntries(storyChapters().filter(m=>m.chapter<n).map(m=>[m.id,{status:'done',day:1}]));G.missions={...before,...upTo(8),gaita:{status:'active',day:G.day}};G.vo={};check(/Valter/.test(gaitaGoal())&&storyNeeds('valter'),'capítulo 8: a gaita está com o Valter');G.vo.gaita='found';check(/Pomerode/.test(gaitaGoal())&&storyNeeds('loligebien'),'depois vai pro Seu Otto, o avô do Loli, em Pomerode');
@@ -294,6 +303,19 @@
    caveState().deepest=CAVE.deep;enterCave(CAVE.deep);run=caveFloorRun();check(run.chest?.vo,'no andar 10, o baú do vô');const ch=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:chest');worldOut.x=ch.x;worldOut.y=ch.y;interact();talkAll();
    check(caveState().vo&&bagQty('ametista')>=3,'o baú do vô tem moedas, ametistas e o bilhete dele');caveLeave();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);worldOut.x=d.x;worldOut.y=d.y;interact();
    check(modal==='caveStops'&&$('dialogContent').querySelectorAll('[data-act="caveGo"]').length===3,'a corda desce direto pros andares 1, 5 e 10');closeDialog(true);worldOut=null;G.phase='prep';}
+  // caverna: retorno do jogo — sons de golpe, grito e dano, números que sobem, o baú mostra o que tinha e o saldo da descida
+  {const heard=[],keep={},S=['caveFlesh','caveCry','caveOuch','caveStone','caveCrumble','caveGem','caveChestOpen','caveLadder','caveHeartbeat'];for(const k of S){keep[k]=AudioEngine[k];AudioEngine[k]=function(a){heard.push(k+(a?':'+a:''));};}
+   G.cave={facao:true,floor:3,deepest:3,hp:100,vo:true,up:{}};G.phase='prep';worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(3);closeDialog(true);
+   const run=caveFloorRun(),b=run.beasts[0];for(const o of run.beasts.slice(1))o.hp=0;for(const r of run.rocks)r.ladder=false;run.ladder.shown=false;b.state='rest';b.t=9;b.hp=b.max=999;worldOut.x=b.x-60;worldOut.y=b.y+10;worldOut.dx=1;worldOut.dy=0;run.cd=0;sparks.length=0;caveAttack();
+   check(heard.includes('caveFlesh')&&heard.includes('caveCry:'+b.kind)&&sparks.some(s=>s.map==='caverna'&&/−\d+/.test(s.text)),'acertou o bicho: baque, o grito dele e o dano aparece na tela');
+   run.inv=0;caveHurt(5,{x:worldOut.x-10,y:worldOut.y});check(heard.includes('caveOuch')&&run.shake>0&&sparks.some(s=>s.text==='−5'),'apanhou: o Sadi geme, a tela treme e o dano aparece');
+   caveState().hp=10;run.beat=0;run.inv=5;caveTick(.05);check(heard.includes('caveHeartbeat'),'com pouca vida, o coração bate');caveState().hp=100;
+   const r=run.rocks[0];r.hp=1;r.loot='ametista';b.x=r.x+400;worldOut.x=r.x-60;worldOut.y=r.y+10;run.cd=0;caveAttack();check(r.hp<=0&&heard.includes('caveCrumble')&&heard.includes('caveGem')&&sparks.some(s=>/Ametista!/.test(s.text)),'quebrou a pedra: barulho de pedra e o brilho da ametista');
+   const am=bagQty('ametista'),dr=run.drops.find(d=>d.k==='ametista');worldOut.x=dr.x;worldOut.y=dr.y;caveTick(.05);check(bagQty('ametista')===am+1&&caveTripNow().ametista===1&&sparks.some(s=>/Ametista · agora/.test(s.text)),'pegou a pedra: diz qual é e quantas tem');
+   run.chest={...caveCenter(5,5),vo:false,open:false};caveChest();const box=$('dialogContent').textContent;check(modal==='talk'&&heard.includes('caveChestOpen')&&!!$('dialogContent').querySelector('.cave-loot')&&/moedas/.test(box)&&/Ametista|Ágata/.test(box),'o baú abre com rangido e mostra o que tinha dentro');talkAll();
+   b.hp=1;worldOut.x=b.x-60;worldOut.y=b.y+10;run.cd=0;caveAttack();check(heard.includes('caveCry:'+b.kind+'')&&heard.includes('caveLadder')&&run.ladder.shown&&caveTripNow().kills===1,'derrubou o último bicho: a escada aparece com musiquinha');
+   const t=caveLeave();check(modal==='talk'&&$('dialogTitle').textContent==='Saldo da descida'&&t.kills===1&&t.ametista>=1&&t.cash>0,'subiu pela corda: o saldo da descida');closeDialog(true);
+   for(const k of S)AudioEngine[k]=keep[k];worldOut=null;G.phase='prep';}
   // cusco véio: fica, vem e a casinha no campo
   {G.cusco={day:G.day};G.phase='prep';worldOut=null;goOutside();switchMap({map:'vila',x:1660,y:1000});closeDialog(true);worldOut.x=1660;worldOut.y=1000;for(let i=0;i<20;i++){closeDialog(true);simulate(.05);}
    worldWalkers=[];const c0=WORLD_MAPS.vila.spots().find(s=>s.id==='cusco:follow');check(!$('cuscoButton')&&c0,'sem botão na tela: parado do lado dele, E dá os comandos');interact();check(modal==='cusco'&&$('dialogContent').innerHTML.includes('data-id="fica"'),'E abre os comandos do cusco');action('cusco','fica');check(cuscoMode()==='stay'&&G.cusco.at?.map==='vila','Fica! O cusco véio fica');keys.add('d');for(let i=0;i<30;i++)simulate(.05);keys.clear();const at=G.cusco.at;check(cuscoMode()==='stay'&&Math.hypot(worldOut.x-at.x,worldOut.y-at.y)>60,'e fica parado enquanto o Sadi anda');
@@ -354,6 +376,9 @@
    const day=G.day;for(let k=0;k<30&&atHome('manolima');k++)G.day++;interact();check(modal!=='manoShop','com o Mano Lima fora de casa, o balcão fica fechado');for(let k=0;k<30&&!atHome('manolima');k++)G.day++;
    const cash=G.cash;G.cash=500;worldOut.x=bc.x;worldOut.y=bc.y;interact();check(modal==='manoShop','com ele em casa: balcão de melhorias pro facão');action('facaoBuy','afiado');check(caveDmg()===18&&G.cash===380,'facão afiado: mais dano');
    G.cash=cash;G.day=day;closeDialog(true);window.NO_SCENES=ns;worldOut=null;}
+  // laçando a partir do curral, o Sadi anda com passada (não fica estático)
+  {G.phase='prep';G.herd=Math.max(G.herd||0,1);worldOut=null;goOutside();switchMap({map:'curral',x:800,y:520});closeDialog(true);startLasso();closeDialog(true);let st=0;keys.add('d');for(let i=0;i<12;i++){frameClock+=.05;lassoTick(.05);st=playerWalkPose(G.player.x,G.player.y).stride;}keys.clear();
+   check(G.lasso&&st>.8,'laçando a partir do curral, o Sadi anda com passada (não fica estático)');finishLasso();closeDialog(true);talkState=null;worldOut=null;}
   check(!JSON.stringify(PEOPLE).includes('Boleador')&&GIFTS.lauro.some(g=>/Bolador/.test(g.text+JSON.stringify(DECOR)))||!JSON.stringify(DECOR).includes('Boleador'),'Lauro Bolador (não mais Boleador)');
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;window.difficulty=difficultyBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();closeDialog(true);worldOut=null;}
  return results;

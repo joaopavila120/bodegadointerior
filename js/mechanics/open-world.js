@@ -171,7 +171,7 @@ function drawOutside() {
     rect(view.x, view.y, view.w, view.h, `rgba(12,20,52,${night})`);
   }
   const s = modal === 'talk' ? null : worldNearest(); if (s) { const label = spotLabel(s); ctx.font = 'bold 13px Arial'; const w = ctx.measureText(label).width + 44; rect(s.x - w / 2, s.y - 130, w, 26, '#2b1d12dd', 6, '#ffdf91'); rect(s.x - w / 2 + 6, s.y - 126, 18, 18, '#ffdf91', 4, '#614322'); txt('E', s.x - w / 2 + 15, s.y - 117, 12, '#38291b', 'center', 'Arial', false); txt(label, s.x + 11, s.y - 117, 13, '#fff0c3', 'center', 'Arial', false); }
-  drawFx();
+  drawFx(); drawSparks(worldOut.map);
 }
 // Peças de desenho reaproveitadas pelos mapas.
 function grassField(M, view, seen, base = '#6f9a45', tufts = ['#5f8a3a', '#86ad55'], from = 0) {

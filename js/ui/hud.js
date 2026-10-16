@@ -15,6 +15,8 @@ function refreshHUD(){
 function floatNote(text,kind=''){const host=$('floatNotes');if(!host)return;[...host.children].find(e=>e.textContent===text)?.remove();const e=document.createElement('div');e.className='float-note'+(kind?' '+kind:'');e.textContent=text;host.prepend(e);while(host.children.length>2)host.lastChild.remove();setTimeout(()=>e.remove(),kind==='reminder'?7000:4200);}
 function say(text,opts){if(bodegaNoticeMuted(opts))return;floatNote(text);}
 
-function effect(text,x,y,color='#fce59e'){sparks.push({text,x,y,life:2.2,color});}
+function effect(text,x,y,color='#fce59e',size=15){sparks.push({text,x,y,life:2.2,color,size,map:worldOut?.map||null});}
+// Textos que sobem: os da bodega na bodega; os do mundo aberto só no mapa onde nasceram.
+function drawSparks(map=null){for(const e of sparks)if((e.map||null)===map){ctx.globalAlpha=Math.min(1,e.life);txt(e.text,e.x,e.y-(2.2-e.life)*16,e.size||15,e.color);}ctx.globalAlpha=1;}
 
 function burst(x,y,type='spark'){for(let i=0;i<7;i++)G.visual.push({x,y,dx:(Math.random()-.5)*80,dy:-20-Math.random()*40,life:.7+Math.random()*.4,total:1,type});}

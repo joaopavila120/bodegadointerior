@@ -212,6 +212,7 @@ function sellSection() {
   return '<h3>Vender a colheita</h3>' + (list.length ? '<div class="store-list">' + list.map(k => { const lot = sellLot(k), all = lot >= sellHave(k), text = GOODS[k] && !BAG_RAW[k] ? stockText(k, lot) : bagText(k, lot); return `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>No inventário: ${GOODS[k] && !BAG_RAW[k] ? stockText(k) : bagText(k)}</p></div><button class="primary" data-act="storeSell" data-id="${k}">${all ? 'Vender tudo' : 'Vender ' + text} · ${money(sellPrice(k, lot))}</button></div>`; }).join('') + '</div>' : '<p class="small-note">Traga o que sobrar da horta, do curral e do rio para vender aqui.</p>');
 }
 function storeSell(k) {
+  if(!SELLABLE.includes(k))return;
   const q = sellLot(k); if (!q) return; const v = sellPrice(k, q);
   if (GOODS[k] && !BAG_RAW[k]) G.stock[k] = Math.max(0, (G.stock[k] || 0) - q); else bagTake(k, q);
   G.cash = round(G.cash + v); AudioEngine.coins(); worldSay('Vendeu ' + (GOODS[k] && !BAG_RAW[k] ? stockText(k, q) : bagText(k, q)) + ' de ' + bagName(k).toLowerCase() + ' por ' + money(v) + '.'); save(); refreshStore();

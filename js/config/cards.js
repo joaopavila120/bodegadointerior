@@ -64,4 +64,10 @@ const CARDS = [
   { id: 'boitata', set: 'lendas', name: 'Boitatá', title: 'Cobra de fogo', how: 'Vencendo o Boitatá.', text: 'Uma cobra de fogo que ronda os banhados e os campos à noite e protege a mata de quem quer queimá-la.' },
   { id: 'mula', set: 'lendas', name: 'Mula sem Cabeça', title: 'Fogo no lugar da cabeça', how: 'Vencendo a Mula sem Cabeça.', text: 'Mula que solta fogo pelo pescoço e galopa nas noites de quinta pra sexta. Quem tira o freio de ferro quebra o encanto.' }
 ];
+CARDS.push(
+  {id:'teiniagua',set:'lendas',name:'Teiniaguá',title:'O brilho da Salamanca',how:'Derrotando uma Teiniaguá na caverna.',text:'Na lenda da Salamanca do Jarau, a Teiniaguá tem forma de lagartixa com uma pedra brilhante na cabeça. Na caverna do jogo, seu brilho anuncia o perigo.'},
+  {id:'onca',set:'lendas',name:'Onça-parda',title:'Passo silencioso',how:'Derrotando uma onça-parda na caverna.',text:'Também chamada de puma, é uma felina de pelagem uniforme e cauda longa. Na aventura da bodega, espera uma abertura antes de saltar.'},
+  {id:'saci',set:'lendas',name:'Saci',title:'Uma perna e um redemoinho',how:'Conversando com o Saci à noite nas estradas.',text:'Gorro vermelho, uma perna só e muita travessura. Quando a poeira começa a rodar sozinha, pode ser ele chegando para uma prosa.'},
+  {id:'dunstano',set:'lendas',name:'São Dunstano',title:'O ferreiro do refúgio',how:'Conversando com São Dunstano no primeiro andar.',text:'O fantasma de São Dunstano recebe os viajantes no refúgio da caverna. Compra minérios, melhora equipamentos e ensina a voltar inteiro da próxima descida.'}
+);
 CARDS.forEach((c, n) => { c.n = n + 1; if (c.set === 'bodega') c.how ??= 'Amizade 30 com ' + c.name + '.'; c.how ??= 'Envelope de figurinhas do Atacado ou baú da caverna.'; });

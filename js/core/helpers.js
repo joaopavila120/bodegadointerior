@@ -53,6 +53,7 @@ function drinkPool(){return ['refri','cerveja','cachaca','cafe','bitter'].filter
 const DRINKS=['refri','cerveja','cachaca','cafe','bitter'],ALCOHOL=['cerveja','cachaca','bitter','vinho'];
 function fitOrder(person,key){
  const p=PEOPLE[person];if(!p||!key)return key;
+ if(p.onlyChopp)return 'cerveja';
  if(p.noDrinks&&(DRINKS.includes(key)||key==='cigarro')){const food=snackPool();return food.length?pick(food):'codorna';}
  if(p.noAlcohol&&ALCOHOL.includes(key))return 'refri';
  if(p.lovesChopp&&DRINKS.includes(key)&&unlocked('cerveja')&&Math.random()<.85)return 'cerveja';

@@ -71,7 +71,7 @@
   check(bagQty('butia')===6&&/de novo em/.test(WORLD_MAPS.vila.spots().find(s=>s.id==='forage:butiazeiro').label),'o butiazeiro dá 6 butiás e frutifica de novo depois');
   // pescaria no trapiche
   const rv=WORLD_MAPS.vila.spots().find(s=>s.id==='river');worldOut.x=rv.x;worldOut.y=rv.y;interact();talkAll();check(modal==='farmGame'&&farmGame.stages.length===1,'no trapiche, a pescaria é uma fisgada só');
-  farmGame.pos=(farmStage().zone[0]+farmStage().zone[1])/2;farmGameKey('e');check(bagQty('peixe')>=1&&fishLeft()===FISH_PER_DAY-1,'fisgou: peixe no inventário e um lance a menos no dia');
+  farmGame.pos=(farmStage().zone[0]+farmStage().zone[1])/2;farmGameKey('e');check(haveItem('peixe')>=1&&fishLeft()===FISH_PER_DAY-1,'fisgou: peixe no inventário e um lance a menos no dia');
   // calendário físico na frente da bodega
   const cal=WORLD_MAPS.vila.spots().find(s=>s.id==='calendario');worldOut.x=cal.x;worldOut.y=cal.y;interact();talkAll();
   check($('dialogTitle').textContent==='Calendário de eventos'&&document.querySelectorAll('#dialogContent .calendar-day').length===7,'o calendário mostra a semana com os eventos');closeDialog(true);
@@ -296,10 +296,10 @@
   // caverna da Serra: facão, bichos, escada, desmaio e o baú do vô (a gruta aparece com a missão da Baia)
   {G.cave=null;G.missions.baia={status:'done',day:G.day};G.phase='prep';worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);const d=WORLD_MAPS.serra.spots().find(s=>s.id==='caverna');check(d&&WORLD_MAPS.serra.canWalk(d.x,d.y),'a gruta da caverna na Serra');
    worldOut.x=d.x;worldOut.y=d.y;interact();talkAll();check(worldOut.map==='caverna'&&caveState().facao&&WORLD_MAPS.caverna.canWalk(worldOut.x,worldOut.y),'o facão do vô e o primeiro andar');
-   let run=caveFloorRun();for(const b of run.beasts){let n=0;while(b.hp>0&&n++<60){worldOut.x=b.x-60;worldOut.y=b.y+10;worldOut.dx=1;worldOut.dy=0;run.cd=0;caveAttack();}}check(run.beasts.every(b=>b.hp<=0)&&run.ladder.shown&&run.drops.length,'no facão, os bichos caem e a escada aparece');
+   let run=caveFloorRun();check(!run.beasts.length&&run.ladder.shown&&caveState().dunstanTaught,'o primeiro andar é um refúgio seguro com explicação de São Dunstano');
    const lad=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:ladder');worldOut.x=lad.x;worldOut.y=lad.y;interact();check(caveState().floor===2&&caveState().deepest===2,'desce pro andar de baixo');
    run=caveFloorRun();const b=run.beasts[0],hp=caveState().hp;worldOut.x=b.x;worldOut.y=b.y+5;run.inv=0;caveTick(.05);check(caveState().hp<hp,'bicho machuca');
-   caveState().hp=1;run.inv=0;caveHurt(10,{x:worldOut.x-10,y:worldOut.y});check(worldOut.map==='serra'&&caveState().hp===CAVE.maxHp&&modal==='talk','desmaiou: acorda na boca da gruta');talkAll();
+   caveState().hp=1;run.inv=0;caveHurt(10,{x:worldOut.x-10,y:worldOut.y});check(caveDefeatActive()&&worldOut.map==='caverna','desmaiou: mostra a queda antes da recuperação');caveDefeatTick(4.5);check(worldOut.map==='serra'&&caveState().hp===CAVE.maxHp&&modal==='talk','desmaiou: acorda na boca da gruta após a animação');talkAll();
    caveState().deepest=CAVE.deep;enterCave(CAVE.deep);run=caveFloorRun();check(run.chest?.vo,'no andar 10, o baú do vô');const ch=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:chest');worldOut.x=ch.x;worldOut.y=ch.y;interact();talkAll();
    check(caveState().vo&&bagQty('ametista')>=3,'o baú do vô tem moedas, ametistas e o bilhete dele');caveLeave();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);worldOut.x=d.x;worldOut.y=d.y;interact();
    check(modal==='caveStops'&&$('dialogContent').querySelectorAll('[data-act="caveGo"]').length===3,'a corda desce direto pros andares 1, 5 e 10');closeDialog(true);worldOut=null;G.phase='prep';}
@@ -310,8 +310,8 @@
    check(heard.includes('caveFlesh')&&heard.includes('caveCry:'+b.kind)&&sparks.some(s=>s.map==='caverna'&&/−\d+/.test(s.text)),'acertou o bicho: baque, o grito dele e o dano aparece na tela');
    run.inv=0;caveHurt(5,{x:worldOut.x-10,y:worldOut.y});check(heard.includes('caveOuch')&&run.shake>0&&sparks.some(s=>s.text==='−5'),'apanhou: o Sadi geme, a tela treme e o dano aparece');
    caveState().hp=10;run.beat=0;run.inv=5;caveTick(.05);check(heard.includes('caveHeartbeat'),'com pouca vida, o coração bate');caveState().hp=100;
-   const r=run.rocks[0];r.hp=1;r.loot='ametista';b.x=r.x+400;worldOut.x=r.x-60;worldOut.y=r.y+10;run.cd=0;caveAttack();check(r.hp<=0&&heard.includes('caveCrumble')&&heard.includes('caveGem')&&sparks.some(s=>/Ametista!/.test(s.text)),'quebrou a pedra: barulho de pedra e o brilho da ametista');
-   const am=bagQty('ametista'),dr=run.drops.find(d=>d.k==='ametista');worldOut.x=dr.x;worldOut.y=dr.y;caveTick(.05);check(bagQty('ametista')===am+1&&caveTripNow().ametista===1&&sparks.some(s=>/Ametista · agora/.test(s.text)),'pegou a pedra: diz qual é e quantas tem');
+   const r=run.rocks[0];r.hp=1;r.loot='ametista';b.x=r.x+400;worldOut.x=r.x-60;worldOut.y=r.y+10;run.cd=0;caveAttack();check(r.hp<=0&&heard.includes('caveCrumble')&&heard.includes('caveGem')&&run.drops.some(d=>d.k==='ametista'),'quebrou a pedra: barulho, brilho e minério no chão');
+   const am=bagQty('ametista'),dr=run.drops.find(d=>d.k==='ametista');worldOut.x=dr.x;worldOut.y=dr.y;caveTick(.05);check(bagQty('ametista')===am+1&&caveTripNow().ametista===1&&sparks.some(s=>s.text==='+1 ametista'),'pegou a pedra: mostra +1 ametista sem emoji');
    run.chest={...caveCenter(5,5),vo:false,open:false};caveChest();const box=$('dialogContent').textContent;check(modal==='talk'&&heard.includes('caveChestOpen')&&!!$('dialogContent').querySelector('.cave-loot')&&/moedas/.test(box)&&/Ametista|Ágata/.test(box),'o baú abre com rangido e mostra o que tinha dentro');talkAll();
    b.hp=1;worldOut.x=b.x-60;worldOut.y=b.y+10;run.cd=0;caveAttack();check(heard.includes('caveCry:'+b.kind+'')&&heard.includes('caveLadder')&&run.ladder.shown&&caveTripNow().kills===1,'derrubou o último bicho: a escada aparece com musiquinha');
    const t=caveLeave();check(modal==='talk'&&$('dialogTitle').textContent==='Saldo da descida'&&t.kills===1&&t.ametista>=1&&t.cash>0,'subiu pela corda: o saldo da descida');closeDialog(true);
@@ -372,10 +372,9 @@
    G.phase='closed';switchMap({map:'vila',x:1600,y:735});closeDialog(true);const hv=WORLD_MAPS.vila.spots().find(s=>s.id==='house:manolima');check(lateNight()&&!hv.house&&!/trancada/.test(spotLabel(hv)),'depois das 23h30, a casa do Mano Lima tá aberta pra devolver a Baia');
    worldOut.x=hv.x;worldOut.y=hv.y;interact();closeDialog(true);skipWorldTalk();const h2=WORLD_MAPS['casa:manolima'].spots().find(s=>s.id==='home:manolima');worldOut.x=h2.x;worldOut.y=h2.y;interact();check(modal==='talk'&&/caverna/.test(JSON.stringify(talkState?.lines||'')),'o Sadi conta da caverna');talkAll();
    check(missionDone('baia')&&baiaStage()==='done'&&baiaAtHome(),'a Baia em casa: missão concluída');
-   G.phase='prep';const bc=WORLD_MAPS['casa:manolima'].spots().find(s=>/Balcão/.test(s.label));check(!!bc&&!questOffer('manolima'),'o Mano Lima não pede mais itens: tem o balcão do facão');
-   const day=G.day;for(let k=0;k<30&&atHome('manolima');k++)G.day++;interact();check(modal!=='manoShop','com o Mano Lima fora de casa, o balcão fica fechado');for(let k=0;k<30&&!atHome('manolima');k++)G.day++;
-   const cash=G.cash;G.cash=500;worldOut.x=bc.x;worldOut.y=bc.y;interact();check(modal==='manoShop','com ele em casa: balcão de melhorias pro facão');action('facaoBuy','afiado');check(caveDmg()===18&&G.cash===380,'facão afiado: mais dano');
-   G.cash=cash;G.day=day;closeDialog(true);window.NO_SCENES=ns;worldOut=null;}
+   G.phase='prep';check(!WORLD_MAPS['casa:manolima'].items.some(i=>i.kind==='balcaoMano')&&!questOffer('manolima'),'a Baia volta para casa, mas a ferraria fica na caverna');
+   const cash=G.cash;G.cash=500;enterCave(1);talkAll();const bc=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:forge');worldOut.x=bc.x;worldOut.y=bc.y;interact();check(modal==='dunstanShop','São Dunstano oferece as melhorias na ferraria');action('facaoBuy','afiado');check(caveDmg()===18&&G.cash===380,'facão afiado: mais dano');
+   G.cash=cash;closeDialog(true);window.NO_SCENES=ns;worldOut=null;}
   // laçando a partir do curral, o Sadi anda com passada (não fica estático)
   {G.phase='prep';G.herd=Math.max(G.herd||0,1);worldOut=null;goOutside();switchMap({map:'curral',x:800,y:520});closeDialog(true);startLasso();closeDialog(true);let st=0;keys.add('d');for(let i=0;i<12;i++){frameClock+=.05;lassoTick(.05);st=playerWalkPose(G.player.x,G.player.y).stride;}keys.clear();
    check(G.lasso&&st>.8,'laçando a partir do curral, o Sadi anda com passada (não fica estático)');finishLasso();closeDialog(true);talkState=null;worldOut=null;}

@@ -96,6 +96,83 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='caveLife'){
+      await load(base+'/index.html');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'cave-life-scenarios.js'),'utf8'));
+      console.log('PASS cave life: '+results.length+' checks');
+      const art=await evaluate(`(()=>{
+        const previous=ctx,c=document.createElement('canvas');c.width=1400;c.height=760;ctx=c.getContext('2d');rect(0,0,c.width,c.height,'#736c52');
+        [...OKTO_VISITORS,...ROAD_RIDERS].forEach((p,i)=>{const h=i<2?124:195;txt(p.name,120+i*270,40,20,'#fff');expansionSprite(p.sheet,4,120+i*270,290,h,false,expansionRowHeight(p.sheet,0,12));});
+        for(let i=0;i<8;i++)expansionSprite('saci-walk-v2',i,90+i*170,510,130,false,expansionRowHeight('saci-walk-v2',i<4?0:4,4));
+        RIVER_FISH.forEach((f,i)=>{expansionSprite('uruguai-fish-v1',i,150+i*340,710,90);txt(f.name,150+i*340,740,18,'#fff');});
+        ctx=previous;return c.toDataURL('image/png').split(',')[1];})()`);
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-cave-life-art.png'),Buffer.from(art,'base64'));
+      await evaluate(`G=fresh();G.prologue={done:true};G.tutorial.complete=true;G.cave={facao:true,floor:11,deepest:11,hp:100,dunstanTaught:true,up:{}};started=true;paused=true;$('start').classList.add('hidden');goOutside();enterCave(11);closeDialog(true);draw();`);
+      for(const [file,expression] of [
+        ['bodega-red-cave.png','draw();'],
+        ['bodega-dunstan-trade.png',"enterCave(1);closeDialog(true);bagAdd('ametista',4);bagAdd('agata',2);dunstanShop();draw();"],
+        ['bodega-cave-defeat.png',"closeDialog(true);enterCave(11);closeDialog(true);beginCaveDefeat();caveDefeatTick(2.5);draw();"]
+      ]){await evaluate(expression);const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),file),Buffer.from(shot.data,'base64'));}
+      await evaluate(`caveDefeatTick(5);closeDialog(true);document.body.insertAdjacentHTML('beforeend','<main id="newCardPreview" style="position:fixed;inset:0;z-index:1000010;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:20px;background:#30271d">'+['badin','guri','manolima','lauro','teiniagua','onca','saci','dunstano'].map(id=>'<section style="position:relative;height:440px">'+cardFront(cardDef(id))+'</section>').join('')+'</main>')`);
+      await waitUntil(()=>evaluate(`[...document.querySelectorAll('#newCardPreview img')].every(i=>i.complete&&i.naturalWidth>0)`),'Retratos das cartas não carregaram');
+      const cards=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-new-cards.png'),Buffer.from(cards.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if (process.env.BODEGA_FOCUS === 'missions') {
+      await load(base+'/index.html');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'missions-scenarios.js'),'utf8'));
+      console.log('PASS missions: '+results.length+' checks');
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if (process.env.BODEGA_FOCUS === 'proportions') {
+      await load(base + '/index.html');
+      const preview=await evaluate(`(()=>{
+        G=fresh();paused=true;worldOut=null;
+        const previous=ctx,c=document.createElement('canvas');c.width=1100;c.height=850;ctx=c.getContext('2d');
+        rect(0,0,c.width,c.height,'#725238');
+        ['lucia','gremio_5','gremio_6','inter_6','gremio2_6'].forEach((id,row)=>{
+          const p=PEOPLE.find(p=>p.id===id),a=SECONDARY_POSES.get(p.sprite),y=160+row*165;
+          txt(p.name,110,y-138,16,'#fff');rect(25,y+2,1050,1,'#ae9068');
+          personDraw(PEOPLE.find(p=>p.id==='manolima').sprite,80,y);
+          personDraw(0,210,y);
+          personDraw(p.sprite,370,y,false,false,-1,false,0,-1);
+          for(let i=0;i<4;i++)expansionSprite(a.key,a.start+i,530+i*145,y,124,false,a.height);
+        });
+        ctx=previous;return c.toDataURL('image/png').split(',')[1];
+      })()`);
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-proportions-preview.png'),Buffer.from(preview,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS proportions preview');return;
+    }
+    if (process.env.BODEGA_FOCUS === 'mountain') {
+      await load(base + '/index.html');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
+      console.log('PASS mountain: '+results.length+' checks');
+      const movement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));
+      console.log('PASS cave movement: '+movement.length+' checks');
+      await evaluate(`G=fresh();G.prologue={done:true};G.tutorial.complete=true;G.cave={facao:true,floor:1,deepest:1,hp:100,dunstanTaught:true,up:{}};started=true;paused=true;$('start').classList.add('hidden');goOutside();enterCave(1);closeDialog(true);worldOut.x=780;worldOut.y=710;draw();`);
+      const shot=await send('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-mountain-preview.png'),Buffer.from(shot.data,'base64'));
+      await evaluate(`switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+100});draw();`);
+      const mouth=await send('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-cave-mouth-preview.png'),Buffer.from(mouth.data,'base64'));
+      const gait=await evaluate(`(()=>{const previous=ctx,c=document.createElement('canvas');c.width=1200;c.height=980;ctx=c.getContext('2d');rect(0,0,1200,980,'#777a60');['lucia','anselmo','rosa','inter_1','gremio_3','gremio2_4','dunstano'].forEach((id,row)=>{const p=PEOPLE.find(p=>p.id===id),a=SECONDARY_POSES.get(p.sprite);txt(p.name,100,row*135+30,16,'#fff');for(let step=0;step<4;step++){const index=a.start+a.steps+secondaryStep(a.steps,step,true);expansionSprite(a.key,index,300+step*230,row*135+125,115,false,a.height);}});ctx=previous;return c.toDataURL('image/png').split(',')[1];})()`);
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-gait-preview.png'),Buffer.from(gait,'base64'));
+      const contact = await evaluate(`(()=>{
+        const previous=ctx,oldOut=worldOut,c=document.createElement('canvas');c.width=1600;c.height=1000;ctx=c.getContext('2d');
+        rect(0,0,1600,1000,'#817d60');
+        Object.entries(CAVE_BEAST_ART).forEach(([kind,[sheet,start,h]],i)=>{const x=70+(i%4)*400,y=190+Math.floor(i/4)*230;txt(CAVE_BEASTS[kind].name,x+100,y+30,18,'#fff');expansionSprite(sheet,start,x,y,h,false,expansionRowHeight(sheet,start,4));expansionSprite(sheet,start+3,x+180,y,h,false,expansionRowHeight(sheet,start,4));});
+        worldOut={map:'vila',x:500,y:700};mountedPose('sadi-mounted-v1',240,720,1,0,true);mountedPose('olmiro-mounted-v1',650,720,1,0,true);
+        expansionSprite('horse-tether-v1',0,1070,720,155);secondaryPose(PEOPLE[PADRE_ROMIO].sprite,1400,720,true,1,0);
+        for(let i=0;i<4;i++)expansionSprite('sadi-combat-v1',4+i,180+i*340,970,150,false,expansionRowHeight('sadi-combat-v1',0,12));
+        ctx=previous;worldOut=oldOut;return c.toDataURL('image/png').split(',')[1];
+      })()`);
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-mountain-sprites.png'),Buffer.from(contact,'base64'));
+      await evaluate(`document.body.insertAdjacentHTML('beforeend','<main style="position:fixed;inset:0;z-index:999999;display:grid;grid-template-columns:repeat(11,1fr);align-content:start;gap:8px;padding:16px;background:#30271d">'+CARDS.map(c=>'<section style="height:200px;background:#eee4c4;color:#332414"><div style="position:relative;overflow:hidden;height:165px">'+collectibleArt(c.id)+'</div><div style="font:12px sans-serif;padding:4px">'+c.name+'</div></section>').join('')+'</main>')`);
+      await waitUntil(()=>evaluate(`Promise.all(['cards-bodega-v1','cards-history-v1','cards-voices-v1'].map(key=>new Promise(resolve=>{const i=new Image();i.onload=()=>resolve(true);i.onerror=()=>resolve(false);i.src='assets/images/expansion/'+key+'.png';}))).then(a=>a.every(Boolean))`),'Cartas não carregaram');
+      const cards=await send('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-mountain-cards.png'),Buffer.from(cards.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     for (const entry of entries) for (const protocol of ['file', 'http']) {
       await load(protocol === 'file' ? pathToFileURL(path.join(root, entry)).href : base + '/' + entry);
       assert(await evaluate(`G.day===1&&W===1600&&H===900&&canWalk(G.player.x,G.player.y)&&$('startLogo').naturalWidth>0`));
@@ -107,6 +184,12 @@ async function main() {
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
       await evaluate('Promise.all([worldArtLoaded,walkArtLoaded])');
+      const mountainResults=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+mountainResults.length+' verificações da caverna, montaria e personagens');
+      const caveMovement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+caveMovement.length+' verificações de colisão e dash');
+      const caveLife=await evaluate(fs.readFileSync(path.join(__dirname,'cave-life-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+caveLife.length+' verificações dos encontros e da progressão da caverna');
       const trayResults=await evaluate(fs.readFileSync(path.join(__dirname,'sadi-tray-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+trayResults.length+' verificações do Sadi com bandeja e galpão');
       const interiorWalkResults = await evaluate(fs.readFileSync(path.join(__dirname, 'interior-walk-scenarios.js'), 'utf8'));

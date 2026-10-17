@@ -8,14 +8,18 @@
 
 const CAVE = { cell: 80, cols: 22, rows: 14, door: { x: 1625, y: 400 }, maxHp: 100, heal: 20, deep: 10, stops: [1, 5, 10, 15, 20], start: [2, 11] };
 const CAVE_BEASTS = {
-  javali: { name: 'Javali', hp: 30, speed: 110, dmg: 14, r: 34, cash: [3, 6], from: 1, weight: 4 },
+  javali: { name: 'Javali', hp: 30, speed: 110, dmg: 14, r: 34, cash: [3, 6], from: 2, weight: 4 },
   sanguanel: { name: 'Sanguanel', hp: 18, speed: 160, dmg: 8, r: 22, cash: [2, 5], from: 2, weight: 3 },
   boitata: { name: 'Boitatá', hp: 40, speed: 90, dmg: 12, r: 30, cash: [5, 9], from: 5, weight: 2 },
   lobisomem: { name: 'Lobisomem', hp: 70, speed: 150, dmg: 20, r: 34, cash: [8, 14], from: 7, weight: 2 },
-  mula: { name: 'Mula sem Cabeça', hp: 55, speed: 120, dmg: 18, r: 36, cash: [7, 12], from: 9, weight: 2 }
+  mula: { name: 'Mula sem Cabeça', hp: 55, speed: 120, dmg: 18, r: 36, cash: [7, 12], from: 9, weight: 2 },
+  teiniagua: { name: 'Teiniaguá', hp: 26, speed: 100, dmg: 9, r: 23, cash: [4, 8], from: 3, weight: 3, behavior: 'boitata' },
+  onca: { name: 'Onça-parda', hp: 44, speed: 145, dmg: 16, r: 32, cash: [6, 10], from: 4, weight: 3, behavior: 'lobisomem' },
+  anhanga: { name: 'Anhangá', hp: 60, speed: 125, dmg: 17, r: 32, cash: [8, 13], from: 6, weight: 2, behavior: 'javali' }
 };
-Object.assign(BAG_RAW, { ametista: { name: 'Ametista', icon: '💜', value: 18, note: 'pedra da caverna da Serra; o Armazém compra' }, agata: { name: 'Ágata', icon: '🟠', value: 10, note: 'pedra da caverna da Serra; o Armazém compra' } });
-SELLABLE.push('ametista', 'agata');
+Object.assign(BAG_RAW, { ametista: { name: 'Ametista', icon: '◆', value: 18 }, agata: { name: 'Ágata', icon: '◆', value: 28 } });
+// Minérios são negociados apenas com São Dunstano, no refúgio.
+BAG_RAW.ametista.note = BAG_RAW.agata.note = 'São Dunstano compra no primeiro andar da caverna';
 
 // ---------- Sons da caverna ----------
 // Cada bicho tem a sua voz: o javali guincha, o sanguanel dá risadinha, o boitatá chia, o lobisomem rosna e uiva, a mula
@@ -32,11 +36,15 @@ Object.assign(AudioEngine, {
     o.connect(f); f.connect(g); g.connect(this.out()); o.start(now); o.stop(now + dur + .05);
   },
   caveCry(kind, dead = false) {
+    if (dead && typeof this.caveDeath === 'function') { this.caveDeath(kind); return; }
     if (kind === 'javali') { this.caveVoice([620, 1150, 820, 540], dead ? .55 : .2, { formant: 1400, q: 3, vol: .07, vib: 40, rate: 30 }); if (dead) this.caveVoice([170, 90], .4, { formant: 400, vol: .06, delay: .45 }); }
     else if (kind === 'sanguanel') { for (let i = 0; i < (dead ? 3 : 2); i++) this.caveVoice([1100 - i * 120, 1400 - i * 150], .07, { type: 'triangle', formant: 1500, q: 1, vol: .05, delay: i * .09 }); if (dead) this.caveVoice([1600, 300], .7, { type: 'sine', formant: 900, q: .7, vol: .05, delay: .27 }); }
     else if (kind === 'boitata') { this.hiss(dead ? .9 : .25, dead ? .1 : .06, 2400); this.pop(1800, .12, .04); if (dead) this.fireOut(); }
     else if (kind === 'lobisomem') { if (dead) this.caveVoice([320, 560, 600, 380], 1.3, { formant: 900, q: 1.5, vol: .07, vib: 12, rate: 6 }); else this.caveGrowl(.3, .08); }
     else if (kind === 'mula') this.caveVoice([520, 940, 780, 420], dead ? .8 : .35, { formant: 1300, q: 2.5, vol: .065, vib: 70, rate: 19 });
+    else if (kind === 'teiniagua') { this.hiss(dead ? .5 : .2,.04,2600); this.note(dead ? 660 : 1320,.12,'sine',.035); }
+    else if (kind === 'onca') this.caveGrowl(dead ? .7 : .25,.07);
+    else if (kind === 'anhanga') this.caveVoice([420,620,350],dead ? .8 : .3,{type:'sine',formant:900,vol:.05,vib:8,rate:5});
   },
   caveGrowl(dur = .4, vol = .07) { this.caveVoice([95, 120, 85], dur, { formant: 500, q: 1.2, vol, vib: 25, rate: 23 }); this.noise(dur * .8, vol * .8, 300); },
   caveSnort() { this.noise(.16, .2, 650); this.note(130, .1, 'triangle', .06); setTimeout(() => this.noise(.12, .16, 800), 170); },
@@ -74,8 +82,9 @@ function caveLootHTML(t) { const l = caveLootTiles(t); return l.length ? `<div c
 function caveState() { G.cave ??= { facao: false, floor: 1, deepest: 1, hp: CAVE.maxHp, vo: false }; G.cave.up ??= {}; return G.cave; }
 // A gruta só aparece depois de aceitar procurar a Baia (ou pra quem já desceu nela antes).
 function caveOpen() { return !!G.cave?.facao || ['active', 'done'].includes(missionState('baia')?.status); }
-// Melhorias do facão, vendidas no balcão do Mano Lima.
+// Melhorias do facão, na ferraria de São Dunstano no primeiro andar.
 const CAVE_UPGRADES = [
+  { id: 'dash', name: 'Passo de esquiva', icon: '↗', cost: 160, desc: 'Libera o dash com Shift: invulnerável durante a esquiva, com 1,2 s de recarga.' },
   { id: 'afiado', name: 'Facão afiado na pedra', icon: '🔪', cost: 120, desc: 'Golpe mais forte: 18 de dano (era 12).' },
   { id: 'aco', name: 'Lâmina de aço carbono', icon: '⚔️', cost: 320, requires: 'afiado', desc: 'O golpe mais forte de todos: 26 de dano.' },
   { id: 'cabo', name: 'Cabo de chifre de boi', icon: '🐂', cost: 150, desc: 'Golpe mais ligeiro: dá pra bater mais seguido.' },
@@ -97,6 +106,11 @@ const caveCenter = (cx, cy) => ({ x: (cx + .5) * CAVE.cell, y: (cy + .5) * CAVE.
 function buildCaveFloor(floor) {
   const R = caveRand(floor * 7919 + G.day * 104729 + 17), { cols, rows } = CAVE, [sx, sy] = CAVE.start;
   const grid = Array.from({ length: rows }, (_, y) => Array.from({ length: cols }, (_, x) => x === 0 || y === 0 || x === cols - 1 || y === rows - 1 ? 1 : 0));
+  if (floor === 1) return {
+    floor, grid, rocks: [],
+    beasts: [], drops: [], shots: [], ladder: { ...caveCenter(18, 4), shown: true },
+    chest: null, swing: null, cd: 0, inv: 0, hurt: 0, t: 0, ladderPing: 0
+  };
   const reach = () => { const seen = new Set([sx + ',' + sy]), q = [[sx, sy]]; while (q.length) { const [x, y] = q.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (!seen.has(k) && grid[ny]?.[nx] === 0) { seen.add(k); q.push([nx, ny]); } } } return seen; };
   const open = () => { let n = 0; for (const r of grid) for (const c of r) if (!c) n++; return n; };
   for (let b = 0; b < 9 + Math.min(floor, 8); b++) {
@@ -109,13 +123,13 @@ function buildCaveFloor(floor) {
   const run = { floor, grid, rocks: [], beasts: [], drops: [], shots: [], ladder: null, chest: null, swing: null, cd: 0, inv: 0, hurt: 0, t: 0 };
   const lc = takeCell(10) || takeCell(4); run.ladder = { ...caveCenter(...lc), shown: false };
   const nRocks = 8 + Math.floor(R() * 6);
-  for (let k = 0; k < nRocks; k++) { const c = takeCell(); if (!c) break; const p = caveCenter(...c), roll = R(); run.rocks.push({ x: p.x + (R() - .5) * 20, y: p.y + (R() - .5) * 20, hp: 3, loot: roll < .12 + floor * .01 ? 'ametista' : roll < .4 ? 'agata' : roll < .55 ? 'pinhao' : null }); }
+  for (let k = 0; k < nRocks; k++) { const c = takeCell(); if (!c) break; const p = caveCenter(...c), roll = R(); run.rocks.push({ x: p.x + (R() - .5) * 20, y: p.y + (R() - .5) * 20, hp: floor > 10 ? 4 : 3, loot: roll < .4 ? (floor > 10 ? 'agata' : 'ametista') : roll < .55 ? 'pinhao' : null }); }
   // A escada pode estar embaixo de uma pedra: quebrou, achou.
   if (run.rocks.length && R() < .45) { const r = run.rocks[Math.floor(R() * run.rocks.length)]; Object.assign(run.ladder, { x: r.x, y: r.y }); r.ladder = true; }
   const kinds = Object.entries(CAVE_BEASTS).filter(([, b]) => b.from <= floor), total = kinds.reduce((n, [, b]) => n + b.weight, 0);
   for (let k = 0; k < Math.min(3 + floor, 10); k++) {
     const c = takeCell(6); if (!c) break; let roll = R() * total, kind = kinds[0][0]; for (const [id, b] of kinds) { roll -= b.weight; if (roll <= 0) { kind = id; break; } }
-    const B = CAVE_BEASTS[kind], hp = Math.round(B.hp * (1 + Math.max(0, floor - B.from) * .08)), p = caveCenter(...c);
+    const B = CAVE_BEASTS[kind], hp = Math.round(B.hp * (1 + Math.max(0, floor - B.from) * .08) * (floor > 10 ? 1.3 : 1)), p = caveCenter(...c);
     run.beasts.push({ kind, x: p.x, y: p.y, hp, max: hp, dx: R() < .5 ? -1 : 1, state: 'roam', t: R() * 2, vx: 0, vy: 0, hurt: 0, frame: 0 });
   }
   if (floor === CAVE.deep && !caveState().vo) { const c = takeCell(8); if (c) run.chest = { ...caveCenter(...c), vo: true, open: false }; }
@@ -125,6 +139,83 @@ function buildCaveFloor(floor) {
 function caveFloorRun() { const st = caveState(); if (!caveRun || caveRun.floor !== st.floor || caveRun.day !== G.day) { caveRun = buildCaveFloor(st.floor); caveRun.day = G.day; } return caveRun; }
 function caveWall(x, y) { const cx = Math.floor(x / CAVE.cell), cy = Math.floor(y / CAVE.cell); return caveFloorRun().grid[cy]?.[cx] !== 0; }
 function caveFree(x, y, pad = 30) { if (caveWall(x, y)) return false; for (const r of caveFloorRun().rocks) if (r.hp > 0 && Math.hypot(r.x - x, r.y - y) < pad) return false; return true; }
+
+// One foot collider for walking, knockback and dash. A center-point check used
+// by the old knockback could put the player inside the walking collider's wall.
+const CAVE_PLAYER_RADIUS = 16;
+const CAVE_DASH = { duration:.22, speed:900, cooldown:1.2 };
+function cavePlayerFree(x,y) {
+  const cy=y-10,r=CAVE_PLAYER_RADIUS,C=CAVE.cell,run=caveFloorRun();
+  for(let row=Math.floor((cy-r)/C);row<=Math.floor((cy+r)/C);row++)
+    for(let col=Math.floor((x-r)/C);col<=Math.floor((x+r)/C);col++) {
+      if(run.grid[row]?.[col]===0)continue;
+      const nx=clamp(x,col*C,(col+1)*C),ny=clamp(cy,row*C,(row+1)*C);
+      if((x-nx)**2+(cy-ny)**2<r*r)return false;
+    }
+  return !run.rocks.some(rock=>rock.hp>0&&Math.hypot(x-rock.x,cy-(rock.y-8))<r+22);
+}
+function caveUnstickPlayer() {
+  const p=worldOut;if(worldCanWalk(p.x,p.y))return false;
+  // Only repair invalid positions, including saves made against old walls.
+  for(let radius=4;radius<=160;radius+=4)for(let n=0;n<32;n++) {
+    const angle=n*Math.PI/16,x=p.x+Math.cos(angle)*radius,y=p.y+Math.sin(angle)*radius;
+    if(worldCanWalk(x,y)){p.x=x;p.y=y;return true;}
+  }
+  Object.assign(p,caveCenter(...CAVE.start));return true;
+}
+function caveMovePlayer(dx,dy) {
+  const p=worldOut; caveUnstickPlayer();const oldX=p.x,oldY=p.y;
+  // Small swept steps keep even a dash or a long frame from crossing a wall.
+  const count=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4)),sx=dx/count,sy=dy/count;
+  for(let n=0;n<count;n++) {
+    if(worldCanWalk(p.x+sx,p.y))p.x+=sx;
+    if(worldCanWalk(p.x,p.y+sy))p.y+=sy;
+  }
+  return Math.hypot(p.x-oldX,p.y-oldY);
+}
+function caveDash() {
+  if(caveDefeatActive())return false;
+  if(!inCave()||!started||paused||modal||scene||phoneOpen||worldTalkOpen()||G.game||G.bocce||G.penalties)return false;
+  if(!caveUp('dash')){floatNote('Compre o Passo de esquiva com São Dunstano no primeiro andar.');return false;}
+  const run=caveFloorRun(),p=worldOut;if(run.dash||(run.dashCd||0)>0)return false;
+  let dx=Number(keys.has('d')||keys.has('ArrowRight'))-Number(keys.has('a')||keys.has('ArrowLeft'));
+  let dy=Number(keys.has('s')||keys.has('ArrowDown'))-Number(keys.has('w')||keys.has('ArrowUp'));
+  if(!dx&&!dy){dx=p.dx||0;dy=p.dy||0;}if(!dx&&!dy)dy=1;
+  const length=Math.hypot(dx,dy);dx/=length;dy/=length;caveUnstickPlayer();
+  run.dash={t:CAVE_DASH.duration,dx,dy};run.dashCd=CAVE_DASH.cooldown;run.swing=null;
+  p.dx=dx;p.dy=dy;AudioEngine.swoosh(.07);caveUpdateControls();return true;
+}
+function cavePlayerTick(dt) {
+  if(caveDefeatActive())return;
+  if(paused||modal||scene||phoneOpen)return;
+  const p=worldOut,run=caveFloorRun();caveUnstickPlayer();
+  run.dashTrail=(run.dashTrail||[]).filter(t=>(t.life-=dt)>0);
+  if(run.dash) {
+    const d=run.dash,time=Math.min(Math.max(0,d.t),dt);
+    if(time>0)run.dashTrail.push({x:p.x,y:p.y,life:.16});
+    p.walk=caveMovePlayer(d.dx*CAVE_DASH.speed*time,d.dy*CAVE_DASH.speed*time)>.01;
+    p.dx=d.dx;p.dy=d.dy;d.t-=dt;return;
+  }
+  let dx=Number(keys.has('d')||keys.has('ArrowRight'))-Number(keys.has('a')||keys.has('ArrowLeft'));
+  let dy=Number(keys.has('s')||keys.has('ArrowDown'))-Number(keys.has('w')||keys.has('ArrowUp'));
+  const length=Math.hypot(dx,dy);p.walk=false;if(!length)return;
+  dx/=length;dy/=length;p.dx=dx;p.dy=dy;
+  const step=BASE_SPEED*1.4*(1+movementBonus())*dt;
+  p.walk=caveMovePlayer(dx*step,dy*step)>.01;
+}
+function caveUpdateControls() {
+  const visible=inCave(),run=visible?caveFloorRun():null,btn=$('caveDashButton');
+  $('caveAttackButton')?.classList.toggle('hidden',!visible);
+  if(!btn)return;btn.classList.toggle('hidden',!visible||!caveUp('dash'));
+  const cooldown=run?.dashCd||0;btn.disabled=!visible||!caveUp('dash')||!!run?.dash||cooldown>0;
+  btn.textContent=run?.dash?'Dash · invulnerável':cooldown>0?'Dash · '+cooldown.toFixed(1)+'s':'Shift · Dash';
+}
+function drawCaveDash() {
+  const run=caveFloorRun();ctx.save();
+  for(const t of run.dashTrail||[]){ctx.globalAlpha=t.life/.16*.45;ellipse(t.x,t.y-8,20,9,'#a9eaff');}
+  if(run.dash){ctx.globalAlpha=.65;ctx.strokeStyle='#b8f1ff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(worldOut.x,worldOut.y-10,26,12,0,0,Math.PI*2);ctx.stroke();}
+  ctx.restore();
+}
 
 // ---------- Entrar, descer, subir e desmaiar ----------
 function caveDoorSpot() {
@@ -136,7 +227,7 @@ function caveDoor() {
   if (!st.facao) {
     talk([['card', '<b>🔪 O facão do vô</b><br>Na boca da gruta, cravado numa pedra, um facão de cabo de chifre com as iniciais do vô. Lá de baixo vem um bafo frio e um grunhido de javali.', 'Caverna da Serra'],
       ['sadi', 'Bah, que facão cuiudo! O vô descia aqui embaixo, é?'],
-      ['dica', '<b>Espaço</b> ou <b>F</b>: golpe de facão (no celular, o botão Facão).<br><b>E</b>: escada, baú e corda.<br>Quebre as pedras: ametista e ágata o Armazém compra; pinhão recupera a vida. A escada aparece quando os bichos acabam ou embaixo de uma pedra. Cada andar mais fundo tem bicho mais brabo, e lá no fundo tem coisa do vô.', 'Como funciona a caverna']], () => { st.facao = true; save(); enterCave(1); }, 'Descer');
+      ['dica', '<b>Espaço</b> ou <b>F</b>: golpe de facão (no celular, o botão Facão).<br><b>E</b>: escada, baú e corda.<br>São Dunstano te recebe no primeiro andar: compra teus minérios e vende melhorias, inclusive o dash. Ametistas aparecem do andar 2 ao 10; depois vêm as ágatas. Pinhão recupera a vida. A escada aparece quando os bichos acabam ou embaixo de uma pedra.', 'Como funciona a caverna']], () => { st.facao = true; save(); enterCave(1); }, 'Descer');
     return;
   }
   const stops = CAVE.stops.filter(n => n <= st.deepest);
@@ -156,20 +247,24 @@ function caveDescend() {
 }
 // Subiu pela corda: o saldo da descida, se rendeu alguma coisa.
 function caveLeave(text, quiet = false) {
-  const st = caveState(), t = caveTrip; st.hp = caveMaxHp(); caveRun = null; caveTrip = null; $('caveAttackButton')?.classList.add('hidden');
+  const st = caveState(), t = caveTrip; st.hp = caveMaxHp(); caveRun = null; caveTrip = null; $('caveAttackButton')?.classList.add('hidden');$('caveDashButton')?.classList.add('hidden');
   switchMap({ map: 'serra', x: CAVE.door.x, y: CAVE.door.y + 70, title: text || 'Serra Gaúcha' }); save();
   if (!quiet && t && caveLootTiles(t).length) { AudioEngine.coins(); talk([['card', `<b>🪢 De volta à Serra</b><br>${t.deepest > t.from ? 'Desceu do andar ' + t.from + ' até o ' + t.deepest : 'Explorou o andar ' + t.from}. Trouxe:${caveLootHTML(t)}`, 'Saldo da descida']], null, 'Beleza'); }
   return t;
 }
 function caveFaint() {
-  const st = caveState(), lost = Math.min(50, Math.round(G.cash * .1)); G.cash = round(G.cash - lost); st.floor = 1; AudioEngine.caveFaintSound(); const t = caveLeave('Serra Gaúcha', true), kept = t ? caveLootHTML(t) : '';
+  beginCaveDefeat();
+}
+function caveRecover(lost) {
+  caveState().floor = 1; const t = caveLeave('Serra Gaúcha', true), kept = t ? caveLootHTML(t) : '';
   talk([['card', `<b>😵 Desmaiou na caverna</b><br>Acordou na boca da gruta, com a cabeça doendo e o bolso mais leve (−${money(lost)}). Dizem que foi o Badin que te puxou pela corda.${kept ? '<br>O que você achou lá embaixo ficou com você:' + kept : ''}`, 'Caverna da Serra'], ['badin', 'Ô, Sadi! Lá embaixo não é lugar de ir com a barriga vazia, capaz!']], null, 'Levantar');
 }
 
 // ---------- Facão ----------
 function caveAttack() {
-  if (!inCave() || modal || scene || worldTalkOpen()) return;
-  const run = caveFloorRun(), p = worldOut; if (run.cd > 0) return;
+  if(caveDefeatActive())return;
+  if (!inCave() || paused || phoneOpen || modal || scene || worldTalkOpen()) return;
+  const run = caveFloorRun(), p = worldOut; if (run.cd > 0 || run.dash) return;
   run.cd = caveCd(); const ang = Math.atan2(p.dy || 0, p.dx || (p.dy ? 0 : 1)); run.swing = { t: .2, ang };
   AudioEngine.swoosh(.08); let flesh = false, stone = false;
   const inArc = (x, y, reach) => { const d = Math.hypot(x - p.x, y - (p.y - 30)); if (d > reach) return false; const a = Math.atan2(y - (p.y - 30), x - p.x); return Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) < 1.25 || d < 40; };
@@ -195,16 +290,20 @@ const CAVE_ROCK_LOOT = { ametista: 'Ametista!', agata: 'Ágata!', pinhao: 'Pinh�
 function caveBreak(r) {
   const run = caveFloorRun(); AudioEngine.caveCrumble(); fxPuffs(r.x, r.y - 16, 9, 110, '#8a7d70');
   for (let i = 0; i < 8; i++) fxAdd('shard', r.x, r.y - 14, { vx: fxRand(-170, 170), vy: fxRand(-220, -80), g: 640, life: fxRand(.6, 1), size: fxRand(4, 8), vr: fxRand(-14, 14), floor: r.y + fxRand(2, 18), color: pick(['#6a5e52', '#7d7064', '#54473a']) });
-  if (r.loot) { run.drops.push({ x: r.x, y: r.y, k: r.loot, q: 1 }); effect((BAG_RAW[r.loot]?.icon || '🌰') + ' ' + CAVE_ROCK_LOOT[r.loot], r.x, r.y - 60, r.loot === 'pinhao' ? '#d8ffac' : '#e8d0ff', 17); if (r.loot !== 'pinhao') AudioEngine.caveGem(); }
+  if (r.loot) { run.drops.push({ x: r.x, y: r.y, k: r.loot, q: 1 }); if (r.loot === 'pinhao') effect(CAVE_ROCK_LOOT.pinhao, r.x, r.y - 60, '#d8ffac', 17); else AudioEngine.caveGem(); }
   if (r.ladder) { run.ladder.shown = true; run.ladderPing = 2.5; AudioEngine.caveLadder(); effect('Uma escada embaixo da pedra!', r.x, r.y - 90, '#fff2b0', 18); }
 }
 // Sem bicho no andar, a escada aparece.
 function caveReveal() { const run = caveFloorRun(); if (!run.ladder.shown && run.beasts.every(b => b.hp <= 0)) { run.ladder.shown = true; run.ladderPing = 2.5; AudioEngine.caveLadder(); const { x, y } = run.ladder; effect('A escada pro andar de baixo!', x, y - 70, '#fff2b0', 18); for (const r of run.rocks) if (r.ladder) r.ladder = false; } }
 function caveHurt(dmg, from) {
-  const run = caveFloorRun(), st = caveState(); if (run.inv > 0) return;
+  if(typeof caveDefeatActive==='function'&&caveDefeatActive())return;
+  const run = caveFloorRun(), st = caveState(); if (run.floor === 1 || run.inv > 0 || run.dash) return;
+  if(run.floor>10)dmg=Math.ceil(dmg*1.25);
+  if (from.kind) from.attack = .35;
   st.hp = Math.max(0, st.hp - dmg); run.inv = .9; run.hurt = .3; run.shake = .3; AudioEngine.caveOuch();
   effect('−' + dmg, worldOut.x, worldOut.y - 130, '#ff8a7a', 24);
-  const d = Math.hypot(worldOut.x - from.x, worldOut.y - from.y) || 1; for (let k = 0; k < 6; k++) { const nx = worldOut.x + (worldOut.x - from.x) / d * 10, ny = worldOut.y + (worldOut.y - from.y) / d * 10; if (caveFree(nx, ny, 20)) { worldOut.x = nx; worldOut.y = ny; } }
+  const d = Math.hypot(worldOut.x - from.x, worldOut.y - from.y) || 1;
+  caveMovePlayer((worldOut.x-from.x)/d*60,(worldOut.y-from.y)/d*60);
   if (st.hp <= 0) caveFaint();
 }
 // Anda com colisão nas paredes e pedras; devolve falso se bateu.
@@ -212,7 +311,10 @@ function caveMove(b, dx, dy) { let ok = true; if (caveFree(b.x + dx, b.y, 26)) b
 
 // ---------- Bichos ----------
 function caveTick(dt) {
+  if(caveDefeatActive())return;
+  if(paused||modal||scene||phoneOpen)return;
   const run = caveFloorRun(), p = worldOut, st = caveState(), t = caveTripNow(); run.t += dt; run.cd = Math.max(0, run.cd - dt); run.inv = Math.max(0, run.inv - dt); run.hurt = Math.max(0, run.hurt - dt);
+  run.dashCd=Math.max(0,(run.dashCd||0)-dt);
   run.shake = Math.max(0, (run.shake || 0) - dt); run.ladderPing = Math.max(0, (run.ladderPing || 0) - dt);
   if (run.swing && (run.swing.t -= dt) <= 0) run.swing = null;
   // Pouca vida: o coração bate forte. De vez em quando, uma gota pinga do teto.
@@ -220,36 +322,38 @@ function caveTick(dt) {
   run.drip = (run.drip ?? 2) - dt; if (run.drip <= 0) { run.drip = 2.5 + Math.random() * 4; AudioEngine.caveDrip(); }
   if (run.freeze > 0) run.freeze -= dt;
   else {
-    for (const b of run.beasts) if (b.hp > 0) caveBeastTick(b, dt, run, p);
-    for (const s of run.shots) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (caveWall(s.x, s.y)) s.life = 0; else if (Math.hypot(s.x - p.x, s.y - (p.y - 40)) < 30) { s.life = 0; caveHurt(s.dmg, s); } }
+    for (const b of run.beasts) { if (b.hp > 0) caveBeastTick(b, dt, run, p); if(caveDefeatActive())return; }
+    for (const s of run.shots) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (caveWall(s.x, s.y)) s.life = 0; else if (Math.hypot(s.x - p.x, s.y - (p.y - 40)) < 30) { s.life = 0; caveHurt(s.dmg, s); } if(caveDefeatActive())return; }
     run.shots = run.shots.filter(s => s.life > 0);
   }
   for (const d of run.drops) if (!d.got && Math.hypot(d.x - p.x, d.y - p.y) < 46) {
     d.got = true;
     if (d.k === 'moeda') { G.cash = round(G.cash + d.q); t.cash += d.q; effect('+' + money(d.q), d.x, d.y - 50, '#ffe27a', 18); AudioEngine.coins(); }
     else if (d.k === 'pinhao') { st.hp = Math.min(caveMaxHp(), st.hp + 15); effect('+15 ❤ pinhão', d.x, d.y - 50, '#d8ffac', 18); fxHearts(p.x, p.y - 120, 2); AudioEngine.caveHeal(); }
-    else { bagAdd(d.k, d.q); t[d.k] = (t[d.k] || 0) + d.q; effect(BAG_RAW[d.k].icon + ' ' + BAG_RAW[d.k].name + ' · agora ' + bagQty(d.k), d.x, d.y - 50, '#e8d0ff', 18); AudioEngine.caveGem(); }
+    else { bagAdd(d.k, d.q); t[d.k] = (t[d.k] || 0) + d.q; effect('+' + d.q + ' ' + BAG_RAW[d.k].name.toLowerCase(), d.x, d.y - 50, '#e8d0ff', 18); AudioEngine.caveGem(); }
   }
   run.drops = run.drops.filter(d => !d.got);
-  const btn = $('caveAttackButton'); if (btn) btn.classList.toggle('hidden', !inCave());
+  if(run.dash?.t<=0)run.dash=null;
+  caveUpdateControls();
 }
 function caveBeastTick(b, dt, run, p) {
   const B = CAVE_BEASTS[b.kind], dxp = p.x - b.x, dyp = p.y - b.y, dist = Math.hypot(dxp, dyp) || 1;
+  const behavior = B.behavior || b.kind; b.attack = Math.max(0, (b.attack || 0) - dt);
   b.hurt = Math.max(0, b.hurt - dt); b.t -= dt; b.frame += dt * 8; if (Math.abs(dxp) > 6 && !['charge', 'lunge'].includes(b.state)) b.dx = dxp < 0 ? -1 : 1;
   const toward = sp => caveMove(b, dxp / dist * sp * dt, dyp / dist * sp * dt);
   const roam = () => { if (b.t <= 0) { const a = Math.random() * Math.PI * 2; b.vx = Math.cos(a); b.vy = Math.sin(a); b.t = 1 + Math.random() * 1.5; } if (!caveMove(b, b.vx * B.speed * .5 * dt, b.vy * B.speed * .5 * dt)) b.t = 0; if (Math.abs(b.vx) > .2) b.dx = b.vx < 0 ? -1 : 1; };
-  if (b.kind === 'javali' || b.kind === 'mula') {
+  if (behavior === 'javali' || behavior === 'mula') {
     if (b.state === 'roam') { roam(); if (dist < 360) { b.state = 'windup'; b.t = b.kind === 'mula' ? .45 : .6; AudioEngine.caveSnort(); } }
     else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'charge'; b.t = .75; b.vx = dxp / dist; b.vy = dyp / dist; b.dx = b.vx < 0 ? -1 : 1; } }
     else if (b.state === 'charge') { const sp = b.kind === 'mula' ? 480 : 420; if (!caveMove(b, b.vx * sp * dt, b.vy * sp * dt) || b.t <= 0) { b.state = 'rest'; b.t = .7; } }
     else if (b.t <= 0) b.state = 'roam';
-  } else if (b.kind === 'sanguanel') {
+  } else if (behavior === 'sanguanel') {
     toward(B.speed * (.7 + .3 * Math.sin(run.t * 6 + b.x)));
     if (b.t <= 0) { b.t = 3 + Math.random() * 1.5; for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, nx = p.x + Math.cos(a) * 170, ny = p.y + Math.sin(a) * 130; if (caveFree(nx, ny, 26)) { fxPuffs(b.x, b.y - 20, 6, 40, '#b8a8d8'); b.x = nx; b.y = ny; AudioEngine.caveGiggle(); break; } } }
-  } else if (b.kind === 'boitata') {
+  } else if (behavior === 'boitata') {
     if (dist < 220) toward(-B.speed); else if (dist > 320) toward(B.speed); else roam();
-    if (b.t <= 0 && dist < 520) { b.t = 2.6; const sp = 260; run.shots.push({ x: b.x, y: b.y - 30, vx: dxp / dist * sp, vy: (dyp - 30) / dist * sp, life: 2.6, dmg: B.dmg }); AudioEngine.caveFireball(); }
-  } else if (b.kind === 'lobisomem') {
+    if (b.t <= 0 && dist < 520) { b.t = 2.6; b.attack = .4; const sp = 260; run.shots.push({ x: b.x, y: b.y - 30, vx: dxp / dist * sp, vy: (dyp - 30) / dist * sp, life: 2.6, dmg: B.dmg }); AudioEngine.caveFireball(); }
+  } else if (behavior === 'lobisomem') {
     if (b.state === 'lunge') { if (!caveMove(b, b.vx * 380 * dt, b.vy * 380 * dt) || b.t <= 0) { b.state = 'rest'; b.t = 1.1; } }
     else if (b.state === 'rest') { if (b.t <= 0) b.state = 'chase'; }
     else { toward(dist < 520 ? B.speed : 0); if (dist < 170 && b.t <= 0) { b.state = 'lunge'; b.t = .35; b.vx = dxp / dist; b.vy = dyp / dist; AudioEngine.caveGrowl(.35, .08); } }
@@ -273,7 +377,7 @@ function caveChest() {
       ['sadi', 'Bah, vô… até aqui embaixo tu deixou recado.']], null, 'Guardar');
     return;
   }
-  const gem = Math.random() < .4 ? 'ametista' : 'agata', card = Math.random() < .5 ? randomLooseCard() : null;
+  const gem = run.floor > 10 ? 'agata' : 'ametista', card = Math.random() < .5 ? randomLooseCard() : null;
   const loot = caveChestLoot({ cash: 15 + Math.floor(Math.random() * 25) + run.floor * 2, [gem]: 1 + (Math.random() < .3 ? 1 : 0), heal: Math.random() < .35 ? 25 : 0, cards: card ? [card] : [] }); save();
   talk([['card', `<b>🧰 Baú do andar ${run.floor}</b><br>Um baú velho de tropeiro, meio enterrado na pedra. Dentro tinha:${caveLootHTML(loot)}${loot.heal ? '<small>Tinha um cantil de água fresca: +' + loot.heal + ' de vida.</small>' : ''}`, 'Achou um baú']], null, 'Guardar');
 }
@@ -318,7 +422,10 @@ function drawCaveSwing() {
   const k = 1 - s.t / .2, a0 = s.ang - 1.2 + k * 2.4;
   ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(255,248,220,${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(0, 0, 78, s.ang - 1.2, a0); ctx.stroke();
-  ctx.rotate(a0); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3); ctx.restore();
+  if (typeof EXPANSION_ART === 'undefined' || !EXPANSION_ART['sadi-combat-v1']?.naturalWidth) {
+    ctx.rotate(a0); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3);
+  }
+  ctx.restore();
 }
 function drawCaveLadder(l) { ellipse(l.x, l.y, 34, 16, '#050403'); ellipse(l.x, l.y - 2, 28, 11, '#0c0907'); for (const dx of [-12, 12]) rect(l.x + dx - 2, l.y - 34, 4, 36, '#8a6238', 1); for (let k = 0; k < 3; k++) rect(l.x - 13, l.y - 28 + k * 10, 26, 3, '#a07444', 1); }
 function drawCaveRope(x, y) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 60, 120, .25, '255,230,170'); ctx.restore(); rect(x - 2, y - 220, 4, 200, '#b89a62', 1); for (let k = 0; k < 10; k++) rect(x - 3, y - 210 + k * 20, 6, 3, '#8a7040', 1); ellipse(x, y - 18, 8, 5, '#b89a62'); }
@@ -337,7 +444,7 @@ function drawCaveDrop(d) {
 // Escuro de caverna: só a lamparina do Sadi clareia; por cima, a vida e o andar.
 function drawCaveLight() {
   if (!inCave()) return;
-  const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, caveUp('lampiao') ? 820 : 560);
+  const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, run.floor === 1 ? 600 : caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, run.floor === 1 ? 1800 : caveUp('lampiao') ? 820 : 560);
   g.addColorStop(0, 'rgba(8,6,4,0)'); g.addColorStop(1, 'rgba(8,6,4,.92)'); ctx.fillStyle = g; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000);
   // No escuro, o que interessa brilha de longe: a escada, o baú fechado e as pedras caídas.
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -367,10 +474,10 @@ function drawCaveLight() {
 WORLD_MAPS.caverna = {
   id: 'caverna', name: 'Caverna da Serra', indoor: true, W: CAVE.cols * CAVE.cell, H: CAVE.rows * CAVE.cell,
   spawn() { return caveCenter(...CAVE.start); },
-  canWalk(x, y) { return inCave() ? caveFree(x, y, 28) && caveFree(x, y - 18, 20) : true; },
+  canWalk(x, y) { return inCave() ? cavePlayerFree(x,y) : true; },
   edge() { return null; },
   onEnter() { caveRun = null; caveFloorRun(); },
-  hint() { if (worldNearest()) return null; return 'Andar ' + caveState().floor + ' · <strong>Espaço</strong> ou <strong>F</strong> facão · ache a escada'; },
+  hint() { if (worldNearest()) return null; return 'Andar ' + caveState().floor + ' · <strong>Espaço/F</strong> facão' + (caveUp('dash')?' · <strong>Shift</strong> dash':' · esquiva à venda com São Dunstano'); },
   spots() {
     const run = caveFloorRun(), s = caveCenter(...CAVE.start), list = [{ id: 'cave:rope', x: s.x, y: s.y - 40, radius: 70, label: 'Subir pela corda (sair da caverna)', act: () => caveLeave() }];
     if (run.ladder.shown) list.push({ id: 'cave:ladder', x: run.ladder.x, y: run.ladder.y, radius: 70, label: 'Descer a escada · andar ' + (run.floor + 1), act: caveDescend });
@@ -386,6 +493,7 @@ WORLD_MAPS.caverna = {
     if (run.chest) layers.push({ y: run.chest.y, draw: () => drawCaveChest(run.chest) });
     for (const d of run.drops) layers.push({ y: d.y - 30, draw: () => drawCaveDrop(d) });
     for (const b of run.beasts) if (b.hp > 0) layers.push({ y: b.y, draw: () => drawCaveBeast(b) });
+    layers.push({y:worldOut.y-1,draw:drawCaveDash});
     for (const sh of run.shots) layers.push({ y: sh.y + 30, draw: () => { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(sh.x, sh.y, 30, .6, '255,140,40'); ctx.restore(); ellipse(sh.x, sh.y, 9, 9, '#ffb030'); ellipse(sh.x, sh.y, 4, 4, '#fff2b0'); } });
     layers.push({ y: worldOut.y + 1, draw: drawCaveSwing });
   }
@@ -409,10 +517,11 @@ function drawCaveMouth(layers, seen) {
   serra.spots = function () { return [...spots.call(this), ...caveDoorSpot()]; };
   serra.draw = function (view, seen, layers) { draw.call(this, view, seen, layers); drawCaveMouth(layers, seen); };
   const begin = beginOutside; beginOutside = function (M) { const view = begin(M), k = inCave() ? (caveRun?.shake || 0) * 34 : 0; if (k) ctx.translate((Math.random() - .5) * k, (Math.random() - .5) * k); return view; };
-  const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inCave() && !modal && !scene) caveTick(dt); else { const b = $('caveAttackButton'); if (b && !b.classList.contains('hidden')) b.classList.add('hidden'); } };
-  document.addEventListener('keydown', e => { if (!inCave() || e.repeat || modal || scene || worldTalkOpen()) return; const k = e.key.toLowerCase(); if (k === ' ' || k === 'f') { e.preventDefault(); caveAttack(); } });
+  const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inCave() && !modal && !scene) caveTick(dt); else if(!inCave())caveUpdateControls(); };
+  document.addEventListener('keydown', e => { if (!inCave() || e.repeat || modal || scene || worldTalkOpen() || ['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)) return; const k = e.key.toLowerCase(); if (k === 'shift') { e.preventDefault();caveDash(); } else if (k === ' ' || k === 'f') { e.preventDefault(); caveAttack(); } });
 }
 document.addEventListener('DOMContentLoaded', () => {
   const secrets = drawSecrets; drawSecrets = function () { secrets(); drawCaveLight(); };
   $('hudLayer')?.insertAdjacentHTML('beforeend', '<button id="caveAttackButton" class="sling-button cave-attack hidden" type="button" data-act="caveAttack">🔪 Facão</button>');
+  $('hudLayer')?.insertAdjacentHTML('beforeend', '<button id="caveDashButton" class="sling-button cave-dash hidden" type="button" data-act="caveDash" title="Invulnerável durante o dash. Recarga de 1,2 segundos.">Shift · Dash</button>');
 });

@@ -510,7 +510,7 @@ function goFishing() {
     { kind: 'timing', label: 'Fisgar', text: 'A boia afundou! Aperte <span class="keycap">E</span> quando o marcador passar na faixa verde.', zone: [.36, .64], speed: .75, button: 'Fisgar', touchOnly: true, hitText: 'Fisgou!', missText: 'Escapou…' }
   ], done: r => {
     if (G.fish?.day !== G.day) G.fish = { day: G.day, n: 0 }; G.fish.n++;
-    if (r[0]) { const n = Math.random() < .3 ? 2 : 1; bagAdd('peixe', n); AudioEngine.ready(); farmXP(4, n + ' peixe' + (n > 1 ? 's' : '') + ' no inventário'); }
+    if (r[0]) { const n = Math.random() < .3 ? 2 : 1; catchRiverFish(n); }
     else worldSay('O peixe escapou. Restam ' + fishLeft() + ' lance(s) hoje.');
     save();
   } }));

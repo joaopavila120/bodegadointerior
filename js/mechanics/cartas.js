@@ -48,7 +48,8 @@ function cardFront(c, mini = false) {
   const s = cardSet(c), i = c.person ? PEOPLE.findIndex(p => p.id === c.person) : -1;
   const initials = c.name.split(/\s+/).filter(w => w.length > 2 || /^[A-ZÁÉÍÓÚ]/.test(w)).map(w => w[0]).slice(0, 2).join('');
   const art = i >= 0 ? portraitHTML(i, mini ? 120 : 240) : `<div class="tcard-ph"><b>${initials}</b><small>arte em breve</small></div>`;
-  return `<div class="tcard-face tcard-front" style="--set:${s.color}"><div class="tcard-top"><span>${cardNo(c)}</span><span>${s.icon}</span></div><div class="tcard-art">${art}<img class="tcard-img" src="assets/images/cards/${c.id}.png" alt="" draggable="false" onerror="this.remove()"></div><div class="tcard-name"><b>${escapeHTML(c.name)}</b><small>${escapeHTML(c.title)}</small></div></div>`;
+  const illustration = typeof collectibleArt === 'function' ? collectibleArt(c.id) : '';
+  return `<div class="tcard-face tcard-front" style="--set:${s.color}"><div class="tcard-top"><span>${cardNo(c)}</span><span>${s.icon}</span></div><div class="tcard-art">${illustration || art}</div><div class="tcard-name"><b>${escapeHTML(c.name)}</b><small>${escapeHTML(c.title)}</small></div></div>`;
 }
 function cardBack(c) {
   const s = cardSet(c), got = G.cards?.[c.id];

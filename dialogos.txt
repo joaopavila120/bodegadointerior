@@ -3385,4 +3385,52 @@ Perdi o truco… | Vitória! Paga um traguinho.
 Perdi… | Ganhei!
 Tu ganhou… | Vitória, e o galpão viu.
 
+[padre_romio]
+Buenas, padre! | Buenas, vivente. Uma roda de mate também é um jeito de escutar quem precisa.
+Como vai a capela? | De porta aberta e banco esperando gente. Se puder, apareça na missa antes do baile.
+Vai uma torrada? | Vai sim! A fé alimenta a alma, mas essa caminhada me abriu o apetite.
+Tem conselho pra hoje? | Cuida bem de quem chega. Às vezes a pessoa precisa de prosa tanto quanto de comida.
+
+[olmiro]
+De onde vem, seu Olmiro? | Das estradas antigas. Me chamam de último dos tropeiros, mas ainda tenho muita léguas pra contar.
+Qual o segredo da tropeada? | Respeitar o passo do animal e nunca deixar um companheiro pra trás.
+Sempre montado? | Meu escritório tem quatro patas e o teto é esse céu do pampa, vivente.
+Como escolhe o pouso? | Água limpa, abrigo do vento e pasto. Primeiro os animais, depois nosso fogo.
+
+[hans]
+Buenas, Hans! Indo pra festa? | Se a bandinha começou, minhas pernas já sabem o caminho. Mas antes, um chopp na tua bodega!
+Esse traje é de ocasião? | É o meu de domingo e de Oktoberfest. O suspensório já aguentou muita dança!
+Vai querer comer alguma coisa? | Hoje só chopp, por favor. A Helga já me fez repetir o almoço.
+Como anda a festa em Santa Catarina? | Tem música, vizinho reencontrando vizinho e história que cresce a cada mesa. Prost!
+
+[helga]
+Buenas, Helga! Vestida pra festa? | Dirndl ajeitado e sapato confortável. Festa boa é a que deixa a gente dançar até o fim.
+O Hans já passou por aqui. | Então já falou da bandinha! Se deixar, ele transforma qualquer terça-feira em Oktoberfest.
+O que vai querer na bodega? | Só um chopp bem tirado. A espuma faz parte, mas deixa espaço pra bebida, hein!
+E a volta pra casa? | Com calma e companhia. Antes disso, quero ouvir mais uma música.
+
+[estela]
+Buenas, amazona! Qual é o rumo? | Sou Estela. Vou onde o campo chama, mas minha querência fica aqui na fronteira.
+Esse cavalo é parceiro antigo? | Desde potranco. Primeiro ganhou minha confiança, depois ganhou sela. Pressa não ensina ninguém.
+Como tu escolhe o caminho? | Olho o tempo, a água e o chão. Atalho que machuca o cavalo nunca vale a distância.
+Passa pra tomar um mate! | Passo sim, depois de dar água pro meu parceiro. Quem carrega a gente merece cuidado primeiro.
+
+[ramiro]
+Buenas! Teu chapéu faz uma sombra boa. | Ramiro, ao teu dispor. Aqui cabe sombra pra mim e conselho pra quem pedir!
+Esse poncho já viu muita estrada? | Viu geada, chuva de lado e noite sem pouso. O remendo é novo; os causos são antigos.
+Vai muito longe hoje? | Até onde der antes de cansar o cavalo. O horizonte não foge; amanhã a gente continua.
+E esse bigode, não atrapalha o mate? | Só filtra a primeira erva, vivente! O difícil é o vento não me pentear do avesso.
+
+[arami]
+Buenas. Como te chamas? | Arami. Sou charrua e caminho por estas bandas com meu cavalo. É bom encontrar gente que escuta.
+Tu conhece bem a fronteira? | Conheço alguns caminhos e sigo aprendendo outros. O rio muda a margem; a gente precisa prestar atenção.
+Como vai o teu companheiro? | Vai bem. Na subida eu alivio o passo, na parada confiro a água. A viagem é dos dois.
+Tem lugar pra um mate na bodega. | Agradeço. Uma conversa com respeito vale uma parada no caminho. Guarda um lugar na sombra.
+
+[saci]
+Mas bah! Era tu naquele redemoinho? | Com uma perna eu passeio. Com o vento eu chego antes de tu terminar a pergunta!
+Foi tu que escondeu minha tampa? | Eu? Capaz! Mas olha atrás do fogão… e não pergunta como eu sei.
+Vai entrar na bodega? | Hoje fico na estrada. Se o chapéu sair voando, corre devagar: pode ser só brincadeira minha.
+Te vi passar por aqui duas vezes! | Uma era eu, a outra era a poeira tentando acompanhar. Guarda minha figurinha pra lembrar!
+
 */ };

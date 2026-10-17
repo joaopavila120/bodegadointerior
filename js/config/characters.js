@@ -45,7 +45,7 @@ for (const [file,team,names] of [
 // Sem membro definido (saves antigos, vagas extras): usa só fregueses comuns, nunca um especial como o Valter.
 let commonFallback = null;
 function groupPerson(g, index) { const m = g.members?.[index]; if (m !== undefined && m !== null) return m; commonFallback ??= PEOPLE.map((p, i) => i).filter(i => !PEOPLE[i].unique && !PEOPLE[i].removed && !PEOPLE[i].team && !isSpecial(i)); return commonFallback[((g.person || 0) + index) % commonFallback.length]; }
-function visitorPool(team = null) { return PEOPLE.map((p,i)=>i).filter(i => !PEOPLE[i].removed && (!team || PEOPLE[i].team === team)); }
+function visitorPool(team = null) { return PEOPLE.map((p,i)=>i).filter(i => !PEOPLE[i].removed && !PEOPLE[i].worldOnly && (!team || PEOPLE[i].team === team)); }
 function pickVisitor(extra=[]) {
  let team=['gremio','inter'].includes(G.event.id)?G.event.id:G.event.id==='grenal'?(Math.random()<.5?'gremio':'inter'):null;
  if(G.event.id==='grenal'&&['gremio','inter'].includes(G.event.result))team=G.event.result;

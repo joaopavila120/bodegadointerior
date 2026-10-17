@@ -4,10 +4,10 @@
 //   3. Perto da gruta, a tela escurece: "Você pisou no rastro do sanguanel…". O Sadi acha pelo baio na entrada.
 //   4. No segundo andar da caverna estão a Baia e um cusco véio. Dá pra adotar o cusco (ele ganha a casinha no campo).
 //   5. A Baia vai junto com o Sadi até a casa do Mano Lima, que fica aberta mesmo depois das 23h30.
-//   6. O Sadi conta da caverna e o Mano Lima abre o balcão dele: melhorias pro facão.
+//   6. O Sadi conta da caverna; Mano Lima indica a ferraria de São Dunstano.
 'use strict';
 
-const BAIA_TRAIL_RANGE = 380, MANO_COUNTER = { x: 960, y: 470, w: 130, h: 44 };
+const BAIA_TRAIL_RANGE = 380;
 function baiaArc() { G.baiaArc ??= { stage: null }; return G.baiaArc; }
 function baiaStage() { return G.baiaArc?.stage || null; }   // search → trail → return → done
 function baiaReturning() { return baiaStage() === 'return'; }
@@ -30,7 +30,7 @@ MISSIONS.push({ id: 'baia', title: 'A Cadela Baia sumiu', giver: 'manolima', sid
   outro: [['manolima', 'Baia! Vem cá, guria… ai, que susto tu me deu!'], ['manolima', 'Vivente, te devo essa. Onde é que ela tava metida?'],
     ['sadi', 'Numa caverna lá nos paredões da Serra. No segundo andar, no escuro… e tem bicho brabo lá embaixo, Mano.'],
     ['manolima', 'A caverna! Teu vô descia lá quando era moço, com um facão e um lampião.'],
-    ['manolima', 'Escuta: se tu for voltar lá, passa aqui antes. Eu tenho um balcão nos fundos de casa: afio facão, troco cabo, faço poncho de couro e vendo lampião.']] });
+    ['manolima', 'Escuta: antes de descer mais fundo, procura São Dunstano no primeiro andar da gruta. A ferraria dele afia facão, troca cabo e tem poncho e lampião.']] });
 
 // ---------- 1. O chamado na bodega ----------
 function baiaCall() {
@@ -112,36 +112,14 @@ function baiaFollowTick(dt) {
   if (Math.hypot(baiaTrail.x - to.x, baiaTrail.y - to.y) > 260) Object.assign(baiaTrail, to);
 }
 function baiaFollowLayers(seen, layers) { if (baiaReturning() && baiaTrail.map === worldOut?.map && seen(baiaTrail.x, baiaTrail.y)) layers.push({ y: baiaTrail.y, draw: () => drawCusco(baiaTrail.x, baiaTrail.y, baiaTrail.dx, baiaTrail.walk, false, false, BAIA.colors) }); }
-// ---------- 6. A Baia em casa e o balcão do Mano Lima ----------
+// ---------- 6. A Baia em casa ----------
 function baiaReturn() { completeMission(baiaMission()); }
-function manoShopOpen() { return missionDone('baia'); }
-function manoShop() {
-  if (!atHome('manolima')) { floatNote('O balcão tá fechado: o Mano Lima saiu.'); return; }
-  const i = PEOPLE.findIndex(p => p.id === 'manolima'), st = caveState(), box = $('dialogContent').closest('.dialog'), keep = modal === 'manoShop' ? box.scrollTop : 0;
-  const cards = CAVE_UPGRADES.map(u => {
-    const owned = caveUp(u.id), needs = u.requires && !caveUp(u.requires), label = owned ? 'Já é teu' : needs ? 'Antes: ' + CAVE_UPGRADES.find(x => x.id === u.requires).name : 'Comprar · ' + money(u.cost);
-    return `<div class="supply"><span class="icon"><span class="bag-emoji">${u.icon}</span></span><div><b>${u.name}</b><p>${u.desc}</p></div><button class="primary" data-act="facaoBuy" data-id="${u.id}" ${owned || needs || !hasCash(u.cost) ? 'disabled' : ''}>${label}</button></div>`;
-  }).join('');
-  openDialog('Balcão do Mano Lima', `<div class="rpg-speaker">${portraitHTML(i, 72)}<div><p><b>Mano Lima</b></p><p>Facão bom é que nem cavalo bom, vivente: tem que cuidar. O que vai ser?</p></div></div><p class="small-note">Na caverna: ${caveDmg()} de dano · ${caveMaxHp()} de vida${st.facao ? '' : ' · o facão do vô fica na boca da gruta'}</p><div class="store-list">${cards}</div><div class="actions"><button data-act="close">Até mais</button></div>`, 'manoShop');
-  box.scrollTop = keep;
-}
-function facaoBuy(id) {
-  const u = CAVE_UPGRADES.find(x => x.id === id); if (!u || caveUp(id) || u.requires && !caveUp(u.requires)) return;
-  if (!hasCash(u.cost)) { say('Falta dinheiro para ' + u.name.toLowerCase() + '.'); AudioEngine.bad(); return; }
-  spendCash(u.cost); caveState().up[id] = true; AudioEngine.coins?.(); floatNote(u.icon + ' ' + u.name + ': pronto pra caverna!'); save(); refreshHUD(); manoShop();
-}
-// Balcão de madeira nos fundos da casa: facão na parede, pedra de afiar e um lampião.
-FURN.balcaoMano = i => {
-  const { x, y, w, h } = i; rect(x, y - 30, w, h + 30, '#7a4e28', 4, '#3a2414'); rect(x, y - 30, w, 10, '#9a6838', 3);
-  for (let k = 0; k < 3; k++) rect(x + 8 + k * (w - 16) / 3, y - 14, (w - 16) / 3 - 6, h + 8, '#6a4222', 2);
-  rect(x + 16, y - 46, 46, 8, '#c8c8d0', 2, '#5a5a66'); rect(x + 6, y - 47, 14, 10, '#4a2a14', 3);
-  rect(x + 74, y - 42, 26, 12, '#8a8a84', 3, '#5a5a56');
-  rect(x + w - 24, y - 60, 14, 30, '#3a3a40', 3); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x + w - 17, y - 48, 40, .3, '255,190,110'); ctx.restore(); ellipse(x + w - 17, y - 48, 4, 6, '#ffd36a');
-};
 
-// ---------- Ligações ----------
+
+// Connections to the rescue quest and the cave dogs.
+
 {
-  // O Mano Lima: chamando, recebendo a Baia de volta e, depois, o balcão.
+  // O Mano Lima: chamando e recebendo a Baia de volta.
   const talkHome = houseResidentTalk; houseResidentTalk = function (i, x, y) {
     if (PEOPLE[i]?.id === 'manolima') { if (baiaCalling()) { baiaOffer(); return; } if (missionActive('baia') && baiaReturning()) { baiaReturn(); return; } }
     return talkHome(i, x, y);
@@ -151,11 +129,9 @@ FURN.balcaoMano = i => {
     const base = tl(), g = baiaCalling() ? { icon: '📣', title: 'A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · casa dele, na Fronteira', kind: 'side' } : missionActive('baia') ? { icon: '🐕', title: 'A Cadela Baia sumiu', goal: baiaGoal(), kind: 'side' } : null;
     if (!g) return base; const k = base.findIndex(l => l.kind === 'side'); if (k >= 0) base[k] = g; else if (base.length < 2) base.push(g); else if (base[1].kind !== 'story') base[1] = g; return base;
   };
-  // A casa do Mano Lima: aberta mesmo tarde da noite quando o Sadi traz a Baia; e o balcão nos fundos.
+  // A casa abre mesmo tarde da noite quando o Sadi traz a Baia.
   const vila = WORLD_MAPS.vila, vsp = vila.spots; vila.spots = function () { const list = vsp.call(this); if (baiaReturning()) { const h = list.find(s => s.id === 'house:manolima'); if (h) { delete h.house; h.label = 'Casa de Mano Lima · a luz tá acesa'; h.act = () => enterInterior('casa:manolima'); } } return list; };
   const casa = WORLD_MAPS['casa:manolima'];
-  casa.items.push({ kind: 'balcaoMano', ...MANO_COUNTER, get label() { return 'Balcão do Mano Lima · melhorias pro facão'; }, get act() { return manoShopOpen() ? manoShop : undefined; } });
-  const cwalk = casa.canWalk; casa.canWalk = function (x, y) { const c = MANO_COUNTER; if (x > c.x - 6 && x < c.x + c.w + 6 && y > c.y - 6 && y < c.y + c.h + 6) return false; return cwalk.call(this, x, y); };
   const csp = casa.spots; casa.spots = function () { const list = csp.call(this), h = list.find(s => s.id === 'home:manolima'); if (h) { if (baiaCalling()) h.label = 'Falar com o Mano Lima (a Cadela Baia sumiu)'; else if (missionActive('baia') && baiaReturning()) h.label = 'Devolver a Cadela Baia pro Mano Lima'; } return list; };
   // Na caverna: os dois cachorros no segundo andar.
   const cave = WORLD_MAPS.caverna, cvsp = cave.spots, cvdraw = cave.draw;

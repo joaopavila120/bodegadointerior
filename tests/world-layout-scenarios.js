@@ -36,6 +36,9 @@
   const original=ctx.drawImage,transforms=[];
   try{ctx.drawImage=function(...args){transforms.push(this.getTransform().a);return original.apply(this,args);};
    personDraw(0,1620,845,false,true,1,false,0,0);personDraw(0,1620,845,false,true,-1,false,0,0);
+   check(transforms.length===2&&transforms[0]*transforms[1]>0,'Stopped Sadi must keep his front pose after either direction');
+   transforms.length=0;frameClock+=.05;worldOut.x+=12;playerWalkPose(worldOut.x,worldOut.y);
+   personDraw(0,worldOut.x,845,true,true,1,false,0,0);personDraw(0,worldOut.x,845,true,true,-1,false,0,0);
   }finally{ctx.drawImage=original;}
   check(transforms.length===2&&transforms[0]*transforms[1]<0,'Left and right must mirror correctly');
   worldOut=null;check(!playerSideSprite(0,1,0,pose),'Kitchen animation must stay independent');

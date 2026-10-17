@@ -348,6 +348,8 @@ body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .ban
 #hudLayer .sling-button{position:absolute;right:14px;bottom:52px;padding:9px 14px;border-radius:22px;background:#3a2414ee;color:#ffe2a6;border:2px solid #d9b25e;font-size:15px;box-shadow:0 6px 16px #0008;touch-action:none;user-select:none}
 #hudLayer .sling-button b{color:#ffd96a}
 #hudLayer .sling-button.locked{opacity:.75;border-color:#7a6a52;color:#cdbc9a}
+#hudLayer .cave-dash{bottom:104px;border-color:#8acbd8}
+#hudLayer .cave-dash:disabled{opacity:.65;cursor:default}
 #hudLayer .cancha-exit{right:auto;left:14px}
 /* Fora da bodega, a lateral mostra só o que vale no mundo aberto */
 body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-button{display:none!important}
@@ -491,3 +493,10 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .carta-letter small{display:block;text-align:right;color:#7a5a30;font-style:italic;margin-bottom:6px}
 .carta-letter p{margin:0 0 8px}
 .carta-letter .carta-sign{text-align:right;font-style:italic;margin:10px 0 0}
+.cave-defeat{position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;pointer-events:auto;background:transparent;color:#eadcc3;padding:24px;text-align:center}
+.cave-defeat p{font:italic clamp(25px,4vw,52px)/1.4 Georgia,serif;max-width:850px;opacity:0;text-shadow:0 2px 10px #000}
+.tcard-photo{width:100%;height:100%;object-fit:cover;object-position:center 25%;display:block}
+.tcard-encounter{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(ellipse,#d6bc86,#51412e)}
+.tcard-encounter .portrait{width:90%;height:90%;max-width:100%;border:0;border-radius:0;background:none;object-fit:contain}
+#dunstanTradeButton{align-self:center;flex-shrink:0;max-width:160px;white-space:normal}
+@media(max-width:650px){#dunstanTradeButton{max-width:110px;font-size:11px;padding:5px}}

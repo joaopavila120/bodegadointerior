@@ -165,7 +165,7 @@ function drawSceneMissa() {
     for (const [id, a] of Object.entries(s.actors)) layers.push({ y: a.y, draw: () => {
       const seated = !a.walk && id !== 'padre';
       if (id === 'sadi') personDraw(avatarSprite(), a.x, a.y, a.walk, false, a.dx, seated);
-      else if (id === 'padre') { ctx.save(); ctx.filter = 'grayscale(.8) brightness(.55)'; personDraw(5, a.x, a.y, a.walk, false, a.dx); ctx.restore(); rect(a.x - 6, a.y - 96, 12, 4, '#f4f4f4'); }
+      else if (id === 'padre') personDraw(PEOPLE[PADRE_ROMIO].sprite, a.x, a.y, a.walk, false, a.dx);
       else { const i = PEOPLE.findIndex(p => p.id === id); if (i >= 0) personDraw(PEOPLE[i].sprite, a.x, a.y, a.walk, false, a.dx, seated); }
     } });
     layers.sort((a, b) => a.y - b.y).forEach(l => l.draw());
@@ -176,7 +176,7 @@ function drawSceneMissa() {
 SCENE_VIEWS.missa = drawSceneMissa;
 {
   const speaker = sceneSpeaker;
-  sceneSpeaker = function (who) { return who === 'padre' ? { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">⛪</span>', name: 'Padre Ângelo' } : speaker(who); };
+  sceneSpeaker = function (who) { return who === 'padre' ? { person: PADRE_ROMIO, name: 'Padre Romio' } : speaker(who); };
 }
 
 // ---------- Ligações com os mapas ----------

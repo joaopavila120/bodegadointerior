@@ -110,7 +110,7 @@ function worldTalk(w) {
   w.wait = 4; w.dx = worldOut.x > w.x ? 1 : -1; worldTalkAt = { x: w.x, y: w.y };
   // Especial com missão para dar (ou que o Sadi ainda não conhecia fora da bodega): conversa de verdade.
   if (isSpecial(i) && specialWorldStory(i)) return;
-  if (!isSpecial(i)) { const pool = MINOR_TALK[PEOPLE[i].team] ? [...MINOR_TALK.all, ...MINOR_TALK[PEOPLE[i].team]] : MINOR_TALK.all, line = pool[(dayHash(i, 9) + n) % pool.length]; G.worldTalks.count[id] = n + 1; showRpgBox('worldTalk', { person: i, name, player: line.player, reply: line.reply }); AudioEngine.tick(); return; }
+  if (!isSpecial(i)) { const pool = lines.length ? lines : MINOR_TALK[PEOPLE[i].team] ? [...MINOR_TALK.all, ...MINOR_TALK[PEOPLE[i].team]] : MINOR_TALK.all, line = pool[(dayHash(i, 9) + n) % pool.length]; G.worldTalks.count[id] = n + 1; showRpgBox('worldTalk', { person: i, name, player: line.player, reply: line.reply }); AudioEngine.tick(); return; }
   // De visita em outra região: a primeira prosa do dia é sobre o passeio.
   if (w.kind === 'visitor' && !n) { const where = REGION_NAMES[worldOut.map] || 'cá', list = WANDER_TALK[worldOut.map] || WANDER_TALK.vila; G.worldTalks.count[id] = 1; showRpgBox('worldTalk', { person: i, name, player: 'O que tu tá fazendo pelas bandas da ' + where + ', ' + name + '?', reply: list[dayHash(i, 11) % list.length] }); addFriendship(i, 2); AudioEngine.tick(); save(); return; }
   if (n >= WORLD_TALKS_PER_DAY || !lines.length) { showRpgBox('worldTalk', { person: i, name, reply: pick(WORLD_TALK_TIRED) }); return; }
@@ -124,10 +124,11 @@ function worldTalkNext() { if (!rpgAdvance('worldTalk')) showRpgBox('worldTalk',
 function outsideTick(dt) {
   const p = worldOut; walkersTick(dt);
   if (worldTalkOpen() && worldTalkAt && Math.hypot(worldTalkAt.x - p.x, worldTalkAt.y - p.y) > 240) showRpgBox('worldTalk', null);
+  if(typeof inCave==='function'&&inCave()){cavePlayerTick(dt);return;}
   let dx = (keys.has('d') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('a') || keys.has('ArrowLeft') ? 1 : 0), dy = (keys.has('s') || keys.has('ArrowDown') ? 1 : 0) - (keys.has('w') || keys.has('ArrowUp') ? 1 : 0);
   const len = Math.hypot(dx, dy); p.walk = !!len; if (!len) return;
   const oldX=p.x,oldY=p.y;
-  dx /= len; dy /= len; p.dx = dx; p.dy = dy; const step = BASE_SPEED * 1.4 * (1 + movementBonus()) * dt;
+  dx /= len; dy /= len; p.dx = dx; p.dy = dy; const step = BASE_SPEED * 1.4 * (1 + movementBonus()) * (typeof playerMounted === 'function' && playerMounted() ? 1.65 : 1) * dt;
   for (let n = 0; n < 4; n++) { const x = p.x + dx * step / 4, y = p.y + dy * step / 4; if (worldCanWalk(x, p.y)) p.x = x; if (worldCanWalk(p.x, y)) p.y = y; }
   p.walk=Math.hypot(p.x-oldX,p.y-oldY)>.01;
   const to = worldMap().edge?.(p); if (to) { const lock = prologueBlocks(to.map) ? 'prologue' : regionLocked(to.map) ? 'region' : null; if (lock) { p.x = oldX; p.y = oldY - 30 * Math.sign(dy || 0); p.x = oldX - 30 * Math.sign(dx || 0); p.walk = false; keys.clear(); if (lock === 'prologue') prologueWarn(); else warnDialog('Caminho fechado', regionLockText(to.map)); return; } switchMap(to); return; }

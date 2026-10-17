@@ -28,6 +28,7 @@ async function initializeGame() {
 
     await Promise.all([
       sadiArtLoaded,
+      expansionArtLoaded,
       waitForImage(roomArt, ROOM_DATA),
       ...Object.entries(ITEM_ART).map(([key,image])=>waitForImage(image,"assets/images/items/"+key+".png")),
       waitForImage(peopleArt, PEOPLE_DATA),

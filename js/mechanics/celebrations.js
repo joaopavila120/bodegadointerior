@@ -6,7 +6,7 @@ function alcoholRound(g,team=null){
  for(const d of g.diners){
   if(team&&PEOPLE[d.person].team!==team)continue;
   if(d.status!=='waiting'){d.status='waiting';d.patience=d.maxPatience=ORDER_WAIT;}
-  d.orders.push(pick(drinks));
+  d.orders.push(PEOPLE[d.person]?.onlyChopp?'cerveja':pick(drinks));
  }
  g.state='seated';g.paid=false;g.round=1;syncGroupOrders(g);
 }

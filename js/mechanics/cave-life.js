@@ -66,16 +66,13 @@ for(const id of [...OKTO_VISITORS,...ROAD_RIDERS].map(p=>p.id).concat('saci'))DE
   spawnWalkers=function(M){
     spawn(M);if(!M.walkLines?.length||prologueActive()||lateNight())return;
     const occupied=new Set([...G.shop.map(c=>c.person),...G.groups.flatMap(g=>g.members||[g.person])]);
-    const add=(p,seed)=>{
+    const add=(p,regions)=>{
       const i=PEOPLE.findIndex(x=>x.id===p.id);if(occupied.has(i))return;
-      const R=caveRand(G.day*137+seed),line=M.walkLines[Math.floor(R()*M.walkLines.length)],seg=Math.floor(R()*(line.length-1)),a=line[seg],b=line[seg+1],t=R();
-      worldWalkers.push({person:i,kind:'minor',line,seg,dir:1,x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t,wait:1,dx:0,dy:1,walk:false});
+      if(roadEncounterPlan(p.id,regions)?.map!==M.id)return;
+      const route=randomRoadWalker(M);if(route)worldWalkers.push({person:i,kind:'minor',...route});
     };
-    if(M.id==='sc')OKTO_VISITORS.forEach((p,i)=>add(p,701+i));
-    if(['vila','serra','sc'].includes(M.id))ROAD_RIDERS.forEach((p,i)=>{
-      const roll=caveRand(G.day*503+i*79+19)(),region=roll<.7?'vila':roll<.85?'serra':'sc';
-      if(M.id===region)add(p,901+i);
-    });
+    if(M.id==='sc')OKTO_VISITORS.forEach(p=>add(p,['sc']));
+    if(['vila','serra','sc'].includes(M.id))ROAD_RIDERS.forEach(p=>add(p));
   };
   const person=drawExpansionPerson;
   drawExpansionPerson=function(sprite,x,y,walking,chef,dx,seated,mood,dy){
@@ -96,8 +93,8 @@ function saciTick(dt){
   if(key!==saciEncounterKey){
     saciEncounterKey=key;saciEncounter=null;
     const R=caveRand(G.day*1109+{vila:23,serra:37,sc:59}[M.id]);if(R()>=.35)return;
-    const line=M.walkLines[Math.floor(R()*M.walkLines.length)],seg=Math.floor(R()*(line.length-1)),a=line[seg];
-    saciEncounter={map:M.id,line,seg,dir:1,x:a[0],y:a[1],dx:1,dy:0,age:0,mode:'hop',walk:false};
+    const route=randomRoadWalker(M,R);if(!route)return;
+    saciEncounter={...route,map:M.id,age:0,mode:'hop'};
   }
   const w=saciEncounter;if(!w)return;
   w.walk=false;if(paused||modal||scene||worldTalkOpen())return;

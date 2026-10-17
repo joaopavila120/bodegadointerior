@@ -96,6 +96,29 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='roadsCave'){
+      await load(base+'/index.html');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'road-cave-performance-scenarios.js'),'utf8'));
+      console.log('PASS roads/cave: '+results.length+' checks');
+      await evaluate(`G=fresh();G.prologue={done:true};G.tutorial.complete=true;G.cave={facao:true,floor:11,deepest:11,hp:100,dunstanTaught:true,up:{}};started=true;paused=true;$('start').classList.add('hidden');goOutside();enterCave(11);closeDialog(true);draw();`);
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-cave-performance.png'),Buffer.from(shot.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='cavePerf'){
+      await load(base+'/index.html');
+      console.log(JSON.stringify(await evaluate(`(()=>{
+        const original={G,worldOut,ctx,caveRun};const results=[];
+        try{G=fresh();G.day=5;G.prologue={done:true};G.cave={floor:10,up:{},hp:100};worldOut={map:'caverna',x:1000,y:800};
+          const canvas=document.createElement('canvas');canvas.width=1440;canvas.height=1000;ctx=canvas.getContext('2d');
+          for(const floor of [10,11]){G.cave.floor=floor;caveRun=null;const run=caveFloorRun(),times=[];
+            for(let frame=0;frame<9;frame++){const start=performance.now();ctx.clearRect(0,0,1440,1000);drawCaveFloor({x:0,y:0,w:1440,h:1000});
+              for(let y=0;y<CAVE.rows;y++)for(let x=0;x<CAVE.cols;x++)if(run.grid[y][x])drawCaveWall(x,y,run);
+              ctx.getImageData(0,0,1,1);if(frame)times.push(performance.now()-start);}
+            times.sort((a,b)=>a-b);results.push({floor,medianMs:times[4],maxMs:times.at(-1)});}
+          return results;
+        }finally{({G,worldOut,ctx,caveRun}=original);}
+      })()`)));return;
+    }
     if(process.env.BODEGA_FOCUS==='caveLife'){
       await load(base+'/index.html');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'cave-life-scenarios.js'),'utf8'));
@@ -190,6 +213,8 @@ async function main() {
       console.log('PASS '+protocol+' / '+entry+': '+caveMovement.length+' verificações de colisão e dash');
       const caveLife=await evaluate(fs.readFileSync(path.join(__dirname,'cave-life-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+caveLife.length+' verificações dos encontros e da progressão da caverna');
+      const roadsCave=await evaluate(fs.readFileSync(path.join(__dirname,'road-cave-performance-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+roadsCave.length+' verificações da distribuição e renderização da caverna');
       const trayResults=await evaluate(fs.readFileSync(path.join(__dirname,'sadi-tray-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+trayResults.length+' verificações do Sadi com bandeja e galpão');
       const interiorWalkResults = await evaluate(fs.readFileSync(path.join(__dirname, 'interior-walk-scenarios.js'), 'utf8'));

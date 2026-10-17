@@ -19,7 +19,7 @@ placeWorld(VILA.ctg,2460,2250,1000,340);
 VILA.houses.find(r=>r.id==='guri').y=2280;
 VILA.houses.find(r=>r.id==='manolima').y=2250;
 VILA_ROADS.splice(0,VILA_ROADS.length,[VILA.river,800,VILA.W-VILA.river,110],[VILA.roadX,800,80,VILA.border-800],[VILA.river,1510,VILA.W-VILA.river-100,90],[VILA.river,2160,VILA.W-VILA.river-100,70]);
-WORLD_MAPS.vila.walkLines=[[[620,845],[1620,845],[2800,845],[4100,845]],[[1620,845],[1620,1560],[1620,2620]],[[620,1560],[1620,1560],[2750,1560],[4100,1560]]];
+WORLD_MAPS.vila.walkLines=[[[620,845],[1620,845],[2800,845],[4100,845]],[[1620,845],[1620,1560],[1620,2620]],[[620,1560],[1620,1560],[2750,1560],[4100,1560]],[[620,2195],[1620,2195],[2750,2195],[4100,2195]]];
 Object.assign(SERRA,{W:4000,H:2800,roadX:2060,roadEnd:3900,roadSouth:2680,arroio:2130});
 placeWorld(SERRA.badin,410,460,550,410);placeWorld(SERRA.casona,2220,260,650,580);
 placeWorld(SERRA.mito,3400,1230,530,410);placeWorld(SERRA.dianho,2220,2250,620,410);

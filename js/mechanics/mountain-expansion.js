@@ -136,12 +136,34 @@ function stableHorse() {
   };
 }
 
+// Presença sorteada por dia/save; visitar outro mapa não cria cópias do cavaleiro.
+// Cada região tem a mesma chance. A posição e o sentido variam a cada chegada.
+function roadEncounterPlan(id, regions = ['vila','serra','sc'], chance = .6) {
+  if (!Number.isInteger(G.roadEncounterSeed)) G.roadEncounterSeed = Math.floor(Math.random() * 4294967296);
+  let seed = (G.roadEncounterSeed ^ Math.imul(G.day, 2654435761)) >>> 0;
+  for (const char of id) seed = Math.imul(seed ^ char.charCodeAt(0), 16777619) >>> 0;
+  const R = caveRand(seed);
+  return R() < chance ? {map:regions[Math.floor(R() * regions.length)]} : null;
+}
+function randomRoadWalker(M, R = Math.random) {
+  const segments=[];let length=0;
+  for (const line of M.walkLines || []) for (let seg=0;seg<line.length-1;seg++) {
+    const a=line[seg],b=line[seg+1],size=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    if(size>0){length+=size;segments.push({line,seg,a,b,size});}
+  }
+  if(!length)return null;
+  let at=R()*length,chosen=segments.at(-1);
+  for(const part of segments){if(at<part.size){chosen=part;break;}at-=part.size;}
+  const {line,seg,a,b,size}=chosen,t=clamp(at/size,0,1),dir=R()<.5?-1:1;
+  return {line,seg,dir,x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t,wait:R()*2,dx:(b[0]-a[0])/size*dir,dy:(b[1]-a[1])/size*dir,walk:false};
+}
 // Romio alterna entre capela e passeio; não duplica se estiver atendido na bodega.
 function romioAtChapel() { return G.day % 2 === 1 && !activeUniqueVisitors().has(PADRE_ROMIO); }
 {
   const spawn=spawnWalkers;
   spawnWalkers=function(M){spawn(M);if(M.id!=='serra'||romioAtChapel()||activeUniqueVisitors().has(PADRE_ROMIO)||lateNight()||prologueActive())return;
-    const line=M.walkLines[0],a=line[0]; worldWalkers.push({person:PADRE_ROMIO,kind:'minor',line,seg:0,dir:1,x:a[0],y:a[1],wait:1,dx:1,dy:0,walk:false});
+    if(!roadEncounterPlan('romio',['serra']))return;
+    const route=randomRoadWalker(M);if(route)worldWalkers.push({person:PADRE_ROMIO,kind:'minor',...route});
   };
   const M=WORLD_MAPS.igreja,spots=M.spots,draw=M.draw;
   M.spots=function(){const list=spots.call(this);if(romioAtChapel()&&!scene)list.push({id:'romio',x:600,y:470,label:'Prosear com Padre Romio',act:()=>worldTalk({person:PADRE_ROMIO,x:600,y:470})});return list;};
@@ -150,16 +172,17 @@ function romioAtChapel() { return G.day % 2 === 1 && !activeUniqueVisitors().has
 // Olmiro é exclusivo das estradas; não entra em lojas, capela, esportes ou bodega.
 let olmiroWalker = null, olmiroKey = '';
 function olmiroTick(dt) {
-  const M=worldMap(),map=['vila','serra','sc'][(G.day-1)%3];
-  if(M.id!==map||!M.walkLines||lateNight()||prologueActive()){olmiroWalker=null;olmiroKey='';return;}
-  const key=G.day+':'+map;
-  if(key!==olmiroKey){olmiroKey=key;const line=M.walkLines[0],a=line[0];olmiroWalker={line,seg:0,dir:1,x:a[0],y:a[1],dx:1,dy:0,walk:false};}
-  const w=olmiroWalker; if(worldTalkOpen()&&Math.hypot(w.x-worldOut.x,w.y-worldOut.y)<180){w.walk=false;return;}
+  const M=worldMap();
+  if(!M.walkLines||lateNight()||prologueActive()){olmiroWalker=null;olmiroKey='';return;}
+  const key=G.roadEncounterSeed+':'+G.day+':'+M.id;
+  if(key!==olmiroKey){const plan=roadEncounterPlan('olmiro');olmiroKey=G.roadEncounterSeed+':'+G.day+':'+M.id;olmiroWalker=plan?.map===M.id?randomRoadWalker(M):null;if(olmiroWalker)olmiroWalker.map=M.id;}
+  const w=olmiroWalker;if(!w)return;
+  if(worldTalkOpen()&&Math.hypot(w.x-worldOut.x,w.y-worldOut.y)<180){w.walk=false;return;}
   const target=w.line[w.seg+(w.dir>0?1:0)],dx=target[0]-w.x,dy=target[1]-w.y,d=Math.hypot(dx,dy),step=85*dt;
   w.walk=d>1;if(d<=step){w.x=target[0];w.y=target[1];w.seg+=w.dir;if(w.seg<0||w.seg>=w.line.length-1){w.dir=-w.dir;w.seg=clamp(w.seg,0,w.line.length-2);}}else{w.dx=dx/d;w.dy=dy/d;w.x+=w.dx*step;w.y+=w.dy*step;}
 }
 {
   const tick=outsideTick;outsideTick=function(dt){tick(dt);olmiroTick(dt);};
-  const spots=walkerSpots;walkerSpots=function(){const list=spots();if(olmiroWalker)list.push({id:'walker:olmiro',x:olmiroWalker.x,y:olmiroWalker.y,label:'Prosear com Olmiro Mimoso',act:()=>worldTalk({...olmiroWalker,person:PEOPLE.findIndex(p=>p.id==='olmiro')})});return list;};
-  const landscape=worldLandscape;worldLandscape=function(M,seen,layers,view){landscape(M,seen,layers,view);const w=olmiroWalker;if(w&&M.id===['vila','serra','sc'][(G.day-1)%3]&&seen(w.x,w.y))layers.push({y:w.y,draw:()=>mountedPose('olmiro-mounted-v1',w.x,w.y,w.dx,w.dy,w.walk)});};
+  const spots=walkerSpots;walkerSpots=function(){const list=spots();if(olmiroWalker?.map===worldOut?.map)list.push({id:'walker:olmiro',x:olmiroWalker.x,y:olmiroWalker.y,label:'Prosear com Olmiro Mimoso',act:()=>worldTalk({...olmiroWalker,person:PEOPLE.findIndex(p=>p.id==='olmiro')})});return list;};
+  const landscape=worldLandscape;worldLandscape=function(M,seen,layers,view){landscape(M,seen,layers,view);const w=olmiroWalker;if(w&&M.id===w.map&&seen(w.x,w.y))layers.push({y:w.y,draw:()=>mountedPose('olmiro-mounted-v1',w.x,w.y,w.dx,w.dy,w.walk)});};
 }

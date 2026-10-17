@@ -136,12 +136,30 @@ drawCaveFloor = function(view) {
   }
   rect(view.x - 50, view.y - 50, view.w + 100, view.h + 100, '#100e0c'); ctx.drawImage(caveGroundCache, 0, 0);
 };
+// Four small cached tiles: two variants, with and without the deep-floor tint.
+// Filter only the cropped tile, never the large atlas on every wall/every frame.
+const caveWallTiles = new Map();
+let caveWallTileSource = null;
+function caveWallTile(variant, deep) {
+  const source=EXPANSION_ART['cave-terrain-v1'];if(!source?.naturalWidth)return null;
+  if(caveWallTileSource!==source){caveWallTiles.clear();caveWallTileSource=source;}
+  const key=variant+':'+deep+':'+CAVE.cell;
+  if(!caveWallTiles.has(key)){
+    const c=EXPANSION_CROPS['cave-terrain-v1'].frames[2+variant],tile=document.createElement('canvas');
+    tile.width=CAVE.cell;tile.height=CAVE.cell+26;
+    const g=tile.getContext('2d');
+    g.drawImage(source,...c.slice(0,4),0,0,tile.width,tile.height);
+    if(deep){const tinted=document.createElement('canvas');tinted.width=tile.width;tinted.height=tile.height;
+      const t=tinted.getContext('2d');t.filter='sepia(.8) saturate(2.2) hue-rotate(325deg)';t.drawImage(tile,0,0);caveWallTiles.set(key,tinted);
+    }else caveWallTiles.set(key,tile);
+  }
+  return caveWallTiles.get(key);
+}
 drawCaveWall = function(x, y, run) {
-  if (!EXPANSION_ART['cave-terrain-v1']?.naturalWidth) return oldCaveWall(x,y,run);
-  const C = CAVE.cell, c = EXPANSION_CROPS['cave-terrain-v1'].frames[2+(x+y)%2];
-  ctx.save();if(run.floor>10)ctx.filter='sepia(.8) saturate(2.2) hue-rotate(325deg)';
-  ctx.drawImage(EXPANSION_ART['cave-terrain-v1'], ...c.slice(0,4), x*C, y*C-26, C, C+26);
-  ctx.restore();
+  const tile=caveWallTile((x+y)%2,run.floor>10);
+  if(!tile)return oldCaveWall(x,y,run);
+  const C=CAVE.cell;
+  ctx.drawImage(tile,x*C,y*C-26);
   if (run.grid[y+1]?.[x] === 0) rect(x*C, (y+1)*C-8, C, 8, '#100d0a88');
 };
 

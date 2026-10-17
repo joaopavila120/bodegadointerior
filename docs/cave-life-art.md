@@ -7,8 +7,8 @@ Implementação na branch `mundo-aberto`. README preservado.
 - Passo de esquiva: R$ 160 na ferraria. Shift e botão ficam indisponíveis antes da compra.
 - Derrota: queda, escurecimento e frase por uma sequência de 4,5 s; simulação e controles ficam bloqueados. A perda de dinheiro acontece uma única vez; minérios são preservados.
 - Sons de morte: ganho de reprodução reduzido de 0,42 para 0,14, ataque de 35 ms e filtro passa-baixas em 2.200 Hz; mortes simultâneas recebem atenuação adicional.
-- Hans e Helga circulam em SC, visitam a bodega após desbloquear SC e só pedem chopp (`cerveja`).
-- Estela, Ramiro e Arami são moradores fictícios a cavalo; distribuição diária por personagem: 70% Fronteira, 15% Serra, 15% SC. Não entram na bodega.
+- Hans e Helga circulam em SC em parte dos dias, visitam a bodega após desbloquear SC e só pedem chopp (`cerveja`).
+- Estela, Ramiro, Arami e Olmiro têm 60% de chance individual de passear no dia; quando aparecem, Fronteira, Serra e SC têm chances iguais. Presença e região persistem no save; posição e sentido variam a cada chegada, ao longo de todas as estradas e proporcionalmente ao comprimento dos trechos. Não entram na bodega. Romio também varia o ponto de passeio na Serra, nos dias em que não está na capela.
 - Saci: chance de 35% por mapa/noite nas três regiões, sorteio determinístico para evitar rerrolar a cada quadro. Alterna salto e redemoinho a cada seis segundos. Conversar entrega a carta.
 - Cartas novas: Teiniaguá e onça-parda (primeira vitória), Saci (encontro), São Dunstano (conversa). A coleção Gente da bodega usa as fotos originais de `assets/images/portraits`; Valter mantém o retrato do jogo por não haver foto dele nessa pasta.
 - Jundiá, piava, grumatã e traíra têm sprites, estoque e valores próprios. As missões antigas que pedem peixe aceitam qualquer espécie, incluindo peixes de saves anteriores.
@@ -19,6 +19,8 @@ Referência das espécies: [Rio Uruguai — Unipampa](https://sites.unipampa.edu
 ## Verificação
 
 `node tests/smoke.cjs` passou com as duas entradas HTML via HTTP e `file://`, incluindo persistência, controles móveis e regressões da bodega e do mundo aberto. A cobertura nova tem 84 verificações de encontros, venda, dash, derrota, cartas e peixes; os 314 cenários de missões também passaram. Conferência visual no navegador: atlas de personagens, caverna vermelha, ferraria, derrota e cartas. Os retratos de atlas têm recorte explícito para impedir que sprites vizinhos apareçam nas margens.
+
+Correção de desempenho dos andares 11+: as paredes usam quatro texturas pequenas em cache (duas normais, duas vermelhas); o filtro é aplicado uma única vez à textura recortada. Paredes fora da câmera não entram na fila de desenho, preservando a ordem de profundidade. No benchmark `BODEGA_FOCUS=cavePerf`, em Chrome headless com renderização por software, a mediana do desenho do chão e das paredes do andar 11 caiu de 4.317,5 ms para 3,5 ms; andar 10, de 9 ms para 2,7 ms. São tempos desse cenário de teste, não uma previsão de FPS em qualquer computador.
 
 ## Arte
 

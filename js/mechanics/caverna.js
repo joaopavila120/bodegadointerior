@@ -486,7 +486,9 @@ WORLD_MAPS.caverna = {
   },
   draw(view, seen, layers) {
     const run = caveFloorRun(), s = caveCenter(...CAVE.start); drawCaveFloor(view);
-    for (let y = 0; y < CAVE.rows; y++) for (let x = 0; x < CAVE.cols; x++) if (run.grid[y][x]) layers.push({ y: y * CAVE.cell + CAVE.cell - 30, draw: () => drawCaveWall(x, y, run) });
+    // Include the overhang and screen shake; keep the original depth-sort order.
+    const C=CAVE.cell,pad=12,x0=Math.max(0,Math.floor((view.x-pad)/C)),x1=Math.min(CAVE.cols-1,Math.floor((view.x+view.w+pad)/C)),y0=Math.max(0,Math.floor((view.y-pad)/C)),y1=Math.min(CAVE.rows-1,Math.floor((view.y+view.h+26+pad)/C));
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(run.grid[y][x])layers.push({y:y*C+C-30,draw:()=>drawCaveWall(x,y,run)});
     layers.push({ y: s.y - 70, draw: () => drawCaveRope(s.x, s.y - 30) });
     if (run.ladder.shown) layers.push({ y: run.ladder.y - 40, draw: () => drawCaveLadder(run.ladder) });
     for (const r of run.rocks) if (r.hp > 0) layers.push({ y: r.y, draw: () => drawCaveRock(r) });

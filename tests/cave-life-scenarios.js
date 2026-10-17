@@ -47,8 +47,9 @@
     caveDefeatTick(1.6);check($('caveDefeat').textContent==='às vezes é morto quem peleia'&&Number($('caveDefeat').firstElementChild.style.opacity)===1,'Frase completa sobre a tela preta');
     caveDefeatTick(2);check(!caveDefeatActive()&&worldOut.map==='serra'&&G.cave.hp===caveMaxHp()&&bagQty('ametista')===2,'Recupera na entrada e mantém minérios');finishTalk();
     // Dois moradores catarinenses com pedidos exclusivos de chopp.
-    worldOut={map:'sc',x:1200,y:800,dx:0,dy:1};G.phase='prep';spawnWalkers(WORLD_MAPS.sc);
+    worldOut={map:'sc',x:1200,y:800,dx:0,dy:1};G.phase='prep';G.roadEncounterSeed=123456;
     for(const p of OKTO_VISITORS){
+      G.phase='prep';for(G.day=1;G.day<100&&!roadEncounterPlan(p.id,['sc']);G.day++);spawnWalkers(WORLD_MAPS.sc);
       const i=PEOPLE.findIndex(q=>q.id===p.id);check(worldWalkers.some(w=>w.person===i),'Morador anda em SC: '+p.id);
       check(visitorPool().includes(i)&&!isSpecial(i),'Morador pode visitar a bodega sem ser especial: '+p.id);
       check(['cigarro','erva','refri','cachaca','cafe','xis','salame'].every(k=>fitOrder(i,k)==='cerveja'),'Só pede chopp: '+p.id);
@@ -58,7 +59,7 @@
     pickVisitor=old.pickVisitor;G.phase='prep';G.groups=[];G.shop=[];
     const counts={vila:0,serra:0,sc:0};
     for(let day=1;day<=40;day++){G.day=day;for(const map of Object.keys(counts)){worldOut={map,x:1200,y:800};spawnWalkers(WORLD_MAPS[map]);counts[map]+=worldWalkers.filter(w=>ROAD_RIDERS.some(p=>p.id===PEOPLE[w.person].id)).length;}}
-    check(counts.vila>counts.serra&&counts.vila>counts.sc&&counts.serra>0&&counts.sc>0,'Cavaleiros visitam as três regiões, principalmente a Fronteira');
+    check(Object.values(counts).every(n=>n>0),'Cavaleiros podem visitar as três regiões');
     check(ROAD_RIDERS.every(p=>!visitorPool().some(i=>PEOPLE[i].id===p.id)&&WORLD_TALK[p.id].length>=4),'Cavaleiros têm prosa própria e ficam no mundo aberto');
     G.phase='closed';worldOut={map:'vila',x:1200,y:800};
     let found=false;for(let day=1;day<=50&&!found;day++){G.day=day;saciTick(.01);found=!!saciEncounter;}

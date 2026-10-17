@@ -61,7 +61,7 @@
     switchMap({map:'curral',...HORSE_POST});check(worldCanWalk(HORSE_POST.x,HORSE_POST.y),'Local para guardar o cavalo é acessível');
     stableHorse();check(!playerMounted()&&G.mount.stabled,'Guarda no campo');stableHorse();check(playerMounted()&&!G.mount.stabled,'Retira do campo');
     enterCave(1);finishTalk();check(!playerMounted()&&caveUp('afiado'),'Entra a pé na caverna e preserva a melhoria');
-    caveLeave();finishTalk();switchMap({map:'vila',x:1600,y:735});G.day=1;olmiroTick(.1);check(!!olmiroWalker,'Olmiro percorre a estrada montado');
+    caveLeave();finishTalk();G.roadEncounterSeed=123456;let visit=null;for(G.day=1;G.day<100&&!visit;G.day++)visit=roadEncounterPlan('olmiro');G.day--;switchMap({map:visit.map,x:1600,y:1000});olmiroTick(.1);check(!!olmiroWalker,'Olmiro percorre a estrada montado nos dias de visita');
     G.day=1;switchMap({map:'igreja',x:600,y:700});check(WORLD_MAPS.igreja.spots().some(s=>s.id==='romio'),'Romio pode ser encontrado na capela');
     const index=PEOPLE.findIndex(p=>p.id==='olmiro');check(!minorPeople().includes(index),'Olmiro não aparece como pedestre');
   } finally {

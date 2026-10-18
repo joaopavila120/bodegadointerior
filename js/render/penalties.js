@@ -54,7 +54,7 @@ function penaltyBallPosition(m) {
 }
 function drawPenalties() {
  const m=G.penalties;if(!m)return;
- const cw=penaltyCanvas.clientWidth,ch=penaltyCanvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
+ const cw=penaltyCanvas.clientWidth,ch=penaltyCanvas.clientHeight,dpr=renderDpr();
  if(!cw||!ch)return;
  if(penaltyCanvas.width!==Math.round(cw*dpr)||penaltyCanvas.height!==Math.round(ch*dpr)){penaltyCanvas.width=Math.round(cw*dpr);penaltyCanvas.height=Math.round(ch*dpr);}
  const original=ctx;ctx=penaltyContext;
@@ -87,7 +87,7 @@ function drawPenalties() {
 let penaltyBackdrop=null;
 function paintPenaltyBackdrop(){
  if(penaltyBackgroundArt.complete&&penaltyBackgroundArt.naturalWidth){
-  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='medium';
   ctx.drawImage(penaltyBackgroundArt,0,0,1200,700);ctx.restore();
   paintPenaltyMarkings();return;
  }

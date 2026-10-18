@@ -97,6 +97,10 @@ function caveMaxHp() { return caveUp('poncho') ? 140 : CAVE.maxHp; }
 function caveDmg() { return caveUp('aco') ? 26 : caveUp('afiado') ? 18 : 12; }
 function caveCd() { return caveUp('cabo') ? .26 : .38; }
 function caveReach() { return caveUp('comprida') ? 145 : 110; }
+// Dano de um golpe num bicho (a água benta de forja.js dobra contra as assombrações).
+function caveHitDmg(b) { return caveDmg(); }
+// Cor do rastro do golpe: a da arma na mão (forja.js).
+function caveSwingColor() { return '255,248,220'; }
 function inCave() { return worldOut?.map === 'caverna'; }
 function caveRand(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const caveCenter = (cx, cy) => ({ x: (cx + .5) * CAVE.cell, y: (cy + .5) * CAVE.cell });
@@ -269,12 +273,12 @@ function caveAttack() {
   AudioEngine.swoosh(.08); let flesh = false, stone = false;
   const inArc = (x, y, reach) => { const d = Math.hypot(x - p.x, y - (p.y - 30)); if (d > reach) return false; const a = Math.atan2(y - (p.y - 30), x - p.x); return Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) < 1.25 || d < 40; };
   for (const b of run.beasts) if (b.hp > 0 && inArc(b.x, b.y - 20, caveReach())) {
-    b.hp -= caveDmg(); b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
+    const dmg = caveHitDmg(b); b.hp -= dmg; b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
     if (b.state === 'charge' || b.state === 'lunge') b.state = 'rest', b.t = .5;
     // Acertou: baque, o grito do bicho, faísca do facão e uma travadinha na tela (só um grito por golpe).
     if (!flesh) { AudioEngine.caveFlesh(); AudioEngine.caveCry(b.kind, b.hp <= 0); }
     flesh = true; run.freeze = .06; fxStars(b.x, b.y - 50, 3);
-    effect('−' + caveDmg(), b.x + (Math.random() - .5) * 20, b.y - 80, '#ffd2a0', 21); if (b.hp <= 0) caveKill(b);
+    effect('−' + dmg, b.x + (Math.random() - .5) * 20, b.y - 80, dmg > caveDmg() ? '#a8e0ff' : '#ffd2a0', dmg > caveDmg() ? 25 : 21); if (b.hp <= 0) caveKill(b);
   }
   for (const r of run.rocks) if (r.hp > 0 && inArc(r.x, r.y - 10, caveReach() - 15)) { stone = true; r.hp--; fxPuffs(r.x, r.y - 20, 3, 50, '#8a7d70'); if (r.hp <= 0) caveBreak(r); }
   if (stone) AudioEngine.caveStone();
@@ -420,9 +424,9 @@ function drawCaveBeast(b) {
 function drawCaveSwing() {
   const s = caveFloorRun().swing, p = worldOut; if (!s) return;
   const k = 1 - s.t / .2, a0 = s.ang - 1.2 + k * 2.4;
-  ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(255,248,220,${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round';
+  ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(${caveSwingColor()},${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(0, 0, 78, s.ang - 1.2, a0); ctx.stroke();
-  if (typeof EXPANSION_ART === 'undefined' || !EXPANSION_ART['sadi-combat-v1']?.naturalWidth) {
+  if (typeof EXPANSION_ART === 'undefined' || !expansionImage('sadi-combat-v1')?.naturalWidth) {
     ctx.rotate(a0); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3);
   }
   ctx.restore();
@@ -444,13 +448,13 @@ function drawCaveDrop(d) {
 // Escuro de caverna: só a lamparina do Sadi clareia; por cima, a vida e o andar.
 function drawCaveLight() {
   if (!inCave()) return;
-  const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, run.floor === 1 ? 600 : caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, run.floor === 1 ? 1800 : caveUp('lampiao') ? 820 : 560);
+  const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, run.floor === 1 || run.torch ? 600 : caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, run.floor === 1 || run.torch ? 1800 : caveUp('lampiao') ? 820 : 560);
   g.addColorStop(0, 'rgba(8,6,4,0)'); g.addColorStop(1, 'rgba(8,6,4,.92)'); ctx.fillStyle = g; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000);
   // No escuro, o que interessa brilha de longe: a escada, o baú fechado e as pedras caídas.
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (run.ladder.shown) glow(run.ladder.x, run.ladder.y - 20, 90 + run.ladderPing * 40, .2 + .08 * Math.sin(frameClock * 3), '255,220,140');
   if (run.chest && !run.chest.open) glow(run.chest.x, run.chest.y - 20, 70, .14 + .06 * Math.sin(frameClock * 2.4), '255,200,90');
-  for (const d of run.drops) if (d.k === 'ametista' || d.k === 'agata') glow(d.x, d.y - 12, 34, .35, d.k === 'ametista' ? '190,140,255' : '255,170,90');
+  for (const d of run.drops) { const c = typeof caveOreGlow === 'function' ? caveOreGlow(d.k) : d.k === 'ametista' ? '190,140,255' : d.k === 'agata' ? '255,170,90' : null; if (c) glow(d.x, d.y - 12, 34, .35, c); }
   ctx.restore();
   // Escada longe: uma setinha do lado do Sadi aponta o caminho.
   const ld = run.ladder, far = Math.hypot(ld.x - p.x, ld.y - p.y);
@@ -463,7 +467,7 @@ function drawCaveLight() {
   if (run.hurt > 0) { ctx.fillStyle = `rgba(200,30,20,${run.hurt})`; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000); }
   const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, H = canvas.clientHeight, X = W - 264; ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (st.hp <= caveMaxHp() * .3) { const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); v.addColorStop(0, 'rgba(160,0,0,0)'); v.addColorStop(1, `rgba(180,10,10,${.42 + .16 * Math.sin(frameClock * 7)})`); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); }
-  const left = run.beasts.filter(b => b.hp > 0).length, t = caveTripNow(), got = [t.cash ? '🪙 ' + money(t.cash) : '', t.ametista ? '💜 ' + t.ametista : '', t.agata ? '🟠 ' + t.agata : '', t.cards.length ? '🃏 ' + t.cards.length : ''].filter(Boolean).join('  ');
+  const left = run.beasts.filter(b => b.hp > 0).length, t = caveTripNow(), got = [t.cash ? '🪙 ' + money(t.cash) : '', t.ametista ? '💜 ' + t.ametista : '', t.agata ? '🟠 ' + t.agata : '', ...['cobre', 'ferro', 'opala', 'ouro'].map(k => t[k] ? k + ' ' + t[k] : ''), t.cards.length ? '🃏 ' + t.cards.length : ''].filter(Boolean).join('  ');
   rect(X, 14, 250, 84, 'rgba(20,14,10,.82)', 8, '#a77439'); txt('Caverna da Serra · andar ' + run.floor, X + 12, 34, 14, '#ffe2a6', 'left', 'Georgia', false);
   rect(X + 12, 46, 160, 14, '#2a1608', 5); rect(X + 12, 46, 160 * Math.min(1, st.hp / caveMaxHp()), 14, st.hp > caveMaxHp() * .3 ? '#d84a3a' : '#ff7a3a', 5); txt('❤ ' + st.hp + '/' + caveMaxHp(), X + 178, 57, 12, '#ffe2a6', 'left', 'Arial', false);
   txt(left ? left + (left === 1 ? ' bicho' : ' bichos') : run.ladder.shown ? 'andar limpo · ache a escada' : 'andar limpo', X + 12, 72, 11, '#d9c79f', 'left', 'Arial', false);

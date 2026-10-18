@@ -23,7 +23,7 @@ function itemImageForSize(key, pixels) {
       level.width=Math.max(1,Math.round(source.width*ratio));
       level.height=Math.max(1,Math.round(source.height*ratio));
       const context=level.getContext('2d');
-      context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+      context.imageSmoothingEnabled=true;context.imageSmoothingQuality='medium';
       context.drawImage(source,0,0,level.width,level.height);
       levels.push(level);source=level;
     }
@@ -83,7 +83,7 @@ function food(key,x,y,size=40,item=null,inTransit=false) {
     const w=image.width*scale,h=image.height*scale;
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality='medium';
     ctx.drawImage(filter !== 'none' ? itemTinted(image, filter) : image,Math.round(x-w/2),Math.round(y-h/2),w,h);
     ctx.restore();
   }

@@ -32,7 +32,7 @@ function showCanchaLobby(){
  if(worldOut?.map!=='cancha')worldOut={map:'cancha',...CANCHA_IN.spawn,dx:0,dy:-1,walk:false};keys.clear();refreshHUD();
 }
 function drawCanchaLobby(){
- const c=bocceContext,cw=bocceCanvas.clientWidth,ch=bocceCanvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
+ const c=bocceContext,cw=bocceCanvas.clientWidth,ch=bocceCanvas.clientHeight,dpr=renderDpr();
  if(bocceCanvas.width!==Math.round(cw*dpr)||bocceCanvas.height!==Math.round(ch*dpr)){bocceCanvas.width=Math.round(cw*dpr);bocceCanvas.height=Math.round(ch*dpr);}
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#20180f';c.fillRect(0,0,cw,ch);
  const scale=Math.min(cw/1672,ch/941);c.translate((cw-1672*scale)/2,(ch-941*scale)/2);c.scale(scale,scale);c.drawImage(bocceArt,0,0,1672,941);

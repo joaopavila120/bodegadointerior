@@ -28,7 +28,7 @@ for(const id of['touchE','pourButton','interactButton','weightHold']){const b=$(
 // Ao sair da tela o jogo segue rodando (opção no menu do Esc); desligada, tudo pausa até a volta.
 window.addEventListener('blur',()=>{keys.clear();pointerHold=false;if(started&&!backgroundRun)pauseGame('Você saiu da janela. Tudo ficou esperando sua volta.');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&started&&!backgroundRun)pauseGame('Você saiu da aba. Retome quando estiver pronto.');});
-addEventListener('change',e=>{if(e.target?.dataset?.pref==='background')setBackgroundRun(e.target.checked);});
+addEventListener('change',e=>{if(e.target?.dataset?.pref==='background')setBackgroundRun(e.target.checked);if(e.target?.dataset?.pref==='light')setLightGraphics(e.target.checked);});
 window.addEventListener('pagehide',()=>save());
 window.addEventListener('resize',()=>{if(document.documentElement.dataset.gameReady==='true'){if(G.penalties)drawPenalties();else if(G.bocce)drawBocce();else draw();}});
 

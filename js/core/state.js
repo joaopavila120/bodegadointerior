@@ -2,6 +2,9 @@
 'use strict';
 
 // Sem aceleração de vídeo no navegador o canvas é desenhado pelo processador: o jogo já começa com gráficos leves.
+// Resolução interna do canvas: a da tela (no máximo 1,5x); no modo leve, 1:1.
+function renderDpr(){return lightGraphics?1:Math.min(Math.max(devicePixelRatio||1,1),1.5);}
+function setLightGraphics(on){lightGraphics=!!on;lightPref=on?'on':'off';try{localStorage.setItem('bodega-leve',lightPref);}catch(_){}}
 function softwareRendering(){try{const gl=document.createElement('canvas').getContext('webgl');if(!gl)return true;const ext=gl.getExtension('WEBGL_debug_renderer_info'),name=String(ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER));gl.getExtension('WEBGL_lose_context')?.loseContext();return /swiftshader|software|llvmpipe|basic render/i.test(name);}catch(_){return false;}}
 // Criado pelo bootstrap, depois que todos os scripts estiverem disponíveis.
 let G = null,
@@ -24,7 +27,9 @@ let G = null,
     idleDrawClock = 0,
     frameAverage = 1/60,
     slowClock = 0,
-    lightGraphics = softwareRendering(),
+    // Gráficos leves: a pessoa liga no menu (fica salvo) ou o jogo liga sozinho quando o computador não dá conta.
+    lightPref = (() => { try { return localStorage.getItem('bodega-leve') || 'auto'; } catch (_) { return 'auto'; } })(),
+    lightGraphics = lightPref === 'on' || lightPref !== 'off' && softwareRendering(),
     walkCycle = 0;
 
 let cardInvite = null;

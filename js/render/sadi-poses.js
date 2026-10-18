@@ -21,7 +21,7 @@ function sadiPoseFrame(spec,pixels){
   const {sheet,index,crop}=spec,h=Math.min(384,Math.max(64,Math.ceil(pixels/32)*32)),key=sheet+':'+index+':'+h;
   if(!sadiPoseCache.has(key)){
     const c=document.createElement('canvas');c.height=h;c.width=Math.round(crop[2]*h/crop[3]);
-    const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+    const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='medium';
     g.drawImage(SADI_POSE_ART[sheet],...crop.slice(0,4),0,0,c.width,c.height);
     if(sadiPoseCache.size>=120)sadiPoseCache.delete(sadiPoseCache.keys().next().value);
     sadiPoseCache.set(key,c);

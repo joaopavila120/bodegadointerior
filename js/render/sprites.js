@@ -123,7 +123,7 @@ function characterFrame(sprite,pixels){
  while(source.height>height){
   const next=document.createElement('canvas'),h=Math.max(height,Math.ceil(source.height/2));
   next.width=Math.max(1,Math.round(source.width*h/source.height));next.height=h;
-  const n=next.getContext('2d');n.imageSmoothingEnabled=true;n.imageSmoothingQuality='high';n.drawImage(source,0,0,next.width,next.height);source=next;
+  const n=next.getContext('2d');n.imageSmoothingEnabled=true;n.imageSmoothingQuality='medium';n.drawImage(source,0,0,next.width,next.height);source=next;
  }
  sizes.set(height,source);return source;
 }

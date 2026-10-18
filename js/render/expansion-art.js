@@ -1,18 +1,27 @@
 // Shared atlas renderer: preserve alpha and proportions, cache only the final small frames.
 'use strict';
 const EXPANSION_ART = {}, expansionFrames = new Map();
-const expansionArtLoaded = Promise.all(Object.keys(EXPANSION_CROPS).map(key => new Promise(resolve => {
-  const im = new Image(); EXPANSION_ART[key] = im;
-  im.onload = im.onerror = resolve; im.src = 'assets/images/expansion/' + key + '.png';
-})));
+// Arte que só aparece em lugar ou evento específico (caverna, cavalos, Saci, peixes) carrega quando for usada pela
+// primeira vez: o jogo abre mais rápido e ocupa menos memória.
+const EXPANSION_LAZY = new Set(['cave-beasts-a-v1', 'cave-beasts-b-v1', 'cave-props-v1', 'cave-terrain-v1', 'cave-mouth-v2', 'sadi-combat-v1', 'wild-horses-v1', 'horse-tether-v1', 'uruguai-fish-v1']);
+const expansionImageLoads = {};
+function expansionImage(key) {
+  const im = EXPANSION_ART[key]; if (!im) return null;
+  if (!im.getAttribute('src')) { expansionImageLoads[key] = new Promise(resolve => { im.onload = im.onerror = resolve; }); im.src = 'assets/images/expansion/' + key + '.png'; }
+  return im;
+}
+for (const key of Object.keys(EXPANSION_CROPS)) EXPANSION_ART[key] = new Image();
+const expansionArtLoaded = Promise.all(Object.keys(EXPANSION_CROPS).filter(key => !EXPANSION_LAZY.has(key)).map(key => (expansionImage(key), expansionImageLoads[key])));
+// Testes e prévias: carrega tudo de uma vez.
+function expansionArtLoadAll() { return Promise.all(Object.keys(EXPANSION_CROPS).map(key => (expansionImage(key), expansionImageLoads[key]))); }
 function expansionFrame(key, index, height, referenceHeight = null) {
-  const im = EXPANSION_ART[key], crop = EXPANSION_CROPS[key]?.frames[index];
+  const im = expansionImage(key), crop = EXPANSION_CROPS[key]?.frames[index];
   if (!im?.naturalWidth || !crop) return null;
   const scale = height / (referenceHeight || crop[3]), w = Math.max(1, Math.round(crop[2] * scale)), h = Math.max(1, Math.round(crop[3] * scale));
   const cacheKey = key + ':' + index + ':' + w + ':' + h;
   if (!expansionFrames.has(cacheKey)) {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality='medium';
     g.drawImage(im, ...crop.slice(0, 4), 0, 0, w, h);
     if (expansionFrames.size >= 400) expansionFrames.delete(expansionFrames.keys().next().value);
     expansionFrames.set(cacheKey, c);
@@ -28,7 +37,7 @@ let expansionPortraitSerial = 0;
 function expansionPortrait(key, index, size = 88) {
   const meta = EXPANSION_CROPS[key], c = meta.frames[index];
   const clip = 'expansion-portrait-' + (++expansionPortraitSerial);
-  return `<svg class="portrait portrait-phone" width="${size}" height="${size}" viewBox="${c[0]} ${c[1]} ${c[2]} ${c[3]}" aria-hidden="true"><defs><clipPath id="${clip}" clipPathUnits="userSpaceOnUse"><rect x="${c[0]}" y="${c[1]}" width="${c[2]}" height="${c[3]}" /></clipPath></defs><image clip-path="url(#${clip})" href="assets/images/expansion/${key}.png" width="${meta.width}" height="${meta.height}" /></svg>`;
+  return `<svg class="portrait portrait-phone" width="${size}" height="${size}" viewBox="${c[0]} ${c[1]} ${c[2]} ${c[3]}" aria-hidden="true"><defs><clipPath id="${clip}" clipPathUnits="userSpaceOnUse"><rect x="${c[0]}" y="${c[1]}" width="${c[2]}" height="${c[3]}" /></clipPath></defs><image clip-path="url(#${clip})" href="${assetURL('assets/images/expansion/' + key + '.png')}" width="${meta.width}" height="${meta.height}" /></svg>`;
 }
 function expansionRowHeight(key, start, count) { return Math.max(...EXPANSION_CROPS[key].frames.slice(start, start + count).map(c => c[3])); }
 {
@@ -90,7 +99,7 @@ const CAVE_BEAST_ART = {
 const oldCaveBeast = drawCaveBeast;
 drawCaveBeast = function(b) {
   const [key, start, height] = CAVE_BEAST_ART[b.kind] || [];
-  if (!EXPANSION_ART[key]?.naturalWidth) return oldCaveBeast(b);
+  if (!expansionImage(key)?.naturalWidth) return oldCaveBeast(b);
   const attack = b.attack > 0 || ['charge', 'lunge'].includes(b.state);
   const step = attack ? 3 : b.state === 'rest' ? 1 : Math.floor(b.frame) % 3;
   ctx.save(); if (b.hurt > 0) ctx.filter = 'brightness(1.8)';
@@ -117,11 +126,11 @@ const oldCaveFloor = drawCaveFloor, oldCaveWall = drawCaveWall;
 const oldCaveMouth=drawCaveMouth;
 drawCaveMouth=function(layers,seen){
   const {x,y}=CAVE.door;if(!caveOpen()||!seen(x,y,520))return;
-  if(!EXPANSION_ART['cave-mouth-v2']?.naturalWidth)return oldCaveMouth(layers,seen);
+  if(!expansionImage('cave-mouth-v2')?.naturalWidth)return oldCaveMouth(layers,seen);
   layers.push({y:y-10,draw:()=>expansionSprite('cave-mouth-v2',0,x,y+32,335)});
 };
 drawCaveFloor = function(view) {
-  if (!EXPANSION_ART['cave-terrain-v1']?.naturalWidth) return oldCaveFloor(view);
+  if (!expansionImage('cave-terrain-v1')?.naturalWidth) return oldCaveFloor(view);
   const run = caveFloorRun(), C = CAVE.cell;
   if (caveGroundRun !== run) {
     caveGroundRun = run; caveGroundCache = document.createElement('canvas');
@@ -141,7 +150,7 @@ drawCaveFloor = function(view) {
 const caveWallTiles = new Map();
 let caveWallTileSource = null;
 function caveWallTile(variant, deep) {
-  const source=EXPANSION_ART['cave-terrain-v1'];if(!source?.naturalWidth)return null;
+  const source=expansionImage('cave-terrain-v1');if(!source?.naturalWidth)return null;
   if(caveWallTileSource!==source){caveWallTiles.clear();caveWallTileSource=source;}
   const key=variant+':'+deep+':'+CAVE.cell;
   if(!caveWallTiles.has(key)){
@@ -150,7 +159,8 @@ function caveWallTile(variant, deep) {
     const g=tile.getContext('2d');
     g.drawImage(source,...c.slice(0,4),0,0,tile.width,tile.height);
     if(deep){const tinted=document.createElement('canvas');tinted.width=tile.width;tinted.height=tile.height;
-      const t=tinted.getContext('2d');t.filter='sepia(.8) saturate(2.2) hue-rotate(325deg)';t.drawImage(tile,0,0);caveWallTiles.set(key,tinted);
+      // Tom avermelhado sem filtro (filtro de canvas deixava cada parede cara de desenhar): multiplica e recorta pelo alfa.
+      const t=tinted.getContext('2d');t.drawImage(tile,0,0);t.globalCompositeOperation='multiply';t.fillStyle='#e0806a';t.fillRect(0,0,tinted.width,tinted.height);t.globalCompositeOperation='destination-in';t.drawImage(tile,0,0);caveWallTiles.set(key,tinted);
     }else caveWallTiles.set(key,tile);
   }
   return caveWallTiles.get(key);
@@ -188,4 +198,16 @@ function collectibleArt(id) {
   const a=COLLECTIBLE_ART[id];if(!a)return '';
   const b=CARD_PANEL_BOUNDS[a.key],x=b.x[a.col]+2,y=b.y[a.row]+2,w=b.x[a.col+1]-x-2,h=b.y[a.row+1]-y-2;
   return `<div class="tcard-img" role="img" aria-label="Ilustração de ${escapeHTML(cardDef(id).name)}" style="background-image:url('assets/images/expansion/${a.key}.png');background-size:${b.w/w*100}% ${b.h/h*100}%;background-position:${x/(b.w-w)*100}% ${y/(b.h-h)*100}%;background-repeat:no-repeat;width:100%;height:100%"></div>`;
+}
+
+// Antes de precisar: chegando na Serra, a arte da caverna já começa a carregar; na Fronteira, a dos peixes e cavalos.
+{
+  let clock = 0;
+  const tick = outsideTick;
+  outsideTick = function (dt) {
+    tick(dt); if ((clock -= dt) > 0) return; clock = 1; const m = worldOut?.map;
+    if (m === 'serra' || m === 'caverna') ['cave-mouth-v2', 'cave-props-v1', 'cave-terrain-v1', 'cave-beasts-a-v1', 'cave-beasts-b-v1', 'sadi-combat-v1'].forEach(expansionImage);
+    if (m === 'vila') ['uruguai-fish-v1', 'wild-horses-v1'].forEach(expansionImage);
+    if (G?.mount?.owned) expansionImage('horse-tether-v1');
+  };
 }

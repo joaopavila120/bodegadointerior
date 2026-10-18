@@ -96,7 +96,7 @@ function sceneAdvance() {
     s.i++; s.t = 0; s.step = null; const st = s.steps[s.i];
     if (!st) { endScene(); return; }
     if (st.view) { s.view = st.view; continue; }
-    if (st.actor) { s.actors[st.actor] = { x: st.x, y: st.y, dx: st.dx ?? 1, walk: false }; continue; }
+    if (st.actor) { const { actor, ...extra } = st; s.actors[actor] = { ...extra, dx: st.dx ?? 1, walk: false }; continue; }
     if (st.do) { st.do(); continue; }
     s.step = st;
     if (st.say) showRpgBox('sceneTalk', { ...sceneSpeaker(st.say), player: '', reply: st.text });
@@ -137,13 +137,13 @@ function sceneKey(e) {
 function sceneTick(dt) {
   const s = scene, st = s.step; s.t += dt;
   AudioEngine.loop('wind', ['galpao', 'campo'].includes(s.view) ? .03 : 0, { type: 'bandpass', freq: 500, q: .5 });
-  const sadi = s.actors.sadi; if (sadi && s.view !== 'bodega') G.player = { ...G.player, x: sadi.x, y: sadi.y, dx: sadi.dx, walk: sadi.walk };
+  const sadi = s.actors.sadi; if (sadi && s.view !== 'bodega' && s.view !== 'world') G.player = { ...G.player, x: sadi.x, y: sadi.y, dx: sadi.dx, walk: sadi.walk };
   fxTick(dt);
   if (!st) return;
   if (st.fade) { const k = clamp(s.t / st.time, 0, 1); s.fade = st.fade === 'in' ? 1 - k : k; if (k >= 1) sceneAdvance(); }
   else if (st.walk) {
     const ids = [].concat(st.walk), targets = [].concat(st.to); let moving = false;
-    ids.forEach((id, n) => { const a = s.actors[id], to = targets[n], d = Math.hypot(to.x - a.x, to.y - a.y); a.walk = d > 3; if (d > 3) { moving = true; const k = Math.min(d, 150 * dt); a.dx = to.x < a.x ? -1 : 1; a.x += (to.x - a.x) / d * k; a.y += (to.y - a.y) / d * k; } });
+    ids.forEach((id, n) => { const a = s.actors[id], to = targets[n], d = Math.hypot(to.x - a.x, to.y - a.y); a.walk = d > 3; if (d > 3) { moving = true; const k = Math.min(d, (a.speed || 150) * dt); a.dx = to.x < a.x ? -1 : 1; a.dy = Math.abs(to.y - a.y) > Math.abs(to.x - a.x) ? Math.sign(to.y - a.y) : 0; a.x += (to.x - a.x) / d * k; a.y += (to.y - a.y) / d * k; } });
     if (!moving) sceneAdvance();
   }
   else if ((st.wait && s.t >= st.wait) || (st.caption && s.t >= st.time)) sceneAdvance();

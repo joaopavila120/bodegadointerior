@@ -19,7 +19,7 @@ function ruralItemImage(key){
   if(!ruralItemFrames.has(cacheKey)){
     const tile=document.createElement('canvas'),s=Math.min(1,160/Math.max(r[2],r[3]));
     tile.width=Math.round(r[2]*s);tile.height=Math.round(r[3]*s);
-    const c=tile.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+    const c=tile.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='medium';
     c.drawImage(im,...r,0,0,tile.width,tile.height);ruralItemFrames.set(cacheKey,tile);
   }
   return ruralItemFrames.get(cacheKey);

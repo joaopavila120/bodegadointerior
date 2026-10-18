@@ -175,7 +175,7 @@ function updateBocceUI(){
 // Projeta a cancha retangular no trapézio da arte fornecida (1672 × 941).
 function projectBocce(x,y){const t=clamp(y/BOCCE.length,0,1),width=420+1240*t;return{x:870-34*t+(x/BOCCE.width-.5)*width,y:315+626*t,scale:width/BOCCE.width};}
 function drawBocce(){
- const b=G.bocce;if(!b)return;const c=bocceContext,cw=bocceCanvas.clientWidth,ch=bocceCanvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
+ const b=G.bocce;if(!b)return;const c=bocceContext,cw=bocceCanvas.clientWidth,ch=bocceCanvas.clientHeight,dpr=renderDpr();
  if(bocceCanvas.width!==Math.round(cw*dpr)||bocceCanvas.height!==Math.round(ch*dpr)){bocceCanvas.width=Math.round(cw*dpr);bocceCanvas.height=Math.round(ch*dpr);}
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#20180f';c.fillRect(0,0,cw,ch);
  const scale=Math.min(cw/1672,ch/941),ox=(cw-1672*scale)/2,oy=(ch-941*scale)/2;c.translate(ox,oy);c.scale(scale,scale);c.imageSmoothingEnabled=false;

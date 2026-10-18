@@ -11,7 +11,8 @@ for (const key of ['architecture-shop-melhorias', 'architecture-shop-sementes', 
   WORLD_ART[key] = image;
 }
 const worldTextureCache = new Map();
-const worldSpriteCache = new Map();
+const worldSpriteCache = new Map(), WORLD_SPRITE_CACHE_PIXELS = 18e6;
+let worldSpriteCachePixels = 0;
 let worldMeadowStamp = null;
 function worldSprite(sheet, index, x, y, w, h) {
   if(sheet==='buildings'){
@@ -30,12 +31,14 @@ function worldSprite(sheet, index, x, y, w, h) {
   }
   ctx.save();
   ctx.imageSmoothingEnabled = (sheet.startsWith('architecture') || (sheet==='store-shelves'||sheet==='frontier-flora') || sheet==='landscape') && w < crop[2];
-  ctx.imageSmoothingQuality = 'high';
-  if(RURAL_ART_SHEETS.includes(sheet)||(sheet==='nature'&&index<3)||sheet==='landscape'||(sheet==='store-shelves'||sheet==='frontier-flora')||sheet.startsWith('architecture')){
-    const cw=Math.max(8,Math.round(w/8)*8),ch=Math.max(8,Math.round(h/8)*8),key=sheet+':'+index+':'+cw+':'+ch;
+  ctx.imageSmoothingQuality='medium';
+  // Todo sprite sai de uma cópia já no tamanho da tela: redimensionar a folha grande a cada quadro pesava muito.
+  const smoothCache=RURAL_ART_SHEETS.includes(sheet)||(sheet==='nature'&&index<3)||sheet==='landscape'||(sheet==='store-shelves'||sheet==='frontier-flora')||sheet.startsWith('architecture');
+  {
+    const step=smoothCache?8:1,cw=Math.max(step,Math.round(w/step)*step),ch=Math.max(step,Math.round(h/step)*step),key=sheet+':'+index+':'+cw+':'+ch;
     if(!worldSpriteCache.has(key)){
       const tile=document.createElement('canvas');tile.width=cw;tile.height=ch;
-      const c=tile.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+      const c=tile.getContext('2d');c.imageSmoothingEnabled=smoothCache;c.imageSmoothingQuality='medium';worldSpriteCachePixels+=cw*ch;
       if(sheet==='landscape'&&index===0){
         // Tint the source only once, then resize it without another color filter.
         if(!worldMeadowStamp){
@@ -46,9 +49,11 @@ function worldSprite(sheet, index, x, y, w, h) {
         c.drawImage(worldMeadowStamp,0,0,cw,ch);
       }else c.drawImage(im,...crop,0,0,cw,ch);
       worldSpriteCache.set(key,tile);
-    }
+      // Teto de memória: descarta as cópias mais antigas (voltam a ser feitas se aparecerem de novo).
+      while(worldSpriteCachePixels>WORLD_SPRITE_CACHE_PIXELS&&worldSpriteCache.size>1){const [k0,t0]=worldSpriteCache.entries().next().value;worldSpriteCachePixels-=t0.width*t0.height;worldSpriteCache.delete(k0);t0.width=t0.height=0;}
+    }else{const t=worldSpriteCache.get(key);worldSpriteCache.delete(key);worldSpriteCache.set(key,t);}
     ctx.drawImage(worldSpriteCache.get(key),Math.round(x),Math.round(y),Math.round(w),Math.round(h));
-  }else ctx.drawImage(im, ...crop, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
   ctx.restore();
   return true;
 }
@@ -70,7 +75,7 @@ function worldTexture(index, x, y, w, h, size = 192) {
     const tile = document.createElement('canvas'); tile.width = tile.height = size;
     const c = tile.getContext('2d'), im = index === 0 ? WORLD_ART.grass : WORLD_ART.terrain, s = im.naturalWidth / (index === 0 ? 1 : 3);
     if (!im.naturalWidth) return false;
-    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality='medium';
     c.drawImage(im, index % 3 * s, Math.floor(index / 3) * s, s, s, 0, 0, size, size);
     if(index===0){
       if(!WORLD_ART.meadow.naturalWidth)return false;

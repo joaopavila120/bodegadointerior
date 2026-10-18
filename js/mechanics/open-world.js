@@ -149,7 +149,7 @@ function outsideHint() { const m = worldMap().hint?.(); if (m) return m; const s
 
 // ---------- Desenho comum ----------
 function beginOutside(M) {
-  const cw = canvas.clientWidth, ch = canvas.clientHeight, dpr = lightGraphics ? 1 : Math.min(Math.max(devicePixelRatio || 1, innerWidth >= 750 ? 1.5 : 1), 2);
+  const cw = canvas.clientWidth, ch = canvas.clientHeight, dpr = renderDpr();
   if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) { canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = '#20190f'; ctx.fillRect(0, 0, cw, ch);
   const fitScale = Math.min(cw / W, ch / H), base = camera.fit ? fitScale : Math.min(Math.max(cw / W, ch / H), fitScale * 1.35), scale = base * camera.zoom;

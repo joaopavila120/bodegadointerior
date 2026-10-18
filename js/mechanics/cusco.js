@@ -164,7 +164,7 @@ const BAIA = { home: 'casa:manolima', x: 480, y: 610, colors: { fur: '#d9b97a', 
 const baia = { x: 0, y: 0, dx: 1, walk: false, with: null };
 function manolimaIndex() { return PEOPLE.findIndex(p => p.id === 'manolima'); }
 // Sumida (arco "A Baia sumiu"), ela não está em casa nem passeando: só no fundo da caverna, e depois indo pra casa com o Sadi.
-function baiaAway() { const s = G.baiaArc?.stage; return !!s && s !== 'done'; }
+function baiaAway() { const s = G.baiaArc?.stage, m = G.missions?.baia?.status; return m === 'calling' || m === 'active' || !!s && s !== 'done'; }
 function baiaWalksToday() { const i = manolimaIndex(); return i >= 0 && !PEOPLE[i].removed && !baiaAway() && dayHash(i, 9) % 2 === 0; }
 function baiaWalker() { if (!baiaWalksToday() || !worldOut) return null; return worldWalkers.find(w => PEOPLE[w.person]?.id === 'manolima') || null; }
 // O Mano Lima está mesmo na rua (não em casa esperando o Sadi, nem na bodega, nem visitando outra região)?

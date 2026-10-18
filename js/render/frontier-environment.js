@@ -2,14 +2,14 @@
 // Roads, entrances and the pier retain their existing gameplay coordinates.
 'use strict';
 const frontierTerrainTiles = new Map(), frontierMaterials = new Map();
-const FRONTIER_TILE_LIMIT = 24;
+const FRONTIER_TILE_LIMIT = 40;   // o mapa todo tem 54 blocos: guardar mais evita repintar ao voltar
 function frontierTexture(index, x, y, w, h) {
   const image = WORLD_ART['frontier-terrain'];
   if (!image?.naturalWidth) return false;
   if (!frontierMaterials.has(index)) {
     const tile = document.createElement('canvas'); tile.width = tile.height = 384;
     const c = tile.getContext('2d'), sw = image.naturalWidth / 2, sh = image.naturalHeight / 2;
-    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality='medium';
     c.fillStyle = ['#75824d','#9b886d','#305b5b','#aa956c'][index];c.fillRect(0,0,384,384);
     c.globalAlpha = [.24,.65,.66,.68][index];
     c.drawImage(image, index % 2 * sw, Math.floor(index / 2) * sh, sw, sh, 0, 0, 384, 384);

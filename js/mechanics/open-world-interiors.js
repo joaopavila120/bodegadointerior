@@ -126,7 +126,7 @@ function drawCuia(x, y) { ellipse(x, y + 4, 11, 13, '#6a8a3a'); ellipse(x, y - 2
 function interiorMap(def) {
   const b = def.bounds, door = def.door ?? b.x + b.w / 2, half = def.doorHalf ?? 44;
   const walls = (def.walls || []).map(([x, y, w, h]) => ({ x, y, w, h }));
-  const solids = [...walls, ...(def.items || []).filter(i => !i.wall && i.solid !== false)];
+  const solids = [...walls, ...(def.items || []).filter(i => !i.wall && i.solid !== false && i.kind !== 'rug')];
   return {
     indoor: true, ...def,
     spawn() { return { x: door, y: b.y + b.h - 24 }; },

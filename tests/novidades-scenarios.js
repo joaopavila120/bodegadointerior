@@ -1,0 +1,130 @@
+// Novidades: caverna com minérios, forja, bornal e o susto do São Dunstano (que também passeia na Serra contando a vida
+// dele); pescaria de verdade e o dourado; o arco do Peixinho na Brasa; a cuiudada da caça aos javalis; a tropilha fugida
+// da Estela; Teiniaguá e Anhangá; dormir sem o "Abrir a bodega"; o domingo de costelão; o tapete; a Cadela Baia sumida e
+// os pedidos de itens espaçados.
+(() => {
+ const results=[],check=(ok,text)=>{if(!ok)throw Error(text);results.push(text);};
+ const confirmBefore=window.confirm,scenesBefore=window.NO_SCENES,randomBefore=Math.random;
+ try{
+  window.confirm=()=>true;window.NO_SCENES=true;localStorage.removeItem(KEY);
+  action('new');sceneSkip();closeDialog(true);
+  G.prologue.done=true;G.prologue.step=PROLOGUE_STEPS.length;G.tutorial.day=4;G.calOffset=3;G.day=30;G.tutorial.complete=true;G.phase='prep';G.valterQueue=[];G.teachQueue=[];
+  G.taught={manha:true,pesca:true,pedidos:true,missoes:true,javali:true,cavalo:true};G.regions={serra:true,sc:true};G.cash=5000;
+  G.missions={};for(const m of storyChapters())if(m.chapter<12)G.missions[m.id]={status:'done',day:1};
+  const talkAll=()=>{let k=0;while(modal==='talk'&&k++<40)talkNext();};
+  const skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
+  const withScenes=f=>{const ns=window.NO_SCENES;window.NO_SCENES=false;try{return f();}finally{window.NO_SCENES=ns;}};
+  const dayFor=id=>{let d=G.day+1;while(mapEventFor(d)!==id)d++;return d;};
+
+  // ---------- dormir, domingo, tapete, Baia, pedidos ----------
+  {goInside();G.phase='closed';G.report=null;G.testMode=true;G.nextEvent=null;closeDialog(true);caixaMenu();action('caixaSleep');talkAll();check(modal!=='event'&&!/Abrir a bodega/.test($('dialogContent').textContent)&&G.phase==='prep','dormir não abre o quadro com “Abrir a bodega”: dá pra explorar antes');G.testMode=false;closeDialog(true);}
+  {let d=G.day;while(calendar(d+1).weekday!==6)d++;G.day=d;G.nextEvent=null;G.phase='closed';G.report=null;G.costelaoTaught=true;G.stock.costela_crua=6;closeDialog(true);nextDay('automatic');
+   check(G.event.id==='costelao'&&!$('domingoCard').classList.contains('hidden')&&$('domingoCard').textContent.includes('Domingo é dia de costelão!'),'domingo de costelão começa com a tela preta “Domingo é dia de costelão!”');$('domingoCard').classList.add('hidden');talkAll();closeDialog(true);
+   G.day++;G.nextEvent=null;G.phase='closed';G.report=null;$('domingoCard').classList.add('hidden');nextDay('automatic');check(G.event.id!=='costelao'&&$('domingoCard').classList.contains('hidden'),'nos outros dias, nada de tela preta');talkAll();closeDialog(true);}
+  {goOutside();switchMap({map:'casa:marcio',x:700,y:840});closeDialog(true);check(WORLD_MAPS['casa:marcio'].canWalk(1000,700)&&WORLD_MAPS['casa:marcio'].canWalk(900,720),'dá pra pisar em cima do tapete');}
+  {G.missions.baia={status:'calling',day:G.day};G.baiaArc=null;check(baiaAway()&&!baiaAtHome()&&!baiaWalksToday(),'Cadela Baia sumida: nem em casa nem passeando com o Mano Lima');
+   G.missions.abertura={status:'done',day:1};const cos=MISSIONS.find(m=>m.id==='costelao');delete G.missions.costelao;const mi=PEOPLE.findIndex(p=>p.id==='manolima');G.friends[mi]=40;
+   check(mainArcPending('manolima')&&missionForGiver('manolima')?.id!=='costelao','primeiro a Cadela Baia: o costelão do Mano Lima espera');G.missions.baia={status:'done',day:1};G.baiaArc={stage:'done'};check(!mainArcPending('manolima'),'achada a Baia, as outras missões do Mano Lima liberam');}
+  {G.quests={};G.questOpen=[];G.questNextDay=0;for(const p of PEOPLE)if(p.unique)G.friends[PEOPLE.indexOf(p)]=40;const now=()=>Object.keys(HOUSE_QUESTS).filter(id=>questOffer(id)?.kind==='quest');
+   const first=now();check(first.length===1,'pedidos de itens chegam um de cada vez');G.day++;check(now().length===1,'no dia seguinte ainda não chega outro');G.day+=3;check(now().length===2,'uns dias depois, chega o segundo');G.day+=3;check(now().length===2,'e no máximo dois esperando resposta');
+   const i=PEOPLE.findIndex(p=>p.id===first[0]);questAccept(i);closeDialog(true);check(!G.questOpen.some(o=>o.id===first[0])&&questState(first[0]).active,'aceito, o pedido sai da fila de novos');}
+
+  // ---------- caverna: minérios, forja, equipamento, bornal ----------
+  {G.missions.baia={status:'done',day:1};G.cave={facao:true,floor:1,deepest:20,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
+   const floors={};for(let f=2;f<=20;f++)floors[f]=buildCaveFloor(f).rocks.map(r=>r.loot);
+   check(Object.entries(floors).every(([f,l])=>l.includes(+f>10?'agata':'ametista')),'todo andar tem o minério principal');
+   check(Object.entries(floors).every(([f,l])=>l.every(k=>!CAVE_ORES[k]||+f>=CAVE_ORES[k].from&&+f<=CAVE_ORES[k].to)),'cada minério só aparece na faixa dele');
+   check(['cobre','ferro','opala','ouro'].every(k=>Object.values(floors).some(l=>l.includes(k))),'cobre, ferro, opala e ouro aparecem conforme desce');
+   check(Object.keys(CAVE_ORES).every(k=>!SELLABLE.includes(k)&&BAG_RAW[k]),'minérios novos: só São Dunstano compra');
+   enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();check(modal==='dunstanShop'&&$('dialogContent').querySelectorAll('[data-act="dunstanTab"]').length===4,'ferraria em abas: forja, equipamento, bolicho e minérios');
+   const d0=caveDmg();bagAdd('ametista',9);action('forjaMake','ametista');check(caveWeapon().id==='facao'&&bagQty('ametista')===9,'sem 10 ametistas, nada de espada');
+   bagAdd('ametista',1);const c0=G.cash;action('forjaMake','ametista');check(caveWeapon().id==='ametista'&&!bagQty('ametista')&&G.cash===c0-200&&caveDmg()===34&&caveDmg()>d0,'10 ametistas + R$ 200: espada de ametista na mão');
+   bagAdd('ametista',2);action('forjaAfiar');check(weaponRefine()===1&&caveDmg()===37,'afiar na pedra com minério: +3 de dano');
+   action('forjaEquip','facao');check(caveDmg()===d0,'troca de volta pro facão do vô');action('forjaEquip','ametista');
+   bagAdd('cobre',3);action('dunstanTab','equipamento');facaoBuy('chapeu');check(caveUp('chapeu')&&!bagQty('cobre'),'chapéu de aba larga custa cobre além do dinheiro');
+   facaoBuy('pala');check(!caveUp('pala'),'pala só depois do poncho');facaoBuy('poncho');bagAdd('ferro',4);facaoBuy('pala');check(caveUp('pala')&&caveMaxHp()===180,'pala de lã crioula: 180 de vida');
+   facaoBuy('botas');facaoBuy('guaiaca');facaoBuy('bornal');check(caveUp('botas')&&caveUp('guaiaca')&&caveBagMax()===10,'botas, guaiaca e bornal maior');
+   action('dunstanTab','bolicho');for(const id of ['chimarrao','canha','boleadeira','patua','ticao','aguabenta'])action('bolichoBuy',id+':1');action('bolichoBuy','chimarrao:3');
+   check(caveBag().chimarrao===4&&caveBag().canha===1&&caveBeltItems().length===5,'bolicho do santo: itens gaúchos no bornal, cinco no cinto');
+   bagAdd('cobre',5);bagAdd('opala',2);action('dunstanTab','minerios');const c1=G.cash;action('dunstanSell','cobre:all');action('dunstanSell','opala:1');check(G.cash===c1+5*CAVE_ORES.cobre.value+CAVE_ORES.opala.value,'São Dunstano compra os minérios novos');closeDialog(true);
+   enterCave(6);closeDialog(true);const run=caveFloorRun(),p=worldOut,st=caveState();
+   st.hp=50;check(caveUse('chimarrao')&&st.hp===90,'cuia de chimarrão: +40 de vida');
+   const base=caveDmg();caveUse('canha');check(caveBuff('canha')&&caveDmg()===Math.round(base*1.4),'trago de canha: +40% de dano por um tempo');
+   const b=run.beasts[0];b.x=p.x+80;b.y=p.y;b.hp=b.max=500;caveUse('boleadeira');check(b.stun>0,'boleadeira atordoa o bicho perto');const bx=b.x;caveBeastTick(b,.5,run,p);check(b.x===bx,'atordoado, ele não sai do lugar');
+   caveUse('patua');const hp=st.hp;run.inv=0;caveHurt(20,{x:p.x-10,y:p.y});check(st.hp===hp&&!caveBuffs().patua,'patuá benzido segura a pancada inteira');
+   run.inv=0;caveHurt(20,{x:p.x-10,y:p.y});check(st.hp===hp-17,'chapéu de aba larga: 15% menos dano');
+   check(caveUse('ticao')&&run.torch,'tição de angico clareia o andar');
+   b.kind='lobisomem';caveUse('aguabenta');check(caveHitDmg(b)===caveDmg()*2&&caveHitDmg({kind:'javali'})===caveDmg(),'água benta: dano em dobro só nas assombrações');
+   const n=run.drops.length;caveKill({kind:'javali',x:p.x,y:p.y});const coin=run.drops.slice(n).find(d=>d.k==='moeda');check(coin&&coin.q>=Math.round((CAVE_BEASTS.javali.cash[0]+2)*1.3)-1,'guaiaca: mais moedas dos bichos');
+   check(movementBonus()>=.15,'botas de garrão: mais ligeiro na caverna');
+   closeDialog(true);document.dispatchEvent(new KeyboardEvent('keydown',{key:'b',bubbles:true}));check(modal==='caveBag'&&$('dialogTitle').textContent==='Bornal da caverna','B na caverna abre o bornal dela');closeDialog(true);
+   st.hp=40;const ch=caveBag().chimarrao;document.dispatchEvent(new KeyboardEvent('keydown',{key:'1',bubbles:true}));check(caveBag().chimarrao===ch-1&&st.hp===80,'tecla 1 usa o primeiro item do cinto');
+   caveUpdateControls();check(!$('caveBelt').classList.contains('hidden')&&$('caveBelt').querySelectorAll('button').length===caveBeltItems().length,'cinto de itens na tela da caverna');
+   const r=run.rocks[0];r.hp=1;r.loot='ferro';worldOut.x=r.x-60;worldOut.y=r.y+10;worldOut.dx=1;worldOut.dy=0;run.cd=0;run.dash=null;caveAttack();const dr=run.drops.find(d=>d.k==='ferro');check(!!dr,'pedra com veio de ferro solta o minério');const fe=bagQty('ferro');worldOut.x=dr.x;worldOut.y=dr.y;caveTick(.05);check(bagQty('ferro')===fe+1&&caveTripNow().ferro===1,'pegou o ferro: vai pro inventário e pro saldo da descida');
+   check(caveLootTiles(caveTripNow()).some(t=>t[2]==='Ferro'),'o saldo da descida mostra o ferro');
+   caveLeave();talkAll();}
+  // o susto da primeira descida e o fantasma que passeia pela estrada da Serra
+  withScenes(()=>{G.cave=null;worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);caveState().facao=true;enterCave(1);
+   check(scene?.id==='caverna-dunstano'&&scene.view==='world'&&scene.steps.some(s=>s.ghost),'primeira descida: o susto com a aparição do fantasma');skip();
+   check(modal==='talk'&&$('dialogTitle').textContent.includes('Dunstano')&&/bornal|B/.test(JSON.stringify(talkState.lines)),'depois ele ensina a caverna, a forja e o bornal');talkAll();check(caveState().dunstanTaught&&hasCard('dunstano'),'aprendeu e ganhou a figurinha do santo');caveLeave();talkAll();
+   G.phase='closed';let d=G.day;while(caveRand(d*733+11)()>=.3)d++;G.day=d;switchMap({map:'serra',x:1600,y:1000});closeDialog(true);for(let i=0;i<3;i++)outsideTick(.05);
+   const w=dunstanOut;check(!!w&&WORLD_MAPS.serra.canWalk(w.x,w.y),'em algumas noites o São Dunstano caminha pela estrada da Serra');
+   worldOut.x=w.x;worldOut.y=w.y;const sp=walkerSpots().find(s=>s.id==='walker:dunstano');check(!!sp,'dá pra prosear com ele na estrada');sp.act();
+   const lore=DUNSTAN_LORE.flat().map(l=>l[1]).join(' ');check(modal==='talk'&&['909','Glastonbury','São Bento','ourives','tenaz','ferradura','Gante','Cantuária','973','Edgar','988','19 de maio'].every(t=>lore.includes(t)),'na estrada, ele conta a vida dele: Glastonbury, a forja, a tenaz, Cantuária, Edgar, 988');talkAll();
+   G.phase='prep';outsideTick(.05);check(!dunstanOut,'de dia ele não sai da gruta');});
+
+  // ---------- pescaria e o dourado ----------
+  {goOutside();switchMap({map:'vila',x:470,y:917});closeDialog(true);
+   check(FISH_KINDS.dourado.far>FISH_KINDS.dourado.near*5,'o dourado mora longe, na correnteza');
+   let far=0;for(let i=0;i<4000;i++)if(pickFish(.9)==='dourado')far++;let near=0;for(let i=0;i<4000;i++)if(pickFish(.1)==='dourado')near++;check(far>near*3&&far<4000*.2,'dourado é raro: bem mais longe do que perto do trapiche');
+   G.fish=null;goFishing();fishKey(true);for(let i=0;i<40;i++)fishTick(.05);fishKey(false);const castFar=fishing.castX;check(fishing.phase==='fly','solta o E: a boia voa');for(let i=0;i<14;i++)fishTick(.05);check(fishing.phase==='wait','e fica boiando');
+   fishing.biteIn=0;fishTick(.05);check(fishing.phase==='bite'&&/AFUNDOU/.test(fishing.msg),'quando afunda de vez, avisa');for(let i=0;i<30;i++)fishTick(.05);check(fishing.phase==='done'&&!fishing.ok,'demorou pra fisgar: o peixe leva a isca');closeDialog(true);fishing=null;
+   goFishing();fishKey(true);fishKey(false);for(let i=0;i<14;i++)fishTick(.05);fishing.kind='dourado';fishing.biteIn=0;fishTick(.05);fishKey(true);check(fishing.phase==='fight','fisgou: começa a briga');
+   for(let i=0;i<200&&fishing.phase==='fight';i++){fishing.holding=true;fishTick(.05);}check(fishing.phase==='done'&&!fishing.ok&&/Arrebentou/.test(fishing.msg),'segurando o molinete o tempo todo, a linha arrebenta');closeDialog(true);fishing=null;
+   goFishing();fishKey(true);fishKey(false);for(let i=0;i<14;i++)fishTick(.05);fishing.kind='dourado';fishing.biteIn=0;fishTick(.05);fishKey(true);fishKey(false);
+   for(let i=0;i<200&&fishing.phase==='fight';i++){fishing.holding=false;fishing.run=0;fishing.runIn=9;fishTick(.05);}check(fishing.phase==='done'&&!fishing.ok&&/frouxa/.test(fishing.msg),'linha frouxa demais: ele cospe o anzol');closeDialog(true);fishing=null;
+   G.fish=null;const dg=bagQty('dourado');goFishing();fishKey(true);fishKey(false);for(let i=0;i<14;i++)fishTick(.05);fishing.kind='dourado';fishing.biteIn=0;fishTick(.05);fishKey(true);
+   let k=0;while(fishing.phase==='fight'&&k++<6000){fishing.holding=!fishing.run&&fishing.tension<.55;fishTick(.05);}
+   check(fishing.ok&&bagQty('dourado')===dg+1&&fishing.kg>=2&&G.fishRecords?.dourado,'soltando na carreira e recolhendo no cansaço: o dourado, o rei do rio');closeDialog(true);fishing=null;
+   check(/<svg[^>]*filter/.test(itemIconHTML('dourado'))&&/<svg[^>]*filter/.test(bagIcon('opala')),'o dourado e os minérios têm ícone pintado no inventário');}
+  // arco do Peixinho na Brasa: o dourado e cinco cervejas
+  withScenes(()=>{const pi=PEOPLE.findIndex(p=>p.id==='peixinhonabrasa');G.friends[pi]=5;delete G.missions.peixinho;G.quests={};G.questOpen=[];G.questNextDay=0;
+   check(!missionForGiver('peixinhonabrasa')&&mainArcPending('peixinhonabrasa')&&!questOffer('peixinhonabrasa'),'antes do arco do Peixinho, nada de pedido de itens dele');
+   G.friends[pi]=20;const m=missionForGiver('peixinhonabrasa');check(m?.id==='peixinho'&&m.intro.some(l=>/pela-saco/.test(l[1])),'com amizade, o Peixinho pede o dourado e 5 cervejas pros piá');
+   offerMission(m,[]);talkAll();closeDialog(true);if(!missionActive('peixinho'))startMission(m);check(missionActive('peixinho')&&/dourado/.test(m.goal()),'missão aceita: o painel mostra o dourado e as cervejas');
+   G.stock.cerveja=10;bagAdd('dourado',1);switchMap({map:'casa:peixinhonabrasa',x:600,y:700});closeDialog(true);check(questMarker('peixinhonabrasa')==='deliver','com tudo na mão, dá pra entregar');
+   showQuest(pi);action('questDeliver',String(pi));talkAll();check(scene?.id==='peixinho-na-brasa'&&scene.steps.some(s=>s.actor==='gremio2_1')&&scene.view==='world','a cena: o peixinho na brasa com os piá… e os pela-saco chorando');skip();talkAll();
+   check(missionDone('peixinho')&&!mainArcPending('peixinhonabrasa'),'arco do Peixinho concluído');});
+
+  // ---------- caça aos javalis com a cuiudada ----------
+  withScenes(()=>{goInside();G.day=dayFor('javali');G.nextEvent=null;G.phase='closed';G.report={};const st=mapEvState('javali');st.intro=true;G.cave=G.cave||null;
+   goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);for(let i=0;i<3&&!scene;i++)outsideTick(.05);
+   check(scene?.id==='caca-reuniao'&&scene.world?.fires?.length&&['valter','anselmo','arlindo','ramiro'].every(id=>scene.steps.some(s=>s.actor===id)),'de noite, a cuiudada reunida em volta do fogo na frente da bodega');skip();
+   check(cuiudosGathered()&&cuiudoSpots().length===javaliList().length,'um cuiudo com lampião perto de cada javali');
+   spawnWalkers(WORLD_MAPS.vila);check(!worldWalkers.some(w=>CUIUDOS_CREW.includes(PEOPLE[w.person]?.id)),'quem está caçando não passeia pela estrada ao mesmo tempo');
+   const js=javaliSpots()[0];check(/espingarda/.test(js.label),'perto de cada javali, a espingarda do tiro aos javalis');js.act();talkAll();check(shootActive(),'tiro aos javalis');
+   shootTick(2.5);const o=shoot.targets[4];Object.assign(o,{kind:'javali',hp:1,state:'up',rise:1,t:5});const p=shootPose(o);shoot.aim={x:p.x,y:p.y-26*p.js};shootFire();check(shoot.cheer>0&&shoot.fx.some(f=>/Sadi|guri|tiro|falo/.test(f.text)),'acertou: os cuiudos torcem na beira do campo');drawShoot();
+   shoot.kills=SHOOT.need;shootTick(60);check(scene?.id==='caca-agradecimento'&&st.done&&scene.steps.some(s=>s.say==='anselmo'),'meta batida: a vizinhança agradece em volta do fogo');skip();check(modal==='talk'&&/javalis/.test($('dialogContent').textContent+$('dialogTitle').textContent),'e depois o placar com a recompensa');talkAll();check(G.cacaThanked===1,'a cena completa é a da primeira vez');});
+
+  // ---------- tropilha fugida da Estela ----------
+  withScenes(()=>{goInside();G.day=dayFor('cavalos');G.nextEvent=null;G.phase='prep';const st=mapEvState('cavalos');check(!!MAP_EVENTS.cavalos&&MAP_EVENTS.cavalos.giver==='estela','novo evento: a tropilha fugida, pedido da Estela');
+   playEventScene(MAP_EVENTS.cavalos);check(scene?.id==='evento-cavalos'&&scene.view==='world'&&scene.steps.some(s=>s.actor==='estela'),'a Estela chega a galope na frente da bodega e pede ajuda');skip();talkAll();st.intro=true;
+   G.phase='closed';G.report={};goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);check(cavaloSpots().length>=CAVALOS_NEED&&estelaSpot().length===1,'de noite, os cavalos pastando pela Fronteira e a Estela esperando');
+   spawnWalkers(WORLD_MAPS.vila);check(!worldWalkers.some(w=>PEOPLE[w.person]?.id==='estela'),'a Estela não passeia em dobro');
+   const h=cavaloList()[0];startHorseLasso(h);const L=G.lasso,b=L.bois[0];check(L.mode==='cavalo'&&b.cavalo,'laçada de cavalo');
+   b.mode='graze';b.t=9;G.player.x=b.x-200;G.player.y=b.y;L.charging=false;lassoTick(.05);check(b.mode==='flee','chegou perto: o cavalo se espanta');
+   b.mode='graze';b.t=9;b.face=1;b.kickCd=0;G.player.x=b.x-70;G.player.y=b.y;L.immune=0;lassoTick(.05);check(b.mode==='kick','por trás: ele arma o coice');for(let i=0;i<12;i++)lassoTick(.05);check(L.hits===1,'coice!');
+   b.rope=1;horseRoped(L,b);check(b.bolt>0&&b.state==='free','primeiro laço: ele dispara');b.rope=CAVALO_HITS;st.kills=CAVALOS_NEED-1;horseRoped(L,b);check(b.state==='caught'&&L.caught===1,'segundo laço: laçou');
+   for(let i=0;i<120&&G.lasso;i++)lassoTick(.05);check(!G.lasso&&st.done&&scene?.id==='cavalos-agradecimento'&&scene.steps.some(s=>s.horse!=null),'três cavalos de volta: a Estela agradece e leva a tropilha');skip();talkAll();});
+
+  // ---------- Teiniaguá e Anhangá ----------
+  withScenes(()=>{goInside();let d=G.day+1;const neg=x=>{const k=G.day;G.day=x;const r=negrinhoTonight();G.day=k;return r;};while(mapEventFor(d)||neg(d))d++;G.day=d;G.phase='closed';G.report={};goOutside();
+   for(const id of ['teiniagua','anhanga']){G.folk={};G.folkNight={day:G.day,id};const map=FOLK[id].map;switchMap({map,x:1600,y:1000});closeDialog(true);const sp=folkSpots(map)[0];check(sp&&WORLD_MAPS[map].canWalk(sp.x,sp.y),'de noite, '+FOLK[id].name+' aparece no mapa');
+    worldOut.x=sp.x;worldOut.y=sp.y;interact();check(scene?.id==='folk-'+id,'cena do encontro: '+FOLK[id].name);skip();
+    if(id==='teiniagua'){check(modal==='salamanca','as provas da Salamanca: ouro, amor e poder');for(const [,,ok] of SALAMANCA_PROVAS)action('salamancaAnswer',String(ok));}
+    else{check(modal==='farmGame','soltar o filhote do laço e ficar quieto');let k=0;while(farmGame&&k++<200){const s=farmStage();if(s.kind==='alternate')farmGameKey(k%2?'a':'d');else{farmGame.pos=(s.zone[0]+s.zone[1])/2;farmGameKey('e');}}}
+    check(G.relics?.[FOLK[id].relic],'vencendo, a lembrança vai pra estante: '+FOLK[id].relic);talkAll();}
+   for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
+ }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;Math.random=randomBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();scene=null;fishing=null;G.lasso=null;$('lassoUI')?.classList.add('hidden');closeDialog(true);worldOut=null;}
+ return results;
+})()

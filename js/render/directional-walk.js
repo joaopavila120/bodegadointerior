@@ -19,7 +19,7 @@ function walkFrame(id,index,height) {
   const crop=WALK_ART_CROPS[id][index], pixels=Math.min(384,Math.max(64,Math.ceil(height/32)*32)),key=id+':'+index+':'+pixels;
   if(!walkFrameCache.has(key)){
     const c=document.createElement('canvas');c.height=pixels;c.width=Math.ceil(crop[2]*pixels/crop[3]);
-    const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+    const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='medium';
     g.drawImage(WALK_ART[id],...crop.slice(0,4),0,0,c.width,c.height);
     // Bound memory even after many zoom / avatar changes.
     if(walkFrameCache.size>=540)walkFrameCache.delete(walkFrameCache.keys().next().value);

@@ -6,7 +6,7 @@ function interiorMaterial(index,x,y,w,h,size=240){
   const key=index+':'+size;
   if(!interiorMaterialCache.has(key)){
     const tile=document.createElement('canvas');tile.width=tile.height=size;
-    const c=tile.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+    const c=tile.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='medium';
     c.drawImage(im,index%3*512,Math.floor(index/3)*512,512,512,0,0,size,size);
     interiorMaterialCache.set(key,ctx.createPattern(tile,'repeat'));
   }

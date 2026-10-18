@@ -19,7 +19,7 @@ function baiaGoal() {
   if (s === 'return') return 'Leve a Cadela Baia de volta pro Mano Lima, na casa dele (Fronteira)';
   return 'Procure a Cadela Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
 }
-MISSIONS.push({ id: 'baia', title: 'A Cadela Baia sumiu', giver: 'manolima', side: true, after: 'abertura',
+MISSIONS.push({ id: 'baia', title: 'A Cadela Baia sumiu', giver: 'manolima', side: true, mainArc: true, after: 'abertura',
   // Uma manhã depois do capítulo 2, com o Sadi na bodega, o Mano Lima entra pela porta.
   // (num dia sem evento no mapa, pra não cruzar com a visita da manhã do evento)
   when: () => missionDone('abertura') && G.day > (missionState('abertura')?.day || 0) && !worldOut && G.phase === 'prep' && !tutorialActive() && !mapEventFor(),

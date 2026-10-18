@@ -216,7 +216,15 @@ function missionDone(id) { return missionState(id)?.status === 'done'; }
 function missionActive(id) { return missionState(id)?.status === 'active'; }
 function missionReady(m) { return G.missions && !m.direct && !missionState(m.id) && (!m.after || missionDone(m.after)) && (!m.when || m.when()); }
 // A missão que alguém tem para dar agora (o Sadi precisa encontrar a pessoa fora da bodega).
-function missionForGiver(id) { if (!questsOn()) return null; id = questKey(id); return MISSIONS.find(m => !m.chapter && (m.giver || 'valter') === id && missionReady(m) && !(m.skipIfDone && m.done?.())) || null; }
+function missionForGiver(id) { if (!questsOn()) return null; id = questKey(id); return MISSIONS.find(m => !m.chapter && (m.giver || 'valter') === id && missionReady(m) && !(m.skipIfDone && m.done?.()) && (m.mainArc || !mainArcPending(id))) || null; }
+// Pedidos e missões secundárias de alguém esperam a história principal dele: o capítulo da vez (se for dele) e os arcos
+// marcados como principais (a Cadela Baia do Mano Lima, a Casona dos gêmeos, o peixinho na brasa…).
+const MAIN_ARC_CHECKS = [];
+function mainArcPending(id) {
+  id = questKey(id); if (currentChapter()?.giver === id) return true;
+  if (MISSIONS.some(m => m.mainArc && m.giver === id && !missionDone(m.id) && (!m.after || missionDone(m.after)))) return true;
+  return MAIN_ARC_CHECKS.some(f => f(id));
+}
 // ---------- História: capítulos em sequência, que começam sozinhos ----------
 function storyChapters() { return MISSIONS.filter(m => m.chapter).sort((a, b) => a.chapter - b.chapter); }
 function currentChapter() { return storyChapters().find(m => !missionDone(m.id)) || null; }
@@ -367,8 +375,17 @@ function questOffer(id) {
   if (!questsOn()) return null; id = questKey(id);
   const m = activeMissions().find(m => m.deliver?.to === id); if (m) return { kind: 'mission', m, want: m.deliver.items, reward: m.reward };
   const chain = HOUSE_QUESTS[id], s = questState(id), q = chain?.[s.step];
-  if (!q || regionLocked(QUEST_HOMES[id]) || !s.active && (G.day < s.next || friendshipOf(id) < (QUEST_FRIEND[s.step] ?? 40))) return null;
+  if (!q || regionLocked(QUEST_HOMES[id]) || !s.active && (G.day < s.next || friendshipOf(id) < (QUEST_FRIEND[s.step] ?? 40) || mainArcPending(id) || !questSlot(id))) return null;
   return { kind: 'quest', q, want: q.want, reward: q.reward, active: s.active };
+}
+// Pedidos novos chegam espaçados: no máximo dois esperando resposta, e um novo só uns dias depois do anterior. Pedido que
+// ninguém aceitou em uma semana sai da fila e volta mais tarde.
+const QUEST_GAP = 3, QUEST_OPEN_MAX = 2, QUEST_WAIT = 7;
+function questSlot(id) {
+  G.questOpen = (G.questOpen || []).filter(o => G.day - o.day <= QUEST_WAIT && !questState(o.id).active);
+  if (G.questOpen.some(o => o.id === id)) return true;
+  if (G.questOpen.length >= QUEST_OPEN_MAX || G.day < (G.questNextDay || 0)) return false;
+  G.questOpen.push({ id, day: G.day }); G.questNextDay = G.day + QUEST_GAP; return true;
 }
 function haveItem(k) { return bagQty(k) + (GOODS[k] ? G.stock[k] || 0 : 0); }
 function canDeliver(want) { return Object.entries(want).every(([k, q]) => haveItem(k) >= q); }
@@ -400,12 +417,12 @@ function showQuest(i) {
     ? `<button class="primary" data-act="questDeliver" data-id="${i}" ${ok ? '' : 'disabled'}>${ok ? 'Entregar' : 'Ainda falta'}</button><button data-act="close">Depois</button>`
     : `<button class="primary" data-act="questAccept" data-id="${i}">Aceitar pedido</button><button data-act="close">Agora não</button>`}</div>`, 'quest');
 }
-function questAccept(i) { const s = questState(PEOPLE[i].id); s.active = true; save(); closeDialog(true); worldSay('Pedido aceito. Ele fica na aba Missões do celular.'); }
+function questAccept(i) { const s = questState(PEOPLE[i].id); s.active = true; G.questOpen = (G.questOpen || []).filter(o => o.id !== questKey(PEOPLE[i].id)); save(); closeDialog(true); worldSay('Pedido aceito. Ele fica na aba Missões do celular.'); }
 function questDeliver(i) {
   const id = PEOPLE[i].id, o = questOffer(id); if (!o || !canDeliver(o.want)) return;
   takeItems(o.want); grantReward(o.reward); closeDialog(true);
   if (o.kind === 'mission') { G.missions[o.m.id] = { status: 'done', day: G.day }; o.m.onDone?.(); talk([...speakerLines(o.m.thanks, id), ['reward', o.reward, 'Missão concluída · ' + o.m.title]], () => o.m.finale?.(), 'Receber'); }
-  else { const s = questState(id); s.step++; s.active = false; s.next = G.day + 1; G.questsDone = (G.questsDone || 0) + 1; talk([...speakerLines(o.q.thanks, id), ['reward', o.reward, 'Pedido entregue']], null, 'Receber'); }
+  else { const s = questState(id); s.step++; s.active = false; s.next = G.day + 4; G.questsDone = (G.questsDone || 0) + 1; talk([...speakerLines(o.q.thanks, id), ['reward', o.reward, 'Pedido entregue']], null, 'Receber'); }
   save();
 }
 function knownQuests() {
@@ -502,7 +519,7 @@ function drawForage(layers, seen) {
 });
 
 // ---------- Pescaria no trapiche ----------
-const FISH_PER_DAY = 3;
+const FISH_PER_DAY = 4;
 function fishLeft() { return G.fish?.day === G.day ? FISH_PER_DAY - G.fish.n : FISH_PER_DAY; }
 function goFishing() {
   if (fishLeft() <= 0) { worldSay('Por hoje chega de pescaria: o peixe ficou arisco. Amanhã tem mais.'); return; }

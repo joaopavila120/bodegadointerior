@@ -363,6 +363,8 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 #hudLayer .horta-bar button em{font-style:normal;font-size:11px;font-weight:bold}
 #hudLayer .horta-bar button.on{background:#7a5a24;border-color:#ffd96a;box-shadow:0 0 0 2px #ffd96a66}
 @media(max-width:750px){#hudLayer .horta-bar button{min-width:40px;min-height:44px}#hudLayer .horta-bar button span{font-size:18px}}
+#hudLayer .cave-belt{left:14px;transform:none;bottom:52px}#hudLayer .cave-belt .pixel-item{display:block;width:34px;height:34px}#hudLayer .cave-belt .pixel-item img,#hudLayer .cave-belt .pixel-item svg{width:100%;height:100%;object-fit:contain}#hudLayer .cave-belt button em{position:absolute;right:4px;bottom:2px}
+.fish-canvas{display:block;width:100%;height:auto;border-radius:8px;border:2px solid #a8884a;touch-action:none;cursor:pointer}.fish-msg{min-height:20px;font-weight:bold}
 /* Inventário, lojas e status da horta */
 .farm-status{margin-left:6px;padding:4px 8px;border:2px solid #d9b25e;border-radius:10px;background:#2b1d12e6;color:#ffe8b8;font-weight:bold;font-size:14px;white-space:nowrap;cursor:pointer}
 .farm-status.hidden{display:none}
@@ -500,3 +502,6 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .tcard-encounter .portrait{width:90%;height:90%;max-width:100%;border:0;border-radius:0;background:none;object-fit:contain}
 #dunstanTradeButton{align-self:center;flex-shrink:0;max-width:160px;white-space:normal}
 @media(max-width:650px){#dunstanTradeButton{max-width:110px;font-size:11px;padding:5px}}
+
+.domingo-card{position:fixed;inset:0;z-index:999999;display:grid;place-content:center;gap:10px;background:#000;color:#f1e6c8;text-align:center;animation:domingoCard 3.2s ease forwards;cursor:pointer}.domingo-card p{margin:0;font:italic clamp(28px,5vw,64px)/1.2 Georgia,serif}.domingo-card small{font:clamp(14px,1.6vw,20px) Georgia,serif;color:#d9b25e}
+@keyframes domingoCard{0%{opacity:0}12%{opacity:1}78%{opacity:1}100%{opacity:0}}

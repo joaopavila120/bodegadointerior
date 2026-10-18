@@ -98,6 +98,7 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
     if(process.env.BODEGA_FOCUS==='roadsCave'){
       await load(base+'/index.html');
+      await evaluate('expansionArtLoadAll()');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'road-cave-performance-scenarios.js'),'utf8'));
       console.log('PASS roads/cave: '+results.length+' checks');
       await evaluate(`G=fresh();G.prologue={done:true};G.tutorial.complete=true;G.cave={facao:true,floor:11,deepest:11,hp:100,dunstanTaught:true,up:{}};started=true;paused=true;$('start').classList.add('hidden');goOutside();enterCave(11);closeDialog(true);draw();`);
@@ -106,6 +107,7 @@ async function main() {
     }
     if(process.env.BODEGA_FOCUS==='cavePerf'){
       await load(base+'/index.html');
+      await evaluate('expansionArtLoadAll()');
       console.log(JSON.stringify(await evaluate(`(()=>{
         const original={G,worldOut,ctx,caveRun};const results=[];
         try{G=fresh();G.day=5;G.prologue={done:true};G.cave={floor:10,up:{},hp:100};worldOut={map:'caverna',x:1000,y:800};
@@ -121,6 +123,7 @@ async function main() {
     }
     if(process.env.BODEGA_FOCUS==='caveLife'){
       await load(base+'/index.html');
+      await evaluate('expansionArtLoadAll()');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'cave-life-scenarios.js'),'utf8'));
       console.log('PASS cave life: '+results.length+' checks');
       const art=await evaluate(`(()=>{
@@ -143,12 +146,14 @@ async function main() {
     }
     if (process.env.BODEGA_FOCUS === 'missions') {
       await load(base+'/index.html');
+      await evaluate('expansionArtLoadAll()');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'missions-scenarios.js'),'utf8'));
       console.log('PASS missions: '+results.length+' checks');
       assert.equal(errors.length,0,errors.join('\n'));return;
     }
     if (process.env.BODEGA_FOCUS === 'proportions') {
       await load(base + '/index.html');
+      await evaluate('expansionArtLoadAll()');
       const preview=await evaluate(`(()=>{
         G=fresh();paused=true;worldOut=null;
         const previous=ctx,c=document.createElement('canvas');c.width=1100;c.height=850;ctx=c.getContext('2d');
@@ -168,6 +173,7 @@ async function main() {
     }
     if (process.env.BODEGA_FOCUS === 'mountain') {
       await load(base + '/index.html');
+      await evaluate('expansionArtLoadAll()');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
       console.log('PASS mountain: '+results.length+' checks');
       const movement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));
@@ -200,13 +206,13 @@ async function main() {
       await load(protocol === 'file' ? pathToFileURL(path.join(root, entry)).href : base + '/' + entry);
       assert(await evaluate(`G.day===1&&W===1600&&H===900&&canWalk(G.player.x,G.player.y)&&$('startLogo').naturalWidth>0`));
       assert(await evaluate(`[roomArt,peopleArt,furnitureArt].every(i=>i.complete&&i.naturalWidth>0)`));
-      assert(await evaluate(`(lightGraphics?canvas.width===canvas.clientWidth:canvas.width>=canvas.clientWidth*1.49)&&camera.zoom===1`), 'Desktop inicia sem zoom com resolução interna maior');
+      assert(await evaluate(`canvas.width===Math.round(canvas.clientWidth*renderDpr())&&renderDpr()<=1.5&&(!lightGraphics||renderDpr()===1)&&camera.zoom===1`), 'Desktop inicia sem zoom, na resolução da tela (no máximo 1,5x; 1:1 nos gráficos leves)');
       await evaluate(`action('zoomIn');draw()`);
       assert(await evaluate(`Math.abs(camera.zoom-1.2)<.01&&$('viewZoom').textContent==='120%'`), 'Controle de zoom amplia e atualiza a indicação');
       await evaluate(`action('zoomOut');draw()`);
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
-      await evaluate('Promise.all([worldArtLoaded,walkArtLoaded])');
+      await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
       const mountainResults=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+mountainResults.length+' verificações da caverna, montaria e personagens');
       const caveMovement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));
@@ -272,6 +278,8 @@ async function main() {
     for (const result of prologue) console.log('PASS ' + result);
     const missions = await evaluate(fs.readFileSync(path.join(__dirname, 'missions-scenarios.js'), 'utf8'));
     for (const result of missions) console.log('PASS ' + result);
+    const novidades = await evaluate(fs.readFileSync(path.join(__dirname, 'novidades-scenarios.js'), 'utf8'));
+    for (const result of novidades) console.log('PASS ' + result);
     const tutorial = await evaluate(fs.readFileSync(path.join(__dirname, 'tutorial-scenarios.js'), 'utf8'));
     for (const result of tutorial) console.log('PASS ' + result);
     const interfaceReturns = await evaluate(fs.readFileSync(path.join(__dirname, 'interface-returns-scenarios.js'), 'utf8'));

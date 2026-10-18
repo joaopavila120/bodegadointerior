@@ -1,61 +1,47 @@
-// Arco "A Casona dividida": o Márcio e o Marcelo brigaram por causa da Daiane, a prenda de Bento Gonçalves, e na mesma
-// noite cada um botou o sonzão no último pra provocar o outro: a vizinhança chamou a Brigada e o sonzão foi apreendido.
-// Agora a Casona tem uma fita crepe no meio da sala e o Marcelo sumiu. O Sadi:
-//   1. entra na Casona e o Márcio conta a briga (cena);
-//   2. procura o Marcelo pela Serra (dica: quando fica brabo, ele vai chutar bola sozinho) e acha ele no campinho (cena);
-//   3. convence o Marcelo escolhendo as falas certas (errou demais, ele cansa e só conversa no outro dia);
-//   4. convence o Márcio do mesmo jeito;
-//   5. de noite, na laje, faz a mediação (cena com escolhas): os dois fazem as pazes e o sonzão volta pra casa.
+// Arco "A Casona dividida": a Brigada veio por causa do barulho e o Márcio, caído de amores pela Soldado Grazi, entregou
+// o sonzão do tio Lori de mão beijada pra brigadiana. O Marcelo não perdoou: fita crepe no meio da sala e cada um no seu
+// lado. O Sadi:
+//   1. entra na Casona e vê a briga (cena dentro da Casona de verdade); o Márcio pede 5 opalas da caverna pra um anel;
+//   2. traz as opalas do fundo da caverna (do andar 6 pra baixo) e São Dunstano, que foi ourives, monta o anel;
+//   3. acha o Marcelo chutando bola sozinho no campinho e convence ele escolhendo as falas certas (errou demais, ele
+//      cansa e só conversa no outro dia);
+//   4. leva o anel pro Márcio na Casona: ensaiam o pedido, a Grazi chega, aceita, devolve o sonzão (volume seis) e os
+//      gêmeos tiram a fita crepe da sala.
 'use strict';
 
-const GEMEOS_CAMPINHO = { x: 2960, y: 1290 }, GEMEOS_PATIENCE = 3;
-function gemeosState() { G.gemeos ??= { stage: 0 }; return G.gemeos; }
-function gemeosStage() { return G.gemeos?.stage || 0; }
-// Começa depois de uns dias de bodega, com a Serra aberta e um pouco de amizade com os gêmeos.
+const GEMEOS_CAMPINHO = { x: 2960, y: 1290 }, GEMEOS_PATIENCE = 3, GEMEOS_OPALAS = 5;
+function gemeosState() { G.gemeos ??= { v: 2, stage: 0 }; if (G.gemeos.v !== 2) G.gemeos = { v: 2, stage: G.gemeos.stage >= 5 ? 5 : 0 }; return G.gemeos; }
+function gemeosStage() { return G.gemeos?.v === 2 ? G.gemeos.stage || 0 : G.gemeos?.stage >= 5 ? 5 : 0; }
+// Começa depois de uns dias de bodega, com a Serra e a caverna abertas e um pouco de amizade com os gêmeos.
 function gemeosReady() {
-  if (gemeosStage() || prologueActive() || !G.tutorial?.complete || regionLocked('serra') || bodegaDays() < 9) return false;
+  if (gemeosStage() || prologueActive() || !G.tutorial?.complete || regionLocked('serra') || bodegaDays() < 9 || !caveOpen()) return false;
   const f = id => G.friends[PEOPLE.findIndex(p => p.id === id)] || 0; return Math.max(f('marcio'), f('marcelo')) >= 10;
 }
 function gemeosFighting() { const s = gemeosStage(); return s >= 1 && s < 5; }
+function gemeosRingReady() { return gemeosStage() === 1 && !G.gemeos?.ring && bagQty('opala') >= GEMEOS_OPALAS; }
 
 // ---------- Falas com escolha ----------
 // Cada pergunta tem uma resposta certa; as outras arrancam uma reação e a pergunta volta. Errou demais: ele cansa.
 const GEMEOS_ROUNDS = {
   marcelo: [
-    { q: 'Veio me buscar a mando do Márcio, é? Pode voltar por onde veio.', a: [
-      ['Ninguém me mandou. Vim porque tu é meu amigo.', 'Hmpf… Show de bola. Senta aí, então.', true],
-      ['O Márcio disse que tu é um cabeça-dura.', 'Ah, ele disse, é? Então ele que venha me dizer na cara!'],
+    { q: 'Veio defender o Márcio, é? Ele ENTREGOU o sonzão do tio Lori pra Brigada, Sadi! De mão beijada!', a: [
+      ['Vim porque tu é meu amigo. E porque o Márcio tá de coração partido.', '…Coração partido? Aquele lá? Hmpf. Senta aí, então.', true],
+      ['O som tava alto demais mesmo. A vizinhança agradece.', 'A vizinhança que compre um sonzão pra ela!'],
       ['Bah, tu chuta mal, hein.', 'Muito engraçado, Sadi. Bem o que eu precisava hoje.']] },
-    { q: 'A Daiane dançou comigo no baile da Festa da Uva. Comigo! E o Márcio jura que ela confundiu os gêmeos.', a: [
-      ['Por causa de uma dança vocês vão jogar fora trinta anos de irmão?', '…Dito assim parece bobagem, né?', true],
-      ['Ela confundiu mesmo: vocês são iguaizinhos.', 'Iguais nada! Eu sou o bonito, tchê.'],
-      ['Então fica com a Daiane e esquece o Márcio.', 'Bah… não é bem assim também, Sadi.']] },
-    { q: 'E o sonzão? A Brigada levou por culpa dele, que botou a vaneira no último às três da manhã!', a: [
-      ['E tu botou o teu no último também. A culpa é meio a meio.', '…É. Eu botei o funk do Mito do Sul em cima. Meio a meio.', true],
-      ['A culpa é toda do Márcio, tu tem razão.', 'Viu? Até o Sadi concorda! …Só que assim ele nunca vai pedir desculpa.'],
-      ['Sonzão se compra outro.', 'Outro?! Aquele era herança do tio Lori, guri!']] }
+    { q: 'A brigadiana pediu pra baixar o volume e ele disse: “leva, moça, leva ele e o meu coração junto”. É o quê?!', a: [
+      ['Ele vai pedir ela em namoro com um anel de opala. Eu mesmo busquei as pedras na caverna.', 'Tu desceu na caverna por ele?! …Bah. Então é sério mesmo.', true],
+      ['A Grazi é bonita. Eu também entregava.', 'Tu também?! Ninguém mais tem juízo nesta Serra!'],
+      ['Esquece o Márcio e compra outro sonzão.', 'Outro?! Aquele era herança do tio Lori, guri!']] },
+    { q: 'E o sonzão? Vai ficar apodrecendo no depósito da Brigada?', a: [
+      ['Se o pedido der certo, a cunhada brigadiana devolve o sonzão. E tu ganha uma cunhada!', '…Cunhada brigadiana. Ninguém mais chama a polícia pra Casona. Tá bom, Sadi: eu volto pra casa.', true],
+      ['Melhor ele ficar lá. É bom pra todo mundo.', 'Pra todo mundo menos pra laje, tchê.'],
+      ['Eu busco de volta de noite, escondido.', 'Tá louco? Aí quem vai em cana é tu!']] }
   ],
-  marcio: [
-    { q: 'Achou o Marcelo, é o quê? Aposto que tá falando mal de mim.', a: [
-      ['Ele sente tua falta. Tá chutando bola sozinho no campinho.', '…Sozinho? Ele odeia jogar sozinho. Sempre foi eu no gol.', true],
-      ['Falou mesmo. Disse que ele é o bonito.', 'Bonito?! Somos iguais, é o quê!'],
-      ['Não achei ninguém, só passei pra tomar um café.', 'Café não tem: a cafeteira ficou do lado dele da fita.']] },
-    { q: 'E se eu for lá e ele não quiser falar comigo?', a: [
-      ['Ele quer. Ele mesmo disse: conversa, se tu quiser também.', '…Então tá. Hoje de noite, na laje. Tu vai junto, Sadi.', true],
-      ['Leva a Daiane junto, aí ele não pode dizer não.', 'Tá louco? Aí é que vira guerra!'],
-      ['Aí tu passa uma fita crepe no meio da laje também.', '…Não tem graça, Sadi. Nenhuma.']] }
-  ],
-  laje1: [
-    { q: 'Os dois na laje, um em cada canto, olhando pro chão. Ninguém fala nada. Puxe o assunto:', a: [
-      ['Lembram quando vocês caíram juntos do telhado da Casona, tentando arrumar a antena?', null, true],
-      ['Quem pedir desculpa primeiro ganha um xis.', 'Márcio: Não tô com fome. · Marcelo: Nem eu. (silêncio)'],
-      ['Bom, já que ninguém fala, eu vou embora.', 'Márcio e Marcelo: Não! Fica, Sadi… (e se olham de canto)']] }
-  ],
-  laje2: [
-    { q: 'Riram, mas falta resolver o sonzão. O que tu propõe?', a: [
-      ['Amanhã vocês vão juntos na Brigada buscar o sonzão e racham a multa.', null, true],
-      ['Eu compro um sonzão novo pra vocês.', 'Os dois: Não, Sadi! O sonzão do tio Lori não tem outro igual.'],
-      ['Deixa ele lá na Brigada, a vizinhança agradece.', 'Márcio: A vizinhança agradece… · Marcelo: …mas a laje chora.']] }
+  ensaio: [
+    { q: 'O Márcio, nervoso, com o anel na mão: “Como é que eu começo, Sadi?”', a: [
+      ['Fala do coração: que desde aquela noite tu não pensa em outra coisa.', null, true],
+      ['Começa pedindo desculpa pelo barulho.', 'Márcio: Desculpa pelo barulho? Aí ela me multa de novo, é o quê!'],
+      ['Liga o som no último pra chamar a atenção dela.', 'Márcio e Marcelo: Não! Foi assim que tudo começou!']] }
   ]
 };
 let gemeosRound = null;
@@ -67,7 +53,7 @@ function gemeosQuestion() {
   const r = gemeosRound, Q = GEMEOS_ROUNDS[r.set][r.n], i = PEOPLE.findIndex(p => p.id === r.who), speaker = r.who === 'sadi' ? '' : `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>${PEOPLE[i].name}</b></p><p>${Q.q}</p></div></div>`;
   const reply = r.said ? `<div class="callout choice-reply">${r.said}</div>` : '', order = Q.order ??= shuffle(Q.a.map((_, k) => k));
   const opts = order.map(k => `<button class="choice" data-act="gemeosChoice" data-id="${k}">${Q.a[k][0]}</button>`).join('');
-  openDialog(r.who === 'sadi' ? 'Na laje da Casona' : 'Conversa com ' + PEOPLE[i].name, `${speaker || `<p>${Q.q}</p>`}${reply}<p class="small-note">O que o Sadi diz?</p><div class="choice-list">${opts}</div>`, 'gemeosChoice');
+  openDialog(r.who === 'sadi' ? 'Na sala da Casona' : 'Conversa com ' + PEOPLE[i].name, `${speaker || `<p>${Q.q}</p>`}${reply}<p class="small-note">O que o Sadi diz?</p><div class="choice-list">${opts}</div>`, 'gemeosChoice');
 }
 function gemeosChoice(k) {
   const r = gemeosRound; if (!r) return; const Q = GEMEOS_ROUNDS[r.set][r.n], [said, reply, good] = Q.a[Number(k)] || [];
@@ -82,129 +68,111 @@ function gemeosChoice(k) {
   gemeosQuestion();
 }
 
-// ---------- Cenas ----------
-function drawGemeosRoom(split = true) {
-  beginWorld();
-  rect(0, 0, W, H, '#2a2018'); rect(120, 90, W - 240, 330, '#e8d8b0'); rect(120, 404, W - 240, 16, '#5a3a22');
-  for (const x of [260, 1180]) { rect(x, 150, 150, 120, '#7a9ab8', 6, '#5a3a20'); rect(x + 72, 150, 6, 120, '#5a3a20'); }
-  rect(120, 420, W - 240, H - 420, '#a87a4a'); for (let y = 440; y < H; y += 46) rect(120, y, W - 240, 2, '#8a6038');
-  // TV e sofá do lado do Márcio; a cafeteira do lado do Marcelo; e a marca de pó onde ficava o sonzão.
-  rect(300, 300, 220, 120, '#1a1a1e', 6, '#3a3a40'); rect(310, 310, 200, 96, '#2a3a5a');
-  rect(250, 600, 300, 70, '#2a6a3a', 14, '#1a4a2a'); rect(250, 570, 300, 34, '#327a44', 12);
-  rect(1060, 330, 150, 70, '#8a5a2a', 4, '#3a2414'); rect(1090, 300, 40, 40, '#2a2a2e', 6); ellipse(1110, 296, 14, 5, '#3a3a40');
-  ctx.save(); ctx.setLineDash([10, 8]); ctx.strokeStyle = '#6a5a48'; ctx.lineWidth = 3; ctx.strokeRect(1240, 300, 140, 110); ctx.restore(); txt('?', 1310, 356, 40, '#6a5a48', 'center', 'Georgia', false);
-  if (split) {
-    rect(W / 2 - 6, 90, 12, H - 90, '#e8d8a0'); for (let y = 100; y < H; y += 40) rect(W / 2 - 6, y, 12, 2, '#c8b880');
-    rect(W / 2 - 230, 450, 200, 40, '#f4ecd8', 6, '#5a3a20'); txt('LADO DO MÁRCIO', W / 2 - 130, 470, 16, '#5a3418', 'center', 'Georgia', false);
-    rect(W / 2 + 30, 450, 210, 40, '#f4ecd8', 6, '#5a3a20'); txt('LADO DO MARCELO', W / 2 + 135, 470, 16, '#5a3418', 'center', 'Georgia', false);
-  }
-  drawSceneActors(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+// ---------- Cenas (na Casona e no campinho de verdade) ----------
+const CASONA_DOOR = { x: 700, y: 900 };
+// A Grazi de farda: o quepe da Brigada por cima.
+function drawGrazi(a, y) {
+  personDraw(PEOPLE.find(p => p.id === 'grazi').sprite, a.x, y, a.walk, false, a.dx, false, 0, a.dy || 0);
+  rect(a.x - 17, y - 132, 34, 11, '#2a3a4a', 4, '#141c26'); rect(a.x - 20, y - 123, 40, 5, '#1a242e', 2); ellipse(a.x, y - 127, 4, 4, '#e8c040');
 }
-function drawGemeosCampinho() {
-  beginWorld(); const s = scene;
-  rect(0, 0, W, 260, '#a8d0e8'); for (let x = -40; x < W; x += 170) ellipse(x, 262, 150, 50, '#5a8a4a');
-  rect(0, 260, W, H - 260, '#5f9a3e'); for (let x = 0; x < W; x += 120) rect(x, 260, 60, H - 260, 'rgba(255,255,255,.04)');
-  ctx.strokeStyle = '#f4f4ea'; ctx.lineWidth = 5; ctx.strokeRect(160, 320, W - 320, 520); ctx.beginPath(); ctx.moveTo(W / 2, 320); ctx.lineTo(W / 2, 840); ctx.stroke(); ctx.beginPath(); ctx.arc(W / 2, 580, 80, 0, Math.PI * 2); ctx.stroke();
-  for (const gx of [160, W - 160]) { rect(gx - 4, 470, 8, 160, '#f4f4ea'); rect(gx - (gx < W / 2 ? 0 : 60), 466, 64, 8, '#f4f4ea'); }
-  const k = performance.now() / 1000 * .9, tri = k % 2 < 1 ? k % 1 : 1 - k % 1, b = s.kick ? { x: 820 + tri * 420, y: 700, h: Math.abs(Math.sin(k * Math.PI)) * 60 } : { x: 820, y: 700, h: 0 }; ellipse(b.x, b.y + 4, 14, 5, '#00000033'); ellipse(b.x, b.y - (b.h || 0), 13, 13, '#f8f8f0'); ellipse(b.x - 3, b.y - (b.h || 0) - 2, 4, 4, '#2a2a2a');
-  drawSceneActors(); ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
-function drawGemeosLaje() {
-  beginWorld(); const s = scene;
-  rect(0, 0, W, H, '#0e1428'); for (let i = 0; i < 50; i++) ellipse((i * 211.3) % W, (i * 37.7) % 220, 1.3, 1.3, `rgba(240,236,210,${.3 + .3 * Math.sin(frameClock * 1.5 + i)})`);
-  rect(0, 300, W, H - 300, '#8a8a84'); for (let x = 0; x < W; x += 140) rect(x, 300, 2, H - 300, '#7a7a74'); for (let y = 360; y < H; y += 120) rect(0, y, W, 2, '#7a7a74');
-  for (const x of [140, 1460]) { rect(x - 16, 180, 32, 520, '#b8b0a0'); }
-  for (let x = 140; x < 1460; x += 50) { const y = 200 + Math.sin(x / 140) * 20; ellipse(x, y, 6, 7, ['#ffd860', '#ff8a5a', '#8ad8ff'][Math.round(x / 50) % 3]); }
-  rect(240, 430, 260, 80, '#6a6a6e', 6, '#3a3a3e'); for (let k = 0; k < 6; k++) rect(260 + k * 40, 440, 24, 8, '#b84a2a'); for (let k = 0; k < 4; k++) { const a = (frameClock * .8 + k * .25) % 1; ellipse(330 + k * 30, 420 - a * 100, 10 + a * 20, 8 + a * 12, `rgba(220,220,215,${.5 * (1 - a)})`); }
-  rect(980, 560, 280, 90, '#8a5a2a', 6, '#3a2414');
-  if (s.som) { rect(1300, 470, 120, 100, '#1a1a1e', 8, '#3a3a40'); ellipse(1335, 520, 22, 22, '#3a3a40'); ellipse(1385, 520, 22, 22, '#3a3a40'); rect(1310, 452, 100, 18, '#f0e080', 3); txt('VOLUME MÁX: 6', 1360, 461, 10, '#3a2414', 'center', 'Arial', false); for (let k = 0; k < 3; k++) { const a = (frameClock * 1.5 + k * .33) % 1; txt('♪', 1360 + Math.sin(k * 2) * 40, 440 - a * 90, 22, `rgba(255,240,180,${1 - a})`, 'center', 'Georgia', false); } }
-  drawSceneActors(); ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
-SCENE_VIEWS.gemeosSala = () => drawGemeosRoom(true); SCENE_VIEWS.gemeosSalaInteira = () => drawGemeosRoom(false); SCENE_VIEWS.gemeosCampinho = drawGemeosCampinho; SCENE_VIEWS.gemeosLaje = drawGemeosLaje;
-
-// 1. A Casona dividida: o Márcio sozinho conta a briga.
+const GRAZI_ACTOR = { draw: drawGrazi };
+function casonaView(extra = {}) { return sceneWorld({ map: 'casa:marcio', x: 900, y: 700, ...extra }); }
+// 1. A Casona dividida: a briga por causa do sonzão e o pedido das opalas.
 function gemeosStart() {
   const st = gemeosState(); st.stage = 1; st.day = G.day; save();
-  const saved = { ...G.player }; showRpgBox('worldTalk', null); keys.clear();
-  playSteps([{ caption: 'A Casona dividida', time: 1.8 }, { view: 'gemeosSala' }, { actor: 'sadi', x: 1000, y: 760, dx: -1 }, { actor: 'marcio', x: 520, y: 700, dx: 1 }, { fade: 'in', time: .6 },
-    { say: 'sadi', text: 'Ô de casa! …Márcio? Que fita crepe é essa no meio da sala?' },
-    { say: 'marcio', text: 'É o quê? Daqui pra lá é do Marcelo. Daqui pra cá é meu. Não pisa na linha.' },
-    { say: 'marcio', text: 'Tudo por causa da Daiane, a prenda de Bento. No baile da Festa da Uva ela dançou com ele… mas foi porque confundiu os gêmeos!' },
-    { say: 'marcio', text: 'Aí ele botou o funk no último. Eu botei a vaneira no último por cima. Três da manhã.' },
-    { say: 'marcio', text: 'A vizinhança chamou a Brigada. Levaram o sonzão do tio Lori, Sadi. Apreendido. Perturbação do sossego.' },
-    { say: 'sadi', text: 'E o Marcelo?' },
-    { say: 'marcio', text: 'Sumiu. Pegou a bola e saiu batendo a porta. Quando ele fica brabo vai chutar bola sozinho por aí… mas eu é que não vou atrás.' },
-    { walk: 'sadi', to: { x: 900, y: 730 } },
-    { say: 'sadi', text: '(Bah. Alguém tem que juntar esses dois de novo.)' }, { fade: 'out', time: .6 }], 'gemeos-1', () => {
-    G.player = saved; save();
-    talk([['dica', 'Procure o <b>Marcelo</b> pela Serra. Dica do Márcio: quando fica brabo, ele vai <b>chutar bola sozinho</b>.', 'A Casona dividida']], null, 'Procurar o Marcelo');
-  });
+  showRpgBox('worldTalk', null); keys.clear();
+  const after = () => talk([['dica', 'Traga <b>' + GEMEOS_OPALAS + ' opalas</b> da caverna da Serra (do andar 6 pra baixo). Com elas, <b>São Dunstano</b>, que foi ourives, monta o anel do Márcio.', 'A Casona dividida']], null, 'Bora pra caverna');
+  if (!scenesEnabled()) { after(); return; }
+  playSteps([{ caption: 'A Casona dividida', time: 1.8 }, ...casonaView(),
+    { actor: 'marcio', x: 900, y: 700, dx: 1 }, { actor: 'marcelo', x: 1130, y: 700, dx: -1 }, { actor: 'sadi', x: CASONA_DOOR.x, y: CASONA_DOOR.y - 20, dx: 1, dy: -1 }, { fade: 'in', time: .6 },
+    { walk: 'sadi', to: { x: 820, y: 760 } },
+    { say: 'sadi', text: 'Ô de casa! …Que fita crepe é essa no meio da sala?' },
+    { say: 'marcelo', text: 'É a fronteira, Sadi. Daqui pra lá é do Márcio, daqui pra cá é meu. Não pisa na linha!' },
+    { say: 'sadi', text: 'E cadê o sonzão do tio Lori? Só sobrou a marca de pó no chão.' },
+    { say: 'marcelo', text: 'Pergunta pra ele! A Brigada veio por causa do barulho, três da manhã. E ele ENTREGOU o sonzão pra brigadiana. De mão beijada!' },
+    { say: 'marcio', text: 'Ela só pediu pra baixar o volume, Sadi… E me olhou com aqueles olhos de quem multa e perdoa ao mesmo tempo.' },
+    { say: 'marcio', text: 'Eu disse: “Leva, moça. Leva ele e leva o meu coração junto.” E ela levou. O sonzão, pelo menos.' },
+    { say: 'marcelo', text: 'Herança do tio Lori, Sadi! Trocada por um olhar da Soldado Grazi! Vou chutar bola, que é melhor.' },
+    { do: () => AudioEngine.creak() }, sceneSet('marcelo', { speed: 210 }), { walk: 'marcelo', to: { x: 760, y: 760 } }, { walk: 'marcelo', to: { x: CASONA_DOOR.x, y: CASONA_DOOR.y + 40 } }, { do: () => { delete scene.actors.marcelo; AudioEngine.thud(); } },
+    { say: 'marcio', text: 'Bah… agora ele nem fala mais comigo.' },
+    { say: 'marcio', text: 'Mas eu tenho um plano, Sadi: vou pedir a Grazi em namoro. Com anel e tudo, que nem em novela.' },
+    { say: 'marcio', text: 'Dizem que lá no fundo da caverna da Serra tem opala, aquela pedra que brilha que nem arco-íris. Me traz cinco? Anel de opala é o quê? Coisa de cinema!' },
+    { say: 'sadi', text: '(Opala lá no fundo… o São Dunstano deve saber onde fica. E ele foi ourives!)' }, { fade: 'out', time: .6 }], 'gemeos-1', after);
 }
-// 2. O Marcelo no campinho, chutando bola sozinho.
+// 2. Na forja: São Dunstano monta o anel com as cinco opalas.
+function gemeosMakeRing() {
+  if (!dunstanShopOpen() || !gemeosRingReady()) return;
+  bagTake('opala', GEMEOS_OPALAS); const st = gemeosState(); st.ring = true; st.stage = 2; save(); closeDialog(true); AudioEngine.caveAnvil?.(); AudioEngine.heart();
+  talk([['dunstano', 'Antes de santo, fui ourives. Ouro velho, cinco opalas… pronto. Quando a luz bate, parece aurora em cima da Serra.'], ['dunstano', 'Diz pro teu amigo: anel bonito abre a conversa, mas quem conserta a família é a conversa.'], ['dica', 'Anel pronto! Agora acha o <b>Marcelo</b>: brabo, ele vai <b>chutar bola sozinho</b> no campinho da Serra.', 'A Casona dividida']], null, 'Guardar o anel');
+}
+// 3. O Marcelo no campinho, chutando bola sozinho.
 function gemeosFindMarcelo() {
-  const st = gemeosState(); if (st.stage >= 3) return;
-  if (st.tired === G.day) { const i = PEOPLE.findIndex(p => p.id === 'marcelo'); worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: 'Marcelo', reply: 'Hoje não, Sadi. Volta amanhã, que hoje eu tô com a cabeça quente.' }); return; }
+  const st = gemeosState();
+  const say = text => { const i = PEOPLE.findIndex(p => p.id === 'marcelo'); worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: 'Marcelo', reply: text }); };
+  if (st.stage < 2) { say('Nem vem, Sadi. Enquanto o sonzão do tio Lori tiver na Brigada, eu não falo com ninguém da Casona.'); return; }
+  if (st.stage >= 3) return;
+  if (st.tired === G.day) { say('Hoje não, Sadi. Volta amanhã, que hoje eu tô com a cabeça quente.'); return; }
   const ask = () => gemeosAsk('marcelo', 'marcelo', ok => {
     if (!ok) { st.tired = G.day; save(); talk([['marcelo', 'Quer saber? Deixa, Sadi. Hoje não tem conversa. Volta amanhã.']], null, 'Tentar amanhã'); return; }
     st.stage = 3; save();
-    talk([['marcelo', 'Tá bom, Sadi. Eu converso com ele. Mas só se o Márcio quiser também, hein. Vai lá na Casona e pergunta.'], ['dica', 'Agora convença o <b>Márcio</b>, na Casona.', 'A Casona dividida']], null, 'Ir até a Casona');
+    talk([['marcelo', 'Tá bom, Sadi. Eu volto pra Casona. Mas se essa brigadiana aparecer, eu quero o meu sonzão de volta!'], ['dica', 'Leve o <b>anel</b> pro <b>Márcio</b>, na Casona.', 'A Casona dividida']], null, 'Ir até a Casona');
   });
-  if (st.stage === 2) { ask(); return; }
-  st.stage = 2; save(); const saved = { ...G.player }; showRpgBox('worldTalk', null); keys.clear();
-  playSteps([{ view: 'gemeosCampinho' }, { actor: 'marcelo', x: 740, y: 700, dx: 1 }, { actor: 'sadi', x: 1300, y: 760, dx: -1 }, { fade: 'in', time: .6 },
-    { do: () => { scene.kick = true; } },
-    { wait: 1.6 }, { walk: 'sadi', to: { x: 1080, y: 730 } },
-    { say: 'marcelo', text: 'Goool… sozinho não tem graça nenhuma.' },
-    { say: 'sadi', text: 'Marcelo! Tava te procurando pela Serra inteira.' }, { fade: 'out', time: .4 }], 'gemeos-2', () => { G.player = saved; save(); ask(); });
+  if (st.met || !scenesEnabled()) { st.met = true; save(); ask(); return; }
+  st.met = true; save(); showRpgBox('worldTalk', null); keys.clear();
+  const c = GEMEOS_CAMPINHO, ball = layers => { const k = frameClock * .9, tri = k % 2 < 1 ? k % 1 : 1 - k % 1, bx = c.x + 40 + tri * 260, h = Math.abs(Math.sin(k * Math.PI)) * 50; layers.push({ y: c.y + 4, draw: () => { ellipse(bx, c.y + 4, 12, 4, '#00000033'); ellipse(bx, c.y - 8 - h, 11, 11, '#f8f8f0'); ellipse(bx - 3, c.y - 10 - h, 3, 3, '#2a2a2a'); } }); };
+  playSteps([...sceneWorld({ map: 'serra', x: c.x + 120, y: c.y, props: ball }), { actor: 'marcelo', x: c.x, y: c.y, dx: 1 }, { actor: 'sadi', x: c.x + 460, y: c.y + 60, dx: -1 }, { fade: 'in', time: .6 },
+    { wait: 1.4 }, { walk: 'sadi', to: { x: c.x + 170, y: c.y + 40 } },
+    { say: 'marcelo', text: 'Goool… Sozinho não tem graça nenhuma. O Márcio é que ia no gol.' },
+    { say: 'sadi', text: 'Marcelo! Tava te procurando pela Serra inteira.' }, { fade: 'out', time: .4 }], 'gemeos-2', ask);
 }
-// 3. Convencer o Márcio na Casona.
-function gemeosConvinceMarcio() {
-  const st = gemeosState();
-  if (st.tiredMarcio === G.day) { twinSay('marcio', 'Hoje não, Sadi. Amanhã a gente vê.'); return; }
-  gemeosAsk('marcio', 'marcio', ok => {
-    if (!ok) { st.tiredMarcio = G.day; save(); talk([['marcio', 'É o quê? Chega por hoje, Sadi. Amanhã.']], null, 'Tentar amanhã'); return; }
-    st.stage = 4; save(); gemeosLaje();
-  });
+// 4. Na Casona: o ensaio, a Grazi chega, o pedido, o sonzão volta e a fita crepe sai da sala.
+function gemeosFinale() {
+  const st = gemeosState(); if (st.stage !== 3) return; st.stage = 4; save(); showRpgBox('worldTalk', null); keys.clear();
+  if (!scenesEnabled()) { gemeosAsk('sadi', 'ensaio', () => gemeosEnd()); return; }
+  const cast = [{ actor: 'marcio', x: 900, y: 700, dx: 1 }, { actor: 'marcelo', x: 1130, y: 700, dx: -1 }];
+  playSteps([...casonaView(), ...cast, { actor: 'sadi', x: CASONA_DOOR.x, y: CASONA_DOOR.y - 20, dx: 1, dy: -1 }, { fade: 'in', time: .5 },
+    { walk: 'sadi', to: { x: 820, y: 760 } },
+    { say: 'sadi', text: 'Márcio! O anel. Cinco opalas, montado pelo próprio São Dunstano.' },
+    { do: () => { fxStars(860, 650, 8); AudioEngine.caveGem?.(); } },
+    { say: 'marcio', text: 'É o quê?! Que coisa mais linda… Marcelo, olha isso!' },
+    { say: 'marcelo', text: 'Hmpf. É bonito. Mas eu só falo contigo depois que o sonzão voltar.' }], 'gemeos-anel', () => gemeosAsk('sadi', 'ensaio', () => playSteps([...casonaView(), ...cast.map(a => ({ ...a })), { actor: 'sadi', x: 820, y: 760, dx: 1 }, { fade: 'in', time: .2 },
+    { say: 'marcio', text: '“Desde aquela noite eu não penso em outra coisa…” Isso! Agora é só ela…' },
+    { do: () => { AudioEngine.doorChime(); [0, 220, 440].forEach(t => setTimeout(() => AudioEngine.thud(), t)); } }, { wait: .8 },
+    { actor: 'grazi', ...GRAZI_ACTOR, x: CASONA_DOOR.x, y: CASONA_DOOR.y + 30, dx: 1, dy: -1 }, { walk: 'grazi', to: { x: 780, y: 740 } },
+    { say: 'grazi', text: 'Boa noite. Brigada Militar. Recebi uma denúncia… de saudade, no endereço da Casona.' },
+    { say: 'marcio', text: 'Fui eu que denunciei, Grazi. Saudade de ti.' },
+    { walk: 'marcio', to: { x: 840, y: 730 } },
+    { say: 'marcio', text: 'Desde aquela noite eu não penso em outra coisa. Aceita namorar comigo?' },
+    { do: () => { fxStars(810, 640, 10); AudioEngine.caveGem?.(); } },
+    { say: 'grazi', text: '…Com anel de opala e tudo? Aceito, seu bobo!' },
+    { do: () => { fxHearts(810, 600, 5); AudioEngine.heart(); } },
+    { say: 'grazi', text: 'E tem mais: o sonzão do tio Lori tava no depósito do batalhão. Trouxe de volta. Volume máximo seis, combinado?' },
+    { do: () => { const s = gemeosState(); s.stage = 5; fxPuffs(1230, 790, 10, 120, '#e8dcc0'); AudioEngine.ready(); } },
+    { say: 'marcelo', text: 'O sonzão! Voltou! Grazi… bem-vinda à família. Cunhada brigadiana, show de bola!' },
+    { walk: 'marcelo', to: { x: 960, y: 720 } },
+    { say: 'marcelo', text: 'Desculpa, mano. Bora tirar essa fita crepe da sala hoje mesmo?' },
+    { say: 'marcio', text: 'Bora! E desculpa por entregar o sonzão. Foi o coração que falou mais alto que o som.' },
+    { do: () => { for (const a of Object.values(scene.actors)) a.hop = 9; fxHearts(900, 600, 6); AudioEngine.crowd(); } }, { wait: 1.6 }, { fade: 'out', time: .8 }], 'gemeos-pedido', () => gemeosEnd())));
 }
-// 4. Na laje: a mediação, com escolhas no meio da cena.
-function gemeosLaje() {
-  const saved = { ...G.player }; showRpgBox('worldTalk', null); keys.clear();
-  const part = (steps, after) => playSteps([{ view: 'gemeosLaje' }, ...steps], 'gemeos-laje', after);
-  const cast = [{ actor: 'marcio', x: 360, y: 640, dx: 1 }, { actor: 'marcelo', x: 1180, y: 700, dx: -1 }, { actor: 'sadi', x: 780, y: 760, dx: 1 }];
-  playSteps([{ caption: 'De noite, na laje da Casona', time: 1.8 }, { view: 'gemeosLaje' }, ...cast, { fade: 'in', time: .8 },
-    { say: 'marcio', text: '…' }, { say: 'marcelo', text: '…' }, { say: 'sadi', text: '(Ninguém fala nada. Vou ter que puxar o assunto.)' }], 'gemeos-laje', () => {
-    gemeosAsk('sadi', 'laje1', () => part([...cast.map(a => ({ ...a })), { fade: 'in', time: .2 },
-      { say: 'marcio', text: 'A antena! Tu caiu em cima de mim, é o quê!' }, { say: 'marcelo', text: 'Eu caí em cima de ti porque tu me puxou! Ficamos os dois de gesso um mês. Show de bola.' },
-      { say: 'marcio', text: '…' }, { say: 'marcelo', text: 'Sabe da Daiane? Tá namorando um gringo de Caxias que toca acordeom.' },
-      { say: 'marcio', text: 'Bah… então nenhum dos dois, é o quê?' }, { do: () => AudioEngine.heart() }, { say: 'marcelo', text: 'Nenhum dos dois! Hahaha!' }], () => {
-      gemeosAsk('sadi', 'laje2', () => part([{ actor: 'marcio', x: 700, y: 680, dx: 1 }, { actor: 'marcelo', x: 860, y: 680, dx: -1 }, { actor: 'sadi', x: 780, y: 790, dx: 1 }, { fade: 'in', time: .2 },
-        { say: 'marcio', text: 'Racha a multa comigo, irmão?' }, { say: 'marcelo', text: 'Racho. E desculpa pelo funk às três da manhã.' }, { say: 'marcio', text: 'Desculpa pela vaneira. E pela fita crepe.' },
-        { do: () => AudioEngine.heart() }, { say: 'marcelo', text: 'Bora tirar aquela fita da sala hoje mesmo!' }, { fade: 'out', time: .8 },
-        { caption: 'Dois dias depois…', time: 1.8 }, { view: 'gemeosLaje' }, { do: () => { scene.som = true; } }, { actor: 'marcio', x: 1160, y: 640, dx: 1 }, { actor: 'marcelo', x: 1500, y: 640, dx: -1 }, { actor: 'sadi', x: 1000, y: 760, dx: 1 }, { fade: 'in', time: .6 },
-        { say: 'marcio', text: 'O sonzão voltou da Brigada! Com um adesivo novo: volume máximo, seis.' }, { say: 'marcelo', text: 'Seis tá ótimo. Show de bola!' }, { say: 'marcio', text: 'É o quê? Valeu, Sadi. A Casona é inteira de novo.' }, { fade: 'out', time: .8 }], () => gemeosEnd(saved)));
-    }));
-  });
-}
-function gemeosEnd(saved) {
-  const st = gemeosState(); st.stage = 5; st.doneDay = G.day; G.player = saved;
-  const rw = { cash: 60, xp: 150, rep: 4, friend: { marcio: 15, marcelo: 15 } }; grantReward(rw); save(); refreshHUD();
-  talk([['card', '<b>🔊 A Casona inteira de novo</b><br>A fita crepe saiu da sala, o sonzão do tio Lori voltou da Brigada (no volume seis) e os gêmeos racharam a multa.', 'A Casona dividida · fim'], ['reward', rw, 'A Casona dividida']], null, 'Show de bola!');
+function gemeosEnd() {
+  const st = gemeosState(); st.stage = 5; st.doneDay = G.day;
+  const rw = { cash: 80, xp: 160, rep: 4, friend: { marcio: 15, marcelo: 15 } }; grantReward(rw); save(); refreshHUD();
+  talk([['card', '<b>🔊 A Casona inteira de novo</b><br>A Grazi aceitou o anel de opala, o sonzão do tio Lori voltou do depósito da Brigada (volume seis, combinado) e a fita crepe saiu da sala.', 'A Casona dividida · fim'], ['reward', rw, 'A Casona dividida']], null, 'Show de bola!');
 }
 
 // ---------- Mapa, painel e Casona ----------
 function gemeosTracker() {
   const s = gemeosStage(), t = (goal) => ({ icon: '🔊', title: 'A Casona dividida', goal, kind: 'side' });
   if (!s && gemeosReady()) return t('Os gêmeos da Casona brigaram: passe na Casona, na Serra');
-  if (s === 1 || s === 2) return t('Ache o Marcelo pela Serra: brabo, ele vai chutar bola sozinho');
-  if (s === 3) return t('Convença o Márcio, na Casona');
-  if (s === 4) return t('Na laje da Casona: faça os gêmeos se acertarem');
+  if (s === 1) return t(bagQty('opala') >= GEMEOS_OPALAS ? 'Leve as ' + GEMEOS_OPALAS + ' opalas a São Dunstano, na ferraria do primeiro andar da caverna' : 'Traga ' + GEMEOS_OPALAS + ' opalas da caverna (do andar 6 pra baixo) pro anel do Márcio (' + Math.floor(bagQty('opala')) + '/' + GEMEOS_OPALAS + ')');
+  if (s === 2) return t('Ache o Marcelo: brabo, ele vai chutar bola sozinho no campinho da Serra');
+  if (s === 3 || s === 4) return t('Leve o anel ao Márcio, na Casona');
   return null;
 }
 function gemeosSpots(map) {
   const s = gemeosStage(), list = [];
   if (map === 'serra' && (s === 1 || s === 2)) list.push({ id: 'gemeos:marcelo', x: GEMEOS_CAMPINHO.x, y: GEMEOS_CAMPINHO.y + 30, radius: 110, label: 'Marcelo · chutando bola sozinho', act: gemeosFindMarcelo });
-  if (map === 'casa:marcio' && s === 3) list.push({ id: 'gemeos:marcio', x: 960, y: 700, radius: 90, label: 'Conversar com o Márcio', act: gemeosConvinceMarcio });
-  if (map === 'casa:marcio' && s === 4) list.push({ id: 'gemeos:laje', x: 960, y: 700, radius: 90, label: 'Subir pra laje com o Márcio', act: gemeosLaje });
+  if (map === 'casa:marcio' && (s === 3 || s === 4)) list.push({ id: 'gemeos:marcio', x: 960, y: 700, radius: 90, label: 'Entregar o anel ao Márcio', act: gemeosFinale });
   return list;
 }
 function drawGemeosWorld(layers, seen) {
@@ -220,26 +188,30 @@ function drawCasonaSplit(layers) {
 }
 
 {
-  // Brigado, o Marcelo não passeia pela rua: até as pazes, ele só aparece no campinho.
+  // Brigado, o Marcelo não passeia pela rua nem fica em casa: até voltar convencido, ele só aparece no campinho.
+  const away = () => gemeosFighting() && gemeosStage() < 3;
   const sw = spawnWalkers; spawnWalkers = function (M) { sw(M); if (gemeosFighting()) worldWalkers = worldWalkers.filter(w => PEOPLE[w.person]?.id !== 'marcelo'); };
   const wk = walkersKey; walkersKey = function (M) { return wk(M) + ':g' + gemeosStage(); };
   // Brigados, os gêmeos não fazem festa na laje.
   const casonaReq = MAP_EVENTS.casona?.requires; if (casonaReq) MAP_EVENTS.casona.requires = () => casonaReq() && !gemeosFighting();
   const tl = trackerLines; trackerLines = function () { const base = tl(), g = gemeosTracker(); if (!g) return base; if (base.length < 2) base.push(g); else if (base[1].kind !== 'story') base[1] = g; return base; };
-  const home = atHome; atHome = function (id) { if (id === 'marcelo' && gemeosFighting() && gemeosStage() < 4) return false; return home(id); };
+  // Convencido, o Marcelo volta pra Casona: os dois esperam em casa o Sadi chegar com o anel.
+  const home = atHome; atHome = function (id) { if (id === 'marcelo' && away()) return false; if (['marcio', 'marcelo'].includes(id) && [3, 4].includes(gemeosStage())) return true; return home(id); };
   const avail = visitorAvailable; visitorAvailable = function (i, extra = []) { if (PEOPLE[i]?.id === 'marcelo' && gemeosFighting()) return false; return avail(i, extra); };
+  // A Casona é o arco principal dos gêmeos: pedidos de itens deles esperam ela acabar.
+  MAIN_ARC_CHECKS.push(id => id === 'marcio' && (gemeosReady() || gemeosFighting()));
   const serra = WORLD_MAPS.serra, ssp = serra.spots, sdraw = serra.draw;
   serra.spots = function () { return [...ssp.call(this), ...gemeosSpots('serra')]; };
   serra.draw = function (view, seen, layers) { sdraw.call(this, view, seen, layers); drawGemeosWorld(layers, seen); };
   const C = WORLD_MAPS.casona, csp = C.spots, cdraw = C.draw, enter = C.onEnter;
   C.spots = function () { const g = gemeosSpots('casa:marcio'); return [...g, ...csp.call(this).filter(sp => !(g.length && sp.id === 'home:marcio'))]; };
-  const twin = anyTwin; anyTwin = function () { return gemeosFighting() && gemeosStage() < 4 ? 'marcio' : twin(); };
+  const twin = anyTwin; anyTwin = function () { return away() ? 'marcio' : twin(); };
   C.draw = function (view, seen, layers) { cdraw.call(this, view, seen, layers); drawCasonaSplit(layers); };
-  // Na Casona, assim que não tiver nenhuma conversa aberta, o Márcio conta a briga.
+  // Na Casona, assim que não tiver nenhuma conversa aberta, a briga aparece.
   C.onEnter = function () { if (gemeosReady()) return; enter?.call(this); };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (worldOut?.map === 'casa:marcio' && gemeosReady() && !scene && !modal && !worldTalkOpen() && !G.lasso) gemeosStart(); };
   // O sonzão some da sala enquanto ele está na Brigada.
   const som = C.items?.find(i => i.kind === 'som');
-  if (som) { Object.defineProperty(som, 'text', { get: () => gemeosFighting() ? 'Só a marca de pó no chão: a Brigada levou o sonzão por perturbação do sossego.' : 'Sonzão da Casona, herança do tio Lori. Agora com um adesivo: volume máximo, seis.', configurable: true }); }
+  if (som) { Object.defineProperty(som, 'text', { get: () => gemeosFighting() ? 'Só a marca de pó no chão: o Márcio entregou o sonzão pra brigadiana.' : 'Sonzão da Casona, herança do tio Lori. Agora com um adesivo da Brigada: volume máximo, seis.', configurable: true }); }
   const furnSom = FURN.som; if (furnSom) FURN.som = function (i) { if (gemeosFighting()) { ctx.save(); ctx.setLineDash([8, 6]); ctx.strokeStyle = '#8a7a64'; ctx.lineWidth = 2; ctx.strokeRect(i.x, i.y, i.w, i.h); ctx.restore(); return; } return furnSom(i); };
 }

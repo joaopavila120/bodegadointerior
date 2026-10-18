@@ -351,6 +351,8 @@ function lassoTick(dt){
  for(const b of L.bois){
   // Caçada de javali (map-events.js): o bicho não foge, investe.
   if(L.mode==='javali'){if(b.state==='free')boarTick(L,b,dt);continue;}
+  // Tropilha fugida (cavalos.js): o cavalo se espanta, dispara e dá coice em quem chega por trás.
+  if(L.mode==='cavalo'){if(b.state==='free')horseTick(L,b,dt);else if(b.state==='caught')horseLed(L,b,dt);continue;}
   if(b.state==='caught'){const tx=CURRAL.x+40+(b.id%4)*40,ty=CURRAL.y+60+Math.floor(b.id/4)*60,d=Math.hypot(tx-b.x,ty-b.y);if(d<4){b.state='pen';continue;}b.dx=(tx-b.x)/d;b.x+=b.dx*70*dt;b.y+=(ty-b.y)/d*70*dt;continue;}
   if(b.state!=='free')continue;
   const pd=Math.hypot(b.x-G.player.x,b.y-G.player.y);
@@ -365,7 +367,7 @@ function lassoTick(dt){
    t.done=true;const hit=L.bois.filter(b=>b.state==='free').map(b=>({b,d:Math.hypot(b.x-t.tx,b.y-28-t.ty)})).filter(o=>o.d<52).sort((a,b)=>a.d-b.d)[0];
    if(hit){const b=hit.b;b.rope=(b.rope||0)+1;AudioEngine.ropeHit();
     const need=L.mode==='rodeio'?RODEO_HITS:LASSO_HITS;
-    if(b.javali)javaliRoped(L,b);else if(b.rope>=need){b.state='caught';L.caught++;if(L.mode==='rodeio')L.doneTime??=L.time;AudioEngine.heart();AudioEngine.moo(.11,fxRand(.85,1.1));burst(b.x,b.y-40,'leaf');effect(L.mode==='rodeio'?'Laçou o terneiro!':'Laçou! '+L.caught+(L.caught>1?' bois':' boi'),b.x,b.y-90,'#e1ff9e');gainXP(8);}
+    if(b.javali)javaliRoped(L,b);else if(b.cavalo)horseRoped(L,b);else if(b.rope>=need){b.state='caught';L.caught++;if(L.mode==='rodeio')L.doneTime??=L.time;AudioEngine.heart();AudioEngine.moo(.11,fxRand(.85,1.1));burst(b.x,b.y-40,'leaf');effect(L.mode==='rodeio'?'Laçou o terneiro!':'Laçou! '+L.caught+(L.caught>1?' bois':' boi'),b.x,b.y-90,'#e1ff9e');gainXP(8);}
     else{const d=Math.hypot(b.x-G.player.x,b.y-G.player.y)||1;b.dx=(b.x-G.player.x)/d;b.dy=(b.y-G.player.y)/d*.6;b.speed=170;b.t=1.3;AudioEngine.moo(.06,1.1+Math.random()*.15);effect('Laço! '+b.rope+'/'+need,b.x,b.y-100,'#ffe9a8');}}
    else{AudioEngine.thud();effect('Errou o laço',t.tx,t.ty-20,'#ffc0a0');}
    updateLassoUI();save();
@@ -389,10 +391,10 @@ function lassoKeyDown(e){
  keys.add(key);
 }
 function lassoKeyUp(e){const key=e.key.length===1?e.key.toLowerCase():e.key;keys.delete(key);if(key==='q'||key==='e')lassoRelease();if(key==='f')slingRelease();}
-function updateLassoUI(){const L=G.lasso;if(!L)return;if(L.mode==='rodeio'){rodeioUI(L);return;}$('lassoUI').querySelector('b').textContent=L.mode==='javali'?'Caçada de javali':'Laçada';$('lassoUI').querySelectorAll('small')[1].innerHTML=L.mode==='javali'?'WASD anda · segure <b>Q</b> e solte em cima do javali · <b>Espaço</b> esquiva da cabeçada':'WASD anda · segure <b>Q</b> para girar · solte em cima do boi · <b>Espaço</b> esquiva do quero-quero · <b>F</b> bodoque';if(L.mode==='javali'){const b=L.bois[0],st=mapEvState('javali');$('lassoCount').textContent=L.caught?'Javali abatido!':'Laços no javali: '+(b.rope||0)+'/'+JAVALI_HITS;$('lassoHerd').textContent='Javalis abatidos esta noite: '+st.kills+'/'+JAVALI_NEED+' · cabeçadas: '+(L.hits||0)+'/5';$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught?'Levando o javali…':'Lace o javali';return;}const best=Math.max(0,...L.bois.filter(b=>b.state==='free').map(b=>b.rope||0));$('lassoCount').textContent=(L.caught?L.caught+(L.caught>1?' bois laçados':' boi laçado'):'Nenhum boi laçado')+(best?' · laço '+best+'/'+LASSO_HITS:'');$('lassoHerd').textContent='Rebanho no campo: '+L.bois.filter(b=>b.state==='free').length;$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught<L.need?'Lace um boi':'Levando o boi pro curral…';}
+function updateLassoUI(){const L=G.lasso;if(!L)return;if(L.mode==='rodeio'){rodeioUI(L);return;}if(L.mode==='cavalo'){horseUI(L);return;}$('lassoUI').querySelector('b').textContent=L.mode==='javali'?'Caçada de javali':'Laçada';$('lassoUI').querySelectorAll('small')[1].innerHTML=L.mode==='javali'?'WASD anda · segure <b>Q</b> e solte em cima do javali · <b>Espaço</b> esquiva da cabeçada':'WASD anda · segure <b>Q</b> para girar · solte em cima do boi · <b>Espaço</b> esquiva do quero-quero · <b>F</b> bodoque';if(L.mode==='javali'){const b=L.bois[0],st=mapEvState('javali');$('lassoCount').textContent=L.caught?'Javali abatido!':'Laços no javali: '+(b.rope||0)+'/'+JAVALI_HITS;$('lassoHerd').textContent='Javalis abatidos esta noite: '+st.kills+'/'+JAVALI_NEED+' · cabeçadas: '+(L.hits||0)+'/5';$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught?'Levando o javali…':'Lace o javali';return;}const best=Math.max(0,...L.bois.filter(b=>b.state==='free').map(b=>b.rope||0));$('lassoCount').textContent=(L.caught?L.caught+(L.caught>1?' bois laçados':' boi laçado'):'Nenhum boi laçado')+(best?' · laço '+best+'/'+LASSO_HITS:'');$('lassoHerd').textContent='Rebanho no campo: '+L.bois.filter(b=>b.state==='free').length;$('lassoFinish').disabled=true;$('lassoFinish').textContent=L.caught<L.need?'Lace um boi':'Levando o boi pro curral…';}
 // Boi laçado: volta para o campo (ou para a bodega) e a carne sai na hora: mantas de costela e hambúrguer.
 function finishLasso(){
- const L=G.lasso;if(L?.mode==='javali'){if(L.caught>=L.need)finishHunt(L);return;}if(L?.mode==='rodeio'){finishRodeio(L);return;}if(!L||L.caught<L.need)return;
+ const L=G.lasso;if(L?.mode==='javali'){if(L.caught>=L.need)finishHunt(L);return;}if(L?.mode==='cavalo'){if(L.caught>=L.need)finishHorse(L);return;}if(L?.mode==='rodeio'){finishRodeio(L);return;}if(!L||L.caught<L.need)return;
  G.herd-=L.caught;G.bullsLassoed=(G.bullsLassoed||0)+L.caught;
  G.player={...L.saved};G.lasso=null;G.lassoDay=G.day;G.lassoTaught=true;keys.clear();$('lassoUI').classList.add('hidden');
  save();refreshHUD();
@@ -531,9 +533,9 @@ function skipLasso(){G.lassoDay=G.day;closeDialog(true);say('Sem bois, o costel�
 function drawLasso(){
  const L=G.lasso;if(!L){if(scene)drawScene();else draw();return;}beginWorld();drawCampoBackground();
  // curral (na caçada de javali é de noite e não tem curral)
- if(L.mode==='javali')huntBackdrop();else{const c=CURRAL;rect(c.x,c.y+c.h-8,c.w,10,'#5a3a20');for(let k=0;k<=5;k++){wood(c.x+k*(c.w/5)-4,c.y,9,c.h,true);}for(const y of [c.y+30,c.y+90,c.y+150])wood(c.x,y,c.w,9);txt('CURRAL',c.x+c.w/2,c.y-12,13,'#fff0c3');}
+ if(L.mode==='javali')huntBackdrop();else if(L.mode==='cavalo')horseBackdrop(L);else{const c=CURRAL;rect(c.x,c.y+c.h-8,c.w,10,'#5a3a20');for(let k=0;k<=5;k++){wood(c.x+k*(c.w/5)-4,c.y,9,c.h,true);}for(const y of [c.y+30,c.y+90,c.y+150])wood(c.x,y,c.w,9);txt('CURRAL',c.x+c.w/2,c.y-12,13,'#fff0c3');}
  drawQueroGround(L);
- const layers=L.bois.map(b=>({y:b.y,draw:()=>{if(b.javali){drawHuntBoar(L,b);return;}ellipse(b.x,b.y+2,40,9,'#1c140c44');drawBoi(b.coat,b.state==='free'&&b.speed===0?2:Math.floor(L.time*(b.speed>60?9:4)+b.id)%2,b.x,b.y,b.terneiro?1.15:1.6,b.dx<0);if(b.state==='free'&&b.rope){bar(b.x-32,b.y-(b.terneiro?80:100),64,b.rope/(L.mode==='rodeio'?RODEO_HITS:LASSO_HITS),'#e8cc8a');}if(b.state==='caught'){ctx.strokeStyle='#d8b878';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x+(b.dx<0?-40:40),b.y-60,12,6,0,0,Math.PI*2);ctx.stroke();}}}));
+ const layers=L.bois.map(b=>({y:b.y,draw:()=>{if(b.javali){drawHuntBoar(L,b);return;}if(b.cavalo){drawArenaHorse(L,b);return;}ellipse(b.x,b.y+2,40,9,'#1c140c44');drawBoi(b.coat,b.state==='free'&&b.speed===0?2:Math.floor(L.time*(b.speed>60?9:4)+b.id)%2,b.x,b.y,b.terneiro?1.15:1.6,b.dx<0);if(b.state==='free'&&b.rope){bar(b.x-32,b.y-(b.terneiro?80:100),64,b.rope/(L.mode==='rodeio'?RODEO_HITS:LASSO_HITS),'#e8cc8a');}if(b.state==='caught'){ctx.strokeStyle='#d8b878';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x+(b.dx<0?-40:40),b.y-60,12,6,0,0,Math.PI*2);ctx.stroke();}}}));
  layers.push({y:G.player.y,draw:()=>personDraw(avatarSprite(),G.player.x,G.player.y,G.player.walk,true,G.player.dx,false,0,G.player.dy)});
  for(const q of activeQueros(L))if(q.state==='guard')layers.push({y:q.y,draw:()=>drawQuero(0,q.x,q.y-30,1.8,q.face<0)});
  layers.sort((a,b)=>a.y-b.y).forEach(l=>l.draw());
@@ -541,7 +543,7 @@ function drawLasso(){
  ctx.strokeStyle='#e8cc8a';ctx.lineWidth=3;
  if(L.charging){const a=lassoAim(),ang=L.time*14;ctx.beginPath();ctx.ellipse(G.player.x+Math.cos(ang)*8,G.player.y-132,30,10,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([8,8]);ctx.strokeStyle='#fff4c488';ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-60);ctx.lineTo(a.x,a.y);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#ffe28a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y,52,20,0,0,Math.PI*2);ctx.stroke();}
  if(L.throw){const t=L.throw,k=clamp(t.time/t.total,0,1),x=t.sx+(t.tx-t.sx)*k,y=t.sy+(t.ty-t.sy)*k-Math.sin(k*Math.PI)*90;ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-80);ctx.quadraticCurveTo((G.player.x+x)/2,Math.min(y,G.player.y)-60,x,y);ctx.stroke();ctx.beginPath();ctx.ellipse(x,y,34*(.5+k*.5),12*(.5+k*.5),0,0,Math.PI*2);ctx.stroke();}
- for(const e of sparks){ctx.globalAlpha=Math.min(1,e.life);txt(e.text,e.x,e.y-(2.2-e.life)*16,15,e.color);}ctx.globalAlpha=1;
+ drawSparks('lasso');
  if(L.mode==='rodeio')drawRodeioHUD(L);
  ctx.setTransform(1,0,0,1,0,0);
 }

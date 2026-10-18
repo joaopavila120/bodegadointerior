@@ -199,40 +199,74 @@ function caveBeltRefresh() {
 }
 
 // ---------- A ferraria de São Dunstano ----------
-let dunstanTab = 'forja';
-const DUNSTAN_TABS = [['forja', '⚒ Forja'], ['equipamento', '🧥 Equipamento'], ['bolicho', '🧉 Bolicho'], ['minerios', '◆ Minérios']];
-function dunstanForjaHTML() {
-  const cur = caveWeapon(), lv = weaponRefine(cur.id);
-  const weapons = CAVE_WEAPONS.map(w => {
-    const own = weaponOwned(w.id), using = cur.id === w.id;
-    const info = own ? `${w.id === 'facao' ? 'Dano ' + (using ? caveDmg() : 12) : w.dmg + ' de dano'}${weaponRefine(w.id) ? ' · afiado +' + weaponRefine(w.id) : ''}` : `${w.dmg} de dano · precisa: ${needsText(w.needs)} · ${money(w.cost)}`;
-    const btn = using ? '<button disabled>Na mão</button>' : own ? `<button class="primary" data-act="forjaEquip" data-id="${w.id}">Usar</button>` : `<button class="primary" data-act="forjaMake" data-id="${w.id}" ${hasNeeds(w.needs) && hasCash(w.cost) ? '' : 'disabled'}>Forjar · ${money(w.cost)}</button>`;
-    return `<div class="supply"><span class="icon"><span class="bag-emoji">${w.icon}</span></span><div><b>${w.name}</b><p>${w.desc}<br><small>${info}</small></p></div>${btn}</div>`;
+// Tudo da ferraria num menu só (armas, afiar, equipamento e bolicho); na aba do lado, só a venda de minérios.
+let dunstanTab = 'loja';
+const DUNSTAN_TABS = [['loja', '⚒ Ferraria'], ['vender', '💰 Vender minérios']];
+// O que cada coisa pede: minério e dinheiro, em verde quando tem e em vermelho quando falta.
+function reqChips(needs = {}, cost = 0) {
+  const list = Object.entries(needs).map(([k, q]) => { const have = Math.floor(bagQty(k)); return `<span class="req ${have >= q ? 'ok' : 'miss'}">${q} ${bagName(k).toLowerCase()}${have >= q ? '' : ' · tem ' + have}</span>`; });
+  if (cost) list.push(`<span class="req ${hasCash(cost) ? 'ok' : 'miss'}">${money(cost)}</span>`);
+  return list.join('');
+}
+function forjaCard(icon, name, desc, info, btn, cls = '') { return `<div class="supply forja-card ${cls}"><span class="icon">${icon}</span><div><b>${name}</b><p>${desc}${info ? '<br>' + info : ''}</p></div>${btn}</div>`; }
+function dunstanWeaponsHTML() {
+  const cur = caveWeapon();
+  return CAVE_WEAPONS.map(w => {
+    const emoji = `<span class="bag-emoji">${w.icon}</span>`, using = cur.id === w.id;
+    if (weaponOwned(w.id)) return forjaCard(emoji, w.name, w.desc, `<small>${w.id === 'facao' ? 'Dano ' + (using ? caveDmg() : 12) : w.dmg + ' de dano'}${weaponRefine(w.id) ? ' · afiado +' + weaponRefine(w.id) : ''}</small>`,
+      using ? '<button disabled>✔ Na mão</button>' : `<button class="primary" data-act="forjaEquip" data-id="${w.id}">Usar</button>`, using ? 'using' : 'owned');
+    const ok = hasNeeds(w.needs) && hasCash(w.cost);
+    return forjaCard(emoji, w.name, w.desc, `<small>${w.dmg} de dano</small><br>${reqChips(w.needs, w.cost)}`, `<button class="primary" data-act="forjaMake" data-id="${w.id}" ${ok ? '' : 'disabled'}>${ok ? 'Forjar' : 'Falta material'}</button>`);
   }).join('');
-  const afiar = lv >= AFIAR_MAX ? `<p class="small-note">${cur.name}: afiado ao máximo (+${AFIAR_MAX}).</p>` : (() => { const needs = afiarNeeds(cur, lv + 1), cost = afiarCost(lv + 1); return `<div class="supply"><span class="icon"><span class="bag-emoji">✨</span></span><div><b>Afiar na pedra · ${cur.name} +${lv + 1}</b><p>+3 de dano. Precisa: ${needsText(needs)} · ${money(cost)}</p></div><button class="primary" data-act="forjaAfiar" ${hasNeeds(needs) && hasCash(cost) ? '' : 'disabled'}>Afiar · ${money(cost)}</button></div>`; })();
-  const old = CAVE_UPGRADES.filter(u => ['afiado', 'aco'].includes(u.id)).map(upgradeCardHTML).join('');
-  return `<h3>Armas</h3><div class="store-list">${weapons}</div><h3>Afiar a arma na mão</h3><div class="store-list">${afiar}</div>${cur.id === 'facao' ? `<h3>Melhorias do facão do vô</h3><div class="store-list">${old}</div>` : ''}`;
+}
+function dunstanAfiarHTML() {
+  const cur = caveWeapon(), lv = weaponRefine(cur.id), icon = '<span class="bag-emoji">✨</span>';
+  if (lv >= AFIAR_MAX) return forjaCard(icon, 'Afiar ' + cur.name, 'Já está afiado ao máximo (+' + AFIAR_MAX + ').', '', '<button disabled>✔ Máximo</button>', 'owned');
+  const needs = afiarNeeds(cur, lv + 1), cost = afiarCost(lv + 1), ok = hasNeeds(needs) && hasCash(cost);
+  return forjaCard(icon, 'Afiar na pedra · +' + (lv + 1), '+3 de dano na arma que está na mão (' + cur.name + ').', reqChips(needs, cost), `<button class="primary" data-act="forjaAfiar" ${ok ? '' : 'disabled'}>${ok ? 'Afiar' : 'Falta material'}</button>`);
 }
 function upgradeCardHTML(u) {
-  const owned = caveUp(u.id), needs = u.requires && !caveUp(u.requires), ores = u.needs && !owned ? ' · precisa: ' + needsText(u.needs) : '';
-  const label = owned ? 'Já é teu' : needs ? 'Antes: ' + CAVE_UPGRADES.find(x => x.id === u.requires).name : 'Comprar · ' + money(u.cost);
-  return `<div class="supply"><span class="icon"><span class="bag-emoji">${u.icon}</span></span><div><b>${u.name}</b><p>${u.desc}${ores ? '<br><small>' + ores.slice(3) + '</small>' : ''}</p></div><button class="primary" data-act="facaoBuy" data-id="${u.id}" ${owned || needs || !hasCash(u.cost) || u.needs && !owned && !hasNeeds(u.needs) ? 'disabled' : ''}>${label}</button></div>`;
+  const owned = caveUp(u.id), before = u.requires && !caveUp(u.requires), ok = !owned && !before && hasCash(u.cost) && (!u.needs || hasNeeds(u.needs));
+  const info = owned ? '' : before ? `<span class="req miss">antes: ${CAVE_UPGRADES.find(x => x.id === u.requires).name}</span>` : reqChips(u.needs, u.cost);
+  return forjaCard(`<span class="bag-emoji">${u.icon}</span>`, u.name, u.desc, info, `<button class="primary" data-act="facaoBuy" data-id="${u.id}" ${ok ? '' : 'disabled'}>${owned ? '✔ Já é teu' : ok ? 'Comprar' : before ? 'Bloqueado' : 'Falta material'}</button>`, owned ? 'owned' : '');
 }
-function dunstanEquipHTML() { return `<div class="store-list">${CAVE_UPGRADES.filter(u => !['afiado', 'aco'].includes(u.id)).map(upgradeCardHTML).join('')}</div>`; }
 function dunstanBolichoHTML() {
   const bag = caveBag(), max = caveBagMax();
-  return `<p class="small-note">Vai pro bornal da caverna (tecla <b>B</b>). Os cinco primeiros ficam nos atalhos <b>1</b> a <b>5</b>. Até ${max} de cada${caveUp('bornal') ? '' : ' (o Bornal de couro cru dobra)'}.</p><div class="store-list">${CAVE_ITEMS.map(i => { const n = bag[i.id] || 0, full = n >= max; return `<div class="supply"><span class="icon">${caveItemIcon(i)}</span><div><b>${i.name}</b><p>${i.desc}<br><small>No bornal: ${n}/${max} · ${money(i.cost)} cada</small></p></div><button class="primary" data-act="bolichoBuy" data-id="${i.id}:1" ${full || !hasCash(i.cost) ? 'disabled' : ''}>Comprar · ${money(i.cost)}</button>${max - n >= 3 ? `<button data-act="bolichoBuy" data-id="${i.id}:3" ${!hasCash(i.cost * 3) ? 'disabled' : ''}>3 · ${money(i.cost * 3)}</button>` : ''}</div>`; }).join('')}</div>`;
+  return CAVE_ITEMS.map(i => {
+    const n = bag[i.id] || 0, full = n >= max;
+    return forjaCard(caveItemIcon(i), i.name, i.desc, `<small>No bornal: ${n}/${max}</small> <span class="req ${hasCash(i.cost) ? 'ok' : 'miss'}">${money(i.cost)} cada</span>`,
+      `<button class="primary" data-act="bolichoBuy" data-id="${i.id}:1" ${full || !hasCash(i.cost) ? 'disabled' : ''}>${full ? 'Bornal cheio' : 'Comprar 1'}</button>${max - n >= 3 ? `<button data-act="bolichoBuy" data-id="${i.id}:3" ${hasCash(i.cost * 3) ? '' : 'disabled'}>3 · ${money(i.cost * 3)}</button>` : ''}`);
+  }).join('');
 }
+// A ferraria inteira: armas, afiar (e as melhorias antigas do facão do vô), equipamento e bolicho.
+function dunstanLojaHTML() {
+  const old = caveWeapon().id === 'facao' ? CAVE_UPGRADES.filter(u => ['afiado', 'aco'].includes(u.id)) : [];
+  const sec = (title, note, html) => `<h3 class="forja-sec">${title} <small>${note}</small></h3><div class="store-list">${html}</div>`;
+  return sec('⚔️ Armas', 'minério + dinheiro · a nova já vai pra mão', dunstanWeaponsHTML()) +
+    sec('✨ Afiar', 'a arma que está na mão', dunstanAfiarHTML() + old.map(upgradeCardHTML).join('')) +
+    sec('🧥 Equipamento', 'fica contigo pra sempre', CAVE_UPGRADES.filter(u => !['afiado', 'aco'].includes(u.id)).map(upgradeCardHTML).join('')) +
+    sec('🧉 Bolicho', 'vai pro bornal da caverna (B) · até ' + caveBagMax() + ' de cada' + (caveUp('bornal') ? '' : ' (o Bornal de couro cru dobra)'), dunstanBolichoHTML());
+}
+// Pra que a forja ainda usa cada minério (ajuda a decidir o que guardar e o que vender).
+function oreUses(k) { return [...CAVE_WEAPONS.filter(w => !weaponOwned(w.id) && w.needs?.[k]), ...CAVE_UPGRADES.filter(u => !caveUp(u.id) && u.needs?.[k])].map(x => x.name); }
 function dunstanMineralHTML() {
-  return '<p class="small-note">Guarde o que precisar pra forja: o resto o santo compra.</p><div class="store-list">' + CAVE_MINERALS.map(k => {
-    const q = Math.floor(bagQty(k)); return `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>${q} no inventário · ${money(BAG_RAW[k].value)} por unidade</p></div><button data-act="dunstanSell" data-id="${k}:1" ${q ? '' : 'disabled'}>Vender 1</button><button class="primary" data-act="dunstanSell" data-id="${k}:all" ${q ? '' : 'disabled'}>Vender tudo · ${money(q * BAG_RAW[k].value)}</button></div>`;
+  return '<p class="small-note">O santo compra o minério que sobrar. Guarde o que a forja ainda vai pedir.</p><div class="store-list">' + CAVE_MINERALS.map(k => {
+    const q = Math.floor(bagQty(k)), uses = oreUses(k);
+    return forjaCard(bagIcon(k), bagName(k), `${q} no inventário · ${money(BAG_RAW[k].value)} cada`, uses.length ? `<small>A forja ainda usa em: ${uses.join(', ')}</small>` : '',
+      `<button data-act="dunstanSell" data-id="${k}:1" ${q ? '' : 'disabled'}>Vender 1</button><button class="primary" data-act="dunstanSell" data-id="${k}:all" ${q ? '' : 'disabled'}>Vender tudo · ${money(q * BAG_RAW[k].value)}</button>`);
   }).join('') + '</div>';
+}
+// No topo: o que está na mão e os minérios que tu tem.
+function dunstanStatusHTML() {
+  const w = caveWeapon(), ores = CAVE_MINERALS.map(k => `<span class="ore" title="${bagName(k)}">${bagIcon(k)}<b>${Math.floor(bagQty(k))}</b></span>`).join('');
+  return `<div class="forja-top"><span>Na mão: <b>${w.icon} ${w.name}${weaponRefine() ? ' +' + weaponRefine() : ''}</b> · ${caveDmg()} de dano · ${caveMaxHp()} de vida · <b>${money(G.cash)}</b></span><span class="forja-ores">${ores}</span></div>`;
 }
 dunstanShop = function () {
   if (!dunstanShopOpen()) { floatNote('Procure a ferraria de São Dunstano no primeiro andar da caverna.'); return; }
-  skipWorldTalk(); const box = $('dialogContent').closest('.dialog'), keep = modal === 'dunstanShop' ? box.scrollTop : 0, w = caveWeapon();
-  const body = dunstanTab === 'equipamento' ? dunstanEquipHTML() : dunstanTab === 'bolicho' ? dunstanBolichoHTML() : dunstanTab === 'minerios' ? dunstanMineralHTML() : dunstanForjaHTML();
-  openDialog('Ferraria de São Dunstano', `<div class="rpg-speaker">${portraitHTML(DUNSTAN_PERSON, 72)}<div><p><b>São Dunstano</b></p><p>${pick(DUNSTAN_SHOP_LINES)}</p></div></div>${gemeosRingReady() ? `<div class="callout"><b>💍 Anel de opala pro Márcio</b><br>“Antes de santo, fui ourives. Me dá as cinco opalas que eu monto o anel do teu amigo.”<div class="actions"><button class="primary" data-act="forjaAnel">Fazer o anel (5 opalas)</button></div></div>` : ''}<p class="small-note">Na mão: ${w.icon} ${w.name}${weaponRefine() ? ' +' + weaponRefine() : ''} · ${caveDmg()} de dano · ${caveMaxHp()} de vida · ${money(G.cash)}</p><div class="phone-cat">${DUNSTAN_TABS.map(([id, label]) => `<button class="${dunstanTab === id ? 'active' : ''}" data-act="dunstanTab" data-id="${id}">${label}</button>`).join('')}</div>${body}<div class="actions"><button data-act="close">Até mais</button></div>`, 'dunstanShop');
+  if (!DUNSTAN_TABS.some(([id]) => id === dunstanTab)) dunstanTab = dunstanTab === 'minerios' ? 'vender' : 'loja';
+  skipWorldTalk(); const box = $('dialogContent').closest('.dialog'), keep = modal === 'dunstanShop' ? box.scrollTop : 0;
+  const body = dunstanTab === 'vender' ? dunstanMineralHTML() : dunstanLojaHTML();
+  openDialog('Ferraria de São Dunstano', `<div class="rpg-speaker">${portraitHTML(DUNSTAN_PERSON, 72)}<div><p><b>São Dunstano</b></p><p>${pick(DUNSTAN_SHOP_LINES)}</p></div></div>${gemeosRingReady() ? `<div class="callout"><b>💍 Anel de opala pro Márcio</b><br>“Antes de santo, fui ourives. Me dá as cinco opalas que eu monto o anel do teu amigo.”<div class="actions"><button class="primary" data-act="forjaAnel">Fazer o anel (5 opalas)</button></div></div>` : ''}${dunstanStatusHTML()}<div class="phone-cat">${DUNSTAN_TABS.map(([id, label]) => `<button class="${dunstanTab === id ? 'active' : ''}" data-act="dunstanTab" data-id="${id}">${label}</button>`).join('')}</div>${body}<div class="actions"><button data-act="close">Até mais</button></div>`, 'dunstanShop');
   box.scrollTop = keep; caveUpdateControls();
 };
 const DUNSTAN_SHOP_LINES = ['Aqui o fogo serve pra cuidar de quem desce. O que vamos fazer hoje?', 'Minério bom vira lâmina boa. Mostra o que tu trouxe lá de baixo.', 'Antes de santo, fui ourives e ferreiro. Mão de ferreiro não esquece o ofício.', 'Leva um chimarrão no bornal: lá embaixo, vida é mais valiosa que ouro.'];
@@ -339,7 +373,7 @@ function dunstanOutTick(dt) {
 {
   const act = action;
   action = function (name, id) {
-    if (name === 'dunstanTab') { dunstanTab = id; dunstanShop(); return; }
+    if (name === 'dunstanTab') { dunstanTab = id === 'minerios' || id === 'vender' ? 'vender' : 'loja'; if (modal === 'dunstanShop') $('dialogContent').closest('.dialog').scrollTop = 0; dunstanShop(); return; }
     if (name === 'forjaMake') { forjaMake(id); return; }
     if (name === 'forjaEquip') { forjaEquip(id); return; }
     if (name === 'forjaAfiar') { forjaAfiar(); return; }

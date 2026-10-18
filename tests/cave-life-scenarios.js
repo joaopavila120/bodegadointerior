@@ -67,9 +67,23 @@
     G.phase='closed';worldOut={map:'vila',x:1200,y:800};
     let found=false;for(let day=1;day<=50&&!found;day++){G.day=day;saciTick(.01);found=!!saciEncounter;}
     check(found,'Saci pode aparecer nas noites');
-    const w=saciEncounter;w.age=5.9;saciTick(.2);check(w.mode==='whirl','Saci alterna para redemoinho');
-    w.age=11.9;saciTick(.2);check(w.mode==='hop','Saci volta a saltitar com uma perna');
-    saciTalk();check(hasCard('saci')&&worldTalkOpen(),'Conversa com Saci libera a figurinha');skipWorldTalk();
+    {const M=WORLD_MAPS.vila,edge=p=>Math.min(p.x,M.W-p.x)<760&&Math.min(p.y,M.H-p.y)<820;let corners=true,roads=true;const seen=new Set();
+     for(let day=1;day<=120;day++){G.day=day;saciEncounterKey='';saciTick(.01);const s=saciEncounter;if(!s)continue;corners=corners&&edge(s)&&M.canWalk(s.x,s.y);roads=roads&&qqRoadDist(M,s.x,s.y)>80;seen.add((s.x<M.W/2?'L':'R')+(s.y<M.H/2?'T':'B'));}
+     check(corners&&roads&&seen.size>=3,'Saci fica nos cantos do mapa, longe das estradas');}
+    G.day=1;for(let day=1;day<=50;day++){G.day=day;saciEncounterKey='';saciTick(.01);if(saciEncounter)break;}
+    const w=saciEncounter;w.state='wander';w.t=99;worldOut.x=w.x+150;worldOut.y=w.y;saciTick(.05);check(w.state==='flee'&&w.mode==='whirl'&&w.escapes===1,'Sem cusco: chegou perto, ele vira redemoinho e foge pra outro canto');
+    for(let i=0;i<500&&w.state==='flee';i++)saciTick(.05);check(w.state==='wander'&&Math.hypot(worldOut.x-w.x,worldOut.y-w.y)>300,'e reaparece pulando noutro canto');
+    worldOut.x=w.x+60;worldOut.y=w.y;saciTryCatch();check(w.state==='flee'&&w.escapes===2,'E com ele atento: foge de novo');
+    for(let i=0;i<500&&w.state==='flee';i++)saciTick(.05);w.state='pipe';w.t=3;worldOut.x=w.x+60;worldOut.y=w.y;saciTryCatch();
+    check(w.state==='caught'&&modal==='talk'&&hasCard('saci'),'De mansinho, enquanto ele pita: pegou o Saci (e a figurinha)');
+    for(let k=0;k<5&&modal==='talk';k++)talkNext();check(modal==='saciWish'&&w.opts.length===3&&new Set(w.opts.map(o=>o.kind)).size===3&&$('dialogContent').querySelectorAll('[data-act="saciWish"]').length===3,'O desejo: sempre três opções diferentes');
+    {const o=w.opts.find(o=>o.kind==='caveItem')||w.opts[0],before=o.kind==='caveItem'?caveBag()[o.id]||0:0;action('saciWish',String(w.opts.indexOf(o)));check(w.state==='gone'&&!modal&&(o.kind!=='caveItem'||caveBag()[o.id]>before)&&G.saci.lastWish===G.day,'Escolheu: ganha o desejo e o Saci some');}
+    {const d=G.day;let any=false;for(let k=1;k<SACI_RULES.rest;k++){G.day=d+k;saciEncounterKey='';saciTick(.01);any=any||!!saciEncounter;}check(!any,'Depois de um desejo, ele some por uns dias');G.day=d;}
+    G.saci={};for(let day=60;day<=200;day++){G.day=day;saciEncounterKey='';saciTick(.01);if(saciEncounter)break;}
+    {const s=saciEncounter;G.cusco={day:1,mode:'follow'};worldOut.x=s.x+(s.x<WORLD_MAPS.vila.W/2?500:-500);worldOut.y=s.y;if(!WORLD_MAPS.vila.canWalk(worldOut.x,worldOut.y)){worldOut.x=s.x;worldOut.y=s.y+(s.y<1500?450:-450);}
+     Object.assign(cusco,{x:worldOut.x-60,y:worldOut.y+14,map:'vila',walk:false});let i=0;for(;i<900&&s.state!=='held';i++){cuscoTick(.03);saciTick(.03);}
+     check(s.state==='held'&&Math.hypot(cusco.x-s.x,cusco.y-s.y)<70,'Com o cusco: ele late, corre atrás e encurrala o Saci');
+     worldOut.x=s.x+80;worldOut.y=s.y;saciTryCatch();check(s.state==='caught','Encurralado, é só chegar e apertar E');while(modal==='talk')talkNext();closeDialog(true);G.cusco=null;cusco.map=null;}
     G.phase='prep';saciTick(.01);check(!saciEncounter&&!visitorPool().includes(SACI_PERSON),'Saci não aparece de dia nem na bodega');
     G.bag={};const totalBefore=haveItem('peixe');
     for(let i=0;i<4;i++){Math.random=()=>((i+.2)/4);const fish=catchRiverFish(1);check(fish===RIVER_FISH[i].key&&bagQty(fish)===1&&itemIconHTML(fish).includes('uruguai-fish-v1'),'Pesca entrega espécie e sprite: '+fish);}

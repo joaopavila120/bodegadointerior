@@ -204,7 +204,7 @@
    check(scene?.id==='missa'&&scene.steps.some(s=>s.say==='padre'),'primeiro, a cena da missa com o padre');while(scene)sceneSkip();check(worldOut.map==='salao'&&modal==='talk','depois da missa, todo mundo vai pro baile no salão');talkAll();
    check(serveActive()&&SERVE_EVENTS.capela.items.join()==='vinho,polenta','no baile de capela, o Sadi serve vinho e polenta');{const s=G.serve;for(let k=0;k<500&&!s.done;k++){outsideTick(.25);const m=s.patrons.findIndex(p=>p.want);if(m>=0){serveTake(s.patrons[m].want);servePatron(m);}}}talkAll();check(mapEvState('capela').done,'baile de capela concluído');
    // 23h30: casas trancadas e ninguém na rua
-   G.phase='closed';G.report={};switchMap({map:'vila',x:1600,y:735});worldWalkersKey='';walkersTick(.1);check(lateNight()&&!worldWalkers.length,'depois das 23h30 ninguém anda na rua');
+   G.phase='closed';G.report={};switchMap({map:'vila',x:1600,y:735});worldWalkersKey='';walkersTick(.1);check(lateNight()&&!worldWalkers.some(w=>PEOPLE[w.person]?.id!=='arami'),'depois das 23h30 ninguém anda na rua (só o Arami, o cavaleiro da noite)');
    {const hv=WORLD_MAPS.vila.spots().find(s=>s.house);worldOut.x=hv.x;worldOut.y=hv.y;check(/trancada/.test(outsideHint()),'a casa aparece trancada');interact();check(worldOut.map==='vila','e não dá para entrar');}
    {const lj=WORLD_MAPS.vila.spots().find(s=>s.id==='agro');worldOut.x=lj.x;worldOut.y=lj.y;check(/fechada/.test(outsideHint()),'a loja aparece fechada depois das 23h30');interact();check(worldOut.map==='vila','e não abre até de manhã');}
    // o guri da vela, raro, na beira do rio

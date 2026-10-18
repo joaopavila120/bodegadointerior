@@ -48,9 +48,9 @@
     }
     caveFloorRun().hurt=.3;check(drawExpansionPerson(0,400,400,false,true,1,false,0,0),'Pose de dano do Sadi');
     caveFloorRun().hurt=0;caveFloorRun().swing={t:.1,ang:0};check(drawExpansionPerson(0,400,400,false,true,1,false,0,0),'Pose de ataque do Sadi');
-    caveLeave();finishTalk();switchMap({map:'gado',x:600,y:800});closeDialog(true);
+    caveLeave();finishTalk();switchMap({map:'gado',x:600,y:800});closeDialog(true);storeShop('gado');check(!$('dialogContent').innerHTML.includes('ridingHorse')&&!$('dialogContent').innerHTML.includes('bootsGaucho')&&$('dialogContent').innerHTML.includes('bodoque'),'Casa do Campeiro: bichos, ração e o bodoque');buyRidingHorse();check(!mountState().owned,'o cavalo não se compra mais no Campeiro');closeDialog(true);switchMap({map:'ferragem',x:600,y:800});closeDialog(true);
     const before=G.cash;G.cash=10;buyRidingHorse();check(!mountState().owned&&G.cash===10,'Sem dinheiro não compra cavalo');G.cash=before;
-    storeShop('gado');buyRidingHorse();check(G.mount.owned&&G.cash===before-HORSE_COST,'Compra o cavalo na Casa do Campeiro');
+    storeShop('ferragem');check($('dialogContent').innerHTML.includes('ridingHorse')&&$('dialogContent').innerHTML.includes('data-id="bootsGaucho"'),'botas e cavalo na Ferragem (melhorias)');buyRidingHorse();check(G.mount.owned&&G.cash===before-HORSE_COST,'Compra o cavalo na Ferragem');
     buyRidingHorse();check(G.cash===before-HORSE_COST,'Não paga pelo cavalo duas vezes');check(!playerMounted(),'Desmontado no interior da loja');closeDialog(true);
     switchMap({map:'vila',x:1600,y:735});check(playerMounted(),'Monta automaticamente ao sair');
     G.mount.stabled=true;keys.add('d');outsideTick(.05);const foot=worldOut.x-1600;

@@ -85,7 +85,7 @@ function depositBag() {
 
 // ---------- Lojas da Fronteira ----------
 // Atacado (bebida, cigarro, amendoim e vidros), Açougue (carne de porco: bacon e salame), Armazém Querência (sementes,
-// mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração e equipamento).
+// mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração e o bodoque).
 const STORE_GOODS = {
   atacado: ['cerveja', 'refri', 'cachaca', 'bitter', 'cafe', 'cigarro', 'amendoim', 'azeite'],
   acougue: ['bacon'],
@@ -97,8 +97,8 @@ const STORE_INFO = {
   acougue: { name: 'Açougue da Fronteira', text: 'Carne de porco: bacon. O salame de colônia vem da nona do Badin, na Serra.' },
   badin: { name: 'Despensa da colônia do Badin', text: 'Salame curado pela nona e muda de parreira da colônia. A uva vira vinho de garrafão na mesa de compota da bodega.' },
   agro: { name: 'Armazém Querência', text: 'Sementes, mudas e adubo para a horta. Aqui também se vende a colheita.' },
-  gado: { name: 'Casa do Campeiro', text: 'Animais, ração e equipamento de campo.' },
-  ferragem: { name: 'Ferragem da Fronteira', text: 'Móveis, equipamentos e melhorias para a bodega. Comprou, já sai instalado. No celular dá para ver e guardar o que é da casa.' }
+  gado: { name: 'Casa do Campeiro', text: 'Animais, ração e o bodoque pra laçada.' },
+  ferragem: { name: 'Ferragem da Fronteira', text: 'Melhorias: móveis e equipamentos para a bodega, as botas e o cavalo crioulo. Comprou, já sai instalado. No celular dá para ver e guardar o que é da casa.' }
 };
 // De onde vem cada produto da bodega (lista de compras do celular e tutorial).
 const FARM_SOURCES = {
@@ -139,17 +139,17 @@ function buyFeedback(act, id, text) {
   b.classList.remove('flash-ok'); void b.offsetWidth; b.classList.add('flash-ok');
   const card = b.closest('.supply'); if (card && text) { card.querySelector('.bought-tag')?.remove(); const t = document.createElement('span'); t.className = 'bought-tag'; t.textContent = '✔ ' + text; card.appendChild(t); }
 }
-// Ferragem: as melhorias da bodega (as botas e o bodoque ficam na Casa do Campeiro).
-const FERRAGEM_SKIP = ['bootsGaucho', 'bootsBagual', 'bodoque'];
+// Ferragem: todas as melhorias, com as botas e o cavalo (só o bodoque fica na Casa do Campeiro, junto da laçada).
+const FERRAGEM_SKIP = ['bodoque'];
 function upgradeOwned(id) { return !!G.up[id] || !!G.upOwned?.[id]; }
 function upgradeMissing(u) { const m = []; if (bodegaLevel() < (u.level || 1)) m.push('nível ' + u.level); if (G.rep < u.rep) m.push('reputação ' + u.rep); if (!hasCash(u.cost)) m.push(money(u.cost)); if (u.requires && !upgradeOwned(u.requires)) m.push(UPGRADES.find(v => v.id === u.requires).name); return m; }
-// Primeiro as melhorias da bodega (balcão, cozinha, salão); depois mate e botas.
+// Primeiro as melhorias da bodega (balcão, cozinha, salão); depois mate, botas (com a troca de bota) e o cavalo.
 const FERRAGEM_ORDER = [['Balcão', 'Balcão'], ['Cozinha', 'Cozinha'], ['Outros', 'Salão e casa'], ['Mate', 'Mate'], ['Botas', 'Botas']];
 function ferragemCards() {
   return FERRAGEM_ORDER.map(([cat, title]) => {
     const list = UPGRADES.filter(u => upgradeCategory(u) === cat && !u.shop && !FERRAGEM_SKIP.includes(u.id)); if (!list.length) return '';
     return '<h3>' + title + '</h3><div class="store-list">' + list.map(u => { const own = upgradeOwned(u.id), miss = own ? [] : upgradeMissing(u); return `<div class="supply"><span class="icon">${upgradeIconHTML(u.id) || '<span class="bag-emoji">🔧</span>'}</span><div><b>${u.name}</b><p>${u.desc}${u.level > 1 ? ' · nível ' + u.level : ''}${u.rep ? ' · reputação ' + u.rep : ''}</p></div><button class="primary" data-act="upgrade" data-id="${u.id}" ${own || miss.length ? 'disabled' : ''}>${own ? 'Já é da casa' : miss.length ? 'Falta: ' + miss.join(' + ') : u.cost === 0 ? 'Levar de graça' : 'Comprar · ' + money(u.cost)}</button></div>`; }).join('') + '</div>';
-  }).join('');
+  }).join('') + (UPGRADES.some(u => GEAR[u.id] && upgradeOwned(u.id)) ? bootsPanel() : '');
 }
 // No balcão (Personalizar bodega): melhorias que são móveis podem ser guardadas e reinstaladas (de graça) fora do expediente.
 function moveisSection() {
@@ -166,7 +166,7 @@ function toggleUpgrade(id) {
 }
 function upgradePhonePanel() {
   const owned = UPGRADES.filter(u => upgradeOwned(u.id) && !u.shop), forSale = UPGRADES.filter(u => !upgradeOwned(u.id) && !u.shop);
-  return `<div class="phone-intro"><h3>Melhorias da bodega</h3><p>${owned.length} da casa. Comprar é na <b>Ferragem da Fronteira</b> (botas e bodoque na Casa do Campeiro). Aqui dá para ver e guardar os móveis.</p></div>` +
+  return `<div class="phone-intro"><h3>Melhorias da bodega</h3><p>${owned.length} da casa. Comprar é na <b>Ferragem da Fronteira</b> (o bodoque, na Casa do Campeiro). Aqui dá para ver e guardar os móveis.</p></div>` +
     owned.map(u => `<div class="upgrade"><h3>${upgradeIconHTML(u.id)}${u.name}</h3><p>${u.desc}</p>${REMOVABLE_UPGRADES.includes(u.id) ? `<button data-act="upgradeToggle" data-id="${u.id}" aria-pressed="${!!G.up[u.id]}">${G.up[u.id] ? 'Instalado ✓ · guardar' : 'Guardado · instalar de novo'}</button>` : '<p class="small-note">Melhoria permanente.</p>'}</div>`).join('') +
     (forSale.length ? '<h3 class="phone-section">À venda</h3>' + forSale.map(u => `<div class="upgrade"><h3>${upgradeIconHTML(u.id)}${u.name}</h3><p>${u.desc}</p><button disabled>À venda na ${FERRAGEM_SKIP.includes(u.id) ? 'Casa do Campeiro' : 'Ferragem da Fronteira'} · ${u.cost ? money(u.cost) : 'grátis'}</button></div>`).join('') : '') + gearPanel();
 }
@@ -191,7 +191,7 @@ function storeExtra(id) {
   save(); refreshStore(); buyFeedback('storeExtra', id, 'Comprado');
 }
 function campeiroCards() {
-  const r = ranchState(), gear = ['bodoque', 'bootsGaucho', 'bootsBagual'].map(id => UPGRADES.find(u => u.id === id)).filter(Boolean);
+  const r = ranchState(), gear = ['bodoque'].map(id => UPGRADES.find(u => u.id === id)).filter(Boolean);
   const gearCard = u => { const owned = !!G.up[u.id], needs = u.requires && !G.up[u.requires], low = bodegaLevel() < (u.level || 1); return extraCard(u.id, upgradeIconHTML(u.id) || '🥾', u.name, u.desc, u.cost, owned ? 'Já é seu' : needs ? 'Antes: ' + UPGRADES.find(x => x.id === u.requires).name : low ? 'Bodega nível ' + u.level : 'Comprar · ' + money(u.cost), !owned && !needs && !low); };
   return '<h3>Animais e ração</h3><div class="store-list">' +
     extraCard('boi', '🐂', 'Boi', 'Laçado e carneado rende ' + MANTAS_PER_BOI + ' mantas de costela e 24 hambúrgueres · rebanho: ' + (G.herd || 0), BOI_COST, 'Comprar · ' + money(BOI_COST)) +
@@ -199,7 +199,7 @@ function campeiroCards() {
     extraCard('galinha', '🐔', 'Galinha caipira', 'Bota um ovo por dia, se comer · você tem ' + r.hens + '/' + RANCH_MAX.hens, 15, r.hens < RANCH_MAX.hens ? 'Comprar · ' + money(15) : 'Galinheiro cheio', r.hens < RANCH_MAX.hens) +
     extraCard('codorna', '🐦', 'Codorna', 'Bota um ovinho por dia, se comer · você tem ' + r.quails + '/' + RANCH_MAX.quails, 10, r.quails < RANCH_MAX.quails ? 'Comprar · ' + money(10) : 'Codorneira cheia', r.quails < RANCH_MAX.quails) +
     extraCard('racao', '🌽', 'Saco de ração', 'Um saco alimenta o curral inteiro por um dia', 6, 'Comprar · ' + money(6)) +
-    '</div><h3>Equipamento</h3><div class="store-list">' + gear.map(gearCard).join('') + '</div>' + bootsPanel();
+    '</div><h3>Pra laçada</h3><div class="store-list">' + gear.map(gearCard).join('') + '</div>';
 }
 // Venda no Armazém: o que é colhido ou produzido e está no inventário.
 // A alface colhida e os potes de conserva já entram no estoque como salada, pepino e codorna: vendem por esses nomes.

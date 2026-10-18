@@ -81,7 +81,7 @@ function decorPanel(shop=false){
 // (guardar ou reinstalar). Melhoria nova continua sendo comprada na loja.
 function personalizeMenu(){
  const box=$('dialogContent').closest('.dialog'),keep=modal==='personalizar'?box.scrollTop:0;
- openDialog('Personalizar bodega',`<p>Deixe a bodega com a sua cara. A decoração se compra aqui; melhorias novas, na Ferragem da Fronteira (botas e bodoque na Casa do Campeiro).</p>${moveisSection()||'<h3>Móveis da bodega</h3><p class="small-note">Quando comprar melhorias como a mesa de tragos, dá para guardar ou reinstalar aqui.</p>'}<h3>Decoração</h3>${decorPanel(true)}<div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`,'personalizar');
+ openDialog('Personalizar bodega',`<p>Deixe a bodega com a sua cara. A decoração se compra aqui; melhorias novas, botas e o cavalo na Ferragem da Fronteira (o bodoque, na Casa do Campeiro).</p>${moveisSection()||'<h3>Móveis da bodega</h3><p class="small-note">Quando comprar melhorias como a mesa de tragos, dá para guardar ou reinstalar aqui.</p>'}<h3>Decoração</h3>${decorPanel(true)}<div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`,'personalizar');
  box.scrollTop=keep;
 }
 function refreshCustomize(){if(modal==='personalizar')personalizeMenu();}

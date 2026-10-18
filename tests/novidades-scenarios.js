@@ -36,7 +36,7 @@
    check(Object.entries(floors).every(([f,l])=>l.every(k=>!CAVE_ORES[k]||+f>=CAVE_ORES[k].from&&+f<=CAVE_ORES[k].to)),'cada minério só aparece na faixa dele');
    check(['cobre','ferro','opala','ouro'].every(k=>Object.values(floors).some(l=>l.includes(k))),'cobre, ferro, opala e ouro aparecem conforme desce');
    check(Object.keys(CAVE_ORES).every(k=>!SELLABLE.includes(k)&&BAG_RAW[k]),'minérios novos: só São Dunstano compra');
-   enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();check(modal==='dunstanShop'&&$('dialogContent').querySelectorAll('[data-act="dunstanTab"]').length===4,'ferraria em abas: forja, equipamento, bolicho e minérios');
+   enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();{const html=$('dialogContent').innerHTML,heads=[...$('dialogContent').querySelectorAll('h3.forja-sec')].map(h=>h.textContent);check(modal==='dunstanShop'&&$('dialogContent').querySelectorAll('[data-act="dunstanTab"]').length===2&&heads.length===4&&/Armas/.test(heads[0])&&/Bolicho/.test(heads[3])&&html.includes('forja-ores')&&html.includes('data-act="bolichoBuy"')&&html.includes('data-act="forjaMake"')&&!html.includes('data-act="dunstanSell"'),'ferraria num menu só (armas, afiar, equipamento e bolicho, com os minérios no topo); vender fica na aba do lado');}
    const d0=caveDmg();bagAdd('ametista',9);action('forjaMake','ametista');check(caveWeapon().id==='facao'&&bagQty('ametista')===9,'sem 10 ametistas, nada de espada');
    bagAdd('ametista',1);const c0=G.cash;action('forjaMake','ametista');check(caveWeapon().id==='ametista'&&!bagQty('ametista')&&G.cash===c0-200&&caveDmg()===34&&caveDmg()>d0,'10 ametistas + R$ 200: espada de ametista na mão');
    bagAdd('ametista',2);action('forjaAfiar');check(weaponRefine()===1&&caveDmg()===37,'afiar na pedra com minério: +3 de dano');
@@ -46,7 +46,7 @@
    facaoBuy('botas');facaoBuy('guaiaca');facaoBuy('bornal');check(caveUp('botas')&&caveUp('guaiaca')&&caveBagMax()===10,'botas, guaiaca e bornal maior');
    action('dunstanTab','bolicho');for(const id of ['chimarrao','canha','boleadeira','patua','ticao','aguabenta'])action('bolichoBuy',id+':1');action('bolichoBuy','chimarrao:3');
    check(caveBag().chimarrao===4&&caveBag().canha===1&&caveBeltItems().length===5,'bolicho do santo: itens gaúchos no bornal, cinco no cinto');
-   bagAdd('cobre',5);bagAdd('opala',2);action('dunstanTab','minerios');const c1=G.cash;action('dunstanSell','cobre:all');action('dunstanSell','opala:1');check(G.cash===c1+5*CAVE_ORES.cobre.value+CAVE_ORES.opala.value,'São Dunstano compra os minérios novos');closeDialog(true);
+   bagAdd('cobre',5);bagAdd('opala',2);action('dunstanTab','vender');check($('dialogContent').querySelectorAll('[data-act="dunstanSell"]').length>=CAVE_MINERALS.length&&!$('dialogContent').innerHTML.includes('data-act="forjaMake"'),'a aba do lado só vende minério');const c1=G.cash;action('dunstanSell','cobre:all');action('dunstanSell','opala:1');check(G.cash===c1+5*CAVE_ORES.cobre.value+CAVE_ORES.opala.value,'São Dunstano compra os minérios novos');closeDialog(true);
    enterCave(6);closeDialog(true);const run=caveFloorRun(),p=worldOut,st=caveState();
    st.hp=50;check(caveUse('chimarrao')&&st.hp===90,'cuia de chimarrão: +40 de vida');
    const base=caveDmg();caveUse('canha');check(caveBuff('canha')&&caveDmg()===Math.round(base*1.4),'trago de canha: +40% de dano por um tempo');
@@ -125,6 +125,16 @@
     else{check(modal==='farmGame','soltar o filhote do laço e ficar quieto');let k=0;while(farmGame&&k++<200){const s=farmStage();if(s.kind==='alternate')farmGameKey(k%2?'a':'d');else{farmGame.pos=(s.zone[0]+s.zone[1])/2;farmGameKey('e');}}}
     check(G.relics?.[FOLK[id].relic],'vencendo, a lembrança vai pra estante: '+FOLK[id].relic);talkAll();}
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
+  // ---------- quero-queros no mundo aberto ----------
+  {goInside();G.phase='prep';G.report=null;goOutside();const count={vila:0,serra:0,sc:0};let day=0,open=true;
+   for(const map of Object.keys(count))for(let d=200;d<300;d++){G.day=d;switchMap({map,x:1500,y:900});closeDialog(true);const b=qqBirds();if(b.length){count[map]++;open=open&&b.every(q=>WORLD_MAPS[map].canWalk(q.x,q.y));if(map==='vila'&&!day)day=d;}}
+   check(count.vila>15&&count.vila<60&&count.serra<count.vila&&count.sc<count.serra&&open,'quero-queros pelo mapa, mas não todo dia (mais na Fronteira, menos na Serra e em SC), sempre no campo');
+   check(QQ_SCALE<1,'no mundo aberto o quero-quero é menor que na laçada');
+   G.day=day;switchMap({map:'vila',x:1500,y:900});closeDialog(true);const b=qqBirds()[0];b.aggr=1;const sx=b.x+150,sy=b.y+10;worldOut.x=sx;worldOut.y=sy;Math.random=()=>.5;
+   for(let i=0;i<4;i++)simulate(.05);check(b.state==='warn'&&b.tx===sx,'chegou perto: ele grita e marca o rasante');
+   for(let i=0;i<60&&b.state!=='fly';i++)simulate(.03);check(b.state==='fly'&&Math.hypot(worldOut.x-sx,worldOut.y-sy)>5,'o rasante empurra o Sadi e o quero-quero pousa mais adiante');Math.random=randomBefore;
+   G.up.bodoque=true;b.state='ground';b.calm=99;worldOut.x=b.x+200;worldOut.y=b.y;$('floatNotes').innerHTML='';qqSlingNote=0;slingStart();document.dispatchEvent(new KeyboardEvent('keydown',{key:'f'}));
+   check(!slingActive()&&!sling.aim&&/só sai na laçada/.test($('floatNotes').textContent),'no mundo aberto o bodoque não funciona: só na laçada');goInside();}
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;Math.random=randomBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();scene=null;fishing=null;G.lasso=null;$('lassoUI')?.classList.add('hidden');closeDialog(true);worldOut=null;}
  return results;
 })()

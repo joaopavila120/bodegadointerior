@@ -114,10 +114,10 @@ const HORSE_COST = 900, HORSE_POST = { x: 900, y: 710 };
 function mountState() { return G.mount ??= { owned:false, stabled:false }; }
 function playerMounted() { return !!worldOut && !worldMap().indoor && !scene && !!G.mount?.owned && !G.mount.stabled; }
 function buyRidingHorse() {
-  if (worldOut?.map !== 'gado' || mountState().owned) return;
+  if (worldOut?.map !== 'ferragem' || mountState().owned) return;
   if (!hasCash(HORSE_COST)) { worldSay('Falta dinheiro para o cavalo crioulo.'); return; }
   spendCash(HORSE_COST); G.stats.purchases += HORSE_COST; Object.assign(mountState(),{owned:true,stabled:false});
-  AudioEngine.coins(); save(); storeShop('gado'); worldSay('Cavalo encilhado! Ao sair, você já vai montado. Pode guardá-lo no campo.');
+  AudioEngine.coins(); save(); refreshStore(); worldSay('Cavalo encilhado! Ao sair, você já vai montado. Pode guardá-lo no campo.');
 }
 function stableHorse() {
   if(worldOut?.map!=='curral'||!mountState().owned||Math.hypot(worldOut.x-HORSE_POST.x,worldOut.y-HORSE_POST.y)>120)return;
@@ -125,8 +125,9 @@ function stableHorse() {
   worldSay(G.mount.stabled?'Cavalo guardado no campo.':'Cavalo encilhado. Bora pegar a estrada!');
 }
 {
-  const cards = campeiroCards;
-  campeiroCards = function() { return cards() + '<h3>Montaria</h3><div class="store-list">' + extraCard('ridingHorse','🐎','Cavalo crioulo encilhado','Anda 65% mais rápido no mundo aberto. Aguarda fora dos interiores. Guarde ou busque no campo.',HORSE_COST,mountState().owned?'Já é teu':'Comprar · '+money(HORSE_COST),!mountState().owned) + '</div>'; };
+  // O cavalo crioulo fica na Ferragem, com as outras melhorias.
+  const cards = ferragemCards;
+  ferragemCards = function() { return cards() + '<h3>Montaria</h3><div class="store-list">' + extraCard('ridingHorse','🐎','Cavalo crioulo encilhado','Anda 65% mais rápido no mundo aberto. Aguarda fora dos interiores. Guarde ou busque no campo.',HORSE_COST,mountState().owned?'Já é teu':'Comprar · '+money(HORSE_COST),!mountState().owned) + '</div>'; };
   const extra=storeExtra; storeExtra=function(id){if(id==='ridingHorse'){buyRidingHorse();return;}return extra(id);};
   const M=WORLD_MAPS.curral, spots=M.spots, draw=M.draw;
   M.spots=function(){const list=spots.call(this);if(G.mount?.owned)list.push({id:'horse:stable',...HORSE_POST,radius:90,label:G.mount.stabled?'Encilhar e montar seu cavalo':'Guardar cavalo no campo',act:stableHorse});return list;};

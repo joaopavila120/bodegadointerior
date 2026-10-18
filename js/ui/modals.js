@@ -17,7 +17,7 @@ function help(){openDialog('Receitas e controles',`<div class="callout"><b>WASD<
 function togglePhone(force){if(G.task?.type==='weigh')abandonWeigh();phoneOpen=typeof force==='boolean'?force:!phoneOpen;keys.clear();pointerHold=false;cancelHold();$('phone').classList.toggle('hidden',!phoneOpen);if(phoneOpen){G.tutorial.phone=true;renderPhone();$('phone').querySelector('button')?.focus();}else canvas.focus();}
 
 function renderPhone(){
- // Melhorias não ficam no celular: compra na Ferragem (botas e bodoque na Casa do Campeiro).
+ // Melhorias não ficam no celular: compra na Ferragem (só o bodoque fica na Casa do Campeiro).
  const upTab=document.querySelector('[data-act="tab"][data-id="upgrades"]'),upHidden=!(tutorialActive()&&tutorialStep()?.id==='upgrade');upTab?.classList.toggle('hidden',upHidden);if(upHidden&&phoneTab==='upgrades')phoneTab='supplier';
  document.querySelectorAll('[data-act="tab"]').forEach(b=>b.classList.toggle('active',b.dataset.id===phoneTab));$('phoneNote').textContent=walletText()+' · '+(G.phase==='open'||G.phase==='closing'?'expediente em andamento':'organize antes de abrir');const event=`<div class="phone-event"><b>${eventInfo().icon} ${eventInfo().name}</b><button class="small" data-act="event">Programação</button></div>`,deliveries=G.deliveries.map(d=>`<div class="delivery-line">${nameOf(d.key)} +${stockText(d.key,d.qty)} · ${Math.ceil(d.left)} s</div>`).join('');
  let html='';

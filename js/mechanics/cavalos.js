@@ -130,7 +130,7 @@ function cavalosThanks(rw, kills) {
     { do: () => AudioEngine.neigh(.06) },
     { say: 'estela', text: 'Se não fosse tu, a essa hora eles tavam atravessando o rio, rumo à Argentina!' },
     { say: 'sadi', text: 'Cavalo crioulo é parceiro de lida, Estela. Tem que voltar pra querência.' },
-    { say: 'estela', text: 'Toma a paga. E se um dia tu quiser um parceiro de verdade, a Casa do Campeiro tem crioulo de primeira.' },
+    { say: 'estela', text: 'Toma a paga. E se um dia tu quiser um parceiro de verdade, a Ferragem da Fronteira tem crioulo encilhado de primeira.' },
     { say: 'estela', text: 'Agora deixa eu levar essa tropa pra casa antes que o tordilho invente outra aventura.' }
   ] : [{ say: 'estela', text: 'De novo a tropilha de volta! Obrigada, Sadi: tu já é o laçador oficial da Fronteira.' }];
   playSteps([...sceneWorld({ map: 'vila', x: c.x + 60, y: c.y, night: true, lights: [{ x: c.x + 20, y: c.y - 100, r: 180, a: .35 }] }), ...cast, { fade: 'in', time: .8 }, ...lines,

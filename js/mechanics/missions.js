@@ -81,6 +81,7 @@ const TEACH = {
   serra: ['Serra Gaúcha', 'Colônia italiana, vinhedos, a igreja e o salão da comunidade. Badin, os gêmeos da Casona, Mito do Sul e Dianho moram aqui: visite as casas.'],
   sc: ['Santa Catarina', 'O Vale Europeu: Lauro, Indavírus, Peixinho na Brasa e Loli Gebien moram aqui. Tem pitangueira e a canchinha do Lauro.'],
   manha: ['A manhã antes de abrir', 'O dia começa às 6h: horta, curral, compras e prosa. Às 9h vem o aviso para abrir; se a bodega continuar fechada ao meio-dia, a freguesia vai embora, você perde reputação e o evento do dia.'],
+  mesas: ['Fila para as mesas', 'Quem vem comer na mesa espera na <b>fila perto da porta</b> (⌛) até ter uma mesa limpa: em mesa com pratos e copos ninguém senta. Com as mãos livres, chegue perto da mesa suja e <b>segure</b> <span class="keycap">E</span> para limpar.<br><br>Se a fila demorar por causa de mesa suja, o povo reclama, a bodega perde reputação e alguns desistem e vão embora. Um <b>garçom</b> (Ajudantes, no caixa) também limpa as mesas.'],
   falta: ['Produto em falta', 'Freguês que pede bebida ou produto do balcão sem estoque fica chateado e vai embora: perde reputação. Xis só é pedido quando dá para montar.<br><br>Faltou alguma coisa? Dá para <b>ligar pro Atacado</b> pelo celular (<span class="keycap">C</span> → Compras): chega pela porta em alguns segundos, mas sai bem mais caro do que produzir na roça ou comprar na loja.'],
   missoes: ['Missões', 'A <b>história</b> segue em capítulos, um depois do outro: o capítulo atual fica no alto, à esquerda, e a seta amarela mostra o caminho. As <b>secundárias</b> e os pedidos se descobrem conversando com o povo, em casa e na rua. Tudo fica na aba <b>Missões</b> do celular (<span class="keycap">C</span>).']
 };
@@ -141,14 +142,16 @@ const MISSIONS = [
     done: () => (G.openStreak || 0) >= 3, reward: { cash: 60, xp: 40, items: { vidro: 4 }, unlock: 'Estrada da Serra Gaúcha liberada' },
     onDone: () => unlockRegion('serra'),
     outro: ['Três noites seguidas! A freguesia já fala da bodega até na Serra.', 'A estrada da Serra Gaúcha tá liberada: segue a estrada da Fronteira pra direita.'] },
-  { id: 'conhecer', chapter: 3, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
+  { id: 'conhecer', chapter: 4, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
+    // Depois da noite da Cadela Baia (capítulo 3), o Valter manda subir a Serra na manhã seguinte.
+    when: () => !!G.baiaSide || missionDone('baia') && G.day > (missionState('baia')?.day || 0), waitText: () => 'amanhã de manhã, na bodega',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: ['O Badin, lá de Erechim, mandou dizer que quer te conhecer. Gente boa, mas a nona dele é brava que só.', 'Sobe a estrada da Serra e bate na casa de pedra dele. Vai que ele tem serviço pra ti!'],
     goal: () => 'Vá à Serra Gaúcha e fale com o Badin, na casa de pedra',
     done: () => !!G.metOutside?.badin, reward: { xp: 30, friend: { badin: 4 } }, outroBy: 'badin',
     outro: [['badin', 'Então é tu o neto do velho Sadi? A nona disse que o teu vô vendia o melhor salame da Fronteira… e que era tudo da colônia, hehe.']] },
   // O Badin manda organizar um campeonato de bocha na cancha da bodega (ganhar ou perder não importa): abre Santa Catarina.
-  { id: 'campeonato', chapter: 4, title: 'Campeonato de bocha', giver: 'badin', where: 'Cancha de bocha, ao lado da bodega',
+  { id: 'campeonato', chapter: 5, title: 'Campeonato de bocha', giver: 'badin', where: 'Cancha de bocha, ao lado da bodega',
     guide: { region: 'vila', spot: 'cancha' },
     intro: [['badin', 'Ô, Sadi! Lá na tua bodega tem cancha de bocha, né?'], ['badin', 'Organiza um campeonato de bocha na tua cancha, que o povo da Serra quer ver. Ganhar ou perder não importa: o que vale é a festa!']],
     start: () => { G.missions.campeonato.base = sportCups('bocha'); },
@@ -157,7 +160,7 @@ const MISSIONS = [
     reward: { cash: 70, xp: 60, rep: 3, friend: { badin: 10 } },
     outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'Passa lá em casa um dia desses, que a nona quer te pedir uma coisa.']] },
   // Segunda missão do Badin: o queijo pra nona. Cumprida, ele passa a vender salame e muda de uva.
-  { id: 'queijo', chapter: 5, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha, casa de pedra do Badin',
+  { id: 'queijo', chapter: 6, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha, casa de pedra do Badin',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: [['badin', 'A nona provou um xis da tua bodega e quer saber de onde vem esse queijo.'], ['badin', 'Me traz 10 fatias do queijo da tua vaca? Se ela aprovar, a despensa da colônia abre pra ti: salame curado e muda de uva.']],
     deliver: { to: 'badin', items: { queijo: 10 } },
@@ -178,7 +181,7 @@ const MISSIONS = [
     intro: [['jayme', 'Vivente, teu vô me mostrou uma vez um caderno: receita, causo, verso e o nome de cada boi.'], ['jayme', 'Dizem que o vento espalhou as páginas pela Fronteira, pela Serra e por Santa Catarina. Onde o chão brilhar de perto, olha com calma.']],
     goal: () => 'Encontre as 3 páginas do caderno do vô (' + pagesFound() + '/3)', done: () => pagesFound() >= 3,
     reward: { cash: 150, xp: 100, rep: 5 }, finale: () => playCadernoScene() },
-  { id: 'indaial', chapter: 7, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
+  { id: 'indaial', chapter: 8, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
     guide: { region: 'sc', spot: 'house:lauro', inside: 'casa:lauro', insideSpot: 'home:lauro' },
     intro: [['card', '<div class="carta-letter"><small>Indaial, Santa Catarina</small><p>Opa, Sadi!</p><p>Aqui é o Lauro, o da bocha. O Gustavo, do Jornal Indavírus, quer gravar uma reportagem contigo aqui em Indaial: bodegueiro gaúcho é notícia, ja!</p><p>A estrada de Santa Catarina tá aberta pra ti: na Serra, pega a estrada que sobe pro norte, no meio da vila. E traz uns pães de xis, que gravação dá fome.</p><p class="carta-sign">Abraço do Lauro Bolador</p></div>', 'Chegou uma carta!'], ['sadi', 'Indaial! Bora pegar a estrada de Santa Catarina.']],
     start: () => unlockRegion('sc'), deliver: { to: 'lauro', items: { pao_xis: 6 } },
@@ -187,7 +190,7 @@ const MISSIONS = [
     reward: { cash: 60, xp: 60, friend: { lauro: 10, indavirus: 6 } } },
   // Terceira e última do Badin: o baile da comunidade. Doa R$ 100, vai à missa na igreja e serve no salão; depois o
   // baile de capela entra no calendário.
-  { id: 'festa', chapter: 6, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
+  { id: 'festa', chapter: 7, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: [['badin', 'A comunidade vai fazer um baile de capela, com missa e tudo: o primeiro baile no salão desde que a nona era moça!'], ['badin', 'Mas o padre precisa de doação pra banda e pra comida. Tu dá uma força? Cem pila pra comunidade, e tu ainda serve o vinho e a polenta no baile.']],
     goal: () => festaGoal(), done: () => !!G.missions.festa?.baile,
@@ -201,7 +204,7 @@ const MISSIONS = [
     intro: [['jayme', 'Achou uma relíquia? A Fronteira, a Serra e Santa Catarina estão cheias de histórias perdidas.'], ['jayme', 'São doze, contando as páginas do caderno do teu vô. Junta todas e a bodega vira museu!']],
     goal: () => 'Encontre as 12 relíquias escondidas (' + secretsFound() + '/12)', done: () => secretsFound() >= SECRETS.length,
     reward: { cash: 250, xp: 150, rep: 8 } },
-  { id: 'lendaria', chapter: 8, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
+  { id: 'lendaria', chapter: 13, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
     intro: ['Tu já é conhecido da Fronteira até Santa Catarina. Falta pouco pra virar lenda.', 'Chega no último nível da bodega e a gente faz a maior festa que esse galpão já viu.'],
     goal: () => 'Chegue ao nível ' + LEVELS.length + ' da bodega (agora: nível ' + bodegaLevel() + ')', done: () => bodegaLevel() >= LEVELS.length,
     reward: { cash: 500, rep: 10 } }
@@ -235,6 +238,8 @@ function chapterWaiting() { const m = currentChapter(); return m && !missionStat
 function chapterCalling() { const m = currentChapter(); return m && (m.visit || m.letter) && !m.direct && !missionState(m.id) && (!m.when || m.when()) ? m : null; }
 function giverName(m) { return PEOPLE.find(p => p.id === m.giver)?.name || m.giver; }
 function chapterCallText(m) { return m.letter ? 'Chegou uma carta na bodega: volte pra ler' : giverName(m) + ' quer falar com você · ' + (m.callWhere || m.where); }
+// Linha do capítulo que está chamando o Sadi (no canto da tela e no celular); a Cadela Baia acrescenta a dela.
+function chapterCallLine() { const call = chapterCalling(); return call ? { icon: call.letter ? '✉️' : '📣', title: 'Capítulo ' + call.chapter + ' · ' + call.title, goal: chapterCallText(call), kind: 'story' } : null; }
 // Quem a história precisa encontrar fica em casa esperando o Sadi.
 function storyNeeds(id) { const m = activeChapter(); return !!m && m.needs === questKey(id); }
 function startChapter(m) {
@@ -565,7 +570,7 @@ function trackerLines() {
   const lines = [], ch = activeChapter(), wait = chapterWaiting(), ev = mapEventToday(), t = ev?.def.tracker?.();
   if (ch) lines.push({ icon: '📖', title: 'Capítulo ' + ch.chapter + ' · ' + ch.title, goal: ch.goal(), kind: 'story' });
   else if (wait) lines.push({ icon: '📖', title: 'Próximo capítulo: ' + wait.title, goal: 'Começa ' + (wait.waitText?.() || 'em breve'), kind: 'story' });
-  else { const call = chapterCalling(); if (call) lines.push({ icon: call.letter ? '✉️' : '📣', title: 'Capítulo ' + call.chapter + ' · ' + call.title, goal: chapterCallText(call), kind: 'story' }); }
+  else { const call = chapterCallLine(); if (call) lines.push(call); }
   if (t) lines.push({ ...t, kind: 'event' });
   const side = activeMissions().filter(m => !m.chapter)[0]; if (side && lines.length < 2) lines.push({ title: side.title, goal: side.goal(), kind: 'side' });
   return lines.slice(0, 2);
@@ -585,8 +590,8 @@ function storyTick() {
 // ---------- Aba Missões do celular ----------
 function missionsPanel() {
   if (!G.missions) return '<div class="phone-intro"><h3>Missões</h3><p>As missões da história começam num jogo novo, depois do primeiro dia de bodega.</p></div>';
-  const card = m => `<div class="mission-card"><b>${m.title}</b><p>${m.goal()}</p>${rewardHTML(m.reward)}</div>`, ch = activeChapter(), wait = chapterWaiting(), total = storyChapters().length;
-  const story = ch ? `<div class="mission-card story"><b>📖 Capítulo ${ch.chapter} de ${total} · ${ch.title}</b><p>${ch.goal()}</p>${ch.where ? `<p class="small-note">Onde: ${ch.where}</p>` : ''}${rewardHTML(ch.reward)}</div>` : wait ? `<div class="mission-card story"><b>📖 Próximo capítulo · ${wait.title}</b><p>Começa ${wait.waitText?.() || 'em breve'}.</p></div>` : '', side = activeMissions().filter(m => !m.chapter).map(card).join('');
+  const card = m => `<div class="mission-card"><b>${m.title}</b><p>${m.goal()}</p>${rewardHTML(m.reward)}</div>`, ch = activeChapter(), wait = chapterWaiting(), call = !ch && !wait && chapterCallLine(), total = storyChapters().length;
+  const story = ch ? `<div class="mission-card story"><b>📖 Capítulo ${ch.chapter} de ${total} · ${ch.title}</b><p>${ch.goal()}</p>${ch.where ? `<p class="small-note">Onde: ${ch.where}</p>` : ''}${rewardHTML(ch.reward)}</div>` : wait ? `<div class="mission-card story"><b>📖 Próximo capítulo · ${wait.title}</b><p>Começa ${wait.waitText?.() || 'em breve'}.</p></div>` : call ? `<div class="mission-card story"><b>${call.icon} ${call.title}</b><p>${call.goal}</p></div>` : '', side = activeMissions().filter(m => !m.chapter).map(card).join('');
   const ev = mapEventToday(), evCard = ev ? `<div class="mission-card"><b>${ev.def.icon} ${ev.def.name}</b><p>${ev.def.tracker()?.goal || ev.def.desc}</p>${rewardHTML(ev.def.reward)}</div>` : '';
   const quests = knownQuests().filter(({ o }) => o.active).map(({ id, o }) => { const i = PEOPLE.findIndex(p => p.id === id); return `<div class="mission-card${o.active ? ' active' : ''}"><b>${PEOPLE[i].name} · ${REGION_NAMES[QUEST_HOMES[id]]}</b><p>${o.active ? (canDeliver(o.want) ? '✔ Pronto para entregar: ' : 'Aceito · falta juntar: ') : 'Novo pedido na casa: '}${wantText(o.want)}</p>${rewardHTML(o.reward)}</div>`; }).join('');
   const done = storyChapters().filter(m => missionDone(m.id)).length, travel = WORLD_DISCOVERIES ? WORLD_DISCOVERIES.filter(d => travelState().seen[d.id]).length : 0;

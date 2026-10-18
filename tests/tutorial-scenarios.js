@@ -22,14 +22,19 @@
  check(tutorialTarget()==='bin:pao_xis','no xis a seta começa pelo pão');use('bin:pao_xis');use('bench:0');use('bin:queijo');use('bench:0');use('bin:salada');use('bench:0');
  use('bin:burger');use('grill:0');advance(COOK.burger+.1);use('grill:0');use('bench:0');
  use('bin:ovo');use('grill:0');advance(COOK.ovo+.1);use('grill:0');use('bench:0');use('bench:0');use('press');advance(6.1);use('press');
- check(held()?.pid==='xis_salada'&&held().ready,'xis do tutorial passa por montagem, chapa e prensa');use('table:0');lesson('erva');
+ check(held()?.pid==='xis_salada'&&held().ready,'xis do tutorial passa por montagem, chapa e prensa');use('table:0');lesson('mesa');
+ {const g=G.groups[0];check(G.groups.length===1&&g.state==='wait'&&g.size===2&&G.tables[0].dirty&&tutorialTarget()==='table:0','fila das mesas: com a mesa 1 suja, o grupo espera na porta e a seta aponta a mesa');
+  check(g.shout===DIRTY_SHOUT&&/fila perto da porta/.test(tutorialHint()),'e eles reclamam: “Vão limpar as mesas pra gente sentar ou não, tchê!”');
+  use('table:0');keys.add('e');advance(1.1);keys.delete('e');check(!G.tables[0].dirty,'mesa limpa');advance(8);check(g.state==='seated'&&tutorialTarget()==='bottle:refri','limpa a mesa, o grupo senta e pede um refri');
+  use('bottle:refri');check(tutorialTarget()==='table:0','com o refri na mão, a seta vai pra mesa');use('table:0');check(G.tutorial.delivered,'servir o refri conclui a lição da fila das mesas');}
+ lesson('erva');
  check(!G.up.trago&&!furniture().some(f=>f.id==='pour'),'o primeiro dia termina sem mesa de tragos');
  use('bag');keys.add('e');holdTick(G.task.requested/G.task.maxWeight*2.5);keys.delete('e');finishWeigh();check(held()?.weight===500,'tutorial pesa os 500 g reais solicitados');counter();lesson('fiado');
  check(G.shop[0]?.fiado&&G.shop[0].pid==='codorna','tutorial traz um freguês pedindo fiado');refuseFiado();check(G.shop[0]?.fiado&&G.shop[0].state==='queue','no tutorial o fiado não pode ser recusado');
  const fiadoCash=G.cash;use('shop:codorna');counter();check(G.cash===fiadoCash&&fiadoOpen().length===1&&fiadoOpen()[0].amount===price('codorna'),'entrega fiado vai para o caderninho, sem entrar no caixa');lesson('mate');
  const stock=G.stock.erva;use('mate');keys.add('e');advance(1.2);keys.delete('e');const boosted=G.boost>0;lesson('clean');check(boosted&&G.stock.erva===stock,'mate da lição dá impulso sem gastar erva nem pedir reposição');
  use('table:0');keys.add('e');advance(1.1);keys.delete('e');advance(2);
- check(G.tutorial.complete&&G.phase==='closed'&&G.stats.served===7&&G.stats.lost===0&&modal==='tvAward','concluir as lições encerra o dia, sem perdas, e entrega a TV');
+ check(G.tutorial.complete&&G.phase==='closed'&&G.stats.served===8&&G.stats.lost===0&&modal==='tvAward','concluir as lições encerra o dia, sem perdas, e entrega a TV');
  check(G.tv&&!G.tables[0].dirty,'TV e limpeza permanecem após tutorial');
  action('tvAwardClose');check(modal==='report'&&sportState().challenge.tutorial,'relatório aparece antes do convite');closeDialog();
  check(!modal&&PEOPLE[G.challengeVisit?.person]?.id==='lauro','o Lauro Bolador entra pela porta da bodega antes de convidar');for(let n=0;n<400&&modal!=='sportChallenge';n++)simulate(.05);
@@ -42,6 +47,15 @@
  for(let i=0;i<300;i++)customersTick(.05);refreshHUD();draw();
  const bubbles=customerOrderBubbles();
  check(!$('orderRail')&&bubbles.length===16&&bubbles.every(b=>b.top>=414&&b.top+b.height<b.y),'dezesseis balões individuais ficam acima das cabeças e abaixo das mercadorias');
+ {G=fresh();G.day=7;G.phase='open';G.elapsed=10;G.tutorial.complete=true;G.taught={mesas:true};const rnd=Math.random;Math.random=()=>0;
+  for(const t of G.tables){t.dirty=false;t.group=null;}const sit=spawnGroup({size:2,targetTable:0,fixedOrders:['cerveja','cerveja']});for(let i=0;i<200;i++)customersTick(.05);
+  const busy=availableTables().filter(t=>t.id!==0);for(const t of busy)t.group=-1;const wait=spawnGroup({size:2,targetTable:0});for(let i=0;i<800;i++)customersTick(.05);
+  check(wait.state==='wait'&&!wait.shout&&!wait.dirtyWait,'mesas ocupadas: o grupo espera sem reclamar de mesa suja');
+  G.groups=G.groups.filter(g=>g!==sit);G.tables[0].group=null;G.tables[0].dirty=true;G.tables[0].plates=2;const rep=G.rep;for(let i=0;i<200;i++)customersTick(.05);
+  check(wait.state==='wait'&&wait.shout===DIRTY_SHOUT&&G.rep===rep,'mesa vazia e suja: depois de uns segundos, “Vão limpar as mesas pra gente sentar ou não, tchê!”');
+  $('floatNotes').innerHTML='';for(let i=0;i<500&&wait.state==='wait';i++)customersTick(.05);
+  check(wait.state==='leave'&&G.rep<rep&&/desistindo pois não tem mesas limpas/.test($('floatNotes').textContent),'demorou: perde reputação, o grupo desiste e o aviso explica por quê');
+  Math.random=rnd;for(const t of busy)t.group=null;}
  showPaymentFeedback(10,1);showPaymentFeedback(12,2);check($('paymentFeedback').textContent.includes('22')&&!sparks.some(s=>s.text.includes('gorjeta')),'pagamentos simultâneos agrupados no caixa sem textos sobre fregueses');
  G=fresh();paused=false;modal=null;phoneOpen=false;return results;
 })()

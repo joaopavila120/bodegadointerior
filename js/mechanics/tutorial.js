@@ -5,7 +5,8 @@ const TUTORIAL_STEPS=[
  {id:'cigarro',title:'Seu primeiro freguês',pid:'cigarro',text:'Pegue um maço na prateleira de cigarros com E. Leve até o balcão de atendimento, embaixo à direita, e aperte E para entregar.'},
  {id:'cerveja',title:'Cerveja na caneca',pid:'cerveja',text:'Vá à torneira de cerveja, ao lado da geladeira. Segure E e solte na faixa verde. Leve a caneca ao balcão e entregue com E.'},
  {id:'fila',title:'A fila do balcão',queue:['cigarro','refri'],text:'Chegaram dois fregueses de uma vez! Quem está na frente é atendido primeiro; quem espera atrás tem a ampulheta ⌛ e perde a paciência mais devagar. Atenda na ordem: primeiro o maço de cigarros, depois o refri da geladeira.'},
- {id:'xis',title:'Um xis no capricho',pid:'xis_salada',text:'Este freguês espera na mesa 1. Prepare o xis seguindo a dica ao lado: monte, prense e entregue com E perto da mesa.'},
+ {id:'xis',title:'Um xis no capricho',pid:'xis_salada',table:1,text:'Este freguês espera na mesa 1. Prepare o xis seguindo a dica ao lado: monte, prense e entregue com E perto da mesa.'},
+ {id:'mesa',title:'Fila para as mesas',pid:'refri',table:2,text:'Chegou gente para comer na mesa, mas a mesa 1 ficou suja do xis! Quem vem para as mesas espera na <b>fila perto da porta</b> (⌛) até ter uma mesa limpa: em mesa suja ninguém senta. Com as mãos livres, vá até a mesa 1 e <b>segure</b> E para limpar. Eles sentam e pedem um refri: sirva na mesa com E.'},
  {id:'erva',title:'Erva no peso certo',pid:'erva',grams:500,text:'O freguês quer 500 g de erva-mate. Vá ao saco de erva nas mercadorias, segure E e solte na faixa verde. Se errar, aperte E para recomeçar. Entregue o pacote no balcão.'},
  {id:'fiado',title:'Pendura no caderninho',pid:'codorna',fiado:true,text:'Este freguês pediu ovos de codorna <b>fiado</b> (📒 no balão). Pegue os ovos na prateleira e entregue no balcão com E: o valor vai para o caderninho, sem entrar no caixa agora. Quem paga em dia traz 10% de juros de amizade; alguns demoram e outros somem. No Celular → Fiado você acompanha, cobra ou perdoa as contas. Para recusar um fiado, aperte X no balcão.'},
  {id:'mate',title:'Uma pausa para o chimarrão',text:'Agora, com as mãos livres, vá à cuia e segure E para tomar mate. Ele dá velocidade por alguns segundos e pode ser tomado sempre que quiser.'},
@@ -49,7 +50,11 @@ function tutorialTick(){
   if(s.pid||s.queue){
    let actor;
    if(s.queue){const list=s.queue.map(pid=>spawnShop({pid,training:true,fiado:false}));if(list.some(c=>!c)){G.shop=G.shop.filter(c=>!list.includes(c));t.introduced=false;return;}t.actors=list.map(c=>c.id);actor=list[0];}
-   else if(s.id==='xis')actor=spawnGroup({size:1,targetTable:0,fixedOrders:[s.pid],training:true});
+   else if(s.table){
+    // Na lição da fila das mesas, a mesa 1 fica suja: o grupo espera na porta até o Sadi limpar.
+    if(s.id==='mesa'){const t0=G.tables[0];t0.dirty=true;t0.plates=Math.max(t0.plates||0,1);G.taught??={};G.taught.mesas=true;tutorialEnsureStock(s);}
+    actor=spawnGroup({size:s.table,targetTable:0,fixedOrders:[s.pid],training:true});
+   }
    else{tutorialEnsureStock(s);actor=spawnShop({pid:s.pid,grams:s.grams,training:true,fiado:!!s.fiado});}
    if(!actor){t.introduced=false;return;}
    t.actor=actor.id;
@@ -76,6 +81,7 @@ function tutorialTarget(){
   case 'mate':return 'mate';
   case 'clean':return 'table:0';
   case 'xis':return tutorialXisTarget();
+  case 'mesa':{const g=G.groups.find(g=>g.id===t.actor);if(!g)return null;if(g.state==='wait')return G.tables[0].dirty?'table:0':null;return h?.pid==='refri'?'table:0':'bottle:refri';}
  }
  return null;
 }
@@ -90,6 +96,12 @@ function tutorialXisTarget(){
  const parts=benchParts(b);if(matchRecipe(parts))return 'bench:'+bi;
  const gi=grill.findIndex(Boolean);if(gi>=0)return grill[gi].ready||grill[gi].burned?'grill:'+gi:null;
  const next=['queijo','salada','burger','ovo'].find(k=>!parts.includes(k));return next?'bin:'+next:null;
+}
+function tutorialMesaHint(){
+ const g=G.groups.find(g=>g.id===G.tutorial.actor);
+ if(g?.state==='wait')return G.tables[0].dirty?'Eles estão na <b>fila perto da porta</b> (⌛) e reclamam: em mesa suja ninguém senta. Com as mãos livres, vá até a mesa 1 e <b>segure</b> E para limpar.':'Mesa limpa! Eles já vão sentar.';
+ if(g)return held()?.pid==='refri'?'Leve o refri à mesa 1 e aperte E para servir.':'Sentaram! Pegue um refri na geladeira e sirva na mesa 1 com E.';
+ return tutorialStep().text;
 }
 function tutorialXisHint(){
  const press=G.kitchen.press,h=held(),b=G.kitchen.bench.find(Boolean);
@@ -108,7 +120,7 @@ function tutorialHint(){
  if(!tutorialActive())return '';
  const s=tutorialStep();if(!s)return '<b>Primeiro dia concluído!</b>';
  if(G.phase==='prep')return tutorialPrepHint();
- const text=G.phase==='prep'?'':G.tutorial.delivered?'Atendimento concluído! Espere o freguês sair para a próxima etapa.':s.id==='xis'?tutorialXisHint():s.text;
+ const text=G.phase==='prep'?'':G.tutorial.delivered?'Atendimento concluído! Espere o freguês sair para a próxima etapa.':s.id==='xis'?tutorialXisHint():s.id==='mesa'?tutorialMesaHint():s.text;
  return '<b>'+(G.tutorial.step+1)+' / '+TUTORIAL_STEPS.length+' · '+s.title+'</b><p>'+text+'</p>';
 }
 function tutorialWelcome(){if(tutorialStockMissing().length){openDialog('Dia 1 · Um passo de cada vez','<p>Hoje é sem pressa: um freguês por vez, com as instruções em cada etapa.</p>'+(physicalShopping()?'<div class="callout"><b>Primeiro, a despensa</b><br>Faltam produtos. O pão sai do forno a lenha (trigo da horta), o queijo do tacho (leite da vaca), o hambúrguer da carneação, o ovo dos ninhos e a salada da horta. Cerveja, refri e cigarro, no Atacado da Fronteira. O quadro no alto da tela mostra o que falta.</div>':'<div class="callout"><b>Primeiro, o estoque</b><br>A bodega está vazia. Aperte <b>C</b> para abrir o celular e, em <b>Fornecedor</b>, compre um pacote de cada: pão, hambúrguer, ovo, queijo, salada, cerveja, refri, cigarro, ovos de codorna em conserva e erva-mate. A entrega chega pela porta em alguns segundos.</div>')+'<p>Cuide sempre do estoque: o número em cada estação mostra quanto sobrou, e o que acaba não dá para vender. Comprado tudo, limpe as mesas que ficaram sujas e vá até o <b>caixa</b> (o balcão de atendimento) para abrir. O quadro azul no alto da tela mostra cada passo.</p>'+(physicalShopping()?'<button class="primary" data-act="close">Vamos às compras</button>':'<button class="primary" data-act="planBuy">Abrir o celular</button>')+'','welcome');return;}openDialog('Dia 1 · Um passo de cada vez','<p>Hoje é sem pressa: um freguês por vez, com as instruções em cada etapa. Amanhã começam os eventos e os pedidos com prazo.</p><button class="primary" data-act="close">Preparar para abrir</button>','welcome');}

@@ -1,4 +1,5 @@
-// Ajudantes da bodega: depois da primeira semana, o Valter conta que dá para contratar os amigos especiais.
+// Ajudantes da bodega: no fim da primeira noite do capítulo 2 (três noites seguidas), o Valter entra e conta que dá para
+// contratar os amigos especiais. Ele mesmo já tem amizade pra ser o primeiro.
 // · Balconista: atende tudo que se pede no balcão (prateleiras, erva e granel na balança, vinho e café da cambona).
 // · Garçom: leva às mesas chope, refri, trago, bitter, café, petiscos e os lanches prontos no apoio; sem pedido, limpa mesa.
 // · Chapeiro: faz o xis e a torrada da mesa que pediu (chapa e prensa) e deixa pronto no apoio da cozinha.
@@ -237,19 +238,30 @@ function staffPayday() {
   return wages;
 }
 
-// ---------- A conversa do Valter (depois da primeira semana) ----------
+// ---------- A conversa do Valter (fim da primeira noite do capítulo 2) ----------
+// Fechada a primeira noite das três seguidas, o Valter entra na bodega. Saves que passaram disso sem a conversa (ou que
+// pularam o capítulo) ainda recebem ela depois de uma semana de bodega, de manhã.
+function staffIntroDue() {
+  const ab = missionState('abertura');
+  if (G.phase === 'closed') return !!ab && ab.status !== 'offered' && G.openedDay === G.day && G.day >= (ab.day || 0) && G.day > (G.tutorial?.day || 1);
+  return G.phase === 'prep' && bodegaDays() >= STAFF_UNLOCK_DAYS;
+}
 function staffIntroTick() {
-  if (G.staffUnlocked || !G.missions || prologueActive() || tutorialActive() || worldOut || G.phase !== 'prep' || bodegaDays() < STAFF_UNLOCK_DAYS || !storyCalm()) return;
-  G.staffUnlocked = true; save();
-  const near = { x: 900, y: 640 };
+  if (G.staffUnlocked || !G.missions || prologueActive() || tutorialActive() || worldOut || !staffIntroDue() || !storyCalm()) return;
+  G.staffUnlocked = true;
+  // O Valter é de casa: já começa com amizade pra ser contratado.
+  const vi = PEOPLE.findIndex(p => p.id === 'valter'); if (vi >= 0) G.friends[vi] = Math.max(G.friends[vi] || 0, HIRE_AT);
+  save();
+  const near = { x: 900, y: 640 }, night = G.phase === 'closed';
   playSteps([{ view: 'bodega' }, { do: () => { G.player = { ...G.player, x: 800, y: 640, dx: 1, dy: 0, walk: false }; } }, { fade: 'in', time: .4 }, { actor: 'valter', x: ENTRY.x, y: ENTRY.y, dx: -1 }, { do: () => AudioEngine.doorChime() }, { walk: 'valter', to: near },
-    { say: 'valter', text: 'Ô, Sadi! Uma semana de bodega e tu ainda faz tudo sozinho, vivente?' },
+    { say: 'valter', text: night ? 'Ô, Sadi! Vi a luz acesa e entrei. Que noite, hein? E tu fez tudo sozinho, vivente: balcão, chapa, mesa…' : 'Ô, Sadi! Uma semana de bodega e tu ainda faz tudo sozinho, vivente?' },
     { say: 'valter', text: 'Bodega boa tem ajudante. Quem é teu amigo de verdade topa te dar uma mão no balcão, na chapa ou servindo as mesas.' },
     { say: 'valter', text: 'Mas ninguém trabalha de graça, hein: cada um tem o seu salário, pago no fim de cada dia de bodega aberta.' },
     { say: 'sadi', text: 'E como eu chamo alguém?' },
-    { say: 'valter', text: 'No caixa, em Ajudantes. Quanto mais amizade, mais gente topa. Escolhe bem!' },
+    { say: 'valter', text: 'No caixa, em Ajudantes, ou pelos Contatos do celular. Quanto mais amizade, mais gente topa.' },
+    { say: 'valter', text: 'E se quiser, o primeiro já tá aqui: eu conheço cada freguês pelo nome. É só me chamar no caixa, hehe.' },
     { walk: 'valter', to: { x: ENTRY.x, y: ENTRY.y } }], 'ajudantes',
-    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão: contrate um <b>balconista</b> (atende tudo do balcão, até o café), um <b>garçom</b> (leva às mesas bebidas, café, petiscos e os lanches prontos, e limpa as mesas) e um <b>chapeiro</b> (faz o xis e a torrada). Só os amigos topam (amizade ${HIRE_AT}+). O salário sai no fechamento de cada dia aberto. A roça continua contigo.`, 'Novidade na bodega']], null, 'Entendi'));
+    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão (ou em Contatos, no celular): contrate um <b>balconista</b> (atende tudo do balcão, até o café), um <b>garçom</b> (leva às mesas bebidas, café, petiscos e os lanches prontos, e limpa as mesas) e um <b>chapeiro</b> (faz o xis e a torrada). Só os amigos topam (amizade ${HIRE_AT}+): o <b>Valter</b> já topa. O salário sai no fechamento de cada dia aberto. A roça continua contigo.`, 'Novidade na bodega']], null, 'Entendi'));
 }
 
 // ---------- Ligações ----------

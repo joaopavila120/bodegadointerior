@@ -64,15 +64,17 @@ for(const id of [...OKTO_VISITORS,...ROAD_RIDERS].map(p=>p.id).concat('saci'))DE
   minorPeople=function(){return minors().filter(i=>!PEOPLE[i].worldOnly&&!PEOPLE[i].homeRegion);};
   const spawn=spawnWalkers;
   spawnWalkers=function(M){
-    spawn(M);if(!M.walkLines?.length||prologueActive()||lateNight())return;
+    // O Arami, cavaleiro charrua, só cruza as estradas de noite (também depois das 23h30, quando o resto já dormiu).
+    spawn(M);if(!M.walkLines?.length||prologueActive())return;
+    const late=lateNight();
     const occupied=new Set([...G.shop.map(c=>c.person),...G.groups.flatMap(g=>g.members||[g.person])]);
     const add=(p,regions)=>{
       const i=PEOPLE.findIndex(x=>x.id===p.id);if(occupied.has(i))return;
       if(roadEncounterPlan(p.id,regions)?.map!==M.id)return;
       const route=randomRoadWalker(M);if(route)worldWalkers.push({person:i,kind:'minor',...route});
     };
-    if(M.id==='sc')OKTO_VISITORS.forEach(p=>add(p,['sc']));
-    if(['vila','serra','sc'].includes(M.id))ROAD_RIDERS.forEach(p=>add(p));
+    if(M.id==='sc'&&!late)OKTO_VISITORS.forEach(p=>add(p,['sc']));
+    if(['vila','serra','sc'].includes(M.id))ROAD_RIDERS.forEach(p=>{if(p.id==='arami'?worldNight():!late)add(p);});
   };
   const person=drawExpansionPerson;
   drawExpansionPerson=function(sprite,x,y,walking,chef,dx,seated,mood,dy){

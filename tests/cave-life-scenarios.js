@@ -60,6 +60,9 @@
     const counts={vila:0,serra:0,sc:0};
     for(let day=1;day<=40;day++){G.day=day;for(const map of Object.keys(counts)){worldOut={map,x:1200,y:800};spawnWalkers(WORLD_MAPS[map]);counts[map]+=worldWalkers.filter(w=>ROAD_RIDERS.some(p=>p.id===PEOPLE[w.person].id)).length;}}
     check(Object.values(counts).every(n=>n>0),'Cavaleiros podem visitar as três regiões');
+    {const ar=PEOPLE.findIndex(p=>p.id==='arami');let day=0,night=0;
+     for(let d=1;d<=40;d++){G.day=d;for(const map of Object.keys(counts)){worldOut={map,x:1200,y:800};G.phase='prep';spawnWalkers(WORLD_MAPS[map]);day+=worldWalkers.filter(w=>w.person===ar).length;G.phase='closed';spawnWalkers(WORLD_MAPS[map]);night+=worldWalkers.filter(w=>w.person===ar).length;}}
+     G.phase='prep';check(day===0&&night>0,'O Arami, cavaleiro charrua, só aparece de noite');}
     check(ROAD_RIDERS.every(p=>!visitorPool().some(i=>PEOPLE[i].id===p.id)&&WORLD_TALK[p.id].length>=4),'Cavaleiros têm prosa própria e ficam no mundo aberto');
     G.phase='closed';worldOut={map:'vila',x:1200,y:800};
     let found=false;for(let day=1;day<=50&&!found;day++){G.day=day;saciTick(.01);found=!!saciEncounter;}

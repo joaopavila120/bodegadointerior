@@ -10,7 +10,7 @@
   action('new');sceneSkip();closeDialog(true);
   G.prologue.done=true;G.prologue.step=PROLOGUE_STEPS.length;G.tutorial.day=4;G.calOffset=3;G.day=30;G.tutorial.complete=true;G.phase='prep';G.valterQueue=[];G.teachQueue=[];
   G.taught={manha:true,pesca:true,pedidos:true,missoes:true,javali:true,cavalo:true};G.regions={serra:true,sc:true};G.cash=5000;
-  G.missions={};for(const m of storyChapters())if(m.chapter<12)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.chapter<13)G.missions[m.id]={status:'done',day:1};
   const talkAll=()=>{let k=0;while(modal==='talk'&&k++<40)talkNext();};
   const skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
   const withScenes=f=>{const ns=window.NO_SCENES;window.NO_SCENES=false;try{return f();}finally{window.NO_SCENES=ns;}};

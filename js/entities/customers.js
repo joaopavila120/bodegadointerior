@@ -43,6 +43,24 @@ function spawnGroup(options={}){
 
 function assignTables(){for(const g of G.groups.filter(g=>g.state==='wait')){const t=availableTables().sort((a,b)=>(a.seatings||0)-(b.seatings||0)).find(t=>!t.group&&!t.dirty&&!t.fight&&t.seats>=g.size&&(g.targetTable===undefined||t.id===g.targetTable));if(!t)continue;t.seatings=(t.seatings||0)+1;t.group=g.id;g.table=t.id;g.state='walkTable';g.reserved=true;setDestination(g,{x:t.x+t.w/2,y:t.y+t.h+39});}resetQueuePaths();}
 
+// Grupo na fila só por causa de mesa suja: tem mesa vazia (sem ninguém sentado nem briga) que serviria, mas está suja.
+function dirtyTableFor(g){return availableTables().find(t=>t.dirty&&!t.group&&!t.fight&&t.seats>=g.size&&(g.targetTable===undefined||t.id===g.targetTable))||null;}
+const DIRTY_COMPLAIN=5,DIRTY_GIVEUP=26,DIRTY_SHOUT='Vão limpar as mesas pra gente sentar ou não, tchê!';
+// Primeiro reclamam; com a mesa ainda suja, a bodega perde reputação e alguns desistem (true: o grupo foi embora).
+function dirtyTableWait(g,dt){
+ if(g.shoutT>0)g.shoutT-=dt;
+ if(G.phase!=='open'||g.tournament||!dirtyTableFor(g)){g.dirtyWait=0;g.dirtyShoutAt=null;return false;}
+ g.dirtyWait=(g.dirtyWait||0)+dt;
+ // Um de cada vez: se outro grupo está reclamando, este espera um pouco pra não encavalar os balões.
+ if(g.dirtyWait>=(g.dirtyShoutAt??DIRTY_COMPLAIN)){if(G.groups.some(o=>o!==g&&o.shoutT>0))g.dirtyShoutAt=g.dirtyWait+3;else{g.dirtyShoutAt=g.dirtyWait+12;g.shout=DIRTY_SHOUT;g.shoutT=4.5;fxAnger(g.x,g.y-150);AudioEngine.bad();if(!g.training)teach('mesas');}}
+ if(g.training||g.dirtyWait<DIRTY_GIVEUP)return false;
+ repChange(-1);dirtyNotice();
+ if(Math.random()<.5){departGroup(g,true);return true;}
+ g.dirtyWait=DIRTY_GIVEUP-14;g.dirtyShoutAt=g.dirtyWait+3;return false;
+}
+const dirtyNote={day:0,t:-99};
+function dirtyNotice(){if(dirtyNote.day===G.day&&G.elapsed-dirtyNote.t<20)return;dirtyNote.day=G.day;dirtyNote.t=G.elapsed;floatNote('Clientes estão desistindo pois não tem mesas limpas','reminder');}
+
 function tableOrders(g){
  if(g.fixedOrders){const a=g.fixedOrders;delete g.fixedOrders;return [...a];}
  const table=G.tables.find(t=>t.id===g.table),drinks=drinkPool(),snacks=snackPool(),d=difficulty(),cards=G.event.id==='campeonato';
@@ -55,7 +73,7 @@ function tableOrders(g){
 }
 
 function customersTick(dt){for(const c of G.shop){if(c.state==='queue'){moveActor(c,dt);if(!c.complained&&atCounter(c)&&!c.path?.length&&(c.missing?!orderable(c.pid,c.grams||1):!isCampo()&&!c.training&&orderList(c).some(k=>unservable(k,k===c.pid&&c.grams||1)))){c.complained=true;c.patience=Math.min(c.patience,2.2);missingComplaint(PEOPLE[c.person]?.name,c.pid,c.x,c.y-150);}c.patience-=(c.training?0:dt)*(atCounter(c)?1:.45);if(c.patience<=0){c.state='leave';c.dest=null;setDestination(c,EXIT);repChange(c.complained?-1.5:-2.5);G.stats.lost++;resetQueuePaths();}}else moveActor(c,dt,132);}G.shop=G.shop.filter(c=>c.state!=='leave'||c.path.length);resetQueuePaths();
- for(const g of [...G.groups]){g.age+=dt;if(G.tables.find(t=>t.id===g.table)?.fight)continue;if(g.state==='tournamentMove'){moveTournamentGroup(g,dt);}else if(g.state==='wait'){moveActor(g,dt);g.waitLeft-=(g.training?0:dt)*.45;if(g.waitLeft<=0)departGroup(g,true);}else if(g.state==='walkTable'){if(moveActor(g,dt)){g.state='seated';seatDiners(g);g.seatedAt=G.elapsed;if(!G.tutorial.tableTip){G.tutorial.tableTip=true;say('Cada lugar tem seu pedido e seu prazo nos balões sobre os fregueses. Sirva com E.');}}}else if(g.state==='seated'){tickDiners(g,dt);}else if(g.state==='chat'){g.chat-=dt;if(g.chat<=0){if(g.tournament&&championshipActive()){renewTournamentOrders(g);continue;}if(G.day>=3&&g.round===0&&G.phase==='open'&&G.elapsed-(g.seatedAt||0)<85&&Math.random()<.3){addDinerRound(g);effect('Mais uma rodada!',g.x,g.y-70);}else departGroup(g);}}else moveActor(g,dt,126);}
+ for(const g of [...G.groups]){g.age+=dt;if(G.tables.find(t=>t.id===g.table)?.fight)continue;if(g.state==='tournamentMove'){moveTournamentGroup(g,dt);}else if(g.state==='wait'){moveActor(g,dt);if(dirtyTableWait(g,dt))continue;g.waitLeft-=(g.training?0:dt)*.45;if(g.waitLeft<=0)departGroup(g,true);}else if(g.state==='walkTable'){if(moveActor(g,dt)){g.state='seated';seatDiners(g);g.seatedAt=G.elapsed;if(!G.tutorial.tableTip){G.tutorial.tableTip=true;say('Cada lugar tem seu pedido e seu prazo nos balões sobre os fregueses. Sirva com E.');}}}else if(g.state==='seated'){tickDiners(g,dt);}else if(g.state==='chat'){g.chat-=dt;if(g.chat<=0){if(g.tournament&&championshipActive()){renewTournamentOrders(g);continue;}if(G.day>=3&&g.round===0&&G.phase==='open'&&G.elapsed-(g.seatedAt||0)<85&&Math.random()<.3){addDinerRound(g);effect('Mais uma rodada!',g.x,g.y-70);}else departGroup(g);}}else moveActor(g,dt,126);}
  G.groups=G.groups.filter(g=>g.state!=='leave'||g.path.length);assignTables();
 
 }

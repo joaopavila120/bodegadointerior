@@ -33,7 +33,7 @@ MISSIONS.push({ id: 'baia', get chapter() { return G?.baiaSide ? 0 : 3; }, title
   waitText: () => 'na bodega: o Mano Lima vai te procurar lá',
   direct: () => baiaCall(),
   goal: () => baiaGoal(), done: () => false,
-  reward: { cash: 80, xp: 80, rep: 3, friend: { manolima: 15 }, unlock: 'Balcão do Mano Lima: melhorias pro facão' },
+  reward: { cash: 150, xp: 80, rep: 3, friend: { manolima: 15 }, unlock: 'Balcão do Mano Lima: melhorias pro facão' },
   onDone: () => { baiaArc().stage = 'done'; baiaArc().doneDay = G.day; }, outroBy: 'manolima',
   outro: [['manolima', 'Baia! Vem cá, guria… ai, que susto tu me deu!'], ['manolima', 'Vivente, te devo essa. Onde é que ela tava metida?'],
     ['sadi', 'Numa caverna lá nos paredões da Serra. No segundo andar, no escuro… e tem bicho brabo lá embaixo, Mano.'],

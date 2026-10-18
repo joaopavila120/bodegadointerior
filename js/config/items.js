@@ -23,9 +23,9 @@ const UPGRADES=[
  {id:'bootsBagual',level:3,name:'Bota bagual',cost:320,rep:68,requires:'bootsGaucho',desc:'Velocidade permanente +25%. Substitui a bota de gaúcho.'},
  {id:'mateCuiudo',name:'Mate Cuiudo',cost:160,rep:64,desc:'Impulso de +65% durante 18 segundos.'},
  {id:'mateTopetudo',level:3,name:'Mate Topetudo',cost:360,rep:70,requires:'mateCuiudo',desc:'Impulso de +75% durante 25 segundos.'},
- {id:'mateLendario',level:5,name:'Mate Lendário',cost:650,rep:80,requires:'mateTopetudo',desc:'Impulso de +85% durante 35 segundos.'},
+ {id:'mateLendario',level:5,name:'Mate Lendário',cost:800,rep:80,requires:'mateTopetudo',desc:'Impulso de +85% durante 35 segundos.'},
  {id:'cigarro_py',level:3,name:'Cigarro do Paraguai',cost:240,rep:67,desc:'Melhora os maços da prateleira: cada venda passa de R$ 12 para R$ 18.'},
- {id:'table4',level:4,name:'Quarta mesa',cost:420,rep:74,desc:'Mais quatro lugares para o restaurante. Participa do carteado durante campeonatos.'},
+ {id:'table4',level:4,name:'Quarta mesa',cost:480,rep:74,desc:'Mais quatro lugares para o restaurante. Participa do carteado durante campeonatos.'},
  {id:'bodoque',name:'Bodoque',cost:80,rep:0,desc:'Forquilha de goiabeira com borracha de câmara. No campo, segure F (ou o botão) e solte quando o círculo sobre o quero-quero ficar verde: ele leva um susto e vai embora.'},
  {id:'placaFiado',name:'Placa “Fiado só amanhã”',cost:110,rep:0,desc:'Pendurada ao lado do balcão: bem menos fregueses pedem fiado (de 18% para 4%). Quem já tem conta continua pagando normalmente.'},
  {id:'tray',name:'Bandeja de dois lugares',cost:140,rep:60,desc:'Carregue dois itens. Selecione o espaço com 1 e 2.'},
@@ -39,7 +39,7 @@ const UPGRADES=[
  {id:'bacon',name:'Xis bacon',cost:160,rep:63,desc:'Libera bacon e uma nova receita. O bacon vem do Açougue da Fronteira.'},
  {id:'table3',level:2,name:'Terceira mesa',cost:260,rep:66,desc:'Mais uma mesa de quatro lugares no salão.'},
  {id:'grill3',level:3,name:'Terceiro espaço da chapa',cost:200,rep:65,desc:'Mais uma boca independente para cozinhar em paralelo.'},
- {id:'coracao',level:4,name:'Xis coração',cost:260,rep:70,desc:'Libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
+ {id:'coracao',level:4,name:'Xis coração',cost:300,rep:70,desc:'Libera o xis coração. O coração sai da carneação do boi, junto das mantas e do hambúrguer.'}
 ];
 const EVENTS={
  campeonato:{name:'Campeonato de truco',icon:'♠',desc:'Duas duplas por mesa entram na abertura e ficam até fechar. Os parceiros permanecem juntos, trocam de adversários e continuam pedindo petiscos e bebidas. Não há outras chegadas.',prep:'Organize e amplie as mesas antes de abrir. Reponha cerveja, cachaça, bitter e petiscos. As duplas trocam de mesa entre rodadas; pedidos pendentes vão junto. Brigas exigem 10 teclas em 24 s.'},

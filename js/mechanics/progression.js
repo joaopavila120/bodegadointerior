@@ -18,7 +18,7 @@ function nextBanner(){
 // ---------- Nível da bodega ----------
 const LEVELS=[
  {xp:0,name:'Bodega de esquina'},{xp:300,name:'Bodega do bairro'},{xp:800,name:'Venda da colônia'},
- {xp:1600,name:'Armazém de respeito'},{xp:2800,name:'Bodega afamada'},{xp:4500,name:'Referência no interior'},{xp:7000,name:'Bodega lendária'}
+ {xp:1600,name:'Armazém de respeito'},{xp:2700,name:'Bodega afamada'},{xp:4000,name:'Referência no interior'},{xp:5600,name:'Bodega lendária'}
 ];
 function bodegaLevel(xp=G.xp){let n=1;LEVELS.forEach((l,i)=>{if(xp>=l.xp)n=i+1;});return n;}
 function levelInfo(level=bodegaLevel()){return LEVELS[level-1];}

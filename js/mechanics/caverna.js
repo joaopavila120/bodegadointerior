@@ -8,16 +8,16 @@
 
 const CAVE = { cell: 80, cols: 22, rows: 14, door: { x: 1625, y: 400 }, maxHp: 100, heal: 20, deep: 10, stops: [1, 5, 10, 15, 20], start: [2, 11] };
 const CAVE_BEASTS = {
-  javali: { name: 'Javali', hp: 30, speed: 110, dmg: 14, r: 34, cash: [3, 6], from: 2, weight: 4 },
-  sanguanel: { name: 'Sanguanel', hp: 18, speed: 160, dmg: 8, r: 22, cash: [2, 5], from: 2, weight: 3 },
-  boitata: { name: 'Boitatá', hp: 40, speed: 90, dmg: 12, r: 30, cash: [5, 9], from: 5, weight: 2 },
-  lobisomem: { name: 'Lobisomem', hp: 70, speed: 150, dmg: 20, r: 34, cash: [8, 14], from: 7, weight: 2 },
-  mula: { name: 'Mula sem Cabeça', hp: 55, speed: 120, dmg: 18, r: 36, cash: [7, 12], from: 9, weight: 2 },
-  teiniagua: { name: 'Teiniaguá', hp: 26, speed: 100, dmg: 9, r: 23, cash: [4, 8], from: 3, weight: 3, behavior: 'boitata' },
-  onca: { name: 'Onça-parda', hp: 44, speed: 145, dmg: 16, r: 32, cash: [6, 10], from: 4, weight: 3, behavior: 'lobisomem' },
-  anhanga: { name: 'Anhangá', hp: 60, speed: 125, dmg: 17, r: 32, cash: [8, 13], from: 6, weight: 2, behavior: 'javali' }
+  javali: { name: 'Javali', hp: 30, speed: 110, dmg: 14, r: 34, cash: [2, 4], from: 2, weight: 4 },
+  sanguanel: { name: 'Sanguanel', hp: 18, speed: 160, dmg: 8, r: 22, cash: [1, 3], from: 2, weight: 3 },
+  boitata: { name: 'Boitatá', hp: 40, speed: 90, dmg: 12, r: 30, cash: [3, 6], from: 5, weight: 2 },
+  lobisomem: { name: 'Lobisomem', hp: 70, speed: 150, dmg: 20, r: 34, cash: [5, 9], from: 7, weight: 2 },
+  mula: { name: 'Mula sem Cabeça', hp: 55, speed: 120, dmg: 18, r: 36, cash: [5, 8], from: 9, weight: 2 },
+  teiniagua: { name: 'Teiniaguá', hp: 26, speed: 100, dmg: 9, r: 23, cash: [3, 5], from: 3, weight: 3, behavior: 'boitata' },
+  onca: { name: 'Onça-parda', hp: 44, speed: 145, dmg: 16, r: 32, cash: [4, 7], from: 4, weight: 3, behavior: 'lobisomem' },
+  anhanga: { name: 'Anhangá', hp: 60, speed: 125, dmg: 17, r: 32, cash: [5, 9], from: 6, weight: 2, behavior: 'javali' }
 };
-Object.assign(BAG_RAW, { ametista: { name: 'Ametista', icon: '◆', value: 18 }, agata: { name: 'Ágata', icon: '◆', value: 28 } });
+Object.assign(BAG_RAW, { ametista: { name: 'Ametista', icon: '◆', value: 12 }, agata: { name: 'Ágata', icon: '◆', value: 18 } });
 // Minérios são negociados apenas com São Dunstano, no refúgio.
 BAG_RAW.ametista.note = BAG_RAW.agata.note = 'São Dunstano compra no primeiro andar da caverna';
 
@@ -140,7 +140,19 @@ function buildCaveFloor(floor) {
   else if (floor > 1 && R() < .35) { const c = takeCell(5); if (c) run.chest = { ...caveCenter(...c), vo: false, open: false }; }
   return run;
 }
-function caveFloorRun() { const st = caveState(); if (!caveRun || caveRun.floor !== st.floor || caveRun.day !== G.day) { caveRun = buildCaveFloor(st.floor); caveRun.day = G.day; } return caveRun; }
+// O andar guarda o que o Sadi fez nele até o dia seguinte: bicho derrubado não volta, pedra quebrada não se refaz e baú
+// aberto fica aberto. Subir e descer de novo no mesmo dia não enche a caverna outra vez.
+function caveDayFloor(floor) { const st = caveState(); if (st.today?.day !== G.day) st.today = { day: G.day, floors: {} }; return st.today.floors[floor] ??= { beasts: [], rocks: [], chest: false }; }
+function caveApplyDay(run) {
+  run.beasts.forEach((b, i) => { b.idx = i; }); run.rocks.forEach((r, i) => { r.idx = i; }); if (run.floor < 2) return run;
+  const d = caveDayFloor(run.floor);
+  for (const i of d.beasts) if (run.beasts[i]) run.beasts[i].hp = 0;
+  for (const i of d.rocks) { const r = run.rocks[i]; if (!r) continue; r.hp = 0; if (r.ladder) run.ladder.shown = true; }
+  if (d.chest && run.chest) run.chest.open = true;
+  if (run.beasts.length && run.beasts.every(b => b.hp <= 0)) run.ladder.shown = true;
+  return run;
+}
+function caveFloorRun() { const st = caveState(); if (!caveRun || caveRun.floor !== st.floor || caveRun.day !== G.day) { caveRun = caveApplyDay(buildCaveFloor(st.floor)); caveRun.day = G.day; } return caveRun; }
 function caveWall(x, y) { const cx = Math.floor(x / CAVE.cell), cy = Math.floor(y / CAVE.cell); return caveFloorRun().grid[cy]?.[cx] !== 0; }
 function caveFree(x, y, pad = 30) { if (caveWall(x, y)) return false; for (const r of caveFloorRun().rocks) if (r.hp > 0 && Math.hypot(r.x - x, r.y - y) < pad) return false; return true; }
 
@@ -284,7 +296,8 @@ function caveAttack() {
   if (stone) AudioEngine.caveStone();
 }
 function caveKill(b) {
-  const run = caveFloorRun(), B = CAVE_BEASTS[b.kind], [lo, hi] = B.cash, cash = lo + Math.floor(Math.random() * (hi - lo + 1)) + Math.floor(run.floor / 3);
+  if (b.idx != null) caveDayFloor(caveFloorRun().floor).beasts.push(b.idx);
+  const run = caveFloorRun(), B = CAVE_BEASTS[b.kind], [lo, hi] = B.cash, cash = lo + Math.floor(Math.random() * (hi - lo + 1)) + Math.floor(run.floor / 4);
   run.drops.push({ x: b.x, y: b.y, k: 'moeda', q: cash }); if (Math.random() < .12) run.drops.push({ x: b.x + 20, y: b.y + 8, k: 'pinhao', q: 1 });
   const smoke = { boitata: '#ff9a40', sanguanel: '#b8a8d8', lobisomem: '#5a4a3a', mula: '#ffb060' }[b.kind] || '#8a7a6a';
   fxPuffs(b.x, b.y - 30, 12, 140, smoke); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18); G.stats.caveKills = (G.stats.caveKills || 0) + 1; caveTripNow().kills++;
@@ -292,7 +305,7 @@ function caveKill(b) {
 }
 const CAVE_ROCK_LOOT = { ametista: 'Ametista!', agata: 'Ágata!', pinhao: 'Pinhão: recupera a vida' };
 function caveBreak(r) {
-  const run = caveFloorRun(); AudioEngine.caveCrumble(); fxPuffs(r.x, r.y - 16, 9, 110, '#8a7d70');
+  const run = caveFloorRun(); if (r.idx != null) caveDayFloor(run.floor).rocks.push(r.idx); AudioEngine.caveCrumble(); fxPuffs(r.x, r.y - 16, 9, 110, '#8a7d70');
   for (let i = 0; i < 8; i++) fxAdd('shard', r.x, r.y - 14, { vx: fxRand(-170, 170), vy: fxRand(-220, -80), g: 640, life: fxRand(.6, 1), size: fxRand(4, 8), vr: fxRand(-14, 14), floor: r.y + fxRand(2, 18), color: pick(['#6a5e52', '#7d7064', '#54473a']) });
   if (r.loot) { run.drops.push({ x: r.x, y: r.y, k: r.loot, q: 1 }); if (r.loot === 'pinhao') effect(CAVE_ROCK_LOOT.pinhao, r.x, r.y - 60, '#d8ffac', 17); else AudioEngine.caveGem(); }
   if (r.ladder) { run.ladder.shown = true; run.ladderPing = 2.5; AudioEngine.caveLadder(); effect('Uma escada embaixo da pedra!', r.x, r.y - 90, '#fff2b0', 18); }
@@ -374,7 +387,7 @@ function caveChestLoot(loot) {
   loot.cards = (loot.cards || []).filter(c => giveCard(c, 'caverna')); t.cards.push(...loot.cards); return loot;
 }
 function caveChest() {
-  const run = caveFloorRun(), c = run.chest; if (!c || c.open) return; c.open = true; AudioEngine.caveChestOpen(); fxStars(c.x, c.y - 50, 6);
+  const run = caveFloorRun(), c = run.chest; if (!c || c.open) return; c.open = true; caveDayFloor(run.floor).chest = true; AudioEngine.caveChestOpen(); fxStars(c.x, c.y - 50, 6);
   if (c.vo) {
     caveState().vo = true; const card = randomLooseCard(), loot = caveChestLoot({ cash: 120, ametista: 3, cards: card ? [card] : [] }); save();
     talk([['card', `<b>🧰 O baú do vô</b><br>Lá no fundo da caverna, um baú de couro com as iniciais do vô gravadas na tampa. Dentro, moedas antigas, ametistas${loot.cards.length ? ', uma figurinha' : ''} e um bilhete.${caveLootHTML(loot)}<i>“Se tu chegou até aqui, guri, é porque tem coragem. Agora sobe, que a bodega não abre sozinha.”</i>`, 'Andar ' + run.floor],
@@ -382,7 +395,7 @@ function caveChest() {
     return;
   }
   const gem = run.floor > 10 ? 'agata' : 'ametista', card = Math.random() < .5 ? randomLooseCard() : null;
-  const loot = caveChestLoot({ cash: 15 + Math.floor(Math.random() * 25) + run.floor * 2, [gem]: 1 + (Math.random() < .3 ? 1 : 0), heal: Math.random() < .35 ? 25 : 0, cards: card ? [card] : [] }); save();
+  const loot = caveChestLoot({ cash: 10 + Math.floor(Math.random() * 21) + Math.round(run.floor * 1.5), [gem]: 1 + (Math.random() < .3 ? 1 : 0), heal: Math.random() < .35 ? 25 : 0, cards: card ? [card] : [] }); save();
   talk([['card', `<b>🧰 Baú do andar ${run.floor}</b><br>Um baú velho de tropeiro, meio enterrado na pedra. Dentro tinha:${caveLootHTML(loot)}${loot.heal ? '<small>Tinha um cantil de água fresca: +' + loot.heal + ' de vida.</small>' : ''}`, 'Achou um baú']], null, 'Guardar');
 }
 

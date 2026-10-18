@@ -29,7 +29,10 @@ const STAFF_DEFAULT = { wage: 26, speed: 1, note: 'dá conta do recado' };
 function staffTrait(i) { return STAFF_TRAITS[PEOPLE[i]?.id] || STAFF_DEFAULT; }
 function staffState() { G.staff ??= {}; for (const r of Object.keys(G.staff)) if (!PEOPLE[G.staff[r]?.person] || PEOPLE[G.staff[r].person].removed) delete G.staff[r]; return G.staff; }
 function staffIds() { return Object.values(G.staff || {}).map(s => s.person); }
-function staffWages() { return Object.values(staffState()).reduce((n, s) => n + staffTrait(s.person).wage, 0); }
+// Salário acompanha a bodega: 60% no nível 1, mais 10% por nível até o cheio no nível 5. O Valter, que é de casa,
+// cobra a metade na primeira semana dos ajudantes.
+function staffWage(i) { const full = staffTrait(i).wage * Math.min(1, .6 + .1 * (bodegaLevel() - 1)), deal = PEOPLE[i]?.id === 'valter' && G.staffUnlockedDay != null && G.day - G.staffUnlockedDay < 7; return Math.round(full * (deal ? .5 : 1)); }
+function staffWages() { return Object.values(staffState()).reduce((n, s) => n + staffWage(s.person), 0); }
 function staffCandidates() { return specialPeople().filter(i => !PEOPLE[i].removed).sort((a, b) => (G.friends[b] || 0) - (G.friends[a] || 0)); }
 // Tempo de cada atendimento: o jeito de cada um e a prática dos dias de casa (até 30% mais rápido).
 function staffTime(s, base) { return base * staffTrait(s.person).speed * Math.max(.7, 1 - (s.days || 0) * .03); }
@@ -49,10 +52,10 @@ function staffWrong(s, w, t, who, x, y, wait) {
 function staffMenu() {
   const st = staffState(), box = $('dialogContent').closest('.dialog'), keep = modal === 'staff' ? box.scrollTop : 0;
   const slot = r => { const s = st[r], R = STAFF_ROLES[r]; if (!s) return `<div class="supply"><span class="icon"><span class="bag-emoji">${R.icon}</span></span><div><b>${R.name} · vaga aberta</b><p>${R.job}.</p></div></div>`;
-    const t = staffTrait(s.person); return `<div class="supply"><span class="icon">${portraitHTML(s.person, 48)}</span><div><b>${R.name} · ${escapeHTML(PEOPLE[s.person].name)}</b><p>${money(t.wage)} por dia aberto · ${s.days || 0} dia${s.days === 1 ? '' : 's'} de casa · ${t.note}</p></div><button data-act="staffFire" data-id="${r}">Dispensar</button></div>`; };
+    const t = staffTrait(s.person); return `<div class="supply"><span class="icon">${portraitHTML(s.person, 48)}</span><div><b>${R.name} · ${escapeHTML(PEOPLE[s.person].name)}</b><p>${money(staffWage(s.person))} por dia aberto · ${s.days || 0} dia${s.days === 1 ? '' : 's'} de casa · ${t.note}</p></div><button data-act="staffFire" data-id="${r}">Dispensar</button></div>`; };
   const cand = staffCandidates().filter(i => !staffIds().includes(i)).map(i => {
     const f = Math.floor(G.friends[i] || 0), ok = f >= HIRE_AT, t = staffTrait(i);
-    return `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${escapeHTML(PEOPLE[i].name)}</b><p>${ok ? money(t.wage) + ' por dia · ' + t.note : 'Amizade ' + f + '/' + HIRE_AT}</p></div>${ok ? Object.keys(STAFF_ROLES).map(r => `<button data-act="staffHire" data-id="${r}:${PEOPLE[i].id}" ${st[r] ? 'disabled' : ''}>${STAFF_ROLES[r].name}</button>`).join('') : '<button disabled>Ainda não topa</button>'}</div>`;
+    return `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${escapeHTML(PEOPLE[i].name)}</b><p>${ok ? money(staffWage(i)) + ' por dia · ' + t.note : 'Amizade ' + f + '/' + HIRE_AT}</p></div>${ok ? Object.keys(STAFF_ROLES).map(r => `<button data-act="staffHire" data-id="${r}:${PEOPLE[i].id}" ${st[r] ? 'disabled' : ''}>${STAFF_ROLES[r].name}</button>`).join('') : '<button disabled>Ainda não topa</button>'}</div>`;
   }).join('');
   openDialog('Ajudantes', `<p>Amigos com amizade ${HIRE_AT} ou mais topam trabalhar na bodega. O salário sai no fechamento de cada dia aberto.</p><h3>Na bodega</h3><div class="store-list">${Object.keys(STAFF_ROLES).map(slot).join('')}</div><h3>Quem pode trabalhar</h3><div class="store-list">${cand || '<p class="small-note">Todo mundo que é amigo já está trabalhando.</p>'}</div><div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`, 'staff');
   box.scrollTop = keep;
@@ -72,7 +75,7 @@ function contactHireMenu(i) {
   const st = staffState(), t = staffTrait(i), f = Math.floor(G.friends[i] || 0), ok = f >= HIRE_AT;
   const role = r => { const R = STAFF_ROLES[r], s = st[r]; return `<div class="supply"><span class="icon"><span class="bag-emoji">${R.icon}</span></span><div><b>${R.name}</b><p>${R.job}.${s ? ' <b>Vaga ocupada por ' + escapeHTML(PEOPLE[s.person].name) + '.</b>' : ''}</p></div><button class="primary" data-act="contactHireRole" data-id="${r}:${p.id}" ${s || !ok ? 'disabled' : ''}>Contratar como ${R.name.toLowerCase()}</button></div>`; };
   togglePhone(false);
-  openDialog('Contratar ' + p.name, `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${escapeHTML(p.name)}</b><p>${ok ? money(t.wage) + ' por dia aberto · ' + t.note : 'Ainda não topa: amizade ' + f + '/' + HIRE_AT + '.'}</p></div></div><h3>Pra que você quer contratar?</h3><div class="store-list">${Object.keys(STAFF_ROLES).map(role).join('')}</div><p class="small-note">O salário sai no fechamento de cada dia aberto. Dá pra trocar a equipe também no caixa do balcão.</p><div class="actions"><button data-act="contactsBack">Voltar aos contatos</button><button data-act="close">Fechar</button></div>`, 'contactHire');
+  openDialog('Contratar ' + p.name, `<div class="supply"><span class="icon">${portraitHTML(i, 48)}</span><div><b>${escapeHTML(p.name)}</b><p>${ok ? money(staffWage(i)) + ' por dia aberto · ' + t.note : 'Ainda não topa: amizade ' + f + '/' + HIRE_AT + '.'}</p></div></div><h3>Pra que você quer contratar?</h3><div class="store-list">${Object.keys(STAFF_ROLES).map(role).join('')}</div><p class="small-note">O salário sai no fechamento de cada dia aberto. Dá pra trocar a equipe também no caixa do balcão.</p><div class="actions"><button data-act="contactsBack">Voltar aos contatos</button><button data-act="close">Fechar</button></div>`, 'contactHire');
 }
 function contactHireRole(arg) { staffHire(arg, contactsBack); }
 function contactFire(i) { const r = staffRoleOf(Number(i)); if (r) staffFire(r, renderPhone); }
@@ -248,7 +251,7 @@ function staffIntroDue() {
 }
 function staffIntroTick() {
   if (G.staffUnlocked || !G.missions || prologueActive() || tutorialActive() || worldOut || !staffIntroDue() || !storyCalm()) return;
-  G.staffUnlocked = true;
+  G.staffUnlocked = true; G.staffUnlockedDay = G.day;
   // O Valter é de casa: já começa com amizade pra ser contratado.
   const vi = PEOPLE.findIndex(p => p.id === 'valter'); if (vi >= 0) G.friends[vi] = Math.max(G.friends[vi] || 0, HIRE_AT);
   save();
@@ -259,9 +262,9 @@ function staffIntroTick() {
     { say: 'valter', text: 'Mas ninguém trabalha de graça, hein: cada um tem o seu salário, pago no fim de cada dia de bodega aberta.' },
     { say: 'sadi', text: 'E como eu chamo alguém?' },
     { say: 'valter', text: 'No caixa, em Ajudantes, ou pelos Contatos do celular. Quanto mais amizade, mais gente topa.' },
-    { say: 'valter', text: 'E se quiser, o primeiro já tá aqui: eu conheço cada freguês pelo nome. É só me chamar no caixa, hehe.' },
+    { say: 'valter', text: 'E se quiser, o primeiro já tá aqui: eu conheço cada freguês pelo nome. Na primeira semana eu cobro a metade, que sou de casa, hehe.' },
     { walk: 'valter', to: { x: ENTRY.x, y: ENTRY.y } }], 'ajudantes',
-    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão (ou em Contatos, no celular): contrate um <b>balconista</b> (atende tudo do balcão, até o café), um <b>garçom</b> (leva às mesas bebidas, café, petiscos e os lanches prontos, e limpa as mesas) e um <b>chapeiro</b> (faz o xis e a torrada). Só os amigos topam (amizade ${HIRE_AT}+): o <b>Valter</b> já topa. O salário sai no fechamento de cada dia aberto. A roça continua contigo.`, 'Novidade na bodega']], null, 'Entendi'));
+    () => talk([['card', `<b>👥 Ajudantes</b><br>No caixa do balcão (ou em Contatos, no celular): contrate um <b>balconista</b> (atende tudo do balcão, até o café), um <b>garçom</b> (leva às mesas bebidas, café, petiscos e os lanches prontos, e limpa as mesas) e um <b>chapeiro</b> (faz o xis e a torrada). Só os amigos topam (amizade ${HIRE_AT}+): o <b>Valter</b> já topa. O salário sai no fechamento de cada dia aberto e acompanha o nível da bodega (começa em 60%). A roça continua contigo.`, 'Novidade na bodega']], null, 'Entendi'));
 }
 
 // ---------- Ligações ----------

@@ -125,6 +125,21 @@
     else{check(modal==='farmGame','soltar o filhote do laço e ficar quieto');let k=0;while(farmGame&&k++<200){const s=farmStage();if(s.kind==='alternate')farmGameKey(k%2?'a':'d');else{farmGame.pos=(s.zone[0]+s.zone[1])/2;farmGameKey('e');}}}
     check(G.relics?.[FOLK[id].relic],'vencendo, a lembrança vai pra estante: '+FOLK[id].relic);talkAll();}
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
+  // ---------- economia (docs/plano-economia.md) ----------
+  {G.cave={facao:true,floor:1,deepest:20,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
+   enterCave(3);closeDialog(true);talkAll();let run=caveFloorRun();const b=run.beasts[0],r=run.rocks[0];b.hp=0;caveKill(b);r.hp=0;caveBreak(r);
+   caveLeave();closeDialog(true);talkAll();enterCave(3);closeDialog(true);talkAll();run=caveFloorRun();
+   check(run.beasts[0].hp<=0&&run.rocks[0].hp<=0&&run.beasts.slice(1).some(x=>x.hp>0),'a caverna guarda o dia: bicho derrubado e pedra quebrada não voltam ao descer de novo');
+   G.day++;caveRun=null;run=caveFloorRun();check(run.beasts.every(x=>x.hp>0)&&run.rocks.every(x=>x.hp>0),'no outro dia, o andar volta inteiro');G.day--;caveRun=null;caveLeave();closeDialog(true);talkAll();
+   check(CAVE_BEASTS.javali.cash[1]<=4&&CAVE_ORES.ouro.value===40&&BAG_RAW.ametista.value===12,'caverna paga menos moeda e o minério vendido vale menos');}
+  {const xp=G.xp;G.xp=0;check(price('xis_salada')===22&&fameBonus()===1,'nível 1: preço de tabela');
+   G.xp=LEVELS[3].xp;check(bodegaLevel()===4&&price('xis_salada')===24.5&&price('cerveja')===9,'fama da bodega: +4% por nível (no nível 4, o xis sai a R$ 24,50)');
+   const vi=PEOPLE.findIndex(p=>p.id==='valter'),gi=PEOPLE.findIndex(p=>p.id==='guri');G.xp=0;check(staffWage(gi)===Math.round(STAFF_TRAITS.guri.wage*.6),'salário de ajudante no nível 1: 60%');
+   G.xp=LEVELS[4].xp;check(staffWage(gi)===STAFF_TRAITS.guri.wage,'no nível 5, o salário cheio');
+   G.staffUnlockedDay=G.day;check(staffWage(vi)===Math.round(STAFF_TRAITS.valter.wage*.5),'o Valter cobra a metade na primeira semana');G.staffUnlockedDay=G.day-7;check(staffWage(vi)===STAFF_TRAITS.valter.wage,'depois, o salário dele');
+   G.xp=0;const j1=MAP_EVENTS.javali.reward.cash;G.xp=LEVELS[2].xp;check(j1===90&&MAP_EVENTS.javali.reward.cash===110,'eventos do mapa pagam 10% a mais por nível');
+   check(LEVELS.at(-1).xp===5600&&MISSIONS.find(m=>m.id==='lendaria').reward.cash===1000&&MISSIONS.find(m=>m.id==='gaita').reward.cash===250,'níveis mais perto e capítulos que pagam');G.xp=xp;}
+  {worldOut=null;goInside();G.phase='open';G.openedDay=G.day;G.elapsed=DAY;G.shop=[];G.groups=[];G.stats=stats(G.cash);G.stats.served=12;finishDay(true);while(scene)sceneSkip();check(G.report.xp>=12,'o dia dá 1 XP por freguês atendido, além do lucro');closeDialog(true);G.tvAwardPending=false;closeDialog(true);G.phase='prep';G.report=null;}
   // ---------- quero-queros no mundo aberto ----------
   {goInside();G.phase='prep';G.report=null;goOutside();const count={vila:0,serra:0,sc:0};let day=0,open=true;
    for(const map of Object.keys(count))for(let d=200;d<300;d++){G.day=d;switchMap({map,x:1500,y:900});closeDialog(true);const b=qqBirds();if(b.length){count[map]++;open=open&&b.every(q=>WORLD_MAPS[map].canWalk(q.x,q.y));if(map==='vila'&&!day)day=d;}}

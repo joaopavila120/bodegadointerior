@@ -14,6 +14,7 @@ function caixaMenu(){
  if(G.phase==='prep'){
   note=G.event.noCostelao?'<p class="small-note">🔥 Sem costelão hoje: falta manta, boi e dinheiro. O domingo vira um dia normal.</p>':`<p class="small-note">💡 ${e.prep}</p>`;
   if(!tut){const b=loyalNext();note+=b?`<p class="small-note">🤝 Freguesia fiel: abrindo hoje, +${money(b)} no fechamento.</p>`:'';}
+  if(!tut&&bodegaLevel()>1)note+=`<p class="small-note">⭐ Fama da bodega (nível ${bodegaLevel()}): tudo vende ${Math.round((fameBonus()-1)*100)}% mais caro.</p>`;
   btn.push('<button class="primary" data-act="caixaOpen">Abrir a bodega</button>');if(!tut)btn.push('<button data-act="caixaSleep">Dormir (passar para o próximo dia)</button>');
  }else if(G.phase==='open'){const fila=G.shop.filter(c=>c.state==='queue').length+G.groups.length;note='<p>Expediente aberto. '+(tut?'Hoje o expediente termina sozinho depois das lições.':'Encerrar fecha as portas: quem já chegou ainda é atendido'+(fila?' ('+fila+(fila>1?' fregueses esperando)':' freguês esperando)'):'')+'.')+'</p>';if(!tut)btn.push('<button class="primary" data-act="caixaClose">Encerrar o expediente</button>');}
  else if(G.phase==='closing'){note='<p>Portas fechadas: atenda quem já chegou, ou encerre de vez.</p>';btn.push('<button class="danger" data-act="caixaClose">Encerrar agora (cancela os pedidos)</button>');}

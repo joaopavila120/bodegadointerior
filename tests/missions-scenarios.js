@@ -56,7 +56,7 @@
   goOutside();switchMap({map:'serra',x:hb.x,y:hb.y+60});closeDialog(true);worldOut.x=hb.x;worldOut.y=hb.y;interact();for(let k=0;k<3&&!missionActive('queijo');k++){talkAll();tick(3);}check(worldOut.map==='casa:badin'&&missionActive('queijo'),'capítulo 6: na casa dele, o Badin pede o queijo pra nona');
   worldOut.x=home.x;worldOut.y=home.y;interact();talkAll();if(modal!=='quest')interact();check(modal==='quest'&&$('dialogTitle').textContent.includes('Queijo pra nona')&&$('dialogContent').textContent.includes('Recompensa'),'o pedido mostra o que levar e a recompensa');
   G.stock.queijo=10;showQuest(badin);const cash=G.cash;action('questDeliver',String(badin));
-  check(G.cash-cash===50&&!G.stock.queijo&&modal==='talk'&&$('dialogContent').textContent.includes('Badin'),'entregue o queijo: R$ 50 e o agradecimento é do próprio Badin');talkAll();
+  check(G.cash-cash===120&&!G.stock.queijo&&modal==='talk'&&$('dialogContent').textContent.includes('Badin'),'entregue o queijo: R$ 120 e o agradecimento é do próprio Badin');talkAll();
   check(missionDone('queijo')&&G.badinShop&&G.up.salame&&!STORE_GOODS.acougue.includes('salame'),'duas missões do Badin: ele passa a vender salame (que saiu do açougue e das melhorias)');
   for(let k=0;k<3&&!missionActive('festa');k++){tick(3);talkAll();}check(missionActive('festa'),'capítulo 7, ali mesmo: o baile da comunidade');
   {const h=()=>WORLD_MAPS['casa:badin'].spots().find(s=>s.id==='home:badin'),c0=G.cash;G.cash=FESTA_DONATION-1;check(/Doar/.test(h().label),'o Badin pede a doação pro baile');worldOut.x=h().x;worldOut.y=h().y;interact();talkAll();check(festaState().donated==null&&G.cash===FESTA_DONATION-1,'sem os R$ 100, não dá pra doar');
@@ -114,7 +114,7 @@
   check(worldWalkers.some(w=>w.kind==='minor'&&!isSpecial(w.person)),'personagens menores, sem casa, também andam pela rua');
   check(WORLD_MAPS.vila.residents.some(id=>atHome(id))&&WORLD_MAPS.vila.residents.some(id=>worldWalkers.some(w=>PEOPLE[w.person].id===id)),'uns moradores ficam em casa, outros andam pela rua');
   {const day0=G.day;let who=null;for(let d=day0;d<day0+300&&who===null;d++){G.day=d;const i=PEOPLE.map((p,i)=>i).find(i=>isSpecial(i)&&wanderMap(i)==='vila');if(i!==undefined)who=i;}
-   check(who!==null&&homeRegion(who)!=='vila','raramente alguém de outra região passa o dia na Fronteira');worldWalkersKey='';walkersTick(.05);const w=worldWalkers.find(w=>w.person===who);
+   check(who!==null&&homeRegion(who)!=='vila','raramente alguém de outra região passa o dia na Fronteira');G.shop=[];G.groups=[];G.phase='prep';worldWalkersKey='';walkersTick(.05);const w=worldWalkers.find(w=>w.person===who);
    G.metOutside={...(G.metOutside||{}),[questKey(PEOPLE[who].id)]:1};G.worldTalks=null;worldTalk(w);check(rpgBoxes.worldTalk.parts[0].text.includes('pelas bandas da Fronteira'),'e o Sadi pergunta o que ele faz por aquelas bandas');showRpgBox('worldTalk',null);G.day=day0;}
   // Gaudêncio fora do jogo; Casona só com o andar de cima; Dianho com a bandeira da Irlanda do Norte
   {const gi=PEOPLE.findIndex(p=>p.id==='gaudencio');check(!isSpecial(gi)&&!visitorPool().includes(gi)&&!WORLD_MAPS['casa:gaudencio']&&!WORLD_MAPS.serra.spots().some(s=>s.house==='gaudencio'),'o Gaudêncio saiu do jogo (o retrato fica só nas imagens)');}
@@ -348,10 +348,10 @@
    const good=()=>GEMEOS_ROUNDS[gemeosRound.set][gemeosRound.n].a.findIndex(a=>a[2]),bad=()=>GEMEOS_ROUNDS[gemeosRound.set][gemeosRound.n].a.findIndex(a=>!a[2]),skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
    check(gemeosReady()&&trackerLines().some(t=>/Casona/.test(t.goal))&&mainArcPending('marcio'),'os gêmeos brigaram: o painel manda passar na Casona (e os pedidos deles esperam)');
    worldOut=null;goOutside();switchMap({map:'casa:marcio',x:700,y:840});talkAll();skipWorldTalk();for(let i=0;i<4;i++)simulate(.05);check(scene?.id==='gemeos-1'&&scene.steps.some(s=>s.view==='world'),'a briga acontece dentro da Casona de verdade');skip();talkAll();
-   check(gemeosStage()===1&&gemeosFighting()&&/opalas/.test(trackerLines().map(t=>t.goal).join()),'o Márcio pede 5 opalas da caverna pro anel da brigadiana');
+   check(gemeosStage()===1&&gemeosFighting()&&/opalas/.test(gemeosTracker()?.goal),'o Márcio pede 5 opalas da caverna pro anel da brigadiana');
    check(buildCaveFloor(5).rocks.every(r=>r.loot!=='opala')&&[...Array(15).keys()].map(k=>k+6).some(f=>buildCaveFloor(f).rocks.some(r=>r.loot==='opala')),'opala só aparece do andar 6 pra baixo');
    bagAdd('opala',GEMEOS_OPALAS);caveState().floor=1;caveRun=null;switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();check(/forjaAnel/.test($('dialogContent').innerHTML),'com as opalas, São Dunstano oferece o anel na ferraria');
-   action('forjaAnel');talkAll();check(gemeosStage()===2&&!bagQty('opala')&&/Marcelo/.test(trackerLines().map(t=>t.goal).join()),'anel pronto: agora achar o Marcelo');
+   action('forjaAnel');talkAll();check(gemeosStage()===2&&!bagQty('opala')&&/Marcelo/.test(gemeosTracker()?.goal),'anel pronto: agora achar o Marcelo');
    switchMap({map:'serra',x:GEMEOS_CAMPINHO.x,y:GEMEOS_CAMPINHO.y+90});closeDialog(true);for(let d=0;d<6;d++){G.day++;spawnWalkers(WORLD_MAPS.serra);check(!worldWalkers.some(w=>PEOPLE[w.person].id==='marcelo'),'brigado, o Marcelo não passeia pela Serra (dia '+G.day+')');}const m=WORLD_MAPS.serra.spots().find(s=>s.id==='gemeos:marcelo');check(m&&WORLD_MAPS.serra.canWalk(m.x,m.y)&&!atHome('marcelo'),'o Marcelo no campinho da Serra');
    worldOut.x=m.x;worldOut.y=m.y;interact();check(scene?.id==='gemeos-2'&&scene.world?.map==='serra','cena do campinho');skip();check(modal==='gemeosChoice'&&document.querySelectorAll('#dialogContent .choice').length===3,'escolha de falas');
    for(let k=0;k<GEMEOS_PATIENCE;k++)action('gemeosChoice',String(bad()));check(gemeosState().tired===G.day&&modal==='talk','errou demais: ele cansa');talkAll();

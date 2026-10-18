@@ -15,7 +15,9 @@ const freeHand = () => !held();
 const pick = values => values[Math.floor(Math.random() * values.length)];
 const unlocked = key => !GOODS[key]?.unlock || !!G.up[GOODS[key].unlock];
 const capacity = () => G.up.capacity ? 30 : 18;
-const price = key => key === 'cigarro' && G.up.cigarro_py ? 18 : RECIPES[key]?.price || GOODS[key]?.price || 0;
+// Fama da bodega: cada nível acima do primeiro deixa o preço de venda 4% maior (arredondado em R$ 0,50).
+function fameBonus() { return 1 + .04 * (Math.max(1, G ? bodegaLevel() : 1) - 1); }
+const price = key => { const base = key === 'cigarro' && G.up.cigarro_py ? 18 : RECIPES[key]?.price || GOODS[key]?.price || 0, v = base * fameBonus(); return v === base ? base : Math.round(v * 2) / 2; };
 const nameOf = key => key === 'cigarro' && G.up.cigarro_py ? 'Cigarro do Paraguai' : RECIPES[key]?.name || GOODS[key]?.name || key;
 
 function bulk(k){return BULK[k]||null;}

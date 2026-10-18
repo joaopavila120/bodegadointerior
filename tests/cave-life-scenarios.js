@@ -20,8 +20,8 @@
     check(!dunstanSell('ametista:all'),'Venda não funciona fora da janela de negociação');
     dunstanTalk();check(worldTalkOpen()&&!!$('dunstanTradeButton')&&hasCard('dunstano'),'Santo conversa, oferece negociação e entrega sua carta');
     action('dunstanShop');check(modal==='dunstanShop'&&!worldTalkOpen(),'Botão da conversa abre a ferraria');
-    action('dunstanSell','ametista:1');check(bagQty('ametista')===2&&G.cash===cash+18,'Venda unitária paga o mineral correto');
-    action('dunstanSell','agata:all');check(!bagQty('agata')&&G.cash===cash+74,'Venda de todas as ágatas');
+    action('dunstanSell','ametista:1');check(bagQty('ametista')===2&&G.cash===cash+BAG_RAW.ametista.value,'Venda unitária paga o mineral correto');
+    action('dunstanSell','agata:all');check(!bagQty('agata')&&G.cash===cash+BAG_RAW.ametista.value+2*BAG_RAW.agata.value,'Venda de todas as ágatas');
     const paid=G.cash;action('dunstanSell','agata:all');check(G.cash===paid,'Duplo clique não duplica pagamento');
     facaoBuy('dash');const price=CAVE_UPGRADES.find(u=>u.id==='dash').cost;
     check(caveUp('dash')&&G.cash===paid-price,'São Dunstano vende a esquiva');

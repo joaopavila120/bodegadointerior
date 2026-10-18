@@ -1,8 +1,8 @@
 # Plano de rebalanceamento da economia
 
-Este é o plano, com os números atuais medidos no jogo e os valores propostos. Só o teto do desejo do Saci já foi aplicado; o resto espera aprovação.
+O plano está **aplicado no jogo**. A seção 1 mostra os números de antes, e a seção 5 os medidos depois das mudanças.
 
-## 1. Como está hoje
+## 1. Como estava antes
 
 ### Um dia de bodega
 
@@ -37,14 +37,14 @@ Este é o valor de limpar um andar inteiro (bichos, pedras e baú), na média de
 - **Melhorias da Ferragem:** R$ 4.450 no total. Decoração: R$ 1.335. Equipamento da caverna: R$ 2.060.
 - **Armas da forja:** R$ 1.220, mais o minério. Cavalo: R$ 900.
 
-## 2. O que está desbalanceado
+## 2. O que estava desbalanceado
 
 1. **A caverna não tem fim.** Cada vez que o Sadi entra, o andar volta inteiro: os bichos, as pedras e o baú. Isso acontece porque `enterCave` zera `caveRun`, e o andar é sorteado só pelo número dele e pelo dia. Além disso, depois de fechar a bodega o relógio para em 23h30, então de noite dá para repetir o andar 2 quantas vezes quiser. Cada volta paga uns R$ 118, mais que um dia inteiro de bodega no começo. Com isso, dá para comprar tudo em poucas noites e a progressão some.
 2. **A caverna paga mais que a bodega.** Um andar fundo vale quase dois dias de expediente no fim do jogo. O minério vendido é a maior parte disso: ouro sai a R$ 60 e opala a R$ 35.
 3. **As missões pagam pouco.** Um capítulo inteiro paga menos que um andar da caverna, e três capítulos do fim não pagam nada.
 4. **Os ajudantes custam caro no começo.** Agora o Valter oferece ajudante já na primeira noite do capítulo 2, mas um ajudante a R$ 24–30 por dia leva de 25% a 35% do lucro dessa fase.
 5. **O XP da bodega é pequeno.** São de 0 a 64 XP por dia contra degraus de 300 → 800 → 1.600 → 2.800 → 4.500 → 7.000. Até o nível 5 as conquistas e missões compensam (estimativa: N4 perto do dia 14, N5 perto do dia 21). Depois disso as conquistas acabam e os níveis 6 e 7 viram repetição: a lendária só chegaria perto do dia 65.
-6. **O desejo do Saci podia valer demais.** A "melhoria de graça" sorteava uma de até R$ 650 (já corrigido, ver 4.4).
+6. **O desejo do Saci podia valer demais.** A "melhoria de graça" sorteava uma de até R$ 650.
 
 ## 3. Metas
 
@@ -53,7 +53,7 @@ Este é o valor de limpar um andar inteiro (bichos, pedras e baú), na média de
 - **Ritmo de nível:** N2 no dia 3–4, N3 no 8, N4 no 14 (libera a gaita), N5 no 22 (o baú), N6 no 32 e N7 no 45.
 - **Compras grandes:** o cavalo custa de 4 a 6 dias de lucro de quando o jogador costuma comprar. A melhor espada pede cerca de uma semana de caverna mais bodega.
 
-## 4. Mudanças propostas
+## 4. Mudanças (aplicadas)
 
 ### 4.1 Caverna (a mais importante)
 
@@ -109,21 +109,33 @@ O que a forja pede de minério não muda: vender vira o destino do que sobra. Re
 - **Melhorias da Ferragem:** quase todas ficam iguais. Só as do fim sobem: Mate Lendário 650 → 800, Quarta mesa 420 → 480, Xis coração 260 → 300.
 - **Cavalo crioulo:** fica em R$ 900, porque agora está na Ferragem e o jogador costuma comprar no meio do jogo.
 - **Equipamento da caverna e bolicho:** ficam iguais. Com menos moeda lá embaixo, o bolicho passa a pesar na decisão.
-- **Desejo do Saci (já aplicado):** a melhoria de graça só sorteia uma de até R$ 120 + R$ 40 por nível. O dinheiro continua R$ 100 + R$ 40 por nível acima do 1.
+- **Desejo do Saci:** a melhoria de graça só sorteia uma de até R$ 120 + R$ 40 por nível. O dinheiro continua R$ 100 + R$ 40 por nível acima do 1.
 
-## 5. Como fica (estimativa com as mudanças)
+## 5. Como ficou (medido depois das mudanças)
 
-| Fase | Bodega por dia (jogador sozinho) | Uma descida na caverna | Missões e eventos por semana |
-|---|---|---|---|
-| Começo (N1–2) | R$ 85–120 | R$ 80–150 (andares 2–3) | R$ 200–300 |
-| Meio (N3–4) | R$ 170–260 | R$ 250–450 (andares 4–8) | R$ 300–450 |
-| Fim (N5–7) | R$ 290–380 | R$ 600–900 (andares 10–16, uma vez por dia) | R$ 400–600 |
+Mesma simulação da seção 1. O lucro está sem salários, e o XP do dia já soma o freguês atendido.
 
-## 6. Ordem de implementação e teste
+| Fase (dia · nível) | Lucro rápido | Lucro normal | XP do dia | Salário de 3 ajudantes |
+|---|---|---|---|---|
+| Começo (dia 4 · N2) | R$ 87–99 | R$ 96 | 28–32 | R$ 57 (era 81) |
+| Meio (dia 14 · N4) | R$ 218 | R$ 213 | 68–75 | R$ 73 (era 81) |
+| Fim (dia 34 · N7) | R$ 369–415 | R$ 282 | 87–131 | R$ 81 |
 
-1. **Caverna:** o andar guarda o estado do dia e os valores novos. Teste: entrar de novo no mesmo andar no mesmo dia não dá moeda nem minério.
-2. **Bodega:** preço por nível, XP por freguês e degraus de nível. Rodar de novo a simulação de dias (começo, meio e fim) e conferir as metas da seção 3.
-3. **Salários por nível** e o desconto do Valter.
-4. **Recompensas:** capítulos, secundárias, pedidos e eventos.
-5. **Preços do fim do jogo.**
-6. **Testes de valor:** atualizar os que conferem valores fixos, como a espada de ametista por R$ 200 e a venda de minério.
+| Andar da caverna | 2 | 3 | 5 | 8 | 10 | 14 | 20 |
+|---|---|---|---|---|---|---|---|
+| Antes | 118 | 158 | 160 | 227 | 211 | 376 | 462 |
+| Depois | 79 | 108 | 110 | 160 | 151 | 263 | 331 |
+
+O andar não se repete no mesmo dia. Uma descida de 4 a 6 andares rende mais ou menos o lucro de 1 a 1,5 dia de bodega da mesma fase.
+
+## 6. Onde está cada mudança
+
+- **Caverna:**
+  - o andar guarda o dia em `caveDayFloor` e `caveApplyDay` (`js/mechanics/caverna.js`);
+  - moedas dos bichos e do baú no mesmo arquivo;
+  - venda de minério em `CAVE_ORES` (`js/mechanics/forja.js`), no `BAG_RAW` de `caverna.js` e em `cave-life.js`.
+- **Fama da bodega:** `fameBonus` e `price` (`js/core/helpers.js`), com o aviso no caixa (`js/mechanics/service.js`).
+- **XP do dia:** `finishDay` (`js/core/game.js`). Degraus de nível: `LEVELS` (`js/mechanics/progression.js`).
+- **Salários:** `staffWage` (`js/mechanics/staff.js`).
+- **Recompensas:** cada missão no seu arquivo; pedidos das casas em `HOUSE_QUESTS` (`js/mechanics/missions.js`); eventos do mapa em `js/mechanics/economia.js`.
+- **Preços do fim do jogo:** `UPGRADES` (`js/config/items.js`). Teto do desejo do Saci: `saciWishOptions` (`js/mechanics/saci.js`).

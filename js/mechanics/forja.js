@@ -8,10 +8,10 @@
 // ---------- Minérios ----------
 // Cada um aparece numa faixa de andares; a ametista (2 a 10) e a ágata (11 em diante) seguem como o minério principal.
 const CAVE_ORES = {
-  cobre: { name: 'Cobre', value: 6, from: 2, to: 7, weight: 5, filter: 'hue-rotate(110deg) saturate(1.25) brightness(1.05)', glow: '230,140,70' },
-  ferro: { name: 'Ferro', value: 9, from: 4, to: 14, weight: 4, filter: 'grayscale(.9) sepia(.4) brightness(.95)', glow: '210,195,180' },
-  opala: { name: 'Opala', value: 35, from: 6, to: 99, weight: 1.3, filter: 'hue-rotate(-95deg) saturate(.45) brightness(1.65)', glow: '190,240,255' },
-  ouro: { name: 'Ouro', value: 60, from: 13, to: 99, weight: 1, filter: 'hue-rotate(140deg) saturate(1.8) brightness(1.4)', glow: '255,215,90' }
+  cobre: { name: 'Cobre', value: 4, from: 2, to: 7, weight: 5, filter: 'hue-rotate(110deg) saturate(1.25) brightness(1.05)', glow: '230,140,70' },
+  ferro: { name: 'Ferro', value: 6, from: 4, to: 14, weight: 4, filter: 'grayscale(.9) sepia(.4) brightness(.95)', glow: '210,195,180' },
+  opala: { name: 'Opala', value: 25, from: 6, to: 99, weight: 1.3, filter: 'hue-rotate(-95deg) saturate(.45) brightness(1.65)', glow: '190,240,255' },
+  ouro: { name: 'Ouro', value: 40, from: 13, to: 99, weight: 1, filter: 'hue-rotate(140deg) saturate(1.8) brightness(1.4)', glow: '255,215,90' }
 };
 const CAVE_MINERALS = ['ametista', 'agata', ...Object.keys(CAVE_ORES)];
 for (const [k, o] of Object.entries(CAVE_ORES)) BAG_RAW[k] = { name: o.name, icon: '◆', value: o.value, note: 'Minério da caverna da Serra: São Dunstano forja e compra' };

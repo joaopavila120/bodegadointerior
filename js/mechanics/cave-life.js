@@ -116,7 +116,7 @@ function saciTalk(){if(!saciEncounter)return;worldTalk({...saciEncounter,person:
 }
 
 // Venda de minerais na ferraria, separada da venda de colheita no Armazém.
-BAG_RAW.agata.value=28;
+BAG_RAW.agata.value=18;
 function mineralTradeHTML(){return '<h3>Vender minérios</h3><div class="store-list">'+['ametista','agata'].map(k=>{
   const q=Math.floor(bagQty(k));return `<div class="supply"><span class="icon">${bagIcon(k)}</span><div><b>${bagName(k)}</b><p>${q} no inventário · ${money(BAG_RAW[k].value)} por unidade</p></div><button data-act="dunstanSell" data-id="${k}:1" ${q?'':'disabled'}>Vender 1</button><button class="primary" data-act="dunstanSell" data-id="${k}:all" ${q?'':'disabled'}>Vender tudo · ${money(q*BAG_RAW[k].value)}</button></div>`;
 }).join('')+'</div>';}

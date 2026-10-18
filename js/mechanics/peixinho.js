@@ -12,7 +12,7 @@ MISSIONS.push({ id: 'peixinho', title: 'Peixinho na brasa', giver: 'peixinhonabr
   deliver: { to: 'peixinhonabrasa', items: { dourado: 1, cerveja: 5 } },
   goal: () => 'Leve um dourado (arremesse longe no trapiche) e 5 cervejas ao Peixinho, em Santa Catarina (dourado ' + Math.min(1, Math.floor(haveItem('dourado'))) + '/1 · cerveja ' + Math.min(5, Math.floor(haveItem('cerveja'))) + '/5)',
   thanks: [['peixinhonabrasa', 'O REI DO RIO! E as Kaiser geladinha! Agora sim, meu. Fica aí que eu vou chamar os piá!']],
-  reward: { cash: 120, xp: 120, rep: 4, friend: { peixinhonabrasa: 15 } },
+  reward: { cash: 150, xp: 120, rep: 4, friend: { peixinhonabrasa: 15 } },
   finale: () => playPeixinhoScene() });
 
 function peixinhoHouse() { const h = WORLD_MAPS.sc.spots().find(s => s.id === 'house:peixinhonabrasa'); return h ? { x: h.x, y: h.y } : { x: 1200, y: 800 }; }

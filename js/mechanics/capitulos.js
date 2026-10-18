@@ -38,7 +38,7 @@ MISSIONS.push({ id: 'oktober', chapter: 12, title: 'Oktoberfest em Pomerode', gi
   guide: { region: 'sc', spot: 'house:loligebien', inside: 'casa:loligebien', insideSpot: 'home:loligebien' },
   intro: [['loligebien', 'Primo! Esse ano a Oktoberfest de Pomerode é coisa de família: a Oma quer que o primo do Sul cuide da chopeira!'], ['loligebien', 'Mas o barril da comunidade tá vazio, ja. Junta ' + OKTO_BEER + ' cervejas pra festa e traz aqui em casa.']],
   goal: () => oktoGoal(), done: () => !!G.missions.oktober?.fest,
-  reward: { cash: 200, xp: 150, rep: 6, friend: { loligebien: 10 }, unlock: 'Oktoberfest no calendário' }, outroBy: 'loligebien',
+  reward: { cash: 300, xp: 150, rep: 6, friend: { loligebien: 10 }, unlock: 'Oktoberfest no calendário' }, outroBy: 'loligebien',
   outro: [['loligebien', 'Prost, primo! A melhor Oktoberfest da história de Pomerode!'], ['loligebien', 'A comunidade decidiu: agora tem Oktoberfest todo ano, e tu tá convidado pra sempre.']] });
 
 // ---------- Ligações ----------

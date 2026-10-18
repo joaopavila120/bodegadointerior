@@ -133,13 +133,13 @@ const MISSIONS = [
     when: () => G.tutorial?.complete && !tutorialActive() && !firstDay() && !worldOut && G.phase === 'prep',
     waitText: () => 'de manhã, na bodega · ou já compre a Mesa de tragos na Ferragem',
     goal: () => 'Compre a Mesa de tragos na Ferragem da Fronteira, à direita da cancha (sai de graça)',
-    done: () => upgradeOwned('trago'), reward: { xp: 20, rep: 1 },
+    done: () => upgradeOwned('trago'), reward: { cash: 30, xp: 20, rep: 1 },
     outro: ['Agora sim, bodega de respeito! A mesa fica embaixo da torneira de cerveja: segura E pra servir a dose.', 'E a primeira dose de pura quem toma sou eu, hehe.'] },
   { id: 'abertura', chapter: 2, title: 'Três noites seguidas', giver: 'valter', where: 'Na bodega: abra no caixa todos os dias',
     when: () => G.tutorial?.complete && !tutorialActive(),
     intro: ['Bodega que se preze abre todo santo dia, vivente. Freguês gosta de porta aberta.', 'Abre a bodega três noites seguidas, sem falhar nenhuma. Aí eu te mostro a estrada da Serra: o Badin, lá de Erechim, quer te conhecer.'],
     goal: () => 'Abra a bodega 3 noites seguidas (' + Math.min(3, G.openStreak || 0) + '/3)',
-    done: () => (G.openStreak || 0) >= 3, reward: { cash: 60, xp: 40, items: { vidro: 4 }, unlock: 'Estrada da Serra Gaúcha liberada' },
+    done: () => (G.openStreak || 0) >= 3, reward: { cash: 100, xp: 40, items: { vidro: 4 }, unlock: 'Estrada da Serra Gaúcha liberada' },
     onDone: () => unlockRegion('serra'),
     outro: ['Três noites seguidas! A freguesia já fala da bodega até na Serra.', 'A estrada da Serra Gaúcha tá liberada: segue a estrada da Fronteira pra direita.'] },
   { id: 'conhecer', chapter: 4, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
@@ -148,7 +148,7 @@ const MISSIONS = [
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: ['O Badin, lá de Erechim, mandou dizer que quer te conhecer. Gente boa, mas a nona dele é brava que só.', 'Sobe a estrada da Serra e bate na casa de pedra dele. Vai que ele tem serviço pra ti!'],
     goal: () => 'Vá à Serra Gaúcha e fale com o Badin, na casa de pedra',
-    done: () => !!G.metOutside?.badin, reward: { xp: 30, friend: { badin: 4 } }, outroBy: 'badin',
+    done: () => !!G.metOutside?.badin, reward: { cash: 50, xp: 30, friend: { badin: 4 } }, outroBy: 'badin',
     outro: [['badin', 'Então é tu o neto do velho Sadi? A nona disse que o teu vô vendia o melhor salame da Fronteira… e que era tudo da colônia, hehe.']] },
   // O Badin manda organizar um campeonato de bocha na cancha da bodega (ganhar ou perder não importa): abre Santa Catarina.
   { id: 'campeonato', chapter: 5, title: 'Campeonato de bocha', giver: 'badin', where: 'Cancha de bocha, ao lado da bodega',
@@ -157,7 +157,7 @@ const MISSIONS = [
     start: () => { G.missions.campeonato.base = sportCups('bocha'); },
     goal: () => 'Organize um campeonato de bocha na cancha da bodega (Cancha → Jogar campeonato). Ganhar ou perder, tanto faz',
     done: () => sportCups('bocha') > (G.missions.campeonato?.base || 0),
-    reward: { cash: 70, xp: 60, rep: 3, friend: { badin: 10 } },
+    reward: { cash: 120, xp: 60, rep: 3, friend: { badin: 10 } },
     outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'Passa lá em casa um dia desses, que a nona quer te pedir uma coisa.']] },
   // Segunda missão do Badin: o queijo pra nona. Cumprida, ele passa a vender salame e muda de uva.
   { id: 'queijo', chapter: 6, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha, casa de pedra do Badin',
@@ -166,48 +166,48 @@ const MISSIONS = [
     deliver: { to: 'badin', items: { queijo: 10 } },
     goal: () => 'Leve 10 fatias de queijo ao Badin, na casa de pedra da Serra Gaúcha',
     thanks: [['badin', 'A nona aprovou! Disse que tu é “um bom rapaz”, o maior elogio que ela já deu.'], ['badin', 'A despensa da colônia tá aberta pra ti: salame da nona e muda de uva pra fazer vinho de garrafão. É só passar aqui em casa.']],
-    reward: { cash: 50, xp: 50, friend: { badin: 10 }, unlock: 'Salame e muda de uva na casa do Badin' },
+    reward: { cash: 120, xp: 50, friend: { badin: 10 }, unlock: 'Salame e muda de uva na casa do Badin' },
     onDone: () => openBadinShop() },
   { id: 'pomar', title: 'O pomar do vô', giver: 'valter', after: 'abertura', side: true, skipIfDone: true,
     intro: ['Teu vô tinha bergamota e pinhão no fundo da horta. Planta uma bergamoteira e uma araucária nas covas.', 'Muda tem no Armazém Querência. Quando derem fruto, a venda no balcão se libera sozinha.'],
     goal: () => 'Plante uma bergamoteira e uma araucária na horta (' + ['bergamota', 'araucaria'].filter(k => hortaState().trees.some(c => c.crop === k)).length + '/2)',
     done: () => ['bergamota', 'araucaria'].every(k => hortaState().trees.some(c => c.crop === k)),
-    reward: { cash: 40, xp: 30, seeds: { adubo: 3 } } },
+    reward: { cash: 60, xp: 30, seeds: { adubo: 3 } } },
   { id: 'costelao', title: 'Domingo de costelão', giver: 'manolima', after: 'abertura', side: true, skipIfDone: true,
     intro: [['manolima', 'Buenas, vivente! Domingo é dia de costelão no campo, e índio véio não perde um.'], ['manolima', 'Laça um boi na cerca, que a carne vira manta pro fogo de chão. No domingo, abre a bodega no caixa: ela vira campo, com freguesia comprando costela no peso.']],
     goal: () => 'Faça o primeiro costelão de domingo', done: () => !!G.costelaoTaught,
-    reward: { cash: 80, xp: 60, items: { racao: 2 } } },
+    reward: { cash: 100, xp: 60, items: { racao: 2 } } },
   { id: 'caderno', title: 'O caderno do vô', giver: 'jayme', after: 'abertura', side: true,
     intro: [['jayme', 'Vivente, teu vô me mostrou uma vez um caderno: receita, causo, verso e o nome de cada boi.'], ['jayme', 'Dizem que o vento espalhou as páginas pela Fronteira, pela Serra e por Santa Catarina. Onde o chão brilhar de perto, olha com calma.']],
     goal: () => 'Encontre as 3 páginas do caderno do vô (' + pagesFound() + '/3)', done: () => pagesFound() >= 3,
-    reward: { cash: 150, xp: 100, rep: 5 }, finale: () => playCadernoScene() },
+    reward: { cash: 200, xp: 100, rep: 5 }, finale: () => playCadernoScene() },
   { id: 'indaial', chapter: 8, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
     guide: { region: 'sc', spot: 'house:lauro', inside: 'casa:lauro', insideSpot: 'home:lauro' },
     intro: [['card', '<div class="carta-letter"><small>Indaial, Santa Catarina</small><p>Opa, Sadi!</p><p>Aqui é o Lauro, o da bocha. O Gustavo, do Jornal Indavírus, quer gravar uma reportagem contigo aqui em Indaial: bodegueiro gaúcho é notícia, ja!</p><p>A estrada de Santa Catarina tá aberta pra ti: na Serra, pega a estrada que sobe pro norte, no meio da vila. E traz uns pães de xis, que gravação dá fome.</p><p class="carta-sign">Abraço do Lauro Bolador</p></div>', 'Chegou uma carta!'], ['sadi', 'Indaial! Bora pegar a estrada de Santa Catarina.']],
     start: () => unlockRegion('sc'), deliver: { to: 'lauro', items: { pao_xis: 6 } },
     goal: () => 'Leve 6 pães de xis à casa do Lauro, em Santa Catarina',
     thanks: [['lauro', 'Chegou o pão! O Gustavo já tá ligando a câmera, ja.'], ['indavirus', 'Atenção, Indaial: bodegueiro do Sul entrega pão de xis caseiro! Reportagem exclusiva do Jornal Indavírus!']],
-    reward: { cash: 60, xp: 60, friend: { lauro: 10, indavirus: 6 } } },
+    reward: { cash: 150, xp: 60, friend: { lauro: 10, indavirus: 6 } } },
   // Terceira e última do Badin: o baile da comunidade. Doa R$ 100, vai à missa na igreja e serve no salão; depois o
   // baile de capela entra no calendário.
   { id: 'festa', chapter: 7, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: [['badin', 'A comunidade vai fazer um baile de capela, com missa e tudo: o primeiro baile no salão desde que a nona era moça!'], ['badin', 'Mas o padre precisa de doação pra banda e pra comida. Tu dá uma força? Cem pila pra comunidade, e tu ainda serve o vinho e a polenta no baile.']],
     goal: () => festaGoal(), done: () => !!G.missions.festa?.baile,
-    reward: { cash: 150, xp: 100, rep: 6, decor: 'fogao_lenha', unlock: 'Baile de capela no calendário' }, outroBy: 'badin',
+    reward: { cash: 220, xp: 100, rep: 6, decor: 'fogao_lenha', unlock: 'Baile de capela no calendário' }, outroBy: 'badin',
     outro: [['badin', 'Que baile! Até o padre dançou vanerão.'], ['badin', 'A comunidade decidiu: de tempos em tempos agora tem baile de capela. E a nona mandou um fogão a lenha que tava sobrando no porão!']] },
   { id: 'horta5', title: 'Mão boa pra terra', giver: 'valter', after: 'pomar', side: true, skipIfDone: true,
     intro: ['Tua horta tá linda, guri. Teu vô chegou a ter a horta mais caprichada da Fronteira.', 'Chega no nível 5 e o espantalho reforçado acaba com as pragas de vez.'],
     goal: () => 'Leve a horta ao nível 5 (agora: nível ' + hortaLevel() + ')', done: () => hortaLevel() >= 5,
-    reward: { cash: 120, xp: 80 } },
+    reward: { cash: 150, xp: 80 } },
   { id: 'reliquias', title: 'Relíquias da região', giver: 'jayme', side: true, when: () => secretsFound() >= 1,
     intro: [['jayme', 'Achou uma relíquia? A Fronteira, a Serra e Santa Catarina estão cheias de histórias perdidas.'], ['jayme', 'São doze, contando as páginas do caderno do teu vô. Junta todas e a bodega vira museu!']],
     goal: () => 'Encontre as 12 relíquias escondidas (' + secretsFound() + '/12)', done: () => secretsFound() >= SECRETS.length,
-    reward: { cash: 250, xp: 150, rep: 8 } },
+    reward: { cash: 400, xp: 150, rep: 8 } },
   { id: 'lendaria', chapter: 13, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
     intro: ['Tu já é conhecido da Fronteira até Santa Catarina. Falta pouco pra virar lenda.', 'Chega no último nível da bodega e a gente faz a maior festa que esse galpão já viu.'],
     goal: () => 'Chegue ao nível ' + LEVELS.length + ' da bodega (agora: nível ' + bodegaLevel() + ')', done: () => bodegaLevel() >= LEVELS.length,
-    reward: { cash: 500, rep: 10 } }
+    reward: { cash: 1000, rep: 10 } }
 ];
 function tragoMorning() {
   const m = MISSIONS.find(x => x.id === 'trago');
@@ -314,56 +314,57 @@ function missionsTick() {
 }
 
 // ---------- Pedidos dos especiais (arcos no mundo aberto) ----------
-// Cada especial pede, na própria casa, uma coisa de cada vez. Entregar dá dinheiro, amizade, XP e, às vezes, presente.
+// Cada especial pede, na própria casa, uma coisa de cada vez. Entregar dá dinheiro (bem acima do que os itens valem
+// vendidos), amizade, XP e, às vezes, presente.
 const HOUSE_QUESTS = {
   valter: [
-    { want: { erva: 1000 }, ask: ['Ô, vizinho! Meu mate tá fraco que nem chá de hospital.', 'Me traz 1 kg da erva da tua erveira? Erva nova é outra coisa.'], thanks: ['Isso sim é erva! Verdinha, de carijo.', 'Toma uns trocos e uma muda: planta mais uma erveira, que tu não te arrepende.'], reward: { cash: 20, xp: 20, friend: { valter: 6 }, seeds: { erva: 1 } } },
-    { want: { ovo: 8 }, ask: ['A patroa vai fazer ambrosia pro aniversário do neto.', 'Precisa de 8 ovos caipiras. Os teus são os melhores da Fronteira.'], thanks: ['A patroa mandou dizer que tu é o bodegueiro mais caprichoso do Rio Grande.', 'E mandou uns vidros de volta, pras tuas conservas.'], reward: { cash: 30, xp: 25, friend: { valter: 8 }, items: { vidro: 4 } } }
+    { want: { erva: 1000 }, ask: ['Ô, vizinho! Meu mate tá fraco que nem chá de hospital.', 'Me traz 1 kg da erva da tua erveira? Erva nova é outra coisa.'], thanks: ['Isso sim é erva! Verdinha, de carijo.', 'Toma uns trocos e uma muda: planta mais uma erveira, que tu não te arrepende.'], reward: { cash: 30, xp: 20, friend: { valter: 6 }, seeds: { erva: 1 } } },
+    { want: { ovo: 8 }, ask: ['A patroa vai fazer ambrosia pro aniversário do neto.', 'Precisa de 8 ovos caipiras. Os teus são os melhores da Fronteira.'], thanks: ['A patroa mandou dizer que tu é o bodegueiro mais caprichoso do Rio Grande.', 'E mandou uns vidros de volta, pras tuas conservas.'], reward: { cash: 45, xp: 25, friend: { valter: 8 }, items: { vidro: 4 } } }
   ],
   // Mano Lima não faz pedidos de itens: depois de achar a Baia, ele abre o balcão de melhorias do facão.
   baitaca: [
-    { want: { peixe: 2 }, ask: ['Opa, vivente! Fim de semana tem baile e eu canto até o galo cantar.', 'Pra aguentar, preciso de peixe frito. Me traz 2 peixes do rio Uruguai? O trapiche fica ali na beira.'], thanks: ['Que peixe bonito! Vai ser fritado com farinha e cantado em verso.', 'Toma: cachê de cantor do fundo da grota.'], reward: { cash: 40, xp: 30, friend: { baitaca: 10 } } },
-    { want: { codorna: 3 }, ask: ['Tô compondo uma música sobre a tua bodega.', 'Pra inspiração, me traz 3 potes de ovos de codorna em conserva. Música boa tem tempero.'], thanks: ['Saiu o refrão: “Na bodega do Sadi tem conserva e tem amor”…', 'Ainda falta rima, mas a paga tá aqui.'], reward: { cash: 40, xp: 30, friend: { baitaca: 10 }, rep: 2 } }
+    { want: { peixe: 2 }, ask: ['Opa, vivente! Fim de semana tem baile e eu canto até o galo cantar.', 'Pra aguentar, preciso de peixe frito. Me traz 2 peixes do rio Uruguai? O trapiche fica ali na beira.'], thanks: ['Que peixe bonito! Vai ser fritado com farinha e cantado em verso.', 'Toma: cachê de cantor do fundo da grota.'], reward: { cash: 60, xp: 30, friend: { baitaca: 10 } } },
+    { want: { codorna: 3 }, ask: ['Tô compondo uma música sobre a tua bodega.', 'Pra inspiração, me traz 3 potes de ovos de codorna em conserva. Música boa tem tempero.'], thanks: ['Saiu o refrão: “Na bodega do Sadi tem conserva e tem amor”…', 'Ainda falta rima, mas a paga tá aqui.'], reward: { cash: 60, xp: 30, friend: { baitaca: 10 }, rep: 2 } }
   ],
   guri: [
-    { want: { butia: 6 }, ask: ['Bah, tchê! Lá em Uruguaiana a gente faz licor de butiá.', 'Tem um butiazeiro na beira do rio, aqui na Fronteira. Me traz 6 butiás?'], thanks: ['Butiá maduro, cheirosinho! Daqui um mês tem licor.', 'Toma, gaudério. E leva uns vidros, que o primeiro licor é teu.'], reward: { cash: 25, xp: 25, friend: { guri: 8 }, items: { vidro: 2 } } },
-    { want: { burger: 6 }, ask: ['Vai ter rodeio crioulo e a peonada vai ter fome.', 'Me traz 6 hambúrgueres do teu boi? Xis de rodeio é sagrado.'], thanks: ['Carne boa, de boi laçado! A peonada vai te aplaudir.', 'Leva a paga e uns sacos de ração pros teus bichos.'], reward: { cash: 45, xp: 30, friend: { guri: 10 }, items: { racao: 2 } } }
+    { want: { butia: 6 }, ask: ['Bah, tchê! Lá em Uruguaiana a gente faz licor de butiá.', 'Tem um butiazeiro na beira do rio, aqui na Fronteira. Me traz 6 butiás?'], thanks: ['Butiá maduro, cheirosinho! Daqui um mês tem licor.', 'Toma, gaudério. E leva uns vidros, que o primeiro licor é teu.'], reward: { cash: 40, xp: 25, friend: { guri: 8 }, items: { vidro: 2 } } },
+    { want: { burger: 6 }, ask: ['Vai ter rodeio crioulo e a peonada vai ter fome.', 'Me traz 6 hambúrgueres do teu boi? Xis de rodeio é sagrado.'], thanks: ['Carne boa, de boi laçado! A peonada vai te aplaudir.', 'Leva a paga e uns sacos de ração pros teus bichos.'], reward: { cash: 70, xp: 30, friend: { guri: 10 }, items: { racao: 2 } } }
   ],
   jayme: [
-    { want: { erva: 1000 }, ask: ['Vivente, a pajada pede cuia cheia.', 'Me traz 1 kg da tua erva e eu te pago com verso e com pila.'], thanks: ['“Erva da bodega do Sadi, verde que nem a coxilha…” Depois eu termino.', 'Toma o pila. O verso fica de lembrança.'], reward: { cash: 30, xp: 25, friend: { jayme: 8 } } },
-    { want: { queijo: 6, pao_xis: 6 }, ask: ['O galpão crioulo da Fronteira vai homenagear os tropeiros.', 'Me traz 6 fatias de queijo e 6 pães de xis? Mesa farta honra a memória dos antigos.'], thanks: ['Mesa posta! O povo vai saber que a comida veio da tua bodega.', 'Toma, vivente. Quem alimenta a tradição merece paga.'], reward: { cash: 60, xp: 40, friend: { jayme: 10 }, rep: 3 } }
+    { want: { erva: 1000 }, ask: ['Vivente, a pajada pede cuia cheia.', 'Me traz 1 kg da tua erva e eu te pago com verso e com pila.'], thanks: ['“Erva da bodega do Sadi, verde que nem a coxilha…” Depois eu termino.', 'Toma o pila. O verso fica de lembrança.'], reward: { cash: 45, xp: 25, friend: { jayme: 8 } } },
+    { want: { queijo: 6, pao_xis: 6 }, ask: ['O galpão crioulo da Fronteira vai homenagear os tropeiros.', 'Me traz 6 fatias de queijo e 6 pães de xis? Mesa farta honra a memória dos antigos.'], thanks: ['Mesa posta! O povo vai saber que a comida veio da tua bodega.', 'Toma, vivente. Quem alimenta a tradição merece paga.'], reward: { cash: 90, xp: 40, friend: { jayme: 10 }, rep: 3 } }
   ],
   badin: [
-    { want: { ovo: 8 }, ask: ['Ô, Sadi! A nona vai fazer cuca de uva pro domingo.', 'Me traz 8 ovos? Ovo de granja ela não aceita nem que a vaca tussa.'], thanks: ['A nona aprovou! Disse que tu é “um bom rapaz”, que é o maior elogio que ela já deu.', 'Toma a paga e um salame da colônia, curado aqui em casa.'], reward: { cash: 35, xp: 30, friend: { badin: 8 }, items: { salame: 2 } } },
-    { want: { bergamota: 3000 }, ask: ['Os sobrinhos vêm de Erechim e comem que nem gafanhoto.', 'Me traz 3 kg de bergamota do teu pomar? A daqui ainda tá verde.'], thanks: ['Bergamota docinha! Os piás vão brigar pela última.', 'Toma, e leva de presente uma muda de araucária. Daqui uns anos tu agradece.'], reward: { cash: 50, xp: 35, friend: { badin: 10 }, seeds: { araucaria: 1 } } }
+    { want: { ovo: 8 }, ask: ['Ô, Sadi! A nona vai fazer cuca de uva pro domingo.', 'Me traz 8 ovos? Ovo de granja ela não aceita nem que a vaca tussa.'], thanks: ['A nona aprovou! Disse que tu é “um bom rapaz”, que é o maior elogio que ela já deu.', 'Toma a paga e um salame da colônia, curado aqui em casa.'], reward: { cash: 50, xp: 30, friend: { badin: 8 }, items: { salame: 2 } } },
+    { want: { bergamota: 3000 }, ask: ['Os sobrinhos vêm de Erechim e comem que nem gafanhoto.', 'Me traz 3 kg de bergamota do teu pomar? A daqui ainda tá verde.'], thanks: ['Bergamota docinha! Os piás vão brigar pela última.', 'Toma, e leva de presente uma muda de araucária. Daqui uns anos tu agradece.'], reward: { cash: 75, xp: 35, friend: { badin: 10 }, seeds: { araucaria: 1 } } }
   ],
   marcio: [
-    { want: { cerveja: 6 }, ask: [['marcio', 'E o quê? Vai ter churras na Casona e faltou a cerveja!'], ['marcelo', 'É o quê? Show de bola se tu trouxer 6 canecas!']], thanks: [['marcio', 'Cerveja na Casona! Agora sim é churras.'], ['marcelo', 'Show de bola! Toma a paga, Sadi.']], reward: { cash: 45, xp: 30, friend: { marcio: 8, marcelo: 8 } } },
-    { want: { burger: 6, pao_xis: 6 }, ask: [['marcio', 'O churras ficou tão bom que o pessoal quer xis no fim da noite.'], ['marcelo', 'Traz 6 hambúrgueres e 6 pães de xis? É o quê?']], thanks: [['marcelo', 'Xis da madrugada na Casona: lendário!'], ['marcio', 'Leva a paga e um poncho de lã que sobrou da última festa.']], reward: { cash: 70, xp: 40, friend: { marcio: 10, marcelo: 10 }, decor: 'poncho' } }
+    { want: { cerveja: 6 }, ask: [['marcio', 'E o quê? Vai ter churras na Casona e faltou a cerveja!'], ['marcelo', 'É o quê? Show de bola se tu trouxer 6 canecas!']], thanks: [['marcio', 'Cerveja na Casona! Agora sim é churras.'], ['marcelo', 'Show de bola! Toma a paga, Sadi.']], reward: { cash: 70, xp: 30, friend: { marcio: 8, marcelo: 8 } } },
+    { want: { burger: 6, pao_xis: 6 }, ask: [['marcio', 'O churras ficou tão bom que o pessoal quer xis no fim da noite.'], ['marcelo', 'Traz 6 hambúrgueres e 6 pães de xis? É o quê?']], thanks: [['marcelo', 'Xis da madrugada na Casona: lendário!'], ['marcio', 'Leva a paga e um poncho de lã que sobrou da última festa.']], reward: { cash: 105, xp: 40, friend: { marcio: 10, marcelo: 10 }, decor: 'poncho' } }
   ],
   mitodosul: [
-    { want: { pao_xis: 4, salada: 4 }, ask: ['E aí, Sadi! Vou fazer live de Farming Simulator e quero comida de fazenda DE VERDADE na mesa.', 'Me traz 4 pães de xis e 4 saladas? Pra mostrar pro chat que roça é coisa séria.'], thanks: ['O chat foi à loucura! “Bodega do Sadi” nos assuntos do momento!', 'Toma a paga. E manda um abraço pro chat!'], reward: { cash: 40, xp: 30, friend: { mitodosul: 8 } } },
-    { want: { pinhao: 2000 }, ask: ['Live de inverno pede pinhão.', 'Me traz 2 kg de pinhão da tua araucária? Vou cozinhar ao vivo.'], thanks: ['Pinhão cozido ao vivo: recorde de audiência!', 'Isso merece prêmio: toma!'], reward: { cash: 55, xp: 35, friend: { mitodosul: 10 }, rep: 2 } }
+    { want: { pao_xis: 4, salada: 4 }, ask: ['E aí, Sadi! Vou fazer live de Farming Simulator e quero comida de fazenda DE VERDADE na mesa.', 'Me traz 4 pães de xis e 4 saladas? Pra mostrar pro chat que roça é coisa séria.'], thanks: ['O chat foi à loucura! “Bodega do Sadi” nos assuntos do momento!', 'Toma a paga. E manda um abraço pro chat!'], reward: { cash: 60, xp: 30, friend: { mitodosul: 8 } } },
+    { want: { pinhao: 2000 }, ask: ['Live de inverno pede pinhão.', 'Me traz 2 kg de pinhão da tua araucária? Vou cozinhar ao vivo.'], thanks: ['Pinhão cozido ao vivo: recorde de audiência!', 'Isso merece prêmio: toma!'], reward: { cash: 80, xp: 35, friend: { mitodosul: 10 }, rep: 2 } }
   ],
   dianho: [
-    { want: { refri: 6 }, ask: ['É os guri! A revoada dos cupinxa vai ser aqui no galpão.', 'Me traz 6 refris? Revoada sem refri gelado não é revoada.'], thanks: ['Refri gelado pra revoada! Tá todo Nicolas Cagezinho.', 'Toma, que respeito se paga em dia.'], reward: { cash: 35, xp: 25, friend: { dianho: 8 } } },
-    { want: { codorna: 3 }, ask: ['Os cupinxa gostam de petisco.', 'Me arruma 3 potes de ovos de codorna em conserva?'], thanks: ['Ovinho de codorna é o petisco oficial da revoada!', 'Toma. O Dianho nunca esquece quem ajuda.'], reward: { cash: 40, xp: 30, friend: { dianho: 10 } } }
+    { want: { refri: 6 }, ask: ['É os guri! A revoada dos cupinxa vai ser aqui no galpão.', 'Me traz 6 refris? Revoada sem refri gelado não é revoada.'], thanks: ['Refri gelado pra revoada! Tá todo Nicolas Cagezinho.', 'Toma, que respeito se paga em dia.'], reward: { cash: 50, xp: 25, friend: { dianho: 8 } } },
+    { want: { codorna: 3 }, ask: ['Os cupinxa gostam de petisco.', 'Me arruma 3 potes de ovos de codorna em conserva?'], thanks: ['Ovinho de codorna é o petisco oficial da revoada!', 'Toma. O Dianho nunca esquece quem ajuda.'], reward: { cash: 60, xp: 30, friend: { dianho: 10 } } }
   ],
   lauro: [
-    { want: { peixe: 2 }, ask: ['Opa! Depois da bocha, o pessoal de Indaial gosta de peixe frito, ja.', 'Me traz 2 peixes do rio Uruguai? O Gustavo diz que peixe do Sul é mais gordinho.'], thanks: ['Peixe bonito! O Gustavo já quer filmar a fritura.', 'Toma a paga, e treina a bocha, que a revanche vem!'], reward: { cash: 40, xp: 30, friend: { lauro: 8 } } },
-    { want: { burger: 6 }, ask: ['Vou fazer churrasquinho na canchinha.', 'Me traz 6 hambúrgueres? E não deixa o Gustavo saber que é pra mim.'], thanks: ['Carne de boi laçado! Isso é Lauro Bolador comendo bem.', 'Leva a paga e um saco de adubo que sobrou da horta da patroa.'], reward: { cash: 45, xp: 30, friend: { lauro: 10 }, seeds: { adubo: 3 } } }
+    { want: { peixe: 2 }, ask: ['Opa! Depois da bocha, o pessoal de Indaial gosta de peixe frito, ja.', 'Me traz 2 peixes do rio Uruguai? O Gustavo diz que peixe do Sul é mais gordinho.'], thanks: ['Peixe bonito! O Gustavo já quer filmar a fritura.', 'Toma a paga, e treina a bocha, que a revanche vem!'], reward: { cash: 60, xp: 30, friend: { lauro: 8 } } },
+    { want: { burger: 6 }, ask: ['Vou fazer churrasquinho na canchinha.', 'Me traz 6 hambúrgueres? E não deixa o Gustavo saber que é pra mim.'], thanks: ['Carne de boi laçado! Isso é Lauro Bolador comendo bem.', 'Leva a paga e um saco de adubo que sobrou da horta da patroa.'], reward: { cash: 70, xp: 30, friend: { lauro: 10 }, seeds: { adubo: 3 } } }
   ],
   indavirus: [
-    { want: { peixe: 3 }, ask: ['Atenção, Indaial! Reportagem especial: “O maior peixe do rio Uruguai”.', 'Só falta o peixe, ja. Me traz 3 peixes? O maior vai pra capa.'], thanks: ['Manchete garantida! “Bodegueiro gaúcho fisga o peixe do século”.', 'Toma o cachê do Jornal Indavírus.'], reward: { cash: 45, xp: 35, friend: { indavirus: 10 }, rep: 2 } },
-    { want: { pitanga: 6 }, ask: ['Quadro de culinária do Jornal: “Doce de pitanga da vó”.', 'Me traz 6 pitangas? Tem pitangueira aqui em Santa Catarina, perto do café.'], thanks: ['Que cor bonita! Vai ficar lindo na câmera, ja.', 'Toma, e o endereço da bodega vai na reportagem.'], reward: { cash: 35, xp: 30, friend: { indavirus: 8 }, rep: 2 } }
+    { want: { peixe: 3 }, ask: ['Atenção, Indaial! Reportagem especial: “O maior peixe do rio Uruguai”.', 'Só falta o peixe, ja. Me traz 3 peixes? O maior vai pra capa.'], thanks: ['Manchete garantida! “Bodegueiro gaúcho fisga o peixe do século”.', 'Toma o cachê do Jornal Indavírus.'], reward: { cash: 70, xp: 35, friend: { indavirus: 10 }, rep: 2 } },
+    { want: { pitanga: 6 }, ask: ['Quadro de culinária do Jornal: “Doce de pitanga da vó”.', 'Me traz 6 pitangas? Tem pitangueira aqui em Santa Catarina, perto do café.'], thanks: ['Que cor bonita! Vai ficar lindo na câmera, ja.', 'Toma, e o endereço da bodega vai na reportagem.'], reward: { cash: 50, xp: 30, friend: { indavirus: 8 }, rep: 2 } }
   ],
   peixinhonabrasa: [
-    { want: { peixe: 3 }, ask: ['Peixinho na brasa sem peixe é só brasa, né?', 'Me traz 3 peixes do rio? A Kaiser gelada eu já tenho.'], thanks: ['Brasa pronta, peixe no espeto! Hoje é festa.', 'Toma a paga, parceiro.'], reward: { cash: 45, xp: 30, friend: { peixinhonabrasa: 10 } } },
-    { want: { cerveja: 6 }, ask: ['A Kaiser acabou e a família chegou.', 'Me traz 6 canecas de cerveja?'], thanks: ['Salvou o domingo! Agora sim: peixinho na brasa e cerveja.', 'Toma, e volta pro próximo peixe.'], reward: { cash: 45, xp: 30, friend: { peixinhonabrasa: 10 } } }
+    { want: { peixe: 3 }, ask: ['Peixinho na brasa sem peixe é só brasa, né?', 'Me traz 3 peixes do rio? A Kaiser gelada eu já tenho.'], thanks: ['Brasa pronta, peixe no espeto! Hoje é festa.', 'Toma a paga, parceiro.'], reward: { cash: 70, xp: 30, friend: { peixinhonabrasa: 10 } } },
+    { want: { cerveja: 6 }, ask: ['A Kaiser acabou e a família chegou.', 'Me traz 6 canecas de cerveja?'], thanks: ['Salvou o domingo! Agora sim: peixinho na brasa e cerveja.', 'Toma, e volta pro próximo peixe.'], reward: { cash: 70, xp: 30, friend: { peixinhonabrasa: 10 } } }
   ],
   loligebien: [
-    { want: { cerveja: 6 }, ask: ['Ja! Oktoberfest em casa e o chopp acabou!', 'Me traz 6 canecas de cerveja? Prost!'], thanks: ['Prost! Agora sim a festa alemã tá completa, ja.', 'Toma, e aprende a dançar de tamanco.'], reward: { cash: 45, xp: 30, friend: { loligebien: 10 } } },
-    { want: { pepino: 3 }, ask: ['Chucrute não tem, mas pepino em conserva serve, ja.', 'Me traz 3 potes de pepino em conserva?'], thanks: ['Pepino da bodega com salsicha de Pomerode: perfeito!', 'Toma a paga e um saco de adubo pra horta.'], reward: { cash: 50, xp: 35, friend: { loligebien: 10 }, seeds: { adubo: 3 } } }
+    { want: { cerveja: 6 }, ask: ['Ja! Oktoberfest em casa e o chopp acabou!', 'Me traz 6 canecas de cerveja? Prost!'], thanks: ['Prost! Agora sim a festa alemã tá completa, ja.', 'Toma, e aprende a dançar de tamanco.'], reward: { cash: 70, xp: 30, friend: { loligebien: 10 } } },
+    { want: { pepino: 3 }, ask: ['Chucrute não tem, mas pepino em conserva serve, ja.', 'Me traz 3 potes de pepino em conserva?'], thanks: ['Pepino da bodega com salsicha de Pomerode: perfeito!', 'Toma a paga e um saco de adubo pra horta.'], reward: { cash: 75, xp: 35, friend: { loligebien: 10 }, seeds: { adubo: 3 } } }
   ]
 };
 // Onde mora cada um (para saber se a região está aberta e para a lista de pedidos).

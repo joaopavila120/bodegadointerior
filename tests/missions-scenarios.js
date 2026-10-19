@@ -121,7 +121,7 @@
   check(WORLD_MAPS['casa:marcio'].name==='Casona de Márcio e Marcelo'&&!WORLD_MAPS.casonaTerreo,'a Casona tem só o andar de cima');
   check(WORLD_MAPS['casa:dianho'].items.some(i=>i.ulster),'a casa do Dianho tem a bandeira da Irlanda do Norte');
   // quadros dos amigos
-  {const bi=badin;G.friends[bi]=QUADRO_AT-1;addFriendship(bi,2);check(quadroUnlocked(bi),'amizade libera o quadro do especial');toggleQuadro('badin');check(G.quadro==='badin','o quadro vai para a parede');const li=PEOPLE.findIndex(p=>p.id==='lauro');G.friends[li]=QUADRO_AT;toggleQuadro('lauro');check(G.quadro==='lauro','só cabe um quadro: o novo substitui o anterior');}
+  {const bi=badin;G.homePortraits=[];G.friends[bi]=QUADRO_AT-1;addFriendship(bi,2);check(quadroUnlocked(bi),'amizade libera o quadro do especial');toggleQuadro('badin');check(homePortraits().includes('badin'),'o quadro vai para a parede da casa');const li=PEOPLE.findIndex(p=>p.id==='lauro');G.friends[li]=QUADRO_AT;toggleQuadro('lauro');check(homePortraits().includes('badin')&&homePortraits().includes('lauro'),'a galeria da casa mantém os dois retratos lado a lado');}
   check(typeof drawHorse==='undefined'&&typeof ridingHorse==='undefined','o cavalo saiu do jogo');
   // inventário (B) mostra também o que está na bodega; mesa de compota diz o que falta
   closeDialog(true);showBag();check($('dialogTitle').textContent==='Inventário'&&!$('dialogContent').textContent.includes('Itens na bodega'),'B mostra o inventário: uma lista só');closeDialog(true);

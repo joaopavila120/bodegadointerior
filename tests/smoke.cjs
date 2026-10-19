@@ -96,6 +96,14 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='collections'){
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');await evaluate('walkArtLoaded');
+      for(const file of ['home-collections-scenarios.js','player-home-scenarios.js','interior-walk-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length);
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);worldWalkers=[];fx=[];document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');G.homePortraits=quadroPeople().slice(0,4).map(i=>PEOPLE[i].id);G.trophies={rodeio:1,penalti:1,uva:1};G.relics={cuia_vo:1,foto1968:1,retrato:1,ticao:1,fita:1,escama:1,freio:1};worldOut={map:'casa:sadi',...homePoint(900,580),dx:0,dy:1,walk:false};refreshHUD();draw();`);
+      await delay(600);await evaluate('draw();');
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-home-collections.png'),Buffer.from(shot.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     if(process.env.BODEGA_FOCUS==='refuge'){
       await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
       for(const file of ['dunstan-refuge-scenarios.js','mountain-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length);
@@ -205,6 +213,25 @@ async function main() {
       console.log('PASS missions: '+results.length+' checks');
       assert.equal(errors.length,0,errors.join('\n'));return;
     }
+    if (process.env.BODEGA_FOCUS === 'characterAudit') {
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');await evaluate('walkArtLoaded');
+      fs.writeFileSync(path.join(os.tmpdir(),'bodega-character-'+(process.env.BODEGA_SNAPSHOT||'before')+'.json'),JSON.stringify(await evaluate(fs.readFileSync(path.join(__dirname,'bodega-character-snapshot.js'),'utf8'))));
+      const shots=await evaluate(`(()=>{
+        G=fresh();paused=true;worldOut={map:'vila',x:1000,y:900,dx:0,dy:1};frameClock=10;
+        const previous=ctx,out=[];
+        const people=PEOPLE.filter(p=>!p.removed&&(ALWAYS_TALK.has(p.id)||SECONDARY_POSES.has(p.sprite)));
+        for(let start=0;start<people.length;start+=8){
+          const c=document.createElement('canvas');c.width=1000;c.height=8*170;ctx=c.getContext('2d');rect(0,0,c.width,c.height,'#725238');
+          people.slice(start,start+8).forEach((p,row)=>{
+            const y=160+row*170;txt(p.name,90,y-140,14,'#fff');rect(15,y+2,960,1,'#ae9068');
+            personDraw(0,80,y,false,true,0,false,0,1);
+            for(const [x,walk,dx,dy] of [[250,false,0,1],[430,true,0,1],[610,true,1,0],[790,true,0,-1]]){frameClock+=.5;personDraw(p.sprite,x,y,walk,false,dx,false,0,dy);}
+          });out.push(c.toDataURL('image/png').split(',')[1]);
+        }ctx=previous;return out;
+      })()`);
+      for(let i=0;i<shots.length;i++)fs.writeFileSync(path.join(os.tmpdir(),'bodega-character-audit-'+i+'.png'),Buffer.from(shots[i],'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     if (process.env.BODEGA_FOCUS === 'proportions') {
       await load(base + '/index.html');
       await evaluate('expansionArtLoadAll()');
@@ -268,6 +295,8 @@ async function main() {
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
       await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
       const homeArt=await evaluate(fs.readFileSync(path.join(__dirname,'player-home-scenarios.js'),'utf8'));
+      const collectionResults=await evaluate(fs.readFileSync(path.join(__dirname,'home-collections-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+collectionResults.length+' checks de colecoes e proporcoes');
       console.log('PASS '+protocol+' / '+entry+': '+homeArt.length+' verificações da casa e ferraria');
       const refugeResults=await evaluate(fs.readFileSync(path.join(__dirname,'dunstan-refuge-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+refugeResults.length+' checks do refugio');

@@ -16,16 +16,12 @@ const HOME_ITEMS=[
   {box:[185,320,250,185],point:[310,550],label:'Dormir na sua cama',act:()=>homeBedMenu()},
   {box:[450,310,160,65],point:[530,414],label:'Guarda-roupa campeiro',text:'Bombacha, pala e roupa limpa, tudo bem dobrado.'},
   {box:[1180,300,235,110],point:[1280,454],label:'Fogão de casa',text:'O calor da lenha e o cheiro de café recebem quem volta da lida.'},
-  {box:[795,300,175,80],point:[880,418],label:'Louceiro da família',text:'Pratos antigos, canecas esmaltadas e a louça guardada para as visitas.'},
-  {box:[980,310,165,68],point:[1060,410],label:'Bancada de cozinha',text:'Água fresca na moringa, uma tigela e um pano limpo para começar o dia.'},
-  {box:[845,495,320,165],point:[1005,710],label:'Mesa de prosa',text:'A cuia e a térmica já estão na mesa. Aqui a prosa não tem pressa.'},
+  {box:[775,310,330,40],point:[940,400],label:'Coleções e retratos',act:()=>homeCollectionsMenu()},
   {box:[90,635,195,120],point:[325,710],label:'Baú de lembranças',text:'Mantas e lembranças da família, bem guardadas no baú.'},
-  {box:[1280,705,165,75],point:[1215,740],label:'Arreios',text:'Arreio e laço descansam secos, prontos para a próxima estrada.'},
-  {box:[480,545,190,125],point:[730,640],label:'Canto de descanso',text:'Um bom livro, uma manta e a poltrona de couro para descansar depois do balcão.'},
-  {box:[140,280,70,75]}, {box:[475,620,70,80]}
+  {box:[140,280,70,75]}
 ].map((i,n)=>({...i,...homeRect(...i.box),kind:'homeScene'+n}));
 const HOME_WALLS=[homeRect(615,310,40,175)];
-const homeMap=interiorMap({id:'casa:sadi',name:'Sua casa campeira',sceneArt:'home-interior-v2',W:1400,H:950,bounds:HOME_BOUNDS,door:homePoint(768,0).x,doorHalf:82,
+const homeMap=interiorMap({id:'casa:sadi',name:'Sua casa campeira',sceneArt:'home-interior-v3',W:1400,H:950,bounds:HOME_BOUNDS,door:homePoint(768,0).x,doorHalf:82,
   walls:HOME_WALLS.map(r=>[r.x,r.y,r.w,r.h]),items:HOME_ITEMS,exit:()=>({map:'vila',...front(PLAYER_HOME,40),title:'Pátio de casa'})});
 const homeWalk=homeMap.canWalk;
 homeMap.canWalk=(x,y)=>{
@@ -42,16 +38,13 @@ const HOME_OCCLUSION=[
   {y:505,points:[[184,432],[214,310],[220,213],[425,208],[435,505],[183,505]]},
   {y:375,points:[[445,140],[610,140],[610,375],[450,375]]},
   {y:480,points:[[615,26],[655,26],[655,480],[615,480]]},
-  {y:380,points:[[795,125],[970,125],[970,380],[795,380]]},
+  {y:350,points:[[775,170],[1105,170],[1105,350],[775,350]]},
   {y:410,points:[[1180,220],[1418,220],[1418,410],[1180,410]]},
-  {y:660,points:[[845,542],[884,542],[886,432],[1124,432],[1128,542],[1165,542],[1165,649],[1115,649],[1115,662],[1094,662],[1094,573],[906,573],[906,662],[885,662],[885,647],[845,647]]},
-  {y:680,points:[[477,540],[494,479],[557,454],[601,463],[622,539],[661,550],[669,626],[602,670],[542,680],[535,641],[480,602]]},
   {y:755,points:[[90,611],[281,603],[281,755],[90,755]]},
-  {y:780,points:[[1283,693],[1302,642],[1340,648],[1405,658],[1442,683],[1442,780],[1283,780]]},
   {y:950,points:[[16,622],[62,620],[62,778],[609,778],[609,752],[654,752],[654,925],[16,925]]},
   {y:950,points:[[877,752],[923,752],[923,778],[1469,778],[1469,622],[1518,622],[1518,925],[877,925]]}
 ];
-function drawHomeScene(){campeiraSprite(homeMap.sceneArt,0,HOME_SCENE.x,HOME_SCENE.y,HOME_SCENE.w,HOME_SCENE.h);}
+function drawHomeScene(){campeiraSprite(homeMap.sceneArt,0,HOME_SCENE.x,HOME_SCENE.y,HOME_SCENE.w,HOME_SCENE.h);drawHomeCollections();}
 homeMap.draw=function(view,seen,layers){
   rect(view.x,view.y,view.w,view.h,'#100e0b');drawHomeScene();
   for(const mask of HOME_OCCLUSION){

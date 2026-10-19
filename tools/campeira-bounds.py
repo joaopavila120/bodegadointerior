@@ -6,6 +6,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 GRIDS = {
     'home-interior-v2': (1, 1),
+    'home-interior-v3': (1, 1),
     'church-colonia-v1': (1, 1), 'home-campeira-exterior-v1': (1, 1),
     'agriculture-colonia-v1': ([0, 768, 1536], [0, 390, 660, 1024]),
     'home-furniture-v1': ([0, 592, 980, 1536], [0, 330, 548, 813, 1024]),

@@ -33,7 +33,7 @@ function isSpecial(i){return ALWAYS_TALK.has(PEOPLE[i]?.id);}
 function specialPeople(){return PEOPLE.map((p,i)=>i).filter(i=>isSpecial(i)&&PEOPLE[i].id!==G.avatarId);}
 function hasContact(i){return !!G.contacts?.[PEOPLE[i]?.id];}
 function contactPeople(){return specialPeople().filter(hasContact);}
-function addFriendship(person,n){if(!isSpecial(person))return;const before=G.friends[person]||0;G.friends[person]=clamp(before+n,0,MAX_FRIENDSHIP);if(before<QUADRO_AT&&G.friends[person]>=QUADRO_AT&&PORTRAIT_FILES[PEOPLE[person].id])showBanner('Quadro de '+PEOPLE[person].name+' liberado!','A amizade rendeu um retrato: pendure na parede pela aba Estética do celular.','friend',{world:true});}
+function addFriendship(person,n){if(!isSpecial(person))return;const before=G.friends[person]||0;G.friends[person]=clamp(before+n,0,MAX_FRIENDSHIP);if(before<QUADRO_AT&&G.friends[person]>=QUADRO_AT&&PORTRAIT_FILES[PEOPLE[person].id])showBanner('Quadro de '+PEOPLE[person].name+' liberado!','A amizade rendeu um retrato: pendure na sua casa, pela coleção ou pela aba Estética do celular.','friend',{world:true});}
 function unlockContact(person,silent=false){
  const id=PEOPLE[person]?.id;if(!id||G.contacts[id])return;G.contacts[id]=G.day;
  if(!silent)showBanner('Novo contato: '+PEOPLE[person].name,'Agora dá para convidar para truco e bocha.','friend');

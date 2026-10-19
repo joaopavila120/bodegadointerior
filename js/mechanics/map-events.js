@@ -7,7 +7,7 @@
 //   · Baile de capela (Badin): missa na capela da Serra e depois baile no salão, servindo vinho e polenta.
 //   · Rodeio crioulo (Guri): prova de laço contra o relógio no CTG, com placar e troféu.
 //   · Festa da Uva (Badin): concurso de vinho de garrafão no salão da Serra; ganha a melhor nota.
-// Também aqui: o guri da vela, que aparece raramente na beira do rio, e a prateleira de lembranças da bodega.
+// Também aqui: o guri da vela e as lembranças expostas na casa do Sadi.
 'use strict';
 
 const JAVALI_NEED = 3, JAVALI_HITS = 3;
@@ -234,7 +234,7 @@ function cupAfter(m) {
   if (st.won) { G.trophies ??= {}; G.trophies.penalti = { day: G.day }; }
   const rw = st.won ? def.reward : { cash: 20 * round, xp: 30 + 15 * round, friend: { marcio: 3, marcelo: 3 } };
   grantReward(rw); save(); refreshHUD();
-  talk(st.won ? [['marcio', 'É CAMPEÃO! O bodegueiro é campeão de pênaltis da Serra!'], ['marcelo', 'Toma o troféu, Sadi. Vai pra prateleira da bodega, do lado da janela. Show de bola!'], ['reward', rw, 'Campeonato de pênaltis · campeão']]
+  talk(st.won ? [['marcio', 'É CAMPEÃO! O bodegueiro é campeão de pênaltis da Serra!'], ['marcelo', 'Toma o troféu, Sadi. Vai pra prateleira da tua casa, junto das lembranças. Show de bola!'], ['reward', rw, 'Campeonato de pênaltis · campeão']]
     : [['marcelo', 'Ficou nas ' + CUP_ROUNDS[round].toLowerCase() + ', mas foi bonito de ver!'], ['marcio', 'No próximo campeonato tu volta pra buscar o troféu, é o quê?'], ['reward', rw, 'Campeonato de pênaltis']], null, 'Receber');
 }
 {
@@ -381,7 +381,7 @@ function meetNegrinho() {
   playSteps(negrinhoSteps(), 'negrinho', () => {
     G.player = saved; G.relics ??= {}; G.relics.cuia_vo = G.day;
     const rw = { xp: 80, rep: 5 }; grantReward(rw); save(); refreshHUD();
-    talk([['card', '<b>🧉 Cuia de porongo do vô</b><br>Item raro. Agora ela fica na prateleira de lembranças da bodega, embaixo da janela, junto dos troféus.<br><br><i>“Pra quem vier depois de mim: o mate é pra repartir.”</i>', 'Item raro'], ['reward', rw, 'O guri da vela']], null, 'Guardar com carinho');
+    talk([['card', '<b>🧉 Cuia de porongo do vô</b><br>Item raro. Agora ela fica na prateleira de lembranças da sua casa, junto dos troféus.<br><br><i>“Pra quem vier depois de mim: o mate é pra repartir.”</i>', 'Item raro'], ['reward', rw, 'O guri da vela']], null, 'Guardar com carinho');
   });
 }
 // Cena na beira do rio, de noite: lua, estrelas, a outra margem e as moitas de sarandi.
@@ -411,7 +411,6 @@ SCENE_VIEWS.rio = drawSceneRio;
 // ---------- Estante de lembranças (bodega, à direita da janela) ----------
 // Troféus dos eventos, a cuia e as coisas do vô e as lembranças do folclore: três por prateleira, só aparece quando tem
 // alguma coisa para mostrar.
-const LEMBRANCAS = { x: 1430, y: 206, w: 112, gap: 44 };
 function lembrancas() { const t = G.trophies || {}, r = G.relics || {}; return [t.rodeio && 'rodeio', t.penalti && 'penalti', t.uva && 'uva', r.cuia_vo && 'cuia', r.foto1968 && 'foto1968', r.retrato && 'retrato', r.ticao && 'ticao', r.fita && 'fita', r.escama && 'escama', r.freio && 'freio'].filter(Boolean); }
 function drawTrophy(x, y, color, deco) {
   rect(x - 14, y - 8, 28, 8, '#4a3018', 2); rect(x - 4, y - 22, 8, 14, color); ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x - 17, y - 50); ctx.lineTo(x + 17, y - 50); ctx.quadraticCurveTo(x + 15, y - 22, x, y - 22); ctx.quadraticCurveTo(x - 15, y - 22, x - 17, y - 50); ctx.fill();
@@ -428,15 +427,9 @@ function drawLembranca(id, x, y) {
   else drawTrophy(x, y, id === 'uva' ? '#c8ccd4' : '#e0b040', id === 'rodeio' ? (a, b) => { ctx.strokeStyle = '#7a4a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(a, b, 6, 4, 0, 0, Math.PI * 2); ctx.stroke(); } : id === 'penalti' ? (a, b) => { ellipse(a, b, 5, 5, '#f4f4f4'); ellipse(a, b, 2, 2, '#222'); } : (a, b) => { for (const [ox, oy] of [[-3, -2], [3, -2], [0, 2], [-3, 5], [3, 5], [0, 8]]) ellipse(a + ox, b + oy - 3, 2.6, 2.6, '#6a2a7a'); });
 }
 function drawLembrancas() {
-  const items = lembrancas(); if (!items.length || worldOut) return;
-  const { x, w, gap } = LEMBRANCAS, levels = Math.ceil(items.length / 3);
-  for (let l = 0; l < levels; l++) { const y = LEMBRANCAS.y + l * gap; rect(x, y, w, 8, '#6a4424', 2, '#3a2412'); rect(x + 8, y + 8, 6, 10, '#4a2e16'); rect(x + w - 14, y + 8, 6, 10, '#4a2e16'); }
-  items.forEach((id, k) => {
-    const y = LEMBRANCAS.y + Math.floor(k / 3) * gap, cx = x + 20 + (k % 3) * 36;
-    ctx.save(); ctx.translate(cx, y); ctx.scale(.7, .7); drawLembranca(id, 0, 0); ctx.restore();
-  });
+  if(typeof drawHomeCollections==='function')drawHomeCollections();
 }
-{ const decor = drawDecor; drawDecor = function () { decor(); drawLembrancas(); }; }
+// Lembranças are displayed by the player's home, not by bodega decoration.
 
 // ---------- Ligações com os mapas ----------
 function eventPerson(id, x, y, layers, dx = 1) { const i = PEOPLE.findIndex(p => p.id === id); if (i >= 0) layers.push({ y, draw: () => personDraw(PEOPLE[i].sprite, x, y, false, false, dx) }); }

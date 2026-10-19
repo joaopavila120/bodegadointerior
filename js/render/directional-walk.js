@@ -38,6 +38,7 @@ function visitorWalkDirection(id,x,y,dx,dy) {
   return {dx,dy};
 }
 function drawDirectionalPerson(sprite,x,y,walking,chef,dx,seated,mood,dy){
+  if(worldOut&&!chef&&!seated&&typeof drawWorldCharacterPose==='function'&&drawWorldCharacterPose(sprite,x,y,walking,dx,dy))return true;
   if(typeof drawExpansionPerson==='function'&&drawExpansionPerson(sprite,x,y,walking,chef,dx,seated,mood,dy))return true;
   const id=walkCharacterId(sprite);
   if(!id||seated||!WALK_ART[id]?.naturalWidth)return false;

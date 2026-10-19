@@ -111,7 +111,7 @@ function playCarta() {
     { say: 'erna', text: 'Ela voltou pra Fronteira uma semana depois de ele escrever isto. Nunca precisou ler: ele foi buscar ela a cavalo.' },
     { say: 'erna', text: 'Então tu é o neto da Helga… Tem os olhos dela.' },
     { say: 'loligebien', text: 'Ja?! Então a gente é primo, Sadi! Eu sabia que tinha coisa nesse sorriso!' },
-    { say: 'erna', text: 'Toma: o retrato do casamento deles. O lugar dele é na bodega.' },
+    { say: 'erna', text: 'Toma: o retrato do casamento deles. O lugar dele é na tua casa, junto das lembranças.' },
     { say: 'sadi', text: 'Obrigado, Dona Erna… tia Erna.' }, { fade: 'out', time: 1 }], 'carta',
     () => { G.player = saved; voState().carta = 'delivered'; G.relics ??= {}; G.relics.retrato = G.day; save(); refreshHUD(); });
 }

@@ -84,24 +84,30 @@ function personalizeMenu(){
  openDialog('Personalizar bodega',`<p>Deixe a bodega com a sua cara. A decoração se compra aqui; melhorias novas, botas e o cavalo na Ferragem da Fronteira (o bodoque, na Casa do Campeiro).</p>${moveisSection()||'<h3>Móveis da bodega</h3><p class="small-note">Quando comprar melhorias como a mesa de tragos, dá para guardar ou reinstalar aqui.</p>'}<h3>Decoração</h3>${decorPanel(true)}<div class="actions"><button data-act="caixaBack">Voltar ao caixa</button><button data-act="close">Fechar</button></div>`,'personalizar');
  box.scrollTop=keep;
 }
-function refreshCustomize(){if(modal==='personalizar')personalizeMenu();}
+function refreshCustomize(){if(modal==='personalizar')personalizeMenu();else if(modal==='homeCollections')homeCollectionsMenu();}
 
 function drawDecor(){
  ctx.save();ctx.imageSmoothingEnabled=false;
  for(const d of DECOR)if(decorVisible(d))drawRoomArt(DECOR_ART[d.id],d.at[0],d.at[1]);
- ctx.restore();drawFriendPortrait();
+ ctx.restore();
 }
-// Quadros dos amigos: amizade 25 libera o retrato de cada especial; cabe um na parede da direita, ao lado da janela.
-// Quadro do amigo: pequeno, embaixo da janela.
-const QUADRO_AT=25,QUADRO_SPOT=[1260,258,64,80],QUADRO_ART={};
+// Friendship portraits now hang above the collection in Sadi's home.
+const QUADRO_AT=25,HOME_PORTRAIT_LIMIT=4,QUADRO_ART={};
 function quadroPeople(){return Object.keys(PORTRAIT_FILES).map(id=>PEOPLE.findIndex(p=>p.id===id)).filter(i=>i>=0&&!PEOPLE[i].removed);}
 function quadroUnlocked(i){return (G.friends[i]||0)>=QUADRO_AT;}
-function toggleQuadro(id){const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;G.quadro=G.quadro===id?null:id;say(G.quadro?'Quadro de '+PEOPLE[i].name+' na parede!':'Quadro guardado.');AudioEngine.heart();save();renderPhone();refreshCustomize();}
-function quadroPanel(){return `<details class="upgrade-category" open><summary>Quadros dos amigos</summary><p class="small-note">Amizade ${QUADRO_AT} libera o quadro de cada especial. Só cabe um na parede.</p>`+quadroPeople().map(i=>{const id=PEOPLE[i].id,ok=quadroUnlocked(i),on=G.quadro===id;return `<div class="decor-card${on?' shown':''}"><span class="decor-thumb">${portraitHTML(i,56)}</span><div><h3>Quadro de ${PEOPLE[i].name}</h3><small>${ok?'Liberado pela amizade':'Amizade '+Math.floor(G.friends[i]||0)+'/'+QUADRO_AT}</small>${ok?`<button data-act="quadro" data-id="${id}" aria-pressed="${on}">${on?'Na parede ✓ · tirar':'Pendurar na parede'}</button>`:'<button disabled>Ainda bloqueado</button>'}</div></div>`;}).join('')+'</details>';}
-function drawFriendPortrait(){
- const id=G.quadro;if(!id||!PORTRAIT_FILES[id])return;
+function homePortraits(){return [...new Set(Array.isArray(G.homePortraits)?G.homePortraits:G.quadro?[G.quadro]:[])].filter(id=>PORTRAIT_FILES[id]).slice(0,HOME_PORTRAIT_LIMIT);}
+function toggleQuadro(id){
+ const i=PEOPLE.findIndex(p=>p.id===id);if(i<0||!quadroUnlocked(i))return;
+ const list=homePortraits(),on=list.includes(id);
+ if(!on&&list.length>=HOME_PORTRAIT_LIMIT){floatNote('Os quatro lugares estão ocupados. Guarde um retrato para pendurar outro.');return;}
+ G.homePortraits=on?list.filter(k=>k!==id):[...list,id];G.quadro=G.homePortraits[0]||null;
+ floatNote(on?'Retrato guardado.':'Retrato de '+PEOPLE[i].name+' na sua casa!');AudioEngine.heart();save();renderPhone();refreshCustomize();
+}
+function quadroPanel(){return `<details class="upgrade-category" open><summary>Retratos da sua casa · ${homePortraits().length}/${HOME_PORTRAIT_LIMIT}</summary><p class="small-note">Amizade ${QUADRO_AT} libera o retrato de cada especial. Pendure até quatro acima da prateleira na casa do Sadi.</p>`+quadroPeople().map(i=>{const id=PEOPLE[i].id,ok=quadroUnlocked(i),on=homePortraits().includes(id);return `<div class="decor-card${on?' shown':''}"><span class="decor-thumb">${portraitHTML(i,56)}</span><div><h3>Quadro de ${PEOPLE[i].name}</h3><small>${ok?'Liberado pela amizade':'Amizade '+Math.floor(G.friends[i]||0)+'/'+QUADRO_AT}</small>${ok?`<button data-act="quadro" data-id="${id}" aria-pressed="${on}">${on?'Na sua casa ✓ · guardar':'Pendurar em casa'}</button>`:'<button disabled>Ainda bloqueado</button>'}</div></div>`;}).join('')+'</details>';}
+function drawFriendPortrait(id,spot){
+ if(worldOut?.map!=='casa:sadi'||!id||!PORTRAIT_FILES[id]||!spot)return;
  const img=QUADRO_ART[id]??=Object.assign(new Image(),{src:'assets/images/portraits/256/'+PORTRAIT_FILES[id]+'.jpg'});
- const[rx,ry,rw,rh]=QUADRO_SPOT,x=roomX(rx),y=roomY(ry),w=roomX(rw),h=roomY(rh);
+ const{x,y,w,h}=spot;
  rect(x-8,y-8,w+16,h+16,'#5a3a1e',3,'#2a1a0e');rect(x-3,y-3,w+6,h+6,'#c8a050',2);
  if(img.complete&&img.naturalWidth){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/s,sh=h/s;ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,x,y,w,h);}else rect(x,y,w,h,'#3a2a1a');
 }

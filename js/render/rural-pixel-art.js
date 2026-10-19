@@ -98,14 +98,6 @@ useWorldArt('drawLembranca',(id,x,y)=>{
   const index=KEEPSAKE_ART[id];if(index===undefined)return false;
   return worldSprite('keepsakes-v2',index,x-25,y-54,50,54);
 });
-useWorldArt('drawLembrancas',()=>{
-  if(!WORLD_ART['keepsakes-v2'].naturalWidth)return false;
-  const items=lembrancas();if(!items.length||worldOut)return true;
-  const {x,y,w,gap}=LEMBRANCAS;
-  for(let l=0;l<Math.ceil(items.length/3);l++)worldSprite('keepsakes-v2',10,x,y+l*gap-2,w,30);
-  items.forEach((id,k)=>{const cx=x+20+k%3*36,base=y+Math.floor(k/3)*gap+7;ctx.save();ctx.translate(cx,base);ctx.scale(.62,.62);drawLembranca(id,0,0);ctx.restore();});
-  return true;
-});
 function drawFiadoSign(x,y,w,h){
   if(worldSprite('keepsakes-v2',11,x,y,w,h))return;
   if(placaFiadoArt.naturalWidth)ctx.drawImage(placaFiadoArt,x,y,w,h);

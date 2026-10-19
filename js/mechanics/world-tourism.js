@@ -68,7 +68,7 @@ for(const id of ['vila','serra','sc']){
  const map=WORLD_MAPS[id],spots=map.spots,draw=map.draw;
  map.spots=function(){
   const list=spots.call(this);
-  if(id==='serra'){const church=list.find(s=>s.id==='igreja');church.x=SERRA.igreja.x+SERRA.igreja.w*.27;}
+  if(id==='serra'){const church=list.find(s=>s.id==='igreja');church.x=SERRA.igreja.x+SERRA.igreja.w*.5;}
   if(id==='vila')list.push({id:'ctg',...front(VILA.ctg),label:'Entrar no CTG da Fronteira',act:()=>enterInterior('ctg')});
   if(id==='sc')list.push({id:'oktoberfest',...front(SC.oktoberfest),label:'Entrar no salão da Oktoberfest',act:()=>enterInterior('oktoberfest')});
   return [...list,...WORLD_DISCOVERIES.filter(d=>d.map===id).map(d=>({id:'discovery:'+d.id,...discoveryPoint(d),radius:d.secret?42:90,label:d.secret?'Observar de perto':'Curiosidade: '+d.name,act:()=>discoverWorldPlace(d.id)}))];

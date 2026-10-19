@@ -7,7 +7,7 @@ function nearShopDoor(){if(!started||worldOut||G.lasso||G.bocce||G.atCancha||sce
 function shopDoorLabel(){return ['open','closing'].includes(G.phase)&&!prologueActive()?'Porta · encerre o expediente no caixa para sair':'Sair para o pátio';}
 // A porta só leva para fora. Com o expediente aberto, não dá para largar a freguesia: primeiro encerre no caixa.
 function doorExit(){if(['open','closing'].includes(G.phase)&&!prologueActive()){warnDialog('A bodega está aberta','Com o expediente aberto não dá para sair: a freguesia ficaria sozinha. Vá ao <b>caixa</b> (o balcão de atendimento), encerre o expediente e depois saia pela porta.');return;}goOutside();}
-// Caixa da bodega, no balcão de atendimento: abrir (uma vez por dia), encerrar o expediente e dormir.
+// Caixa da bodega: abrir e encerrar o expediente. O descanso fica na cama de casa.
 function caixaMenu(){
  if(prologueActive()){warnDialog('Caixa da bodega','A prateleira ainda está vazia. Agora: <b>'+prologueStep().title.toLowerCase()+'</b>.');return;}
  const e=eventInfo(),tut=tutorialActive(),btn=[];let note='';
@@ -15,10 +15,10 @@ function caixaMenu(){
   note=G.event.noCostelao?'<p class="small-note">🔥 Sem costelão hoje: falta manta, boi e dinheiro. O domingo vira um dia normal.</p>':`<p class="small-note">💡 ${e.prep}</p>`;
   if(!tut){const b=loyalNext();note+=b?`<p class="small-note">🤝 Freguesia fiel: abrindo hoje, +${money(b)} no fechamento.</p>`:'';}
   if(!tut&&bodegaLevel()>1)note+=`<p class="small-note">⭐ Fama da bodega (nível ${bodegaLevel()}): tudo vende ${Math.round((fameBonus()-1)*100)}% mais caro.</p>`;
-  btn.push('<button class="primary" data-act="caixaOpen">Abrir a bodega</button>');if(!tut)btn.push('<button data-act="caixaSleep">Dormir (passar para o próximo dia)</button>');
+  btn.push('<button class="primary" data-act="caixaOpen">Abrir a bodega</button>');
  }else if(G.phase==='open'){const fila=G.shop.filter(c=>c.state==='queue').length+G.groups.length;note='<p>Expediente aberto. '+(tut?'Hoje o expediente termina sozinho depois das lições.':'Encerrar fecha as portas: quem já chegou ainda é atendido'+(fila?' ('+fila+(fila>1?' fregueses esperando)':' freguês esperando)'):'')+'.')+'</p>';if(!tut)btn.push('<button class="primary" data-act="caixaClose">Encerrar o expediente</button>');}
  else if(G.phase==='closing'){note='<p>Portas fechadas: atenda quem já chegou, ou encerre de vez.</p>';btn.push('<button class="danger" data-act="caixaClose">Encerrar agora (cancela os pedidos)</button>');}
- else{note='<p>A bodega já fechou hoje: abrir de novo, só amanhã. Antes de dormir, dá para dar uma volta lá fora.</p>';btn.push('<button class="primary" data-act="caixaSleep">Dormir (passar para o próximo dia)</button>');if(G.report)btn.push('<button data-act="caixaReport">Ver o caixa de hoje</button>');}
+ else{note='<p>A bodega já fechou hoje: abrir de novo, só amanhã. Para dormir, vá até a cama da sua casa, ao lado da bodega.</p>';if(G.report)btn.push('<button data-act="caixaReport">Ver o caixa de hoje</button>');}
  if(G.testMode||G.eventMode)btn.push('<button data-act="testSkip" data-id="1">⏭ Pular 1 dia (teste)</button><button data-act="testSkip" data-id="7">⏭ Pular 7 dias (teste)</button>');
  if(!tut)btn.push('<button data-act="personalizar">🎨 Personalizar bodega</button>');
  if(!tut&&G.staffUnlocked)btn.push('<button data-act="staffMenu">👥 Ajudantes</button>');

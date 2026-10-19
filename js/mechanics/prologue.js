@@ -2,7 +2,7 @@
 // · Minijogo da roça (ordenhar a vaca), numa janela própria; o forno e o tacho são um botão só.
 // · Forno a lenha e tacho na cozinha da bodega: o trigo da horta vira pão de xis e o leite da vaca vira queijo.
 // · Prólogo com o Valter: sementes, horta, alguns dias depois a colheita, o pão, a laçada e a carneação, o curral,
-//   o queijo e as compras no Atacado. No fim, o tutorial da bodega de sempre.
+//   o queijo e as compras no Armazém Geral. No fim, o tutorial da bodega de sempre.
 // · Dicas do Valter ao longo do jogo e o desafiante de bocha esperando na cancha, ao lado da bodega.
 'use strict';
 
@@ -216,9 +216,9 @@ const PROLOGUE_STEPS = [
   { id: 'queijo', title: 'Queijo no tacho', places: [], target: { kitchen: 'tacho' },
     text: () => 'Volte para a <b>bodega</b>. No <b>tacho</b>, na cozinha, ' + TACHO.leite + ' L de leite viram ' + TACHO.fatias + ' fatias de queijo para o xis.',
     done: () => prologueFlagSet('queijo'),
-    after: ['Pão, carne, ovo, queijo e salada: o xis tá completo!', 'O que não dá na roça tu compra no Atacado da Fronteira: cerveja, refri, cachaça, cigarro e amendoim.', 'E leva vidros: os ovinhos das codornas viram conserva na mesa de compota da cozinha.'] },
-  { id: 'compras', title: 'Compras no Atacado da Fronteira', places: ['atacado'], target: { map: 'atacado', spot: 'item:caixa' },
-    text: () => 'Bebida e cigarro não dão na roça. No <b>Atacado da Fronteira</b>, no caixa, compre ' + [['cerveja', 'cerveja'], ['refri', 'refrigerante'], ['cigarro', 'cigarro']].map(([k, t]) => (G.stock[k] + bagQty(k) > 0 ? '✔ ' : '') + '<b>' + t + '</b>').join(', ') + ' e ' + (bagQty('vidro') > 0 ? '✔ ' : '') + '<b>vidros de conserva</b>.',
+    after: ['Pão, carne, ovo, queijo e salada: o xis tá completo!', 'O que não dá na roça tu compra no Armazém Geral: cerveja, refri, cachaça, cigarro e amendoim.', 'E leva vidros: os ovinhos das codornas viram conserva na mesa de compota da cozinha.'] },
+  { id: 'compras', title: 'Compras no Armazém Geral', places: ['atacado'], target: { map: 'atacado', spot: 'item:caixa' },
+    text: () => 'Bebida e cigarro não dão na roça. No <b>Armazém Geral</b>, no caixa, compre ' + [['cerveja', 'cerveja'], ['refri', 'refrigerante'], ['cigarro', 'cigarro']].map(([k, t]) => (G.stock[k] + bagQty(k) > 0 ? '✔ ' : '') + '<b>' + t + '</b>').join(', ') + ' e ' + (bagQty('vidro') > 0 ? '✔ ' : '') + '<b>vidros de conserva</b>.',
     done: () => ['cerveja', 'refri', 'cigarro'].every(k => G.stock[k] + bagQty(k) > 0) && (bagQty('vidro') > 0 || prologueFlagSet('compota')),
     after: ['Prateleira quase cheia! Falta a conserva de codorna, que freguês de balcão adora.', 'Na cozinha da bodega tem a mesa de compota: seis ovinhos e um vidro viram três potes.'] },
   { id: 'compota', title: 'Conserva na mesa de compota', places: [], target: { kitchen: 'conservas' },

@@ -32,7 +32,7 @@
    const door=WORLD_MAPS[map].spots().find(s=>s.id===id);
    worldOut={map,x:door.x,y:door.y,dx:0,dy:1};door.act();
    check(worldOut.map===id&&WORLD_MAPS[id].canWalk(worldOut.x,worldOut.y),'Entrada do interior falhou: '+id);
-   const back=WORLD_MAPS[id].edge({x:worldOut.x,y:WORLD_MAPS[id].bounds.y+WORLD_MAPS[id].bounds.h+30});
+   const M=WORLD_MAPS[id],back=M.edge(M.exitPoint||{x:worldOut.x,y:M.bounds.y+M.bounds.h+30});
    check(back?.map===map&&Math.abs(back.x-door.x)<1,'Interior devolve ao mapa errado: '+id);
   }
   check(WORLD_MAPS.ctg.items.length===SALAO_ITEMS.length+HALL_THEMES.ctg.extra.length&&WORLD_MAPS.ctg.items.every(i=>!WORLD_MAPS.salao.items.includes(i)&&!SALAO_ITEMS.includes(i)),'CTG deve reutilizar layout sem compartilhar objetos mutáveis');

@@ -66,9 +66,9 @@
   check(near('tacho')==='tacho','dá para chegar ao tacho');interact();check(modal==='tacho'&&$('dialogContent').innerHTML.includes('Queijo em fatias')&&!/colonial/i.test($('dialogContent').innerHTML),'o tacho faz só o queijo em fatias (sem queijo colonial)');
   action('makeQueijo','fatias');check(!farmGame&&!modal,'o queijo é só um botão, sem minijogo');
   check(G.stock.queijo===TACHO.fatias&&bagQty('leite')===4,'4 litros de leite viram 10 fatias de queijo');
-  tick(2);talk();check(step()==='compras','depois do queijo, as compras no Atacado');
-  goOutside();enterInterior('atacado');check(worldOut.map==='atacado','o Atacado abre no passo das compras');
-  storeShop('atacado');check(!$('dialogContent').innerHTML.includes('data-id="pao_xis"')&&$('dialogContent').innerHTML.includes('data-id="cerveja"')&&$('dialogContent').innerHTML.includes('Vidros de conserva'),'o Atacado vende bebida e vidros, não o que sai da roça');check($('dialogContent').textContent.includes('Missão · Compras no Atacado')&&$('dialogContent').querySelectorAll('.shop-checklist li').length===4,'no caixa, o aviso da missão lista o que comprar e quanto');
+  tick(2);talk();check(step()==='compras','depois do queijo, as compras no Armazém Geral');
+  goOutside();enterInterior('atacado');check(worldOut.map==='atacado','o Armazém Geral abre no passo das compras');
+  storeShop('atacado');check(!$('dialogContent').innerHTML.includes('data-id="pao_xis"')&&$('dialogContent').innerHTML.includes('data-id="cerveja"')&&$('dialogContent').innerHTML.includes('Vidros de conserva'),'o Armazém Geral vende bebida e vidros, não o que sai da roça');check($('dialogContent').textContent.includes('Missão · Compras no Armazém Geral')&&$('dialogContent').querySelectorAll('.shop-checklist li').length===4,'no caixa, o aviso da missão lista o que comprar e quanto');
   ['cerveja','refri','cigarro'].forEach(storeBuy);storeExtra('vidro');closeDialog(true);tick(2);talk();
   check(step()==='compota'&&bagQty('vidro')>0,'compras feitas: falta a compota de ovinhos');
   goInside();check(near('conservas')==='conservas','a mesa de compota fica na cozinha');interact();check(modal==='worldStore'&&$('dialogTitle').textContent==='Mesa de compota','a mesa abre as receitas de compota');

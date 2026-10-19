@@ -30,7 +30,7 @@ function oktoGoal() {
 }
 function oktoDeliver() {
   const o = oktoState(); if (!o || o.delivered != null) return;
-  if (haveItem('cerveja') < OKTO_BEER) { talk([['loligebien', 'Ainda falta cerveja, primo! São ' + OKTO_BEER + ' pra encher o barril da festa. Tem no Atacado da Fronteira, ja.']], null, 'Vou buscar'); return; }
+  if (haveItem('cerveja') < OKTO_BEER) { talk([['loligebien', 'Ainda falta cerveja, primo! São ' + OKTO_BEER + ' pra encher o barril da festa. Tem no Armazém Geral, ja.']], null, 'Vou buscar'); return; }
   takeItems({ cerveja: OKTO_BEER }); o.delivered = G.day; o.festDay = G.phase === 'closed' ? G.day + 1 : G.day; save(); refreshHUD();
   talk([['loligebien', 'Ja! Barril cheio! A Oma já tá fazendo cuca pra mil pessoas.'], ['loligebien', o.festDay === G.day ? 'A Oktoberfest é hoje à noite, no salão! Tu cuida da chopeira, primo.' : 'A Oktoberfest é amanhã à noite, no salão. Tu cuida da chopeira, primo!']], null, 'Prost!');
 }

@@ -42,7 +42,7 @@ with Image.open(root / 'assets/images/world/frontier-flora.png') as image:
     # The top-left bush extends slightly into the first gutter.
     regions['frontier-flora'][0] = (0, 0, 550, h // 2)
     regions['frontier-flora'][1] = (552, 0, 1022, h // 2)
-for key in ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-atacado', 'architecture-shop-pecuaria', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest']:
+for key in ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-armazem-geral', 'architecture-shop-pecuaria', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest']:
     with Image.open(root / 'assets/images/world' / (key + '.png')) as image:
         regions[key] = [(0, 0, *image.size)]
 with Image.open(root / 'assets/images/world/pew.png') as pew:

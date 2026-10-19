@@ -1,6 +1,6 @@
 // Álbum de cartas: cada carta tem frente (arte) e verso (história). Os amigos especiais dão a carta deles com amizade
 // 30; os eventos e as assombrações vencidas dão as cartas ligadas a eles; o resto vem do envelope de figurinhas do
-// Atacado e dos baús da caverna da Serra. Abre no Guia e progresso → Álbum de cartas.
+// Armazém Geral e dos baús da caverna da Serra. Abre no Guia e progresso → Álbum de cartas.
 'use strict';
 
 const CARD_FRIEND = 30, ENVELOPE_COST = 20;
@@ -32,7 +32,7 @@ function cardsTick() {
   for (const [relic, ids] of Object.entries(RELIC_CARDS)) if (G.relics?.[relic]) for (const k of ids) if (!hasCard(k)) { giveCard(k, 'lenda'); return; }
 }
 
-// ---------- Envelope de figurinhas (Atacado) ----------
+// ---------- Envelope de figurinhas (Armazém Geral) ----------
 function envelopeHTML() {
   const left = looseCards().filter(c => !hasCard(c.id)).length;
   return '<h3>Figurinhas</h3><div class="store-list">' + extraCard('figurinha', '🃏', 'Envelope de figurinhas', left ? 'Uma carta histórica nova para o álbum · faltam ' + left + ' das soltas' : 'Você já tem todas as figurinhas soltas do envelope.', ENVELOPE_COST, left ? 'Comprar · ' + money(ENVELOPE_COST) : 'Coleção completa', !!left) + '</div>';
@@ -69,7 +69,7 @@ function albumCard(id, fromStore = false) {
   const c = cardDef(id); if (!c || !hasCard(id)) return;
   const list = CARDS.filter(x => x.set === c.set && hasCard(x.id)), k = list.indexOf(c), prev = list[(k - 1 + list.length) % list.length], next = list[(k + 1) % list.length];
   openDialog(c.name, `<div class="tcard-stage"><div class="tcard" id="tcardFlip" data-act="albumFlip" role="button" tabindex="0" aria-label="Virar a carta"><div class="tcard-inner">${cardFront(c)}${cardBack(c)}</div></div></div>
-    <div class="actions"><button data-act="albumCard" data-id="${prev.id}" ${list.length < 2 ? 'disabled' : ''} aria-label="Carta anterior">◀</button><button class="primary" data-act="albumFlip">Virar a carta</button><button data-act="albumCard" data-id="${next.id}" ${list.length < 2 ? 'disabled' : ''} aria-label="Próxima carta">▶</button>${fromStore ? '<button data-act="albumStore">Voltar ao Atacado</button>' : `<button data-act="album" data-id="${c.set}">Voltar ao álbum</button>`}</div>`, 'albumCard');
+    <div class="actions"><button data-act="albumCard" data-id="${prev.id}" ${list.length < 2 ? 'disabled' : ''} aria-label="Carta anterior">◀</button><button class="primary" data-act="albumFlip">Virar a carta</button><button data-act="albumCard" data-id="${next.id}" ${list.length < 2 ? 'disabled' : ''} aria-label="Próxima carta">▶</button>${fromStore ? '<button data-act="albumStore">Voltar ao Armazém Geral</button>' : `<button data-act="album" data-id="${c.set}">Voltar ao álbum</button>`}</div>`, 'albumCard');
 }
 function albumFlip() { const el = $('tcardFlip'); if (!el) return; el.classList.toggle('flipped'); AudioEngine.tick(); }
 

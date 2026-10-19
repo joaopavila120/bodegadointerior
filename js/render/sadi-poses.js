@@ -13,7 +13,7 @@ function sadiPoseSpec(x,y,forceCarry=null,facing=null){
   const carrying=forceCarry??playerCarrying(),dir=facing||p,direction=moving?walkDirection(dir.dx,dir.dy):0;
   const sheet=moving?(carrying?'tray':'walk'):'idle';
   const index=moving?walkPoseFrame('sadi',direction,pose.sidePhase):direction+(carrying?3:0);
-  const crop=SADI_POSE_CROPS[sheet][index],height=worldOut&&!worldMap().indoor?124:130;
+  const crop=SADI_POSE_CROPS[sheet][index],height=(worldOut&&!worldMap().indoor?124:130)*sadiScale();
   const reach=playerReachPose();
   return {sheet,index,crop,height,scale:height/crop[3],moving,carrying,direction,flip:direction===1&&dir.dx<0,angle:reach.lean*.3,dip:reach.dip*.5};
 }

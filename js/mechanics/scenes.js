@@ -111,7 +111,7 @@ const SCENE_OVERLAYS = { letter: 'sceneLetter', news: 'sceneNews', photo: 'scene
 function hideSceneOverlays() { for (const id of Object.values(SCENE_OVERLAYS)) $(id).classList.add('hidden'); }
 function sceneSpeaker(who) {
   if (who === 'dica') return { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">💡</span>', name: 'Dica' };
-  if (who === 'fornecedor') return { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">📞</span>', name: 'Atacado · telefone' };
+  if (who === 'fornecedor') return { portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">📞</span>', name: 'Armazém Geral · telefone' };
   if (who === 'sadi') return { portrait: portraitFromSprite(avatarSprite(), 104), name: PEOPLE.find(p => p.id === G.avatarId)?.name || 'Sadi' };
   const i = PEOPLE.findIndex(p => p.id === who); return { person: i, name: PEOPLE[i]?.name || who };
 }

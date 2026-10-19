@@ -53,7 +53,7 @@ function drawDirectionalPerson(sprite,x,y,walking,chef,dx,seated,mood,dy){
   const carrying=chef&&playerCarrying(),direction=carrying?(dy<-.25?2:0):walkDirection(dx,dy);
   const phase=chef?pose.sidePhase:frameClock*Math.PI*2*1.5;
   const index=walkPoseFrame(id,direction,phase,moving),crop=WALK_ART_CROPS[id][index];
-  const height=chef&&(!worldOut||worldMap().indoor)?130:124,scale=height/crop[3],width=crop[2]*scale;
+  const height=(chef&&(!worldOut||worldMap().indoor)?130:124)*(chef&&id==='sadi'?sadiScale():1),scale=height/crop[3],width=crop[2]*scale;
   const t=ctx.getTransform(),frame=walkFrame(id,index,height*Math.hypot(t.a,t.b));
   const back=direction===2,flip=direction===1&&dx<0;
   if(chef&&back)drawPlayerCarry(x,y,true);

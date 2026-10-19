@@ -213,7 +213,7 @@ function dunstanHorseshoesHTML() {
   return Object.entries(HORSESHOES).map(([id, s]) => {
     const own = horseshoeOwned(id), before = s.requires && !horseshoeOwned(s.requires), ok = !own && !before && hasNeeds(s.needs) && hasCash(s.cost);
     const info = own ? `<small>${horseshoes() === id ? 'No cavalo agora' : 'Trocada pela de ferro'}</small>` : before ? '<span class="req miss">antes: Ferraduras de cobre</span>' : reqChips(s.needs, s.cost);
-    return forjaCard('<span class="bag-emoji">🐎</span>', s.name, s.desc, info, `<button class="primary" data-act="ferraduraForjar" data-id="${id}" ${ok ? '' : 'disabled'}>${own ? '✔ No cavalo' : ok ? 'Forjar' : before ? 'Bloqueado' : 'Falta material'}</button>`, own ? 'owned' : '');
+    return forjaCard(campeiraIcon('forge-supplies-v1',id==='cobre'?14:15), s.name, s.desc, info, `<button class="primary" data-act="ferraduraForjar" data-id="${id}" ${ok ? '' : 'disabled'}>${own ? '✔ No cavalo' : ok ? 'Forjar' : before ? 'Bloqueado' : 'Falta material'}</button>`, own ? 'owned' : '');
   }).join('');
 }
 function horseshoeForge(id) {
@@ -236,7 +236,7 @@ function forjaCard(icon, name, desc, info, btn, cls = '') { return `<div class="
 function dunstanWeaponsHTML() {
   const cur = caveWeapon();
   return CAVE_WEAPONS.map(w => {
-    const emoji = `<span class="bag-emoji">${w.icon}</span>`, using = cur.id === w.id;
+    const emoji = forgeWeaponIcon(w.id), using = cur.id === w.id;
     if (weaponOwned(w.id)) return forjaCard(emoji, w.name, w.desc, `<small>${w.id === 'facao' ? 'Dano ' + (using ? caveDmg() : 12) : w.dmg + ' de dano'}${weaponRefine(w.id) ? ' · afiado +' + weaponRefine(w.id) : ''}</small>`,
       using ? '<button disabled>✔ Na mão</button>' : `<button class="primary" data-act="forjaEquip" data-id="${w.id}">Usar</button>`, using ? 'using' : 'owned');
     const ok = hasNeeds(w.needs) && hasCash(w.cost);
@@ -244,7 +244,7 @@ function dunstanWeaponsHTML() {
   }).join('');
 }
 function dunstanAfiarHTML() {
-  const cur = caveWeapon(), lv = weaponRefine(cur.id), icon = '<span class="bag-emoji">✨</span>';
+  const cur = caveWeapon(), lv = weaponRefine(cur.id), icon = forgeUpgradeIcon('afiado');
   if (lv >= AFIAR_MAX) return forjaCard(icon, 'Afiar ' + cur.name, 'Já está afiado ao máximo (+' + AFIAR_MAX + ').', '', '<button disabled>✔ Máximo</button>', 'owned');
   const needs = afiarNeeds(cur, lv + 1), cost = afiarCost(lv + 1), ok = hasNeeds(needs) && hasCash(cost);
   return forjaCard(icon, 'Afiar na pedra · +' + (lv + 1), '+3 de dano na arma que está na mão (' + cur.name + ').', reqChips(needs, cost), `<button class="primary" data-act="forjaAfiar" ${ok ? '' : 'disabled'}>${ok ? 'Afiar' : 'Falta material'}</button>`);
@@ -252,7 +252,7 @@ function dunstanAfiarHTML() {
 function upgradeCardHTML(u) {
   const owned = caveUp(u.id), before = u.requires && !caveUp(u.requires), ok = !owned && !before && hasCash(u.cost) && (!u.needs || hasNeeds(u.needs));
   const info = owned ? '' : before ? `<span class="req miss">antes: ${CAVE_UPGRADES.find(x => x.id === u.requires).name}</span>` : reqChips(u.needs, u.cost);
-  return forjaCard(`<span class="bag-emoji">${u.icon}</span>`, u.name, u.desc, info, `<button class="primary" data-act="facaoBuy" data-id="${u.id}" ${ok ? '' : 'disabled'}>${owned ? '✔ Já é teu' : ok ? 'Comprar' : before ? 'Bloqueado' : 'Falta material'}</button>`, owned ? 'owned' : '');
+  return forjaCard(forgeUpgradeIcon(u.id), u.name, u.desc, info, `<button class="primary" data-act="facaoBuy" data-id="${u.id}" ${ok ? '' : 'disabled'}>${owned ? '✔ Já é teu' : ok ? 'Comprar' : before ? 'Bloqueado' : 'Falta material'}</button>`, owned ? 'owned' : '');
 }
 function dunstanBolichoHTML() {
   const bag = caveBag(), max = caveBagMax();

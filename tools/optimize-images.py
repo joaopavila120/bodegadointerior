@@ -19,7 +19,7 @@ ASSETS = {
     'world/architecture-ctg.webp': .75, 'world/architecture-igreja.webp': .75, 'world/architecture-oktoberfest.webp': .75,
     'world/architecture-casona.webp': .75, 'world/architecture-salao.webp': .75, 'world/architecture2.webp': .75,
     'world/architecture-bodega-galpao-v1.png': .75, 'world/frontier-terrain.webp': .75,
-    'world/architecture-shop-atacado.png': .5, 'world/architecture-shop-sementes.png': .5, 'world/architecture-shop-pecuaria.png': .5,
+    'world/architecture-shop-armazem-geral.png': .5, 'world/architecture-shop-sementes.png': .5, 'world/architecture-shop-pecuaria.png': .5,
     'world/architecture-shop-melhorias.png': .5, 'world/architecture-shop-carnes.png': .5,
     'world/frontier-flora.webp': .5, 'world/overhead.webp': .5, 'world/landscape.webp': .5, 'world/store-shelves.webp': .5,
     'world/terrain.webp': .5, 'world/pew.webp': .5,

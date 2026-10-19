@@ -25,9 +25,9 @@
       worldOut={map:map.id,...map.spawn(),dx:0,dy:1};const p=map.spawn();
       check(map.canWalk(p.x,p.y),'Entrada livre: '+map.id);
       const layers=[];map.draw({x:0,y:0,w:map.W,h:map.H},()=>true,layers);layers.sort((a,b)=>a.y-b.y).forEach(l=>l.draw());
-      check(map.items.every(i=>typeof FURN[i.kind]==='function'),'Todos os objetos têm renderer: '+map.id);
+      check(map.sceneArt?WORLD_ART[map.sceneArt]?.naturalWidth>0:map.items.every(i=>typeof FURN[i.kind]==='function'),'Todos os objetos têm arte no cenário ou renderer: '+map.id);
     }
-    check(WORLD_MAPS.atacado.items.some(i=>i.kind==='crates')&&!WORLD_MAPS.atacado.items.some(i=>i.kind==='hay'),'Atacado usa engradados');
+    check(WORLD_MAPS.atacado.items.some(i=>i.kind==='crates')&&!WORLD_MAPS.atacado.items.some(i=>i.kind==='hay'),'Armazém Geral usa engradados');
     check(WORLD_MAPS.ferragem.items.filter(i=>i.kind==='storeShelf').every(i=>i.goods==='ferragem'),'Ferragem exibe melhorias e ferramentas');
     for(const k of ['interior-details-v2','interior-fittings-v2','interior-flags-v2','interior-materials-v2'])check(WORLD_ART[k].naturalWidth>0,'Atlas de interior: '+k);
     return results;

@@ -23,7 +23,7 @@
    const door=WORLD_MAPS.vila.spots().find(s=>s.id===id);
    worldOut={map:'vila',x:door.x,y:door.y,dx:0,dy:1};door.act();
    check(worldOut.map===id&&WORLD_MAPS[id].canWalk(worldOut.x,worldOut.y),'Shop entrance failed: '+id);
-   const M=WORLD_MAPS[id],back=M.edge({x:worldOut.x,y:M.bounds.y+M.bounds.h+30});
+   const M=WORLD_MAPS[id],back=M.edge(M.exitPoint||{x:worldOut.x,y:M.bounds.y+M.bounds.h+30});
    check(back?.map==='vila'&&Math.abs(back.x-door.x)<1,'Shop return failed: '+id);
   }
   G=fresh();worldOut={map:'vila',x:1620,y:845,dx:1,dy:0};playerAnimation=null;

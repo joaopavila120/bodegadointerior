@@ -83,6 +83,6 @@ function showTelevisionAward(){
 function doorReminder(){
  return '';
  if(!started||worldOut||scene||G.lasso||G.bocce||G.atCancha||G.game||G.task||G.dialogue||tutorialActive()||prologueActive()||sportState().waiting||costelaoPrepFirst()||!['prep','closed'].includes(G.phase))return '';
- if(G.phase==='closed')return '<b>Expediente encerrado</b><p>Para passar ao próximo dia, vá ao <b>caixa</b> (balcão de atendimento) e escolha <b>Dormir</b>. A porta leva para fora.</p>';
+ if(G.phase==='closed')return '<b>Expediente encerrado</b><p>Para passar ao próximo dia, vá à <b>cama da sua casa</b>, ao lado da bodega, e escolha <b>Dormir</b>.</p>';
  const campo=isCampo();return '<b>'+(campo?'O costelão está fechado':'A bodega está fechada')+'</b><p>Quando estiver pronto, vá ao <b>caixa</b> (balcão de atendimento), aperte <span class="keycap">E</span> e escolha <b>Abrir</b>'+(campo?' o domingo':' a bodega')+'. A porta leva para fora.</p>';
 }

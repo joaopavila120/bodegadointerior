@@ -253,7 +253,7 @@ WORLD_MAPS.vila = {
       ...hortaSpots(),
       { id: 'campo', ...front(V.fogo), label: isCampo() ? 'Voltar ao costelão' : 'Entrar no campo · curral, laço e fogo de chão', act: () => { if (isCampo()) goInside(); else enterInterior('curral'); } },
       { id: 'calendario', ...front(V.quadro, 26), label: 'Calendário de eventos', act: () => teachFirst('calendario', calendarDialog) },
-      { id: 'atacado', ...front(V.atacado), label: 'Mercadorias para a bodega · Atacado da Fronteira', act: () => enterInterior('atacado') },
+      { id: 'atacado', ...front(V.atacado), label: 'Mercadorias para a bodega · Armazém Geral', act: () => enterInterior('atacado') },
       { id: 'acougue', ...front(V.acougue), label: 'Carnes e cortes · Açougue da Fronteira', act: () => enterInterior('acougue') },
       { id: 'agro', ...front(V.agro), label: 'Sementes e ferramentas da horta · Armazém Querência', act: () => enterInterior('agro') },
       { id: 'gado', ...front(V.gado), label: 'Pecuária e animais · Casa do Campeiro', act: () => enterInterior('gado') },
@@ -279,7 +279,7 @@ WORLD_MAPS.vila = {
     add({ ...V.fogo, h: V.fogo.h - 120 }, () => { const f = V.fogo; worldFence(f.x, f.y + 40, f.w); drawBoi(2, Math.floor(frameClock * 1.2) % 2 ? 2 : 0, f.x + f.w - 46, f.y + 118, 1.1, true); signBoard(f.x + f.w / 2, f.y + 6, 180, 'CAMPO E CURRAL', 12); });
     add(V.agro, () => drawWorldShop(V.agro, 'ARMAZÉM QUERÊNCIA', 'produtos para agricultura', '#4a7a3a', '#e8e0c8', ['semente', 'regador', 'enxada']));
     add(V.gado, () => drawWorldShop(V.gado, 'CASA DO CAMPEIRO', 'produtos para pecuária', '#8a3a24', '#e8d8b8', ['sal', 'racao', 'arreio']));
-    add(V.atacado, () => drawWorldShop(V.atacado, 'ATACADO DA FRONTEIRA', 'bebidas, pão e balcão', '#2a5a8a', '#e8e0d0', ['garrafa', 'sal', 'garrafa']));
+    add(V.atacado, () => drawWorldShop(V.atacado, 'ARMAZÉM GERAL', 'bebidas, pão e balcão', '#2a5a8a', '#e8e0d0', ['garrafa', 'sal', 'garrafa']));
     add(V.acougue, () => drawWorldShop(V.acougue, 'AÇOUGUE DA FRONTEIRA', 'carnes e costela', '#a82a2a', '#f0ece4', ['carne', 'carne', 'carne']));
     add(V.quadro, drawQuadro);
     add(V.ferragem, drawFerragem);

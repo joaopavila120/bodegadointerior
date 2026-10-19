@@ -5,7 +5,7 @@ const WORLD_ART = {};
 const bodegaGalpaoArt=new Image();bodegaGalpaoArt.src='assets/images/world/architecture-bodega-galpao-v1.png';WORLD_ART['architecture-bodega-galpao-v1']=bodegaGalpaoArt;
 const RURAL_ART_SHEETS = ['rural-workstations-v2','folklore-v2','keepsakes-v2','mates-v2','butia-v2','harvest-items-v2','interior-details-v2','interior-materials-v2','interior-flags-v2','interior-fittings-v2'];
 for(const key of RURAL_ART_SHEETS){const im=new Image();im.src='assets/images/world/'+key+'.png';WORLD_ART[key]=im;}
-for (const key of ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-atacado', 'architecture-shop-pecuaria', 'buildings', 'nature', 'furniture', 'terrain', 'grass', 'rural', 'garden', 'architecture0', 'architecture1', 'architecture2', 'architecture3', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest', 'frontier-terrain', 'frontier-flora', 'architecture-fronteira', 'architecture-bolichos', 'store-shelves', 'landscape', 'meadow', 'pew', 'overhead']) {
+for (const key of ['architecture-shop-melhorias', 'architecture-shop-sementes', 'architecture-shop-carnes', 'architecture-shop-armazem-geral', 'architecture-shop-pecuaria', 'buildings', 'nature', 'furniture', 'terrain', 'grass', 'rural', 'garden', 'architecture0', 'architecture1', 'architecture2', 'architecture3', 'architecture-casona', 'architecture-salao', 'architecture-igreja', 'architecture-ctg', 'architecture-oktoberfest', 'frontier-terrain', 'frontier-flora', 'architecture-fronteira', 'architecture-bolichos', 'store-shelves', 'landscape', 'meadow', 'pew', 'overhead']) {
   const image = new Image();
   image.src = 'assets/images/world/' + key + (key.startsWith('architecture-shop-')?'.png':'.webp');   // WebP q92: ~25% do PNG, sem diferença visível
   WORLD_ART[key] = image;
@@ -134,7 +134,7 @@ useWorldArt('drawWorldCancha', () => worldBuilding(1, VILA.cancha, 'CANCHA DE BO
 useWorldArt('drawWorldShop', (r, name) => {
   const shop = [VILA.agro, VILA.gado, VILA.atacado, VILA.acougue].indexOf(r);
   return shop < 0 ? worldBuilding(10, r, name) :
-    worldSprite('architecture-shop-'+['sementes','pecuaria','atacado','carnes'][shop],0,r.x,r.y,r.w,r.h);
+    worldSprite('architecture-shop-'+['sementes','pecuaria','armazem-geral','carnes'][shop],0,r.x,r.y,r.w,r.h);
 });
 useWorldArt('drawFerragem',()=>{const r=VILA.ferragem;return worldSprite('architecture-shop-melhorias',0,r.x,r.y,r.w,r.h);});
 useWorldArt('drawMissoes', () => worldBuilding(12, VILA.missoes, 'RUÍNAS DAS MISSÕES', 40));

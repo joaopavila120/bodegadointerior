@@ -40,7 +40,7 @@
       if (M.indoor && M.bounds) {
         check(M.canWalk(p.x,p.y), 'Entrada bloqueada em '+id);
         worldOut.back={map:'serra',x:1800,y:1200};
-        const exit=M.edge({x:p.x,y:M.bounds.y+M.bounds.h+30});
+        const exit=M.edge(M.exitPoint||{x:p.x,y:M.bounds.y+M.bounds.h+30});
         check(exit?.map, 'Saída ausente em '+id);
       }
     }

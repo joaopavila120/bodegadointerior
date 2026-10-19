@@ -12,14 +12,16 @@ function playerSideSprite(sprite,dx,dy,pose){
   const phase=(((pose.sidePhase||0)%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
   return SADI_SIDE[pose.stride>.15?Math.floor(phase/(Math.PI/4)):8];
 }
+function sadiScale(){return worldOut?.map==='casa:sadi'?1.1:1;}
 function personHeight(sprite,chef){
+  const growth=chef&&(sprite===0||sprite===SADI_BACK||SADI_SIDE.includes(sprite))?sadiScale():1;
   if(chef&&worldOut&&!worldMap().indoor){
     // Same visible stature as the adults nearby. The original front crop has
     // 17 transparent rows; the back and side crops are already tightly fitted.
-    if(sprite===0)return 124*483/466;
-    if(sprite===SADI_BACK||SADI_SIDE.includes(sprite))return 124;
+    if(sprite===0)return 124*483/466*growth;
+    if(sprite===SADI_BACK||SADI_SIDE.includes(sprite))return 124*growth;
   }
-  return chef?130:124;
+  return (chef?130:124)*growth;
 }
 function playerFacingSprite(sprite, dy) {
   return sprite === 0 && dy < -.25 && CHARACTER_ART['sadi-back'].naturalWidth ? SADI_BACK : sprite;

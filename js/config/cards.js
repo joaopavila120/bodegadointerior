@@ -70,4 +70,4 @@ CARDS.push(
   {id:'saci',set:'lendas',name:'Saci',title:'Uma perna e um redemoinho',how:'Conversando com o Saci à noite nas estradas.',text:'Gorro vermelho, uma perna só e muita travessura. Quando a poeira começa a rodar sozinha, pode ser ele chegando para uma prosa.'},
   {id:'dunstano',set:'lendas',name:'São Dunstano',title:'O ferreiro do refúgio',how:'Conversando com São Dunstano no primeiro andar.',text:'O fantasma de São Dunstano recebe os viajantes no refúgio da caverna. Compra minérios, melhora equipamentos e ensina a voltar inteiro da próxima descida.'}
 );
-CARDS.forEach((c, n) => { c.n = n + 1; if (c.set === 'bodega') c.how ??= 'Amizade 30 com ' + c.name + '.'; c.how ??= 'Envelope de figurinhas do Atacado ou baú da caverna.'; });
+CARDS.forEach((c, n) => { c.n = n + 1; if (c.set === 'bodega') c.how ??= 'Amizade 30 com ' + c.name + '.'; c.how ??= 'Envelope de figurinhas do Armazém Geral ou baú da caverna.'; });

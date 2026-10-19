@@ -14,6 +14,20 @@ function worldDressingRoads(id) {
 }
 function worldFootpaths() { return worldDoorPaths(WORLD_MAPS.vila); }
 
+// Keep landmarks visible, including their front approach and the pier's boat.
+function worldLandmarkClearings(id) {
+  const around=r=>({x:r.x-24,y:r.y-40,w:r.w+48,h:r.h+110});
+  if(id==='vila')return [around(VILA.fogo),around(VILA.missoes),{x:226,y:850,w:VILA.river-226+65,h:175}];
+  if(id==='serra')return [
+    ...[SERRA.italianos,SERRA.alemaes].map(around),
+    // These tiny roadside chapels need breathing room beyond their footprint:
+    // a neighboring crown otherwise hides the cross and the side of the roof.
+    ...SERRA.capiteis.map(r=>({x:r.x-100,y:r.y-85,w:r.w+200,h:r.h+185}))
+  ];
+  if(id==='sc')return [around(SC.marco)];
+  return [];
+}
+
 function worldDressing(M) {
   if(worldDressingCache.has(M.id)) return worldDressingCache.get(M.id);
   const buildings=worldDressingBuildings(M.id), roads=[...worldDressingRoads(M.id),...worldApproachRects(M)], props=[], patches=[],ground=[];
@@ -38,13 +52,18 @@ function worldDressing(M) {
     return !props.some(p=>Math.hypot(p.x-x,p.y-y)<Math.min(w,p.w)*.65);
   };
   result.clear=clear;
-  const treeClear=(x,y,w,h)=>{
+  const treeClear=(x,y,w,h,grove=false)=>{
     const crown={x:x-w*.43,y:y-h*.85,w:w*.86,h:h*.85};
     if(!M.canWalk(x,y)||!M.canWalk(x-25,y)||!M.canWalk(x+25,y))return false;
     if(roads.some(([rx,ry,rw,rh])=>overlaps({x:x-35,y:y-25,w:70,h:55},{x:rx,y:ry,w:rw,h:rh},12)))return false;
-    if(buildings.some(r=>overlaps(crown,{x:r.x+r.w/2-95,y:r.y+r.h-150,w:190,h:280})))return false;
+    if(buildings.some(r=>{
+      const full=r.id==='player-home'||r===SERRA.igreja||r===SERRA.salao;
+      return overlaps(crown,{x:full?r.x:r.x+r.w/2-95,y:r.y+r.h-150,w:full?r.w:190,h:280});
+    }))return false;
+    const crops=M.id==='serra'?SERRA.vines:M.id==='vila'?[VILA.horta]:[];
+    if(crops.some(r=>overlaps(crown,r,20)))return false;
     if(reserved.some(r=>overlaps(crown,r,20)))return false;
-    return !props.some(p=>Math.hypot(p.x-x,(p.y-y)*1.5)<(p.sheet==='nature'?w*.72:60));
+    return !props.some(p=>Math.hypot(p.x-x,(p.y-y)*1.5)<(p.sheet==='nature'?w*(grove?.52:.72):grove?30:60));
   };
   const put=(sheet,index,x,y,w,h)=>{
     if(['vila','serra','sc'].includes(M.id)&&sheet==='landscape'&&[1,2,3].includes(index)){
@@ -133,6 +152,30 @@ function worldDressing(M) {
       }
     }
   }
+  // Additional groves use their own seed, so existing landscaping remains stable.
+  // Reserve full crowns here: the extra trees never cover a facade, crop or path.
+  let groveSeed=38117+M.W;
+  const groveRandom=()=>{groveSeed=(Math.imul(groveSeed,1664525)+1013904223)>>>0;return groveSeed/4294967296;};
+  const extraLimit={vila:40,serra:42,sc:30}[M.id]||0;
+  let extraTrees=0;
+  for(let attempt=0;attempt<1700&&extraTrees<extraLimit;attempt++){
+    const x=130+groveRandom()*(M.W-260),y=360+groveRandom()*(M.H-470);
+    const h=296+Math.floor(groveRandom()*5)*20,w=Math.round(h*.7),crown={x:x-w/2,y:y-h,w,h};
+    if(buildings.some(r=>overlaps(crown,r,25)))continue;
+    if(roads.some(([x,y,w,h])=>overlaps(crown,{x,y,w,h},20)))continue;
+    if(!treeClear(x,y,w,h,true))continue;
+    const index=groveRandom()<(M.id==='serra'?.7:.45)?1:0;
+    props.push({sheet:'nature',index,x,y,w,h,grove:true});extraTrees++;
+  }
+  // Remove only trees covering these sites after generation. Keeping the random
+  // sequence intact preserves every other tree, flower and garden in the map.
+  const landmarks=worldLandmarkClearings(M.id);
+  const coversLandmark=(x,y,w,h)=>landmarks.some(r=>overlaps({x:x-w/2,y:y-h,w,h},r,12));
+  for(let i=props.length-1;i>=0;i--){
+    const p=props[i];
+    if(p.sheet==='nature'&&p.index<3&&coversLandmark(p.x,p.y,p.w,p.h))props.splice(i,1);
+  }
+  result.clear=(x,y,w,h,low=false)=>!coversLandmark(x,y,w,h)&&clear(x,y,w,h,low);
   worldDressingCache.set(M.id,result);return result;
 }
 function worldGroundPatch(p) {

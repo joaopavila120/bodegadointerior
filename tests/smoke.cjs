@@ -96,6 +96,52 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='landmarks'){
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'landmark-trees-scenarios.js'),'utf8'));
+      console.log('PASS landmark trees: '+results.length+' checks');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);refreshHUD();`);
+      for(const [map,x,y] of [['vila',470,917],['vila',730,700],['serra',1455,2530],['serra',3055,870],['serra',1742,850],['serra',3612,930],['sc',1705,2170]]){
+        await evaluate(`worldOut={map:${JSON.stringify(map)},x:${x},y:${y},dx:0,dy:1,walk:false};refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-landmark-'+map+'-'+x+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='painted'){
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
+      assert.equal(errors.length,0,errors.join('\n'));
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'painted-interiors-scenarios.js'),'utf8'));
+      console.log('PASS painted interiors: '+results.length+' checks');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.tutorial.guided=false;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');refreshHUD();`);
+      for(const [id,M] of Object.entries(await evaluate('Object.fromEntries(Object.entries(PAINTED_INTERIORS).map(([id,M])=>[id,{map:M.id,spawn:M.spawn()}]))'))){
+       await evaluate(`worldOut={map:${JSON.stringify(M.map)},x:${M.spawn.x},y:${M.spawn.y-90},dx:0,dy:1,walk:false};refreshHUD();draw();$('hint').innerHTML=outsideHint();`);
+       const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-interior-'+id+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='homeArt'){
+      await load(base+'/index.html');
+      await evaluate('expansionArtLoadAll()');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'player-home-scenarios.js'),'utf8'));
+      console.log('PASS home/art: '+results.length+' checks');
+      console.log('Trees: '+JSON.stringify(await evaluate(`Object.fromEntries(['vila','serra','sc'].map(id=>{const p=worldDressing(WORLD_MAPS[id]).props;return[id,{extra:p.filter(x=>x.grove).length,total:p.filter(x=>x.sheet==='nature'&&x.index<3).length}]}))`)));
+      for(const file of ['tourism-scenarios.js','world-layout-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length);
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.tutorial.guided=false;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');refreshHUD();`);
+      for(const [name,map,x,y] of [['home','casa:sadi',710,740],['home-outside','vila',2360,820],['church','serra',800,2010],['vineyard','serra',1200,1050],['garden','vila',1050,750]]){
+        await evaluate(`worldOut={map:${JSON.stringify(map)},x:${x},y:${y},dx:0,dy:1,walk:false};draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await evaluate(`openDialog('Ferraria',dunstanLojaHTML(),'forge-preview');`);
+      const forgeShot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-forge.png'),Buffer.from(forgeShot.data,'base64'));
+      await evaluate(`document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;inset:0;z-index:99999;display:grid;align-content:start;grid-template-columns:repeat(6,1fr);gap:12px;background:#dbc69e;padding:20px">'+[...CAVE_UPGRADES.map(i=>'<div>'+forgeUpgradeIcon(i.id)+'<br>'+i.name+'</div>'),...CAVE_ITEMS.map(i=>'<div>'+caveItemIcon(i)+'<br>'+i.name+'</div>'),...CAVE_MINERALS.map(k=>'<div>'+bagIcon(k)+'<br>'+k+'</div>')].join('')+'</div>');started=false;`);
+      const iconsShot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-forge-icons.png'),Buffer.from(iconsShot.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='novidades'){
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'novidades-scenarios.js'),'utf8'));
+      console.log('PASS novidades: '+results.length+' checks');assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     if(process.env.BODEGA_FOCUS==='roadsCave'){
       await load(base+'/index.html');
       await evaluate('expansionArtLoadAll()');
@@ -213,6 +259,8 @@ async function main() {
       const itemArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'item-art-scenarios.js'), 'utf8'));
       assert(itemArtResults.length >= 50, 'Todos os itens têm sprites no cenário e na interface');
       await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      const homeArt=await evaluate(fs.readFileSync(path.join(__dirname,'player-home-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+homeArt.length+' verificações da casa e ferraria');
       const mountainResults=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+mountainResults.length+' verificações da caverna, montaria e personagens');
       const caveMovement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));
@@ -224,6 +272,8 @@ async function main() {
       const trayResults=await evaluate(fs.readFileSync(path.join(__dirname,'sadi-tray-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+trayResults.length+' verificações do Sadi com bandeja e galpão');
       const interiorWalkResults = await evaluate(fs.readFileSync(path.join(__dirname, 'interior-walk-scenarios.js'), 'utf8'));
+      const paintedResults = await evaluate(fs.readFileSync(path.join(__dirname, 'painted-interiors-scenarios.js'), 'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+paintedResults.length+' verificações dos interiores exclusivos');
       console.log('PASS '+protocol+' / '+entry+': '+interiorWalkResults.length+' verificações de interiores e caminhada');
       const worldArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'world-art-scenarios.js'), 'utf8'));
       const ruralArtResults = await evaluate(fs.readFileSync(path.join(__dirname, 'rural-art-scenarios.js'), 'utf8'));

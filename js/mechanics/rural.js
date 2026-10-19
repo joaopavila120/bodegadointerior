@@ -84,7 +84,7 @@ function depositBag() {
 }
 
 // ---------- Lojas da Fronteira ----------
-// Atacado (bebida, cigarro, amendoim e vidros), Açougue (carne de porco: bacon e salame), Armazém Querência (sementes,
+// Armazém Geral (bebida, cigarro, amendoim e vidros), Açougue (carne de porco: bacon e salame), Armazém Querência (sementes,
 // mudas e adubo; compra a colheita) e Casa do Campeiro (animais, ração e o bodoque).
 const STORE_GOODS = {
   atacado: ['cerveja', 'refri', 'cachaca', 'bitter', 'cafe', 'cigarro', 'amendoim', 'azeite'],
@@ -93,7 +93,7 @@ const STORE_GOODS = {
   badin: ['salame']
 };
 const STORE_INFO = {
-  atacado: { name: 'Atacado da Fronteira', text: 'O que não dá na roça: bebida, cigarro, amendoim torrado e vidros de conserva.' },
+  atacado: { name: 'Armazém Geral', text: 'O que não dá na roça: bebida, cigarro, amendoim torrado e vidros de conserva.' },
   acougue: { name: 'Açougue da Fronteira', text: 'Carne de porco: bacon. O salame de colônia vem da nona do Badin, na Serra.' },
   badin: { name: 'Despensa da colônia do Badin', text: 'Salame curado pela nona e muda de parreira da colônia. A uva vira vinho de garrafão na mesa de compota da bodega.' },
   agro: { name: 'Armazém Querência', text: 'Sementes, mudas e adubo para a horta. Aqui também se vende a colheita.' },
@@ -266,7 +266,7 @@ function reminderTick() {
     if (m >= 300 && m < 360 && G.event.id !== 'costelao') remindOnce('abrir2', '🕚 11h: freguês esperando na porta da bodega!');
     if (m >= 540) remindOnce('tarde', '🌇 Bodega fechada: ainda dá para abrir à noite.');
     if (m >= 240 && hortaCells().some(cellThirsty)) remindOnce('agua', '💧 A horta está com sede.');
-  } else if (G.phase === 'closed' && !duskActive()) remindOnce('noite', '🌙 Bodega fechada. Durma no caixa quando quiser.');
+  } else if (G.phase === 'closed' && !duskActive()) remindOnce('noite', '🌙 Bodega fechada. Descanse na cama da sua casa, ao lado da bodega.');
 }
 function morningMinutes() { return 6 * 60 + (G.morning || 0); }
 // Ao abrir: aviso das plantas sem água.
@@ -368,8 +368,8 @@ const CONSERVAS = [
   { id: 'vinho', name: 'Vinho de garrafão', needs: { uva: 6, garrafao: 1 }, out: 'vinho', n: 1, note: '6 cachos de uva + 1 garrafão vazio → 1 garrafão de vinho colonial', open: () => G.badinShop }
 ];
 function conservasMenu() {
-  openDialog('Mesa de compota', '<p>Vinagre, sal e ervas da casa: o que sai da horta e do curral vira conserva para o balcão. Vidros no Atacado da Fronteira.</p><div class="store-list">' +
-    CONSERVAS.filter(c => !c.open || c.open()).map(c => { const miss = Object.entries(c.needs).filter(([k, q]) => bagQty(k) < q), ok = !miss.length; return `<div class="supply"><span class="icon"><span class="bag-emoji">🫙</span></span><div><b>${c.name}</b><p>${c.note}<br>No inventário: ${Object.entries(c.needs).map(([k, q]) => (bagQty(k) >= q ? '✔ ' : '✖ ') + bagText(k) + ' de ' + bagName(k).toLowerCase()).join(' · ')}</p></div><button class="primary" data-act="makeConserva" data-id="${c.id}" ${ok ? '' : 'disabled'}>${ok ? (c.id === 'vinho' ? 'Fazer 1 garrafão' : 'Fazer ' + c.n + ' potes') : 'Falta: ' + miss.map(([k, q]) => (q - Math.floor(bagQty(k))) + ' ' + (k === 'vidro' ? 'vidro vazio (Atacado)' : k === 'garrafao' ? 'garrafão vazio (Atacado)' : bagName(k).toLowerCase())).join(' + ')}</button></div>`; }).join('') + '</div>' +
+  openDialog('Mesa de compota', '<p>Vinagre, sal e ervas da casa: o que sai da horta e do curral vira conserva para o balcão. Vidros no Armazém Geral.</p><div class="store-list">' +
+    CONSERVAS.filter(c => !c.open || c.open()).map(c => { const miss = Object.entries(c.needs).filter(([k, q]) => bagQty(k) < q), ok = !miss.length; return `<div class="supply"><span class="icon"><span class="bag-emoji">🫙</span></span><div><b>${c.name}</b><p>${c.note}<br>No inventário: ${Object.entries(c.needs).map(([k, q]) => (bagQty(k) >= q ? '✔ ' : '✖ ') + bagText(k) + ' de ' + bagName(k).toLowerCase()).join(' · ')}</p></div><button class="primary" data-act="makeConserva" data-id="${c.id}" ${ok ? '' : 'disabled'}>${ok ? (c.id === 'vinho' ? 'Fazer 1 garrafão' : 'Fazer ' + c.n + ' potes') : 'Falta: ' + miss.map(([k, q]) => (q - Math.floor(bagQty(k))) + ' ' + (k === 'vidro' ? 'vidro vazio (Armazém Geral)' : k === 'garrafao' ? 'garrafão vazio (Armazém Geral)' : bagName(k).toLowerCase())).join(' + ')}</button></div>`; }).join('') + '</div>' +
     (bagQty('conserva_codorna') + bagQty('conserva_pepino') > 0 ? '<p class="small-note">🫙 Potes prontos no inventário (' + (bagQty('conserva_codorna') + bagQty('conserva_pepino')) + ') esperam lugar na prateleira: vendendo, eles vão sozinhos para o balcão. Pote pronto não é vidro vazio.</p>' : ''), 'worldStore');
 }
 function makeConserva(id) {

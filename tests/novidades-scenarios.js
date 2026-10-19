@@ -17,7 +17,7 @@
   const dayFor=id=>{let d=G.day+1;while(mapEventFor(d)!==id)d++;return d;};
 
   // ---------- dormir, domingo, tapete, Baia, pedidos ----------
-  {goInside();G.phase='closed';G.report=null;G.testMode=true;G.nextEvent=null;closeDialog(true);caixaMenu();action('caixaSleep');talkAll();check(modal!=='event'&&!/Abrir a bodega/.test($('dialogContent').textContent)&&G.phase==='prep','dormir não abre o quadro com “Abrir a bodega”: dá pra explorar antes');G.testMode=false;closeDialog(true);}
+  {goInside();G.phase='closed';G.report=null;G.testMode=true;G.nextEvent=null;closeDialog(true);worldOut={map:'casa:sadi',...HOME_BED_POINT};homeBedMenu();action('homeSleep');talkAll();check(modal!=='event'&&!/Abrir a bodega/.test($('dialogContent').textContent)&&G.phase==='prep','dormir não abre o quadro com “Abrir a bodega”: dá pra explorar antes');G.testMode=false;closeDialog(true);}
   {let d=G.day;while(calendar(d+1).weekday!==6)d++;G.day=d;G.nextEvent=null;G.phase='closed';G.report=null;G.costelaoTaught=true;G.stock.costela_crua=6;closeDialog(true);nextDay('automatic');
    check(G.event.id==='costelao'&&!$('domingoCard').classList.contains('hidden')&&$('domingoCard').textContent.includes('Domingo é dia de costelão!'),'domingo de costelão começa com a tela preta “Domingo é dia de costelão!”');$('domingoCard').classList.add('hidden');talkAll();closeDialog(true);
    G.day++;G.nextEvent=null;G.phase='closed';G.report=null;$('domingoCard').classList.add('hidden');nextDay('automatic');check(G.event.id!=='costelao'&&$('domingoCard').classList.contains('hidden'),'nos outros dias, nada de tela preta');talkAll();closeDialog(true);}
@@ -86,7 +86,7 @@
    G.fish=null;const dg=bagQty('dourado');goFishing();fishKey(true);fishKey(false);for(let i=0;i<14;i++)fishTick(.05);fishing.kind='dourado';fishing.biteIn=0;fishTick(.05);fishKey(true);
    let k=0;while(fishing.phase==='fight'&&k++<6000){fishing.holding=!fishing.run&&fishing.tension<.55;fishTick(.05);}
    check(fishing.ok&&bagQty('dourado')===dg+1&&fishing.kg>=2&&G.fishRecords?.dourado,'soltando na carreira e recolhendo no cansaço: o dourado, o rei do rio');closeDialog(true);fishing=null;
-   check(/<svg[^>]*filter/.test(itemIconHTML('dourado'))&&/<svg[^>]*filter/.test(bagIcon('opala')),'o dourado e os minérios têm ícone pintado no inventário');}
+   check(/<svg[^>]*filter/.test(itemIconHTML('dourado'))&&bagIcon('opala').includes('forge-supplies-v1.png'),'o dourado e os minérios têm ícone pintado no inventário');}
   // arco do Peixinho na Brasa: o dourado e cinco cervejas
   withScenes(()=>{const pi=PEOPLE.findIndex(p=>p.id==='peixinhonabrasa');G.friends[pi]=5;delete G.missions.peixinho;G.quests={};G.questOpen=[];G.questNextDay=0;
    check(!missionForGiver('peixinhonabrasa')&&mainArcPending('peixinhonabrasa')&&!questOffer('peixinhonabrasa'),'antes do arco do Peixinho, nada de pedido de itens dele');

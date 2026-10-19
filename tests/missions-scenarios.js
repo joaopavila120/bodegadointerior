@@ -106,8 +106,8 @@
   // freguês de balcão pode pedir o que está em falta
   G.day=G.tutorial.day+9;G.shop=[];G.stock.cigarro=0;window.difficulty=()=>({...difficultyBefore(),missing:1});let c=null;for(let i=0;i<20&&!c;i++)c=spawnShop();window.difficulty=difficultyBefore;
   check(c?.missing&&!orderable(c.pid),'no balcão também aparece quem pede o que está em falta');
-  check(TEACH.falta[1].includes('Atacado'),'a primeira falta ensina a ligar pro Atacado (mais caro que produzir)');
-  {G.stock.cerveja=0;G.deliveries=[];const cash0=G.cash;action('phoneBuy','cerveja');check(G.deliveries.length===1&&round(cash0-G.cash)===round(goodPack('cerveja')*GOODS.cerveja.cost*PHONE_MARKUP),'pelo celular o Atacado entrega, mas cobra mais caro');G.deliveries=[];}
+  check(TEACH.falta[1].includes('Armazém Geral'),'a primeira falta ensina a ligar pro Armazém Geral (mais caro que produzir)');
+  {G.stock.cerveja=0;G.deliveries=[];const cash0=G.cash;action('phoneBuy','cerveja');check(G.deliveries.length===1&&round(cash0-G.cash)===round(goodPack('cerveja')*GOODS.cerveja.cost*PHONE_MARKUP),'pelo celular o Armazém Geral entrega, mas cobra mais caro');G.deliveries=[];}
   // gente na rua: sem pisca-pisca, com os personagens menores e, às vezes, visita de outra região
   G.phase='prep';G.regions={serra:true,sc:true};goOutside();worldWalkersKey='';walkersTick(.05);
   {const key=worldWalkersKey,list=worldWalkers.map(w=>w.person).join();for(let i=0;i<30;i++)walkersTick(.05);check(key===worldWalkersKey&&list===worldWalkers.map(w=>w.person).join(),'quem anda na rua não é sorteado de novo a cada quadro (fim do pisca-pisca)');}
@@ -129,7 +129,7 @@
   // horta mais lenta
   {const h=hortaState();h.xp=0;window.NO_SCENES=true;hortaGainXP(HORTA_LEVELS[1].xp-1);check(hortaLevel()===1,'a horta sobe de nível mais devagar');hortaGainXP(1);check(hortaLevel()===2,'e avisa quando sobe');window.NO_SCENES=false;}
   // dormir no caixa antes de abrir
-  goInside();G.phase='prep';G.giftQueue=[];G.arcQueue=[];sportState().challenge=null;G.challengeVisit=null;{let k=0;while(scene&&k++<99)sceneSkip();talkAll();closeDialog(true);}{const d=G.day,rep=G.rep;sleepDay();for(let j=0;j<5&&G.day===d;j++){let k=0;while(scene&&k++<99)sceneSkip();talkAll();continueSleep();}check(G.day===d+1&&G.phase==='prep'&&G.rep<rep&&modal!=='event','dormir sem abrir passa o dia (a freguesia estranha) e não abre menu de evento');}
+  goInside();G.phase='prep';G.giftQueue=[];G.arcQueue=[];sportState().challenge=null;G.challengeVisit=null;{let k=0;while(scene&&k++<99)sceneSkip();talkAll();closeDialog(true);}{const d=G.day,rep=G.rep;worldOut={map:'casa:sadi',...HOME_BED_POINT};sleepDay();for(let j=0;j<5&&G.day===d;j++){let k=0;while(scene&&k++<99)sceneSkip();talkAll();continueSleep();}check(G.day===d+1&&G.phase==='prep'&&G.rep<rep&&modal!=='event','dormir sem abrir passa o dia (a freguesia estranha) e não abre menu de evento');}
   // parreira e vinho de garrafão
   {const h=hortaState();h.tiles[1]={crop:'uva',growth:CROPS.uva.days,water:null,fert:false,dry:0};G.bag={};hortaHarvest(h.tiles[1],{x:0,y:0});check(bagQty('uva')===CROPS.uva.yield,'a parreira dá cachos de uva');
    G.phase='prep';worldOut=null;goInside();bagAdd('garrafao',1);conservasMenu();check($('dialogContent').textContent.includes('Vinho de garrafão'),'a mesa de compota faz vinho de garrafão');makeConserva('vinho');closeDialog(true);
@@ -169,11 +169,11 @@
    check(mapEvState('fandango').done&&modal==='talk'&&$('dialogContent').textContent.includes('servidos')&&JSON.stringify(G.stock)===stock,'acabou o tempo: placar e recompensa, sem gastar o estoque da bodega');talkAll();}
   // Mano Lima: recusar a lição de truco (com o presente já entregue) não deixa ele parado, e o Sadi dorme
   {worldOut=null;G.phase='closed';G.levelStory=LEVELS.length;G.levelSeen=LEVELS.length;G.giftsGiven={...(G.giftsGiven||{}),'manolima:tutorial':1};G.giftQueue=[];G.arcQueue=[];G.challengeVisit=null;
-   sportState().challenge={person:PEOPLE.findIndex(p=>p.id==='manolima'),wager:0,tutorial:true,type:'truco'};const d=G.day;sleepDay();
+   sportState().challenge={person:PEOPLE.findIndex(p=>p.id==='manolima'),wager:0,tutorial:true,type:'truco'};const d=G.day;worldOut={map:'casa:sadi',...HOME_BED_POINT};sleepDay();
    for(let k=0;k<300&&modal!=='sportChallenge';k++)simulate(.05);check(modal==='sportChallenge'&&$('floatNotes').textContent.includes('chegou na bodega'),'antes de dormir, o Mano Lima chega com o convite (e o jogo avisa)');action('sportDecline');
    for(let k=0;k<400&&G.day===d;k++){simulate(.05);if(modal==='giftVisit')action('giftAccept');}check(G.day===d+1&&!G.challengeVisit,'recusando, ele vai embora e o dia passa');closeDialog(true);}
   // encerrar o expediente com freguês no balcão
-  {G.phase='prep';G.event={id:'normal',seen:true,fired:{}};openDay();closeDialog(true);let c=null;for(let k=0;k<20&&!c;k++)c=spawnShop({pid:'cigarro'});for(let k=0;k<300;k++)customersTick(.05);G.hands=[null,null];
+  {goInside();G.phase='prep';G.event={id:'normal',seen:true,fired:{}};openDay();closeDialog(true);let c=null;for(let k=0;k<20&&!c;k++)c=spawnShop({pid:'cigarro'});for(let k=0;k<300;k++)customersTick(.05);G.hands=[null,null];
    const f=furniture().find(f=>f.id==='service');G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};interact();check(modal==='caixa'&&$('dialogContent').innerHTML.includes('caixaClose'),'com freguês no balcão e mãos vazias, E abre o caixa');
    action('caixaClose');check(G.phase==='closing','e dá para encerrar o expediente com gente esperando');G.shop=[];G.groups=[];G.phase='prep';}
   // eventos novos: pênaltis, rodeio, Oktoberfest e Festa da Uva (cada um começa com uma cena)
@@ -304,10 +304,10 @@
    switchMap({map:'serra',x:1900,y:1130});closeDialog(true);simulate(.05);check(cusco.map==='serra','e troca de região junto');
    G.phase='closed';G.day=G.day+1;while(mapEventFor(G.day)||negrinhoTonight())G.day++;G.folk={};G.folkNight={day:G.day,id:'sanguanel'};const f=folkSpots('serra')[0];worldOut.x=f.x+260;worldOut.y=f.y+40;Object.assign(cusco,{x:worldOut.x-60,y:worldOut.y});cusco.bark=0;
    let barks=0;const fx=effect;effect=(t,...a)=>{if(/Au|Grrr/.test(t))barks++;return fx(t,...a);};for(let i=0;i<40;i++){closeDialog(true);simulate(.05);}effect=fx;check(barks>0&&G.cusco.warned===G.day,'late quando tem assombração por perto');G.folkNight=null;G.phase='prep';worldOut=null;}
-  // álbum de cartas: amizade, eventos, envelope do Atacado e a carta que vira
+  // álbum de cartas: amizade, eventos, envelope do Armazém Geral e a carta que vira
   {G.cards={};const gi=PEOPLE.findIndex(p=>p.id==='guri');G.friends[gi]=CARD_FRIEND;closeDialog(true);talkState=null;while(scene)sceneSkip();for(let k=0;k<20&&!hasCard('guri');k++)cardsTick();check(hasCard('guri')&&CARDS.filter(c=>c.person&&hasCard(c.id)).every(c=>G.friends[PEOPLE.findIndex(p=>p.id===c.person)]>=CARD_FRIEND),'com amizade 30 o amigo dá a carta dele (uma por vez)');
    check(CARDS.length>=40&&CARD_SETS.length===6&&CARDS.every(c=>c.text&&c.how&&c.title),'cartas com frente, verso e como conseguir');
-   const owned=cardsOwned(),cash=G.cash;G.cash=Math.max(G.cash,100);storeShop('atacado');check($('dialogContent').innerHTML.includes('data-id="figurinha"'),'envelope de figurinhas no Atacado');storeExtra('figurinha');check(cardsOwned()===owned+1&&modal==='albumCard','o envelope dá uma carta nova e mostra ela');
+   const owned=cardsOwned(),cash=G.cash;G.cash=Math.max(G.cash,100);storeShop('atacado');check($('dialogContent').innerHTML.includes('data-id="figurinha"'),'envelope de figurinhas no Armazém Geral');storeExtra('figurinha');check(cardsOwned()===owned+1&&modal==='albumCard','o envelope dá uma carta nova e mostra ela');
    albumFlip();check($('tcardFlip').classList.contains('flipped')&&$('tcardFlip').querySelector('.tcard-back')&&$('tcardFlip').querySelector('.tcard-front'),'a carta vira: frente e verso');
    albumDialog('bodega');check(modal==='album'&&$('dialogContent').querySelectorAll('.album-slot').length===CARDS.filter(c=>c.set==='bodega').length,'álbum com as cartas da coleção');closeDialog(true);
    togglePhone(true);check($('phoneShortcuts').innerHTML.includes('phoneAlbum')&&$('phoneShortcuts').textContent.includes(cardsOwned()+'/'+CARDS.length)&&$('phoneShortcuts').innerHTML.includes('phoneGuide'),'álbum e guia no topo do celular');

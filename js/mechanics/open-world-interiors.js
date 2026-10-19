@@ -127,15 +127,17 @@ function interiorMap(def) {
   const b = def.bounds, door = def.door ?? b.x + b.w / 2, half = def.doorHalf ?? 44;
   const walls = (def.walls || []).map(([x, y, w, h]) => ({ x, y, w, h }));
   const solids = [...walls, ...(def.items || []).filter(i => !i.wall && i.solid !== false && i.kind !== 'rug')];
-  return {
+  const map = {
     indoor: true, ...def,
-    spawn() { return { x: door, y: b.y + b.h - 24 }; },
+    spawn() { return map.painted?.spawn ? {...map.painted.spawn} : { x: door, y: b.y + b.h - 24 }; },
     canWalk(x, y) {
+      if(map.painted?.walk)return map.painted.walk(x,y);
       if (x < b.x + 14 || x > b.x + b.w - 14 || y < b.y + 12) return false;
       if (y > b.y + b.h - 6 && (Math.abs(x - door) > half || y > b.y + b.h + 44)) return false;
       return !hitRect(solids, x, y);
     },
     edge(p) {
+      if(map.painted?.exitY)return p.y>map.painted.exitY?{...worldOut.back,title:''}:null;
       for (const s of def.stairs || []) if (p.x > s.x && p.x < s.x + s.w && p.y > s.y && p.y < s.y + s.h) return s.to();
       if (p.y > b.y + b.h + 26) return def.exit ? def.exit() : { ...worldOut.back, title: '' };
       return null;
@@ -143,11 +145,13 @@ function interiorMap(def) {
     spots() {
       const people = (def.residents || []).filter(atHome).map((id, k) => { const i = PEOPLE.findIndex(p => p.id === id), [x, y] = def.homeSpots[k]; return { id: 'home:' + id, x, y, label: ['deliver', 'waiting'].includes(questMarker(id)) ? 'Falar com ' + PEOPLE[i].name + ' sobre o pedido' : 'Prosear com ' + PEOPLE[i].name, act: () => houseResidentTalk(i, x, y) }; });
       const things = (def.items || []).filter(i => i.text || i.act).map(i => ({ id: 'item:' + i.kind + i.x, x: i.x + i.w / 2, y: i.spotY ?? i.y + i.h + 22, label: i.label, act: i.act || (() => i.info ? showInfo(i.label, i.text) : showItem(i.label, i.text, def.residents?.[0])) }));
+      if(map.painted?.points)for(const s of things){const point=map.painted.points[s.id];if(point)Object.assign(s,point);}
       return [...people, ...things];
     },
     // Ao entrar num cômodo com fala, ela dispara uma vez por visita.
     tick(p) { for (const r of def.rooms || []) if (r.enter && p.x > r.x && p.x < r.x + r.w && p.y > r.y && p.y < r.y + r.h) { worldOut.fired ??= {}; if (!worldOut.fired[r.name]) { worldOut.fired[r.name] = true; r.enter(); } } },
     draw(view, seen, layers) {
+      if(map.painted&&drawPaintedInterior(map,view,layers))return;
       rect(view.x, view.y, view.w, view.h, def.bg || '#1a120c');
       drawFloor(b, def.floor); for (const r of def.rooms || []) if (r.floor) drawFloor(r, r.floor);
       if(typeof drawInteriorAtmosphere==='function')drawInteriorAtmosphere(b,def);
@@ -166,6 +170,7 @@ function interiorMap(def) {
       if (!def.open) layers.push({ y: b.y + b.h + 60, draw: () => { rect(b.x - 20, b.y + b.h, door - half - (b.x - 20), 26, '#3a2414'); rect(door + half, b.y + b.h, b.x + b.w + 20 - door - half, 26, '#3a2414'); rect(door - half, b.y + b.h + 16, half * 2, 10, '#6a4424', 3); } });
     }
   };
+  return map;
 }
 
 // ---------- Casas ----------
@@ -387,8 +392,8 @@ WORLD_MAPS.agro = storeMap({ id: 'agro', name: 'Armazém Querência', goods: 'ag
   { kind: 'sacks', x: 220, y: 700, w: 200, h: 60, color: '#c8a870', tag: 'ADUBO' }, { kind: 'tools', x: 860, y: 520, w: 150, h: 20 }, { kind: 'plant', x: 1180, y: 520, w: 44, h: 40 }, { kind: 'plant', x: 1120, y: 520, w: 44, h: 40 }] });
 WORLD_MAPS.gado = storeMap({ id: 'gado', name: 'Casa do Campeiro', goods: 'gado', floor: 'stone', wallColor: '#c8a878', keeper: 'arlindo', shop: () => storeShop('gado'), items: [
   { kind: 'sacks', x: 220, y: 700, w: 200, h: 60, color: '#c89a60', tag: 'RAÇÃO' }, { kind: 'hay', x: 760, y: 520, w: 110, h: 50 }, { kind: 'arreio', x: 900, y: 540, w: 100, h: 50, label: 'Arreio de exposição', text: 'Arreio novo, com prata lavrada: não está à venda, é o orgulho da loja.' }] });
-// Atacado da Fronteira (bebidas e balcão) e Açougue (carnes): o resto do que a bodega vende.
-WORLD_MAPS.atacado = storeMap({ id: 'atacado', name: 'Atacado da Fronteira', goods: 'atacado', floor: 'stone', wallColor: '#d8d0b8', keeper: 'lucia', shop: () => storeShop('atacado'), items: [
+// Armazém Geral (bebidas e balcão) e Açougue (carnes): o resto do que a bodega vende.
+WORLD_MAPS.atacado = storeMap({ id: 'atacado', name: 'Armazém Geral', goods: 'atacado', floor: 'stone', wallColor: '#d8d0b8', keeper: 'lucia', shop: () => storeShop('atacado'), items: [
   { kind: 'sacks', x: 220, y: 700, w: 200, h: 60, color: '#e8d8a8', tag: 'FARINHA' }, { kind: 'hay', x: 760, y: 520, w: 110, h: 50, label: 'Engradados de cerveja', text: 'Engradados de casco retornável empilhados até o teto: sábado de bocha esvazia tudo.' }] });
 WORLD_MAPS.ferragem = storeMap({ id: 'ferragem', name: 'Ferragem da Fronteira', goods: 'gado', floor: 'wood', wallColor: '#d8c8a8', keeper: 'nair', shop: () => storeShop('ferragem'), items: [
   { kind: 'tools', x: 860, y: 520, w: 150, h: 20, label: 'Ferramentas', text: 'Martelo, serrote, plaina e prego de todo tamanho: tudo para ajeitar a bodega.' }, { kind: 'barrel', x: 220, y: 690, w: 60, h: 60 }, { kind: 'sacks', x: 300, y: 700, w: 200, h: 60, color: '#b8a888', tag: 'CIMENTO' }] });

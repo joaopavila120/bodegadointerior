@@ -86,3 +86,33 @@ function prepareHomeSleep(){
   const act=action;action=function(name,id){if(name==='homeSleep'){sleepDay();return;}return act(name,id);};
   const open=openDay;openDay=function(){if(G.phase==='closed'){warnDialog('A bodega já fechou','Descanse na cama da sua casa para começar o próximo dia.');return;}return open();};
 }
+
+// Lição da casa, logo depois do primeiro dia de bodega: fechado o caixa (e resolvido o convite do Lauro), a dica e a seta
+// levam o Sadi até a cama da casa; acordando lá no segundo dia, levam de volta à bodega pra abrir no caixa.
+function homeLesson(){
+  const t=G.tutorial;if(!t?.complete||t.homeDone||prologueActive())return null;
+  if(G.phase==='closed'&&G.day===(t.day||1)&&!sportState().waiting&&!(G.challengeVisit&&!G.challengeVisit.leaving))return 'sleep';
+  if(t.wokeHome&&G.phase==='prep')return 'open';
+  return null;
+}
+function homeLessonHint(){
+  const st=homeLesson();if(!st||scene)return '';const at=worldOut?.map;
+  if(st==='sleep')return '<b>Hora de dormir</b><p>'+(at==='casa:sadi'?'Vá até a <b>cama</b>, aperte <span class="keycap">E</span> e escolha <b>Dormir até amanhã</b>.':at?'Entre na <b>sua casa</b>, ao lado da bodega: a seta mostra o caminho.':'O primeiro dia acabou! Saia pela <b>porta</b> da bodega e vá até a <b>sua casa</b>, ali do lado, pra dormir.')+'</p>';
+  return '<b>Bom dia! Hora de abrir a bodega</b><p>'+(at==='casa:sadi'?'Saia de casa e vá até a <b>bodega</b>, ali do lado.':at?'Entre na <b>bodega</b> pela porta. Antes, se quiser, cuide da roça e das compras: a porta tem que abrir até o meio-dia.':'Vá até o <b>caixa</b> (balcão de atendimento), aperte <span class="keycap">E</span> e escolha <b>Abrir a bodega</b>.')+'</p>';
+}
+{
+  const hint=waitingHint;waitingHint=function(){return hint()||homeLessonHint();};
+  // Seta no mapa: a casa e a cama pra dormir; de manhã, a porta de casa e a da bodega (se nenhuma missão já aponta outro lugar).
+  const guide=worldGuidePoint;worldGuidePoint=function(){
+    const st=homeLesson(),m=worldOut?.map;if(!st||!worldOut||sportState().waiting)return guide();
+    if(st==='sleep')return m==='casa:sadi'?{x:HOME_BED_POINT.x,y:HOME_BED_POINT.y-90}:m==='vila'?guideSpot('player-home'):guide();
+    return guide()||(m==='casa:sadi'?{x:homeMap.exitPoint.x,y:homeMap.exitPoint.y-110}:m==='vila'?guideSpot('door'):null);
+  };
+  // Seta dentro da bodega: a porta pra ir dormir; de manhã, o caixa.
+  const arrow=drawTutorialArrow;drawTutorialArrow=function(){
+    const st=!worldOut&&!modal&&!prologueActive()&&!sportState().waiting&&homeLesson();if(!st){arrow();return;}
+    const f=st==='sleep'?{x:ENTRY.x-20,y:H-60,w:40}:furniture().find(f=>f.id==='service');if(f)drawGuideArrow(f.x+f.w/2,f.y-40);
+  };
+  const sleep=nextDay;nextDay=function(eventId){const day=G.day,lesson=homeLesson()==='sleep';sleep(eventId);if(lesson&&G.day>day){G.tutorial.wokeHome=true;save();}};
+  const open=openDay;openDay=function(){const lesson=homeLesson()==='open';open();if(lesson&&G.phase==='open'){G.tutorial.homeDone=true;save();}};
+}

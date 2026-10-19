@@ -38,7 +38,13 @@
  check(G.tv&&!G.tables[0].dirty,'TV e limpeza permanecem após tutorial');
  action('tvAwardClose');check(modal==='report'&&sportState().challenge.tutorial,'relatório aparece antes do convite');closeDialog();
  check(!modal&&PEOPLE[G.challengeVisit?.person]?.id==='lauro','o Lauro Bolador entra pela porta da bodega antes de convidar');for(let n=0;n<400&&modal!=='sportChallenge';n++)simulate(.05);
- check(modal==='sportChallenge'&&G.challengeVisit.arrived,'o convite para a bocha aparece quando ele chega até você');answerSportChallenge(false);check(G.challengeVisit?.leaving,'recusar faz o visitante ir embora');nextDay('normal');closeDialog(true);G.event.seen=true;openDay();advance(25);
+ check(modal==='sportChallenge'&&G.challengeVisit.arrived,'o convite para a bocha aparece quando ele chega até você');answerSportChallenge(false);check(G.challengeVisit?.leaving,'recusar faz o visitante ir embora');
+ check(homeLesson()==='sleep'&&/sua casa/.test(waitingHint()),'fim do primeiro dia: a dica manda ir dormir em casa');
+ goOutside();{const p=worldGuidePoint(),h=guideSpot('player-home');check(p&&h&&Math.hypot(p.x-h.x,p.y-h.y)<1,'no pátio, a seta aponta a casa');}
+ enterInterior('casa:sadi');closeDialog(true);check(/cama/.test(waitingHint()),'em casa: a dica manda ir pra cama');
+ worldOut.x=HOME_BED_POINT.x;worldOut.y=HOME_BED_POINT.y;homeBedMenu();check(modal==='homeBed','a cama oferece dormir');action('homeSleep');closeDialog(true);
+ check(G.day===2&&worldOut?.map==='casa:sadi'&&homeLesson()==='open'&&/Bom dia/.test(waitingHint()),'acorda em casa: a dica manda abrir a bodega');
+ goInside();closeDialog(true);check(/caixa/.test(waitingHint()),'na bodega: a dica aponta o caixa');G.event.seen=true;openDay();check(G.tutorial.homeDone&&!homeLesson(),'abriu a bodega: lição da casa concluída');advance(25);
  check(G.day===2&&G.elapsed>0&&G.groups.length>0&&(G.shop.length>0||G.shopVisits>0),'dia 2 retoma tempo e chegadas normais ao salão e balcão');
  const legacy=fresh();legacy.version=11;legacy.day=3;legacy.stock.cachaca=7;const migrated=normalizeSave(legacy);
  check(migrated.up.trago&&migrated.stock.cachaca===7&&!migrated.tutorial.guided,'partidas antigas preservam a estação e o estoque de tragos');

@@ -350,6 +350,9 @@ body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .ban
 #hudLayer .sling-button.locked{opacity:.75;border-color:#7a6a52;color:#cdbc9a}
 #hudLayer .cave-dash{bottom:104px;border-color:#8acbd8}
 #hudLayer .cave-dash:disabled{opacity:.65;cursor:default}
+#hudLayer .cave-lasso{bottom:156px;border-color:#e0a050}
+#hudLayer .cave-lasso:disabled{opacity:.65;cursor:default}
+.forja-encanto{display:contents}.forja-encanto>*{filter:drop-shadow(0 0 6px #a070ff) drop-shadow(0 0 2px #e0c8ff)}
 #hudLayer .cancha-exit{right:auto;left:14px}
 /* Fora da bodega, a lateral mostra só o que vale no mundo aberto */
 body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-button{display:none!important}

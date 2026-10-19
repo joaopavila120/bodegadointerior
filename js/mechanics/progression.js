@@ -58,6 +58,7 @@ const ACHIEVEMENTS=[
  {id:'dourado',name:'Rei do rio',desc:'Fisgar um dourado no trapiche.',xp:150,test:()=>!!G.fishRecords?.dourado},
  {id:'cavaleiro',name:'Cavaleiro crioulo',desc:'Botar ferraduras de ferro no cavalo crioulo.',xp:150,test:()=>G.mount?.shoes==='ferro'},
  {id:'album',name:'Álbum completo',desc:'Completar o álbum de figurinhas.',xp:400,test:()=>cardsOwned()===CARDS.length},
+ {id:'jarau',name:'A Salamanca do Jarau',desc:'Vencer o Diabo Vermelho no andar 20 da caverna e libertar a Teiniaguá.',xp:300,test:()=>!!G.cave?.salamanca},
  {id:'lendaria',name:'Bodega lendária',desc:'Chegar ao nível máximo da bodega.',xp:0,test:()=>bodegaLevel()>=LEVELS.length}
 ];
 function checkAchievements(){

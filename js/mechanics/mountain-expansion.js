@@ -119,6 +119,14 @@ function buyRidingHorse() {
   spendCash(HORSE_COST); G.stats.purchases += HORSE_COST; Object.assign(mountState(),{owned:true,stabled:false});
   AudioEngine.coins(); save(); refreshStore(); worldSay('Cavalo encilhado! Ao sair, você já vai montado. Pode guardá-lo no campo.');
 }
+// Casco leve no chão quando o Sadi anda montado: um trote "pocotó", baixinho.
+let hoofClock = 0, hoofStep = 0;
+function hoofTick(dt) {
+  if (!playerMounted() || !worldOut?.walk || paused || modal || scene) { hoofClock = 0; return; }
+  hoofClock -= dt; if (hoofClock > 0) return;
+  hoofStep = (hoofStep + 1) % 4; hoofClock = hoofStep % 2 ? .13 : .21;
+  AudioEngine.noise(.035, .028, hoofStep % 2 ? 1500 : 1100); AudioEngine.note(hoofStep % 2 ? 210 : 170, .04, 'triangle', .02);
+}
 function stableHorse() {
   if(worldOut?.map!=='curral'||!mountState().owned||Math.hypot(worldOut.x-HORSE_POST.x,worldOut.y-HORSE_POST.y)>120)return;
   G.mount.stabled=!G.mount.stabled; keys.clear(); worldOut.walk=false; save();
@@ -129,6 +137,7 @@ function stableHorse() {
   const cards = ferragemCards;
   ferragemCards = function() { return cards() + '<h3>Montaria</h3><div class="store-list">' + extraCard('ridingHorse','🐎','Cavalo crioulo encilhado','Anda 65% mais rápido no mundo aberto. Aguarda fora dos interiores. Guarde ou busque no campo.',HORSE_COST,mountState().owned?'Já é teu':'Comprar · '+money(HORSE_COST),!mountState().owned) + '</div>'; };
   const extra=storeExtra; storeExtra=function(id){if(id==='ridingHorse'){buyRidingHorse();return;}return extra(id);};
+  const hoof=outsideTick; outsideTick=function(dt){hoof(dt);hoofTick(dt);};
   const M=WORLD_MAPS.curral, spots=M.spots, draw=M.draw;
   M.spots=function(){const list=spots.call(this);if(G.mount?.owned)list.push({id:'horse:stable',...HORSE_POST,radius:90,label:G.mount.stabled?'Encilhar e montar seu cavalo':'Guardar cavalo no campo',act:stableHorse});return list;};
   M.draw=function(view,seen,layers){draw.call(this,view,seen,layers);if(!G.mount?.owned)return;

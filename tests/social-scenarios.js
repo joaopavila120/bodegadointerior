@@ -18,7 +18,7 @@
  runScene(()=>scene.step?.say==='valter'&&scene.step.text.includes('Mimosa'));check(rpgBoxes.sceneTalk.text.includes('boi'),'o Valter dá de presente um boi e a Mimosa, vaca de leite');
  runScene(()=>false);check(!scene&&!document.body.classList.contains('intro-playing'),'a introdução termina e devolve o jogo');
  check(G.avatarId==='sadi'&&G.bodegaName==='Bodega do teste'&&modal==='tutorial'&&prologueActive(),'novo jogo começa com Sadi, aplica nome e abre o prólogo da roça');
- check($('dialogTitle').textContent.includes('A roça do vô')&&$('dialogContent').textContent.includes('Armazém Querência'),'boas-vindas apresentam o primeiro passo da roça');G.prologue.done=true;gameGuide();check(['Bocha','Truco','Contatos','Estética'].every(text=>$('dialogContent').textContent.includes(text)),'guia apresenta lazer, contatos e caminho de progressão');
+ check($('dialogTitle').textContent.includes('A roça do vô')&&$('dialogContent').textContent.includes('Armazém Querência'),'boas-vindas apresentam o primeiro passo da roça');G.prologue.done=true;gameGuide();check(['Mão boa na bocha','Rei do truco','Agenda cheia','Desceu na gruta','Rei do rio'].every(text=>$('dialogContent').textContent.includes(text))&&!$('dialogContent').querySelector('.guide-grid'),'guia mostra só o nível e as conquistas, com as da caverna e do mundo');
  closeDialog(true);G.xp=99999;G.levelSeen=7;
  playAs('indavirus');check(G.avatarId==='sadi','sem amizade máxima não dá para jogar com Indavirus');
  G.friends[index('indavirus')]=100;socialCheck();const indaGifts=(G.giftQueue||[]).filter(g=>g.person===index('indavirus'));check(indaGifts.length===4&&!decorState().alho,'presentes ficam guardados para a visita depois do expediente');indaGifts.forEach(deliverGift);G.giftQueue=[];

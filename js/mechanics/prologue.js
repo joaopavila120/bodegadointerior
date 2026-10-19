@@ -1,5 +1,5 @@
 // O começo do jogo e a ligação da roça com a bodega.
-// · Minijogos da roça (ordenhar, sovar e assar o pão, mexer o queijo, carnear o boi), numa janela própria.
+// · Minijogo da roça (ordenhar a vaca), numa janela própria; o forno e o tacho são um botão só.
 // · Forno a lenha e tacho na cozinha da bodega: o trigo da horta vira pão de xis e o leite da vaca vira queijo.
 // · Prólogo com o Valter: sementes, horta, alguns dias depois a colheita, o pão, a laçada e a carneação, o curral,
 //   o queijo e as compras no Atacado. No fim, o tutorial da bodega de sempre.
@@ -70,15 +70,21 @@ function addFarmStock(k, n) {
 
 // ---------- Forno a lenha, tacho e mesa de compota (cozinha da bodega) ----------
 const FORNO = { trigo: 3, paes: 8 }, TACHO = { leite: 4, fatias: 10 };
+// Forno e tacho: um botão só, sem minijogo. O trigo vira pão e o leite vira queijo na hora.
 function useForno() {
-  if (held()) { say('Libere as mãos para sovar a massa.'); return; }
+  if (held()) { say('Libere as mãos para mexer no forno.'); return; }
   if (bagQty('trigo') < FORNO.trigo) { say('O forno faz pão de xis com o trigo da horta: precisa de ' + FORNO.trigo + ' trigo no inventário (você tem ' + Math.floor(bagQty('trigo')) + ').'); AudioEngine.bad(); return; }
-  teachFirst('forno', () => startFarmGame({ title: 'Forno a lenha · pão de xis', stages: [
-    { kind: 'alternate', label: 'Sovar a massa', text: 'Farinha do trigo, água, sal e fermento. Sove alternando <span class="keycap">A</span> e <span class="keycap">D</span>.', doneText: 'Massa lisinha!', pitch: 700 }
-  ], done: () => {
-    bagTake('trigo', FORNO.trigo); addFarmStock('pao_xis', FORNO.paes);
-    AudioEngine.scaleDone(); effect('+' + FORNO.paes + ' pães de xis', G.player.x, G.player.y - 100, '#fff2b0'); farmXP(3); prologueFlag('pao'); save();
-  } }));
+  teachFirst('forno', fornoMenu);
+}
+function fornoMenu() {
+  const ok = bagQty('trigo') >= FORNO.trigo;
+  openDialog('Forno a lenha · pão de xis', `<p>${FORNO.trigo} trigo viram ${FORNO.paes} pães de xis. Você tem <b>${Math.floor(bagQty('trigo'))} trigo</b> no inventário.</p><div class="store-list">
+    <div class="supply"><span class="icon">${itemIconHTML('pao_xis')}</span><div><b>Pão de xis</b><p>${FORNO.paes} pães, direto na caixa de pão da cozinha.</p></div><button class="primary" data-act="makePao" ${ok ? '' : 'disabled'}>${ok ? 'Assar' : 'Falta trigo: colha na horta'}</button></div></div>`, 'forno');
+}
+function makePao() {
+  if (bagQty('trigo') < FORNO.trigo) return;
+  closeDialog(true); bagTake('trigo', FORNO.trigo); addFarmStock('pao_xis', FORNO.paes);
+  AudioEngine.scaleDone(); effect('+' + FORNO.paes + ' pães de xis', G.player.x, G.player.y - 100, '#fff2b0'); farmXP(3); prologueFlag('pao'); save();
 }
 function useTacho() {
   if (held()) { say('Libere as mãos para mexer o tacho.'); return; }
@@ -89,16 +95,10 @@ function tachoMenu() {
   openDialog('Tacho · queijo da casa', `<p>${TACHO.leite} L de leite viram ${TACHO.fatias} fatias de queijo para o xis. Você tem <b>${Math.floor(bagQty('leite'))} L</b> no inventário.</p><div class="store-list">
     <div class="supply"><span class="icon">${itemIconHTML('queijo')}</span><div><b>Queijo em fatias</b><p>${TACHO.fatias} fatias para o xis, direto na caixa de queijo da cozinha.</p></div><button class="primary" data-act="makeQueijo" data-id="fatias" ${bagQty('leite') >= TACHO.leite ? '' : 'disabled'}>${bagQty('leite') >= TACHO.leite ? 'Fazer' : 'Falta leite: ordenhe a vaca'}</button></div></div>`, 'tacho');
 }
-function makeQueijo(kind) {
+function makeQueijo() {
   if (bagQty('leite') < TACHO.leite) return;
-  closeDialog(true);
-  startFarmGame({ title: 'Tacho · queijo em fatias', stages: [
-    { kind: 'alternate', label: 'Aquecer e mexer o leite', text: 'Leite morno com o coalho: mexa alternando <span class="keycap">A</span> e <span class="keycap">D</span> até coalhar.', doneText: 'Coalhou!', step: .07, pitch: 900 }
-  ], done: () => {
-    bagTake('leite', TACHO.leite);
-    addFarmStock('queijo', TACHO.fatias); effect('+' + TACHO.fatias + ' fatias de queijo', G.player.x, G.player.y - 100, '#fff2b0');
-    AudioEngine.scaleDone(); farmXP(3); prologueFlag('queijo'); save();
-  } });
+  closeDialog(true); bagTake('leite', TACHO.leite); addFarmStock('queijo', TACHO.fatias);
+  effect('+' + TACHO.fatias + ' fatias de queijo', G.player.x, G.player.y - 100, '#fff2b0'); AudioEngine.scaleDone(); farmXP(3); prologueFlag('queijo'); save();
 }
 function useConservas() { if (held()) { say('Libere as mãos para mexer nos vidros.'); return; } teachFirst('compota', conservasMenu); }
 function drawFarmStation(f) {
@@ -199,9 +199,9 @@ const PROLOGUE_STEPS = [
   { id: 'colher', title: 'Colha a alface e o trigo', places: ['horta'], target: { map: 'horta', tile: 'ready' },
     text: () => 'Com qualquer ferramenta, aperte <span class="keycap">E</span> nos canteiros maduros. A colheita vai para o <b>inventário</b> (<span class="keycap">B</span>).',
     done: () => !hortaState().tiles.some(cellReady) && bagQty('trigo') >= FORNO.trigo,
-    after: ['A alface lavada vira salada pro xis: ela vai sozinha pra despensa quando tu entra na bodega.', 'Já o trigo dá trabalho: na cozinha tem o forno a lenha do teu vô. É só sovar a massa.'] },
+    after: ['A alface lavada vira salada pro xis: ela vai sozinha pra despensa quando tu entra na bodega.', 'Já o trigo vira pão: na cozinha tem o forno a lenha do teu vô.'] },
   { id: 'pao', title: 'Pão de xis no forno a lenha', places: [], target: { kitchen: 'forno' },
-    text: () => 'Volte para a <b>bodega</b>. Na cozinha, o <b>forno a lenha</b> transforma ' + FORNO.trigo + ' trigo em ' + FORNO.paes + ' pães de xis: sove a massa alternando <span class="keycap">A</span> e <span class="keycap">D</span>.',
+    text: () => 'Volte para a <b>bodega</b>. Na cozinha, o <b>forno a lenha</b> transforma ' + FORNO.trigo + ' trigo em ' + FORNO.paes + ' pães de xis: aperte <span class="keycap">E</span> nele e depois em <b>Assar</b>.',
     done: () => prologueFlagSet('pao'),
     after: [['sadi', 'Pão de xis feito em casa! O cheiro tomou conta do galpão.'], 'É assim que se faz, guri. Agora a carne: o boi que eu te dei tá no campo, do outro lado da horta.', 'Vai na cerca do boi e laça. Boi laçado vira manta pro costelão de domingo e hambúrguer pro xis.'] },
   { id: 'laco', title: 'Lace o boi', places: ['curral'], target: { map: 'curral', spot: 'cerca' },

@@ -513,3 +513,8 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .req{display:inline-block;margin:3px 4px 0 0;padding:0 7px;border:1px solid #c9a978;border-radius:10px;background:#fbf3df;color:#5a4428;font-size:12px;line-height:18px}
 .req.ok{border-color:#8cbf74;background:#e6f4d8;color:#2f6a2a}.req.miss{border-color:#d9a08a;background:#fbe4dc;color:#8a3a22}
 .forja-card.using{outline:2px solid #e7b95e}.forja-card.owned{opacity:.85}
+/* Atalhos do celular: álbum de figurinhas e guia e progresso */
+.phone-shortcuts{display:flex;gap:6px;padding:0 11px 9px}
+.phone-shortcuts button{flex:1;min-width:0;padding:9px 6px;font-size:13px;font-weight:bold;color:#3a2a14;background:#f3dfa6;border:1px solid #b99150;border-radius:8px}
+.phone-shortcuts button:hover{background:#f7e8bd}
+.phone-shortcuts .new{display:inline-block;margin-left:5px;padding:0 6px;border-radius:8px;background:#c8402a;color:#fff;font-size:11px}

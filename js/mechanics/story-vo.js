@@ -66,8 +66,16 @@ function drawSceneCasaLoli() {
   list.sort((a, b) => a.y - b.y).forEach(l => l.draw());
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
-// O sonho: a bodega inteira em sépia, como na foto de 1968.
-function drawSceneSonho() { const ph = G.phase, mo = G.morning; G.phase = 'prep'; G.morning = 420; ctx.save(); ctx.filter = 'sepia(.85) brightness(.92) contrast(.95)'; try { draw(); } finally { ctx.restore(); ctx.setTransform(1, 0, 0, 1, 0, 0); G.phase = ph; G.morning = mo; } }
+// O sonho: a bodega inteira em sépia, como na foto de 1968. A cor vai numa demão só por cima do quadro pronto
+// (um ctx.filter em cada desenho levava mais de um segundo por quadro e travava a cena).
+function drawSceneSonho() {
+  const ph = G.phase, mo = G.morning; G.phase = 'prep'; G.morning = 420;
+  try { draw(); } finally { ctx.setTransform(1, 0, 0, 1, 0, 0); G.phase = ph; G.morning = mo; }
+  const w = canvas.width, h = canvas.height; ctx.save();
+  ctx.globalCompositeOperation = 'color'; ctx.globalAlpha = .85; ctx.fillStyle = '#7a5532'; ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = .22; ctx.fillStyle = '#d8b07a'; ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+}
 function drawVo(x, y, dx = -1) {
   personDraw(avatarSprite(), x, y, false, false, dx);
   rect(x - 26, y - 128, 52, 7, '#3a2a1a', 3); rect(x - 15, y - 146, 30, 20, '#4a3424', 6);

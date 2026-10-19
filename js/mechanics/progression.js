@@ -47,6 +47,17 @@ const ACHIEVEMENTS=[
  {id:'grenal',name:'Clássico na bodega',desc:'Fechar um dia de Gre-Nal.',xp:120,test:()=>G.phase==='closed'&&G.event.id==='grenal'},
  {id:'costelao',name:'Costelão de respeito',desc:'Vender 10 kg de costela.',xp:200,test:()=>(G.costelaSold||0)>=10000},
  {id:'lacador2',name:'Laçador de mão cheia',desc:'Laçar 15 bois.',xp:200,test:()=>(G.bullsLassoed||0)>=15},
+ {id:'gruta',name:'Desceu na gruta',desc:'Chegar ao andar 5 da caverna da Serra.',xp:100,test:()=>(G.cave?.deepest||0)>=5},
+ {id:'fundo',name:'Fundo da serra',desc:'Chegar ao andar 15 da caverna.',xp:250,test:()=>(G.cave?.deepest||0)>=15},
+ {id:'baudovo',name:'O baú do vô',desc:'Abrir o baú do vô no fundo da caverna.',xp:200,test:()=>!!G.cave?.vo},
+ {id:'cacador',name:'Caçador de assombração',desc:'Derrubar 100 bichos na caverna.',xp:200,test:()=>(G.cave?.killsTotal||0)>=100},
+ {id:'afiado',name:'Fio de navalha',desc:'Afiar uma arma até +3 na pedra do São Dunstano.',xp:150,test:()=>Object.values(G.cave?.refine||{}).some(n=>n>=3)},
+ {id:'salamanca',name:'Ferreiro de mosteiro',desc:'Forjar a Espada da Salamanca com o São Dunstano.',xp:300,test:()=>!!G.cave?.forged?.ouro},
+ {id:'folclore',name:'Assombrações do Sul',desc:'Vencer todas as assombrações do folclore, de noite.',xp:300,test:()=>Object.keys(FOLK).every(k=>G.folk?.[k]?.wins)},
+ {id:'saci',name:'Pegou o Saci',desc:'Segurar o Saci pela carapuça e fazer um desejo.',xp:150,test:()=>(G.saci?.caught||0)>0},
+ {id:'dourado',name:'Rei do rio',desc:'Fisgar um dourado no trapiche.',xp:150,test:()=>!!G.fishRecords?.dourado},
+ {id:'cavaleiro',name:'Cavaleiro crioulo',desc:'Botar ferraduras de ferro no cavalo crioulo.',xp:150,test:()=>G.mount?.shoes==='ferro'},
+ {id:'album',name:'Álbum completo',desc:'Completar o álbum de figurinhas.',xp:400,test:()=>cardsOwned()===CARDS.length},
  {id:'lendaria',name:'Bodega lendária',desc:'Chegar ao nível máximo da bodega.',xp:0,test:()=>bodegaLevel()>=LEVELS.length}
 ];
 function checkAchievements(){

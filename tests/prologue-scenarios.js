@@ -44,8 +44,8 @@
   goInside();check(G.stock.salada===8&&G.stock.erva===2000&&bagQty('trigo')===6,'na bodega a alface vira salada, a erva vai para o balcão e o trigo fica para o forno');
   check(prologueBodegaTarget()==='forno','a seta da cozinha aponta o forno');
   const near=id=>{const f=furniture().find(f=>f.id===id);G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1};return nearest()?.id;};
-  check(near('forno')==='forno','dá para chegar ao forno a lenha');interact();check(modal==='farmGame'&&farmGame.stages.length===1&&farmStage().kind==='alternate','o forno é só sovar a massa, sem segunda etapa');
-  for(let i=0;i<80&&farmGame;i++)farmGameKey(i%2?'d':'a');check(G.stock.pao_xis===FORNO.paes&&bagQty('trigo')===3&&!modal,'sovada a massa: 3 trigo viram 8 pães de xis');
+  check(near('forno')==='forno','dá para chegar ao forno a lenha');interact();check(modal==='forno'&&!farmGame&&$('dialogContent').querySelector('[data-act="makePao"]'),'o forno é só um botão: Assar, sem minijogo');
+  action('makePao');check(G.stock.pao_xis===FORNO.paes&&bagQty('trigo')===3&&!modal,'assar: 3 trigo viram 8 pães de xis na hora');
   tick(2);talk();check(step()==='laco','depois do pão, laçar o boi');
   goOutside();const cp=WORLD_MAPS.vila.spots().find(s=>s.id==='campo');worldOut.x=cp.x;worldOut.y=cp.y;interact();check(worldOut.map==='curral','a entrada do campo leva ao campo com o curral');
   const spot=id=>WORLD_MAPS.curral.spots().find(s=>s.id===id),go=id=>{const s=spot(id);worldOut.x=s.x;worldOut.y=s.y;interact();};
@@ -64,7 +64,7 @@
   const ex=WORLD_MAPS.curral.spawn();worldOut.x=ex.x;worldOut.y=RANCH.H-20;keys.add('s');simulate(.1);keys.clear();check(worldOut.map==='vila','a porteira do campo volta para a Fronteira');
   goInside();check(G.stock.burger>0&&G.stock.ovo>0&&G.stock.costela_crua>0,'carne e ovos vão para a despensa');
   check(near('tacho')==='tacho','dá para chegar ao tacho');interact();check(modal==='tacho'&&$('dialogContent').innerHTML.includes('Queijo em fatias')&&!/colonial/i.test($('dialogContent').innerHTML),'o tacho faz só o queijo em fatias (sem queijo colonial)');
-  action('makeQueijo','fatias');check(farmGame?.stages.length===1,'o queijo é só mexer o tacho, sem segunda etapa');for(let i=0;i<80&&farmGame;i++)farmGameKey(i%2?'d':'a');
+  action('makeQueijo','fatias');check(!farmGame&&!modal,'o queijo é só um botão, sem minijogo');
   check(G.stock.queijo===TACHO.fatias&&bagQty('leite')===4,'4 litros de leite viram 10 fatias de queijo');
   tick(2);talk();check(step()==='compras','depois do queijo, as compras no Atacado');
   goOutside();enterInterior('atacado');check(worldOut.map==='atacado','o Atacado abre no passo das compras');
@@ -88,7 +88,7 @@
   check(!/Bergamota do pomar|Pinhão a granel|Amendoim torrado|Conserva de pepino/.test(up)&&/Xis bacon/.test(up),'a Ferragem não vende bergamota, pinhão, amendoim e pepino: vêm da roça');
   check(unlocked('amendoim'),'amendoim torrado começa liberado');
   G.up.bergamota=false;G.bag={bergamota:{q:3000,c:0}};goOutside();goInside();check(unlocked('bergamota')&&G.stock.bergamota===3000,'a primeira bergamota colhida libera a venda no balcão');
-  G.ranch.milkedDay=null;G.bag={leite:{q:4,c:0}};near('tacho');interact();action('makeQueijo','colonial');for(let i=0;i<80&&farmGame;i++)farmGameKey(i%2?'d':'a');
+  G.ranch.milkedDay=null;G.bag={leite:{q:4,c:0}};near('tacho');interact();action('makeQueijo','colonial');
   check(!G.up.queijo_colonial&&!G.stock.queijo_colonial&&!furniture().some(f=>f.id==='shop:queijo_colonial')&&!unlocked('queijo_colonial'),'queijo colonial saiu do jogo: nem no tacho nem no balcão');
   check(G.valterQueue?.includes('bergamota'),'o Valter comenta as novidades da roça');
   G.valterQueue=[];

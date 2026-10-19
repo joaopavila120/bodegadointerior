@@ -158,13 +158,13 @@
    check(missionDone('rio')&&l0===1&&douradoLuck()>1,'o Arami ensina a ler o rio: mais chance de dourado');G.phase='prep';G.report=null;goInside();}
   // ---------- ferraduras do cavalo na bigorna ----------
   {mountState().owned=true;G.mount.stabled=false;delete G.mount.shoes;G.cash=Math.max(G.cash,800);worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);
-   const c0=bagQty('cobre');bagAdd('cobre',HORSESHOES.cobre.needs.cobre);dunstanTab='loja';dunstanShop();check(/ferraduraBater/.test($('dialogContent').innerHTML),'com o cavalo crioulo, a ferraria faz ferraduras');
-   const bater=hits=>{action('ferraduraBater','cobre');check(modal==='farmGame','bigorna: fole e marteladas');let k=0;while(farmGame&&farmStage().kind==='alternate'&&k++<60)farmGameKey(k%2?'a':'d');let n=0;while(farmGame){const st=farmStage();farmGame.pos=n<hits?(st.zone[0]+st.zone[1])/2:0;farmGameKey('e');n++;}};
-   bater(2);talkAll();check(!horseshoes()&&bagQty('cobre')===c0+HORSESHOES.cobre.needs.cobre,'duas marteladas boas não bastam: a ferradura entorta e o minério fica');
-   closeDialog(true);dunstanShop();bater(4);talkAll();check(horseshoes()==='cobre'&&bagQty('cobre')===c0,'quatro no ponto: ferraduras de cobre no cavalo');closeDialog(true);
+   const c0=bagQty('cobre');bagAdd('cobre',HORSESHOES.cobre.needs.cobre);dunstanTab='loja';dunstanShop();check(/ferraduraForjar/.test($('dialogContent').innerHTML),'com o cavalo crioulo, a ferraria faz ferraduras');
+   const cash=G.cash;action('ferraduraForjar','cobre');check(!farmGame&&modal==='talk','sem minijogo: o santo faz na hora');talkAll();
+   check(horseshoes()==='cobre'&&bagQty('cobre')===c0&&G.cash===cash-HORSESHOES.cobre.cost,'ferraduras de cobre no cavalo, com cobre e dinheiro');closeDialog(true);
    caveLeave();closeDialog(true);talkAll();switchMap({map:'vila',x:1600,y:735});closeDialog(true);keys.clear();
    const run=()=>{worldOut.x=1600;worldOut.y=735;keys.add('d');outsideTick(.05);keys.clear();return worldOut.x-1600;};const shod=run();delete G.mount.shoes;const b=movementBonus(),bare=run();G.mount.shoes='cobre';
-   check(playerMounted()&&Math.abs(shod/bare-(1+b+.1)/(1+b))<.02,'montado e ferrado: o cavalo anda 10% mais ligeiro');G.mount.owned=false;delete G.mount.shoes;goInside();}
+   check(playerMounted()&&Math.abs(shod/bare-(1+b+.1)/(1+b))<.02,'montado e ferrado: o cavalo anda 10% mais ligeiro');
+   {const n0=AudioEngine.noise;let clop=0;AudioEngine.noise=function(...a){clop++;return n0.apply(this,a);};try{keys.add('d');for(let i=0;i<20;i++)outsideTick(.05);keys.clear();const moving=clop;G.mount.stabled=true;clop=0;keys.add('d');for(let i=0;i<20;i++)outsideTick(.05);keys.clear();check(moving>=3&&clop===0,'som de casco leve só andando montado');}finally{AudioEngine.noise=n0;G.mount.stabled=false;}}G.mount.owned=false;delete G.mount.shoes;goInside();}
   // ---------- economia (docs/plano-economia.md) ----------
   {G.cave={facao:true,floor:1,deepest:20,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
    enterCave(3);closeDialog(true);talkAll();let run=caveFloorRun();const b=run.beasts[0],r=run.rocks[0];b.hp=0;caveKill(b);r.hp=0;caveBreak(r);
@@ -172,6 +172,8 @@
    check(run.beasts[0].hp<=0&&run.rocks[0].hp<=0&&run.beasts.slice(1).some(x=>x.hp>0),'a caverna guarda o dia: bicho derrubado e pedra quebrada não voltam ao descer de novo');
    G.day++;caveRun=null;run=caveFloorRun();check(run.beasts.every(x=>x.hp>0)&&run.rocks.every(x=>x.hp>0),'no outro dia, o andar volta inteiro');G.day--;caveRun=null;caveLeave();closeDialog(true);talkAll();
    check(CAVE_BEASTS.javali.cash[1]<=4&&CAVE_ORES.ouro.value===40&&BAG_RAW.ametista.value===12,'caverna paga menos moeda e o minério vendido vale menos');}
+  {const ids=['gruta','fundo','baudovo','cacador','afiado','salamanca','folclore','saci','dourado','cavaleiro','album'];check(ids.every(id=>ACHIEVEMENTS.some(a=>a.id===id))&&ACHIEVEMENTS.every(a=>{try{a.test();return true;}catch(e){return false;}}),'conquistas novas: caverna, folclore, Saci, dourado, cavalo e álbum');
+   const k0=G.cave.killsTotal||0;G.cave.killsTotal=99;check(!G.achievements?.cacador,'caçador ainda não');G.cave.killsTotal=100;checkAchievements();check(!!G.achievements.cacador,'100 bichos derrubados: Caçador de assombração');G.cave.killsTotal=k0;}
   {const xp=G.xp;G.xp=0;check(price('xis_salada')===22&&fameBonus()===1,'nível 1: preço de tabela');
    G.xp=LEVELS[3].xp;check(bodegaLevel()===4&&price('xis_salada')===24.5&&price('cerveja')===9,'fama da bodega: +4% por nível (no nível 4, o xis sai a R$ 24,50)');
    const vi=PEOPLE.findIndex(p=>p.id==='valter'),gi=PEOPLE.findIndex(p=>p.id==='guri');G.xp=0;check(staffWage(gi)===Math.round(STAFF_TRAITS.guri.wage*.6),'salário de ajudante no nível 1: 60%');
@@ -180,6 +182,9 @@
    G.xp=0;const j1=MAP_EVENTS.javali.reward.cash;G.xp=LEVELS[2].xp;check(j1===90&&MAP_EVENTS.javali.reward.cash===110,'eventos do mapa pagam 10% a mais por nível');
    check(LEVELS.at(-1).xp===5600&&MISSIONS.find(m=>m.id==='lendaria').reward.cash===1000&&MISSIONS.find(m=>m.id==='gaita').reward.cash===250,'níveis mais perto e capítulos que pagam');G.xp=xp;}
   {worldOut=null;goInside();G.phase='open';G.openedDay=G.day;G.elapsed=DAY;G.shop=[];G.groups=[];G.stats=stats(G.cash);G.stats.served=12;finishDay(true);while(scene)sceneSkip();check(G.report.xp>=12,'o dia dá 1 XP por freguês atendido, além do lucro');closeDialog(true);G.tvAwardPending=false;closeDialog(true);G.phase='prep';G.report=null;}
+  // ---------- o sonho do Sadi não trava ----------
+  {worldOut=null;const seen=[],P=CanvasRenderingContext2D.prototype,di=P.drawImage;P.drawImage=function(...a){seen.push(this.filter);return di.apply(this,a);};try{drawSceneSonho();}finally{P.drawImage=di;}
+   check(seen.length>20&&!seen.some(f=>/sepia/.test(f)),'o sonho do Sadi pinta o sépia por cima do quadro, sem filtro em cada desenho');}
   // ---------- quero-queros no mundo aberto ----------
   {goInside();G.phase='prep';G.report=null;goOutside();const count={vila:0,serra:0,sc:0};let day=0,open=true;
    for(const map of Object.keys(count))for(let d=200;d<300;d++){G.day=d;switchMap({map,x:1500,y:900});closeDialog(true);const b=qqBirds();if(b.length){count[map]++;open=open&&b.every(q=>WORLD_MAPS[map].canWalk(q.x,q.y));if(map==='vila'&&!day)day=d;}}

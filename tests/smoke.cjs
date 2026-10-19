@@ -96,6 +96,14 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='refuge'){
+      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
+      for(const file of ['dunstan-refuge-scenarios.js','mountain-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length);
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.cave={facao:true,floor:1,deepest:1,hp:100,up:{},dunstanTaught:true};caveRun=null;worldWalkers=[];started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');worldOut={map:'caverna',x:800,y:660,dx:0,dy:1,walk:false};WORLD_MAPS.caverna.onEnter();refreshHUD();draw();`);
+      await evaluate('fx=[];draw();');
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(os.tmpdir(),'bodega-dunstan-refuge.png'),Buffer.from(shot.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     if(process.env.BODEGA_FOCUS==='landmarks'){
       await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'landmark-trees-scenarios.js'),'utf8'));
@@ -261,6 +269,8 @@ async function main() {
       await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
       const homeArt=await evaluate(fs.readFileSync(path.join(__dirname,'player-home-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+homeArt.length+' verificações da casa e ferraria');
+      const refugeResults=await evaluate(fs.readFileSync(path.join(__dirname,'dunstan-refuge-scenarios.js'),'utf8'));
+      console.log('PASS '+protocol+' / '+entry+': '+refugeResults.length+' checks do refugio');
       const mountainResults=await evaluate(fs.readFileSync(path.join(__dirname,'mountain-scenarios.js'),'utf8'));
       console.log('PASS '+protocol+' / '+entry+': '+mountainResults.length+' verificações da caverna, montaria e personagens');
       const caveMovement=await evaluate(fs.readFileSync(path.join(__dirname,'cave-movement-scenarios.js'),'utf8'));

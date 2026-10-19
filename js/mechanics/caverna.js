@@ -177,7 +177,7 @@ function caveUnstickPlayer() {
     const angle=n*Math.PI/16,x=p.x+Math.cos(angle)*radius,y=p.y+Math.sin(angle)*radius;
     if(worldCanWalk(x,y)){p.x=x;p.y=y;return true;}
   }
-  Object.assign(p,caveCenter(...CAVE.start));return true;
+  Object.assign(p,worldMap().spawn());return true;
 }
 function caveMovePlayer(dx,dy) {
   const p=worldOut; caveUnstickPlayer();const oldX=p.x,oldY=p.y;

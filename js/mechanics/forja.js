@@ -315,23 +315,23 @@ const DUNSTAN_TEACH = [
 function dunstanTeach() { talk(DUNSTAN_TEACH.map(l => [...l]), () => { caveState().dunstanTaught = true; giveCard('dunstano', 'conversa no refúgio'); save(); }, 'Explorar o refúgio'); }
 function dunstanFirstMeeting() {
   if (!scenesEnabled()) { dunstanTeach(); return; }
-  const s = caveCenter(...CAVE.start), forge = { x: DUNSTAN_FORGE.x + DUNSTAN_FORGE.w / 2, y: DUNSTAN_FORGE.y + 40 };
+  const s = WORLD_MAPS.caverna.spawn(), forge = { x: DUNSTAN_FORGE.x + DUNSTAN_FORGE.w / 2, y: DUNSTAN_FORGE.y + 40 };
   const ghost = (a, y) => expansionSprite('cave-props-v1', 10, a.x, y + 6, 150, a.dx < 0);
-  playSteps([...sceneWorld({ map: 'caverna', x: 470, y: 780, night: .72, lights: [{ x: forge.x, y: forge.y, r: 260, a: .38, color: '255,150,60' }] }),
+  playSteps([...sceneWorld({ map: 'caverna', x: 650, y: 670, night: .72, lights: [{ x: forge.x, y: forge.y, r: 260, a: .38, color: '255,150,60' }] }),
     { do: () => { Object.assign(DUNSTAN, { x: -900, y: -900, wait: 99 }); } }, { actor: 'sadi', x: s.x, y: s.y - 10, dx: 1, dy: -1 }, { fade: 'in', time: 1 },
-    { walk: 'sadi', to: { x: 400, y: 860 } },
+    { walk: 'sadi', to: { x: 500, y: 760 } },
     { say: 'sadi', text: 'Que escuridão… e esse barulho de martelo batendo, lá no fundo?' },
     { do: () => [0, 380, 760].forEach(t => setTimeout(() => AudioEngine.caveAnvil(), t)) }, { wait: 1.2 },
-    { actor: 'dunstano', x: 560, y: 760, dx: -1, alpha: 0, alphaTo: .85, ghost: true, draw: ghost }, { do: () => { AudioEngine.caveGhost(); } }, { wait: 1.4 },
-    sceneSet('sadi', { hop: 22 }), { do: () => { sceneShout('Bah!', 400, 700, '#ffe28a', 22); AudioEngine.ouch(); } },
+    { actor: 'dunstano', x: 560, y: 700, dx: -1, alpha: 0, alphaTo: .85, ghost: true, draw: ghost }, { do: () => { AudioEngine.caveGhost(); } }, { wait: 1.4 },
+    sceneSet('sadi', { hop: 22 }), { do: () => { sceneShout('Bah!', 500, 610, '#ffe28a', 22); AudioEngine.ouch(); } },
     { say: 'sadi', text: 'Bah! Uma assombração! Valei-me, Nossa Senhora!' },
-    sceneSet('sadi', { hop: 0, speed: 320 }), { walk: 'sadi', to: { x: 300, y: 900 } }, sceneSet('sadi', { dx: 1 }),
+    sceneSet('sadi', { hop: 0, speed: 320 }), { walk: 'sadi', to: { x: 440, y: 740 } }, sceneSet('sadi', { dx: 1 }),
     { say: 'dunstano', text: 'Calma, vivente! Assombração que bate ferro não faz mal pra ninguém.' },
     { say: 'dunstano', text: 'Sou Dunstano. Fui ferreiro e ourives antes de ser santo, lá na Inglaterra, faz mais de mil anos.' },
     { say: 'sadi', text: 'Um santo… numa gruta da Serra Gaúcha?!' },
     { say: 'dunstano', text: 'Onde tem forja acesa e gente de coragem, eu apareço. Teu vô me conheceu: desceu aqui com esse mesmo facão de cabo de chifre.' },
-    sceneSet('sadi', { speed: 150 }), { walk: 'sadi', to: { x: 440, y: 840 } },
-    { say: 'sadi', text: 'O vô?! Então… me ensina como é que se anda aqui embaixo.' }, { fade: 'out', time: .6 }], 'caverna-dunstano', () => { Object.assign(DUNSTAN, { x: 560, y: 760, dx: -1, dy: 0, wait: 3 }); dunstanTeach(); });
+    sceneSet('sadi', { speed: 150 }), { walk: 'sadi', to: { x: 560, y: 750 } },
+    { say: 'sadi', text: 'O vô?! Então… me ensina como é que se anda aqui embaixo.' }, { fade: 'out', time: .6 }], 'caverna-dunstano', () => { Object.assign(DUNSTAN, { x: 560, y: 700, dx: -1, dy: 0, wait: 3 }); dunstanTeach(); });
 }
 {
   const meet = dunstanTalk;

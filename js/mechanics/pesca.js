@@ -36,8 +36,10 @@ function fishSprite(g, key, x, y, height, flip = false) {
 // ---------- A pescaria ----------
 let fishing = null;
 const FW = 760, FH = 420, WATER = 250, TIP = { x: 178, y: 196 };
+// Quem aprendeu a ler o rio com o Arami (missão "O caminho do rio") fisga o dourado bem mais vezes.
+function douradoLuck() { return missionDone('rio') ? 2.5 : 1; }
 function pickFish(power) {
-  const zone = power < .35 ? 'near' : power > .7 ? 'far' : 'mid', night = worldNight(), list = Object.entries(FISH_KINDS).map(([k, f]) => [k, f[zone] * (night && f.night ? f.night : 1)]);
+  const zone = power < .35 ? 'near' : power > .7 ? 'far' : 'mid', night = worldNight(), list = Object.entries(FISH_KINDS).map(([k, f]) => [k, f[zone] * (night && f.night ? f.night : 1) * (k === 'dourado' ? douradoLuck() : 1)]);
   let roll = Math.random() * list.reduce((n, [, w]) => n + w, 0); for (const [k, w] of list) { roll -= w; if (roll <= 0) return k; } return 'jundia';
 }
 function goFishingNew() {

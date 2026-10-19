@@ -125,6 +125,46 @@
     else{check(modal==='farmGame','soltar o filhote do laço e ficar quieto');let k=0;while(farmGame&&k++<200){const s=farmStage();if(s.kind==='alternate')farmGameKey(k%2?'a':'d');else{farmGame.pos=(s.zone[0]+s.zone[1])/2;farmGameKey('e');}}}
     check(G.relics?.[FOLK[id].relic],'vencendo, a lembrança vai pra estante: '+FOLK[id].relic);talkAll();}
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
+  // ---------- missões dos encontros: sino, corrente, reportagem e rio ----------
+  {G.cave={facao:true,floor:1,deepest:12,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'igreja',x:600,y:700});closeDialog(true);
+   delete G.missions.sino;worldTalk({person:PADRE_ROMIO,x:600,y:470});check(modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'aceitou: cobre e ferro pro São Dunstano');
+   const ab=CAVE_ITEMS.find(i=>i.id==='aguabenta').cost,c0=bagQty('cobre'),f0=bagQty('ferro');bagAdd('cobre',SINO_NEEDS.cobre);bagAdd('ferro',SINO_NEEDS.ferro);
+   goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();
+   check(/forjaSino/.test($('dialogContent').innerHTML),'na ferraria, o santo oferece fundir o sino');action('forjaSino');talkAll();check(sinoForged()&&bagQty('cobre')===c0&&bagQty('ferro')===f0,'sino fundido com cobre e ferro');
+   caveLeave();closeDialog(true);talkAll();switchMap({map:'igreja',x:600,y:700});closeDialog(true);worldTalk({person:PADRE_ROMIO,x:600,y:470});talkAll();
+   check(missionDone('sino')&&CAVE_ITEMS.find(i=>i.id==='aguabenta').cost===Math.round(ab/2),'sino entregue: água benta pela metade no bolicho');}
+  {const di=PEOPLE.findIndex(p=>p.id==='dianho');delete G.missions.corrente;startMission(MISSIONS.find(m=>m.id==='corrente'));closeDialog(true);
+   goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(CORRENTE_FLOOR);closeDialog(true);talkAll();const b=caveFloorRun().beasts.find(b=>b.carrier);
+   check(b&&b.kind==='lobisomem','no andar 7, o lobisomem com a corrente do Dianho');b.hp=0;caveKill(b);check(bagQty('corrente')===1,'derrubado: a corrente vai pro inventário');
+   caveLeave();closeDialog(true);talkAll();check(questOffer('dianho')?.kind==='mission'&&canDeliver(questOffer('dianho').want),'na casa do Dianho, dá pra entregar a corrente');questDeliver(di);talkAll();check(missionDone('corrente')&&!bagQty('corrente'),'corrente devolvida');}
+  {delete G.missions.reportagem;startMission(MISSIONS.find(m=>m.id==='reportagem'));closeDialog(true);
+   const neg=x=>{const k=G.day;G.day=x;const r=negrinhoTonight();G.day=k;return r;};let d=G.day+1;while(mapEventFor(d)||neg(d))d++;G.day=d;G.phase='closed';G.report={};G.folk={};G.folkNight=null;G.saci={};
+   goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);const f=folkTonight();check(f&&reportWants(f)&&/hoje/.test(reportGoal()),'com a reportagem, toda noite aparece uma assombração que falta filmar');
+   saciEncounterKey='';saciTick(.01);check(saciEncounter?.map==='vila','e o Saci aparece na Fronteira');
+   for(let i=0;i<5;i++)outsideTick(.05);check(reportCrew.map==='vila'&&reportCrew.list.every(c=>worldCanWalk(c.x,c.y)),'o Gustavo e o Lauro andam junto, de noite');
+   const s=saciEncounter;s.state='pipe';s.t=99;const aim=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({dx,dy,x:s.x-dx*240,y:s.y-dy*170})).find(q=>worldCanWalk(q.x,q.y));
+   const toward={dx:aim.dx,dy:aim.dy};Object.assign(worldOut,{x:aim.x,y:aim.y,dx:-aim.dx,dy:-aim.dy});outsideInteract();check(!reportFilmed().saci,'de costas pro Saci, a câmera não pega');
+   Object.assign(worldOut,toward);outsideInteract();check(reportFilmed().saci,'Saci enquadrado na frente: E filma');
+   for(const k of Object.keys(FOLK).filter(k=>reportWants(k)).slice(0,REPORT_FOLK))reportFilmed()[k]=G.day;
+   withScenes(()=>{closeDialog(true);talkState=null;missionsTick();});talkAll();check(missionDone('reportagem')&&G.touristsUntil===G.day+3,'filmados o Saci e duas assombrações: o especial vai ao ar');
+   {const a=arrivalInterval('group');G.touristsUntil=0;check(a<arrivalInterval('group'),'e vêm turistas pra bodega');G.touristsUntil=G.day+3;}}
+  {delete G.missions.rio;G.rio=null;const ar=PEOPLE.findIndex(p=>p.id==='arami');switchMap({map:'vila',x:1600,y:900});closeDialog(true);
+   worldTalk({person:ar,x:1600,y:900});check(modal==='talk','Arami: o caminho do rio');talkAll();check(missionActive('rio')&&bagQty('muda_butia')===1&&bagQty('muda_araucaria')===1,'aceitou: as mudas de butiá e de araucária');
+   check(WORLD_MAPS.vila.spots().some(s=>s.id==='rio:arami'),'de noite, o Arami espera na beira do rio');
+   for(const p of RIO_PLANTS){worldOut.x=p.x;worldOut.y=p.y;interact();}check(rioPlantedAll()&&!bagQty('muda_butia'),'mudas plantadas na margem');
+   for(const h of RIO_HERBS){worldOut.x=h.x;worldOut.y=h.y;interact();check(modal==='rioErva','erva do mato pra reconhecer: '+h.name);action('rioErva',h.id+':'+h.options.find(o=>o!==h.name));check(!rioState().herbs[h.id],'nome errado não vale: '+h.name);
+    worldOut.x=h.x;worldOut.y=h.y;interact();action('rioErva',h.id+':'+h.name);}
+   check(rioHerbsAll(),'as três ervas reconhecidas');const l0=douradoLuck();worldOut.x=RIO_ARAMI.x;worldOut.y=RIO_ARAMI.y+20;interact();talkAll();
+   check(missionDone('rio')&&l0===1&&douradoLuck()>1,'o Arami ensina a ler o rio: mais chance de dourado');G.phase='prep';G.report=null;goInside();}
+  // ---------- ferraduras do cavalo na bigorna ----------
+  {mountState().owned=true;G.mount.stabled=false;delete G.mount.shoes;G.cash=Math.max(G.cash,800);worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);
+   const c0=bagQty('cobre');bagAdd('cobre',HORSESHOES.cobre.needs.cobre);dunstanTab='loja';dunstanShop();check(/ferraduraBater/.test($('dialogContent').innerHTML),'com o cavalo crioulo, a ferraria faz ferraduras');
+   const bater=hits=>{action('ferraduraBater','cobre');check(modal==='farmGame','bigorna: fole e marteladas');let k=0;while(farmGame&&farmStage().kind==='alternate'&&k++<60)farmGameKey(k%2?'a':'d');let n=0;while(farmGame){const st=farmStage();farmGame.pos=n<hits?(st.zone[0]+st.zone[1])/2:0;farmGameKey('e');n++;}};
+   bater(2);talkAll();check(!horseshoes()&&bagQty('cobre')===c0+HORSESHOES.cobre.needs.cobre,'duas marteladas boas não bastam: a ferradura entorta e o minério fica');
+   closeDialog(true);dunstanShop();bater(4);talkAll();check(horseshoes()==='cobre'&&bagQty('cobre')===c0,'quatro no ponto: ferraduras de cobre no cavalo');closeDialog(true);
+   caveLeave();closeDialog(true);talkAll();switchMap({map:'vila',x:1600,y:735});closeDialog(true);keys.clear();
+   const run=()=>{worldOut.x=1600;worldOut.y=735;keys.add('d');outsideTick(.05);keys.clear();return worldOut.x-1600;};const shod=run();delete G.mount.shoes;const b=movementBonus(),bare=run();G.mount.shoes='cobre';
+   check(playerMounted()&&Math.abs(shod/bare-(1+b+.1)/(1+b))<.02,'montado e ferrado: o cavalo anda 10% mais ligeiro');G.mount.owned=false;delete G.mount.shoes;goInside();}
   // ---------- economia (docs/plano-economia.md) ----------
   {G.cave={facao:true,floor:1,deepest:20,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
    enterCave(3);closeDialog(true);talkAll();let run=caveFloorRun();const b=run.beasts[0],r=run.rocks[0];b.hp=0;caveKill(b);r.hp=0;caveBreak(r);

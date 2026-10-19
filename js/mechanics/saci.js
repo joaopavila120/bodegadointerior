@@ -13,6 +13,8 @@ const SACI_SALT = { vila: 23, serra: 37, sc: 59 };
 let saciChase = { on: false, cool: 0, bark: 0, watch: 0, lastD: null };
 function saciState() { return (G.saci ??= {}); }
 function saciResting() { const l = G.saci?.lastWish; return l != null && G.day - l < SACI_RULES.rest; }
+// Noite em que alguém precisa do Saci naquele mapa (a reportagem do Gustavo): ele aparece com certeza.
+function saciForced(M) { return false; }
 
 // Um canto do mapa: perto das bordas, onde dá pra pisar e longe da estrada.
 function saciCorner(M, R, avoid = null) {
@@ -53,8 +55,8 @@ saciTick = function (dt) {
   if (!worldOut || !SACI_SALT[M.id] || !worldNight() || prologueActive()) { saciEncounter = null; saciEncounterKey = ''; return; }
   const key = G.day + ':' + M.id;
   if (key !== saciEncounterKey) {
-    saciEncounterKey = key; saciEncounter = null; if (saciResting()) return;
-    const R = caveRand(G.day * 1109 + SACI_SALT[M.id]); if (R() >= .35) return;
+    saciEncounterKey = key; saciEncounter = null; const forced = saciForced(M); if (saciResting() && !forced) return;
+    const R = caveRand(G.day * 1109 + SACI_SALT[M.id]); if (R() >= .35 && !forced) return;
     const home = saciCorner(M, R); if (!home) return;
     saciEncounter = { x: home.x, y: home.y, home, tx: home.x, ty: home.y, map: M.id, age: 0, mode: 'hop', state: 'wander', t: 2 + R() * 3, dx: 1, walk: false, escapes: 0 };
   }

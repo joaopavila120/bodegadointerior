@@ -112,7 +112,7 @@ CAVE_UPGRADES.push(
     buy(id); if (u?.needs && !had && caveUp(id)) { takeNeeds(u.needs); save(); dunstanShop(); }
   };
   const hp = caveMaxHp; caveMaxHp = function () { return caveUp('pala') ? 180 : hp(); };
-  const bonus = movementBonus; movementBonus = function () { return bonus() + (inCave() ? (caveUp('botas') ? .15 : 0) + (caveBuff('esporas') ? .4 : 0) : 0); };
+  const bonus = movementBonus; movementBonus = function () { return bonus() + (inCave() ? (caveUp('botas') ? .15 : 0) + (caveBuff('esporas') ? .4 : 0) : 0) + (playerMounted() ? horseshoeBonus() : 0); };
 }
 
 // ---------- Bornal da caverna e bolicho do santo ----------
@@ -199,6 +199,41 @@ function caveBeltRefresh() {
 }
 
 // ---------- A ferraria de São Dunstano ----------
+// ---------- Ferraduras do cavalo crioulo ----------
+// Na bigorna do santo: primeiro o fole (A e D) pra esquentar o metal, depois quatro marteladas no tempo certo. Três
+// marteladas boas e a ferradura sai; senão ela entorta, e o minério e o dinheiro não se perdem (é só tentar de novo).
+// Montado, o cavalo anda mais ligeiro: cobre +10%, ferro +15% (a de ferro pede a de cobre antes).
+const HORSESHOES = {
+  cobre: { name: 'Ferraduras de cobre', icon: '🧲', needs: { cobre: 8 }, cost: 60, bonus: .10, zone: [.4, .62], speed: 1, desc: 'Leves e macias: o crioulo anda 10% mais ligeiro com o Sadi montado.' },
+  ferro: { name: 'Ferraduras de ferro', icon: '🧲', needs: { ferro: 8, cobre: 2 }, cost: 120, bonus: .15, requires: 'cobre', zone: [.44, .6], speed: 1.3, desc: 'Ferro batido e cravo de cobre: 15% mais ligeiro montado, e aguentam pedra da Serra.' }
+};
+function horseshoes() { return mountState().shoes || null; }
+function horseshoeBonus() { return HORSESHOES[horseshoes()]?.bonus || 0; }
+function horseshoeOwned(id) { const h = horseshoes(); return h === id || id === 'cobre' && h === 'ferro'; }
+function dunstanHorseshoesHTML() {
+  return Object.entries(HORSESHOES).map(([id, s]) => {
+    const own = horseshoeOwned(id), before = s.requires && !horseshoeOwned(s.requires), ok = !own && !before && hasNeeds(s.needs) && hasCash(s.cost);
+    const info = own ? `<small>${horseshoes() === id ? 'No cavalo agora' : 'Trocada pela de ferro'}</small>` : before ? '<span class="req miss">antes: Ferraduras de cobre</span>' : reqChips(s.needs, s.cost);
+    return forjaCard('<span class="bag-emoji">🐎</span>', s.name, s.desc, info, `<button class="primary" data-act="ferraduraBater" data-id="${id}" ${ok ? '' : 'disabled'}>${own ? '✔ No cavalo' : ok ? 'Bater na bigorna' : before ? 'Bloqueado' : 'Falta material'}</button>`, own ? 'owned' : '');
+  }).join('');
+}
+function horseshoeForge(id) {
+  const s = HORSESHOES[id]; if (!s || !dunstanShopOpen() || !mountState().owned || horseshoeOwned(id) || s.requires && !horseshoeOwned(s.requires)) return;
+  if (!hasNeeds(s.needs) || !hasCash(s.cost)) { say('Falta material pra ' + s.name.toLowerCase() + '.'); AudioEngine.bad(); return; }
+  closeDialog(true);
+  const strike = n => ({ kind: 'timing', label: 'Martelada ' + n, text: 'Aperte <span class="keycap">E</span> quando o martelo passar na faixa verde: é ali que o metal tá no ponto.', zone: s.zone, speed: s.speed + n * .08, button: 'Martelar', hitText: 'Tum! No ponto.', missText: 'Bateu fora do ponto…' });
+  startFarmGame({ title: '⚒ ' + s.name, stages: [
+    { kind: 'alternate', label: 'Esquentar no fole', text: 'Alterne <span class="keycap">A</span> e <span class="keycap">D</span> no fole até o ' + bagName(Object.keys(s.needs)[0]).toLowerCase() + ' ficar vermelho.', doneText: 'O metal tá em brasa!', pitch: 620 },
+    strike(1), strike(2), strike(3), strike(4)
+  ], done: r => horseshoeResult(id, r), cancel: () => dunstanShop() });
+}
+function horseshoeResult(id, r) {
+  const s = HORSESHOES[id], good = r.slice(1).filter(Boolean).length;
+  if (!r[0] || good < 3) { AudioEngine.bad(); talk([['dunstano', good ? 'Entortou na ponta, vivente. Ferradura torta machuca o casco. Esquenta de novo e bate com calma.' : 'Bateu frio, e o metal não pega forma. O minério tá aqui ainda: tenta de novo.']], () => dunstanShop(), 'Tentar de novo'); return; }
+  takeNeeds(s.needs); spendCash(s.cost); mountState().shoes = id; AudioEngine.caveAnvil(); setTimeout(() => AudioEngine.ready(), 380); save(); refreshHUD();
+  talk([['dunstano', 'Ferradura bem batida, de ferreiro de mosteiro! Prega no casco que o crioulo nem sente.'], ['dica', '<b>🐎 ' + s.name + '</b><br>Montado, o cavalo anda ' + Math.round(s.bonus * 100) + '% mais ligeiro no mundo aberto.', 'Ferraria de São Dunstano']], () => dunstanShop(), 'Valeu, santo');
+}
+
 // Tudo da ferraria num menu só (armas, afiar, equipamento e bolicho); na aba do lado, só a venda de minérios.
 let dunstanTab = 'loja';
 const DUNSTAN_TABS = [['loja', '⚒ Ferraria'], ['vender', '💰 Vender minérios']];
@@ -245,6 +280,7 @@ function dunstanLojaHTML() {
   return sec('⚔️ Armas', 'minério + dinheiro · a nova já vai pra mão', dunstanWeaponsHTML()) +
     sec('✨ Afiar', 'a arma que está na mão', dunstanAfiarHTML() + old.map(upgradeCardHTML).join('')) +
     sec('🧥 Equipamento', 'fica contigo pra sempre', CAVE_UPGRADES.filter(u => !['afiado', 'aco'].includes(u.id)).map(upgradeCardHTML).join('')) +
+    (mountState().owned ? sec('🐎 Ferraduras', 'pro cavalo crioulo · no tempo certo da bigorna', dunstanHorseshoesHTML()) : '') +
     sec('🧉 Bolicho', 'vai pro bornal da caverna (B) · até ' + caveBagMax() + ' de cada' + (caveUp('bornal') ? '' : ' (o Bornal de couro cru dobra)'), dunstanBolichoHTML());
 }
 // Pra que a forja ainda usa cada minério (ajuda a decidir o que guardar e o que vender).
@@ -378,6 +414,7 @@ function dunstanOutTick(dt) {
     if (name === 'forjaEquip') { forjaEquip(id); return; }
     if (name === 'forjaAfiar') { forjaAfiar(); return; }
     if (name === 'forjaAnel') { gemeosMakeRing(); return; }
+    if (name === 'ferraduraBater') { horseshoeForge(id); return; }
     if (name === 'bolichoBuy') { bolichoBuy(id); return; }
     if (name === 'caveUse') { if (caveDefeatActive()) return; caveUse(id); return; }
     return act(name, id);

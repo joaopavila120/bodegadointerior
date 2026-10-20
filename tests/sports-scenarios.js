@@ -51,8 +51,8 @@
    check(sportState().bracket.finished&&specialOpponent(sportState().bracket.champion),'derrota elimina jogador e conclui chave com campeão especial: '+type);
   }
   reset();G.phase='open';for(const special of sportPeople()){pickVisitor=()=>special;for(let n=0;n<20;n++){G.shop=[];const c=spawnShop();check(c&&c.pid!=='cigarro','especial nunca pede cigarro: '+PEOPLE[special].name);}}pickVisitor=visitor;
-  reset();G.up.salame=true;orderGoods('salame');check(G.toastLesson?.day===3,'compra de salame no fornecedor também agenda lição para partida antiga');
-  reset();G.phase='prep';buyUpgrade('salame');closeDialog(true);check(G.toastLesson.day===3&&!G.toastLesson.done,'compra de salame agenda lição para o dia seguinte');G.day=3;G.event.seen=true;openDay();simulate(.05);
+  reset();G.up.salame=true;orderGoods('salame');check(G.toastLesson?.day===G.day,'compra de salame no fornecedor também agenda lição (no mesmo dia) para partida antiga');
+  reset();G.phase='prep';buyUpgrade('salame');closeDialog(true);check(G.toastLesson.day===G.day&&!G.toastLesson.done,'compra de salame agenda a lição pro mesmo dia, sem esperar o outro');G.event.seen=true;openDay();simulate(.05);
   check(G.groups.length===1&&!G.shop.length&&G.groups[0].fixedOrders?.[0]==='torrada'&&modal==='toastLesson','primeiro cliente pede torrada antes das outras chegadas');closeDialog(true);const toast=G.groups[0];for(let n=0;n<350;n++)customersTick(.05);
   takeFromBin('pao_xis');useGrill(0);kitchenTick(30);check(G.kitchen.grill[0].waitingToast&&!G.kitchen.grill[0].burned,'pão na chapa aguarda salame sem queimar');readyProduct('salame');useGrill(0);kitchenTick(6.1);useGrill(0);
   check(held()?.pid==='torrada'&&held().ready&&Number.isFinite(held().cost),'pão e salame produzem torrada real na chapa');deliverToDiner(toast,held(),G.tables[toast.table]);check(G.toastLesson.done,'servir torrada encerra lição e libera chegadas');

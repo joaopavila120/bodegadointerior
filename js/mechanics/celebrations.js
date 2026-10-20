@@ -61,6 +61,8 @@ function dailyFinale(){
 function toastLessonTick(){
  const t=G.toastLesson;if(!t||t.done||G.day<t.day||G.phase!=='open'||tutorialActive())return false;
  if(t.actor&&!G.groups.some(g=>g.id===t.actor&&g.state!=='leave'))t.actor=null;
+ // Liberou o salame: a lição vem no mesmo dia, assim que o Sadi estiver dentro da bodega aberta.
+ if(!t.actor&&worldOut)return false;
  if(!t.actor){
   // Este pedido tem prioridade sobre todas as chegadas do novo dia.
   if(championshipActive()){

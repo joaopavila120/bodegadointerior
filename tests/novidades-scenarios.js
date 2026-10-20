@@ -182,50 +182,70 @@
    G.xp=0;const j1=MAP_EVENTS.javali.reward.cash;G.xp=LEVELS[2].xp;check(j1===90&&MAP_EVENTS.javali.reward.cash===110,'eventos do mapa pagam 10% a mais por nível');
    check(LEVELS.at(-1).xp===5600&&MISSIONS.find(m=>m.id==='lendaria').reward.cash===1000&&MISSIONS.find(m=>m.id==='gaita').reward.cash===250,'níveis mais perto e capítulos que pagam');G.xp=xp;}
   {worldOut=null;goInside();G.phase='open';G.openedDay=G.day;G.elapsed=DAY;G.shop=[];G.groups=[];G.stats=stats(G.cash);G.stats.served=12;finishDay(true);while(scene)sceneSkip();check(G.report.xp>=12,'o dia dá 1 XP por freguês atendido, além do lucro');closeDialog(true);G.tvAwardPending=false;closeDialog(true);G.phase='prep';G.report=null;}
-  // ---------- o chefe do andar 20: a Salamanca do Jarau ----------
+  // ---------- a missão do São Dunstano e o chefe do andar 20: a Salamanca do Jarau ----------
   {goInside();G.phase='prep';G.report=null;goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
-   const st=caveState();st.facao=true;st.deepest=20;for(const k of ['enchanted','salamanca','salamancaFled','salamancaSeen'])delete st[k];
-   enterCave(SALAMANCA_FLOOR);check(modal==='talk'&&/Salão da Salamanca/.test($('talkUI').innerHTML+$('dialogContent').innerHTML),'andar 20: o salão da Salamanca se apresenta');talkAll();
-   let run=caveFloorRun(),b=salamancaBoss(run),p=worldOut;
-   check(b&&run.beasts.length===1&&!run.ladder.shown&&!run.chest&&run.rocks.length===4,'no andar 20 mora o Anhangá-Pitã, sozinho (com quatro pedras de abrigo), e a escada só aparece depois dele');
-   caveUpdateControls();check(!$('caveLassoButton').classList.contains('hidden'),'botão do laço na tela, só no salão');
-   const B=CAVE_BEASTS.diabo;check(B.from>20&&Object.entries(CAVE_BEASTS).filter(([,x])=>x.from<=20).every(([id])=>id!=='diabo'),'o Diabo não aparece nos outros andares');
-   b.x=p.x+90;b.y=p.y;run.cd=0;run.dash=null;p.dx=1;p.dy=0;const hp0=b.hp;caveAttack();check(hp0-b.hp===1,'sem encantamento, o facão mal arranha o Diabo');
-   // encantamento com o São Dunstano
-   caveLeave();closeDialog(true);talkAll();goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);
-   dunstanTab='loja';dunstanShop();check(/forjaEncantar/.test($('dialogContent').innerHTML)&&$('dialogContent').querySelector('[data-act="forjaEncantar"]').disabled,'a ferraria oferece o encantamento do facão, mas falta opala e ouro');
-   bagAdd('opala',3);bagAdd('ouro',2);dunstanShop();const cash=G.cash;action('forjaEncantar');check(caveEnchanted()&&G.cash===cash-ENCANTO.cost&&modal==='talk','opala e ouro: o santo encanta o facão');talkAll();closeDialog(true);
-   check(caveSwingColor()==='200,170,255','o golpe encantado brilha roxo');
-   caveLeave();closeDialog(true);talkAll();goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(SALAMANCA_FLOOR);closeDialog(true);talkAll();
-   run=caveFloorRun();b=salamancaBoss(run);p=worldOut;p.dx=1;p.dy=0;check(b&&b.hp===b.max,'de volta ao salão: o Diabo inteiro');
-   b.x=p.x+90;b.y=p.y;run.cd=0;let h=b.hp;caveAttack();const hit=h-b.hp;check(hit===caveDmg(),'encantado, o facão fere o Diabo');
-   // laço (Q)
-   run.cd=0;document.dispatchEvent(new KeyboardEvent('keydown',{key:'q',bubbles:true}));check(b.stun>0&&run.rope&&run.lassoCd>0,'Q joga o laço e segura o Diabo');
-   b.x=p.x+90;b.y=p.y;h=b.hp;run.cd=0;caveAttack();check(h-b.hp===Math.round(caveDmg()*1.5),'laçado, ele apanha 50% a mais');
-   const s0=b.stun;salamancaLasso();check(b.stun<=s0,'o laço tem recarga');
-   b.stun=0;run.lassoCd=0;b.state='dazed';salamancaLasso();check(b.stun===3.5,'depois de bater na parede, o laço segura mais tempo');b.stun=0;
-   // investida, rastro de fogo e chuva de brasas
-   run.freeze=0;b.state='idle';b.t=0;b.summon=99;Math.random=()=>.1;b.x=p.x+300;b.y=p.y;caveTick(.02);check(b.state==='windup','ele se prepara pra investida');
-   for(let i=0;i<40&&b.state!=='charge';i++)caveTick(.05);for(let i=0;i<10;i++)caveTick(.05);check(run.fires.length>0,'a investida deixa rastro de fogo');
-   b.state='idle';b.t=0;Math.random=()=>.9;st.hp=caveMaxHp();caveTick(.02);check(run.brasas.length>=3,'chuva de brasas: alvos vermelhos no chão');
+   const st=caveState();st.facao=true;st.dunstanTaught=true;st.deepest=9;for(const k of ['enchanted','salamanca','salamancaFled','jarauMet','jarauCalled'])delete st[k];delete G.missions.jarau;
+   G.cave.salamanca=3;missionsTick();check(!G.cave.salamanca,'save da versão sem missão: a vitória antiga não conta');
+   check(!missionForGiver('dunstano'),'antes do andar 10, o santo não tem a missão');
+   enterCave(SALAMANCA_FLOOR);closeDialog(true);talkAll();let run=caveFloorRun();
+   check(run.sleeping&&!salamancaBoss(run)&&!run.ladder.shown&&run.rocks.length===4,'sem a missão do santo, o Diabo dorme no salão e a escada não aparece');
+   caveLeave();closeDialog(true);talkAll();goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);
+   st.deepest=12;enterCave(1);closeDialog(true);talkAll();const sb=showBanner,seenB=[];showBanner=(t,...r)=>{seenB.push(t);return sb(t,...r);};try{caveTick(.02);}finally{showBanner=sb;}check(st.jarauCalled===G.day&&seenB.some(t=>/São Dunstano/.test(t)),'desceu fundo: o santo chama o Sadi na ferraria');
+   switchMap({map:'caverna',x:600,y:780});closeDialog(true);dunstanTalk();check(modal==='talk'&&talkState?.lines.some(l=>/Salamanca do Jarau/.test(l[1])),'o São Dunstano conta a lenda e oferece a missão');
+   talkAll();check(jarauActive()&&/opalas/.test(jarauGoal()),'missão aceita: primeiro, opala e ouro pro encantamento');
+   const op=bagQty('opala'),ou=bagQty('ouro');bagTake('opala',op);bagTake('ouro',ou);dunstanTab='loja';dunstanShop();
+   check($('dialogContent').querySelector('[data-act="forjaEncantar"]')?.disabled,'na ferraria, o encantamento espera o minério');closeDialog(true);
+   // sem o encantamento, o Diabo cospe o Sadi de volta pro refúgio
+   withScenes(()=>{enterCave(SALAMANCA_FLOOR);check(scene?.id==='salamanca-sem-encanto','sem o encantamento: cena do Diabo rindo do facão');while(scene)sceneSkip();});
+   check(caveState().floor===1&&modal==='talk'&&talkState?.lines.some(l=>/cuspiu/.test(l[1])),'e o santo recebe o Sadi de volta no refúgio');talkAll();
+   bagAdd('opala',3);bagAdd('ouro',2);const cash=G.cash;dunstanShop();action('forjaEncantar');check(caveEnchanted()&&G.cash===cash&&bagQty('opala')===0&&bagQty('ouro')===0&&modal==='talk','opala e ouro: o santo encanta o facão (sem cobrar)');talkAll();closeDialog(true);
+   dunstanShop();check(/Facão encantado/.test($('dialogContent').innerHTML)&&!$('dialogContent').querySelector('[data-act="forjaEncantar"]'),'na ferraria, o facão aparece encantado');closeDialog(true);
+   check(/andar 20/.test(jarauGoal()),'depois: descer até o andar 20');
+   // chegada no salão: cena com o Diabo e a Teiniaguá
+   caveLeave();closeDialog(true);talkAll();goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);st.deepest=20;
+   withScenes(()=>{enterCave(SALAMANCA_FLOOR);check(scene?.id==='salamanca-chegada'&&scene.steps.some(x=>x.say==='diabo')&&scene.steps.some(x=>x.say==='teiniagua')&&scene.steps.some(x=>x.say==='sadi'),'chegou no andar 20: cena entre o Sadi e o Diabo Vermelho');while(scene)sceneSkip();});
+   check(modal==='talk'&&/Como vencer/.test($('dialogContent').innerHTML),'depois da cena, a dica da luta');talkAll();
+   run=caveFloorRun();let b=salamancaBoss(run),p=worldOut;p.dx=1;p.dy=0;check(b&&b.hp===b.max&&st.jarauMet===G.day,'a luta começa');
+   caveUpdateControls();check(!$('caveLassoButton').classList.contains('hidden'),'botão do laço na tela, só com o Diabo');
+   check(CAVE_BEASTS.diabo.from>20,'o Diabo não aparece nos outros andares');
+   delete st.enchanted;check(caveHitDmg(b)===1,'sem encantamento, o facão mal arranha o Diabo');st.enchanted=G.day;
+   b.x=p.x+90;b.y=p.y;run.cd=0;run.dash=null;let h=b.hp;caveAttack();check(h-b.hp===Math.round(caveDmg()*DIABO.hide),'encantado, o facão fere o Diabo (fora do laço, o couro de brasa aguenta metade)');
+   // laço: inteiro ele arrebenta; tonto, fica preso
+   b.x=p.x+250;b.y=p.y;run.lassoCd=0;document.dispatchEvent(new KeyboardEvent('keydown',{key:'q',bubbles:true}));check(!(b.stun>0)&&run.rope?.snap&&run.lassoCd>0,'Q no Diabo inteiro: ele arrebenta o laço');
+   const pil=caveCenter(6,9);run.freeze=0;Object.assign(b,{x:pil.x-400,y:pil.y,state:'windup',t:0,vx:1,vy:0});p.x=pil.x-140;p.y=pil.y+220;for(let i=0;i<20&&b.state!=='dazed';i++)caveTick(.05);
+   check(b.state==='dazed'&&run.fires.length>0&&run.fires.every(f=>Math.hypot(f.x-b.x,f.y-b.y)>160),'a investida bate no pilar: Diabo tonto, e o tranco apaga o fogo perto dele');
+   run.lassoCd=0;salamancaLasso();check(b.stun===DIABO.hold&&run.rope&&!run.rope.snap,'tonto, o laço segura ele');
+   p.x=b.x-90;p.y=b.y;run.cd=0;run.freeze=0;h=b.hp;caveAttack();check(h-b.hp===Math.round(caveDmg()*DIABO.bonus),'laçado, ele apanha mais');
+   b.stun=0;caveBag().boleadeira=1;caveUse('boleadeira');check(!(b.stun>0),'a boleadeira não segura o Diabo: só o laço');
+   // coice de fogo, investida, brasas e reforço
+   run.freeze=0;Object.assign(b,{state:'idle',t:9,stompCd:0,summon:99});b.x=p.x+100;b.y=p.y;caveTick(.02);check(b.state==='stomp','muito perto: ele prepara o coice de fogo');
+   run.inv=0;st.hp=caveMaxHp();for(let i=0;i<16;i++)caveTick(.05);check(st.hp<caveMaxHp()&&b.state==='idle','o coice acerta quem fica perto');st.hp=caveMaxHp();
+   b.x=p.x+300;b.y=p.y-60;Object.assign(b,{state:'idle',t:0,stompCd:9});Math.random=()=>.1;caveTick(.02);check(b.state==='windup','ele se prepara pra investida');
+   b.state='idle';b.t=0;Math.random=()=>.9;run.brasas=[];caveTick(.02);check(run.brasas.length>=3,'chuva de brasas: alvos vermelhos no chão');
    run.inv=0;const sh=st.hp;b.x=p.x+600;b.state='dazed';b.t=99;run.fires=[];for(let i=0;i<30;i++){run.inv=0;caveTick(.05);}check(run.brasas.length===0&&st.hp<sh,'a brasa que cai em cima do Sadi machuca');st.hp=caveMaxHp();
    b.state='idle';b.t=0;b.summon=0;Math.random=()=>.3;caveTick(.02);check(run.beasts.some(x=>x.minion),'o Diabo chama reforço');for(const m of run.beasts)if(m.minion)m.hp=0;Math.random=randomBefore;
-   // fase 2: a tentação da Teiniaguá
-   b.state='idle';b.hp=Math.floor(b.max*.5)-1;caveTick(.02);check(modal==='salamanca'&&$('dialogContent').querySelectorAll('[data-act="salamancaEscolha"]').length===3,'na metade da vida, a Teiniaguá oferece ouro, poder ou nada');
+   // metade da vida: a Teiniaguá tenta o Sadi
+   run.freeze=0;b.state='idle';b.t=9;b.hp=Math.floor(b.max*.5)-1;caveTick(.02);check(modal==='salamanca'&&$('dialogContent').querySelectorAll('[data-act="salamancaEscolha"]').length===3,'na metade da vida, a Teiniaguá oferece ouro, poder ou nada');
    const hp2=b.hp;st.hp=50;action('salamancaEscolha','nada');check(run.courage&&b.hp===hp2&&st.hp===80&&!modal,'recusou: coragem de gaúcho, o Diabo não se cura');
-   b.stun=0;run.cd=0;b.x=p.x+90;b.y=p.y;h=b.hp;caveAttack();check(h-b.hp===Math.round(caveDmg()*1.25),'coragem: +25% de dano');
+   b.stun=0;b.state='idle';run.cd=0;run.freeze=0;b.x=p.x+90;b.y=p.y;h=b.hp;caveAttack();check(h-b.hp===Math.round(Math.round(caveDmg()*DIABO.hide)*1.25),'coragem: +25% de dano');
    b.x=p.x+600;b.y=p.y;run.torch=false;let lit=0;{const P=CanvasRenderingContext2D.prototype,di=P.drawImage;P.drawImage=function(...a){lit++;return di.apply(this,a);};try{drawDiabo(b);}finally{P.drawImage=di;}}check(lit===0,'fase escura: de longe, só os olhos do Diabo');
-   // fase 3: a fuga pela fenda
+   // vida baixa: a fuga pela fenda
    run.freeze=0;b.hp=Math.floor(b.max*.1);b.state='idle';caveTick(.02);check(b.state==='flee','vida baixa: ele corre pra fenda');
-   const c=caveCenter(...SALAMANCA_CELL.crack);b.x=c.x-120;b.y=c.y;p.x=b.x-150;p.y=b.y+40;b.stun=0;run.lassoCd=0;salamancaLasso();const bx=b.x;for(let i=0;i<20;i++)caveTick(.05);check(b.x===bx&&b.hp>0,'laçado, ele não foge');
+   const c=caveCenter(...SALAMANCA_CELL.crack);b.x=c.x-120;b.y=c.y;p.x=b.x-150;p.y=b.y+40;b.stun=0;run.lassoCd=0;salamancaLasso();const bx=b.x;for(let i=0;i<20;i++)caveTick(.05);check(b.x===bx&&b.hp>0,'fugindo, o laço segura: ele não foge');
    b.stun=0;for(let i=0;i<80&&salamancaBoss(run);i++)caveTick(.05);check(!salamancaBoss(run)&&st.salamancaFled===G.day&&modal==='talk','sem laço, ele foge pela fenda e só volta amanhã');talkAll();
-   caveRun=null;run=caveFloorRun();check(!salamancaBoss(run)&&!run.ladder.shown,'no mesmo dia o salão fica vazio');
-   G.day++;caveRun=null;st.salamancaSeen=G.day;run=caveFloorRun();b=salamancaBoss(run);check(b&&b.hp===b.max,'no outro dia ele volta com a vida cheia');
-   // vitória
-   const xp=G.xp,c2=G.cash;b.x=p.x+90;b.y=p.y;b.hp=1;run.cd=0;p.dx=1;p.dy=0;caveAttack();
-   check(st.salamanca===G.day&&run.ladder.shown&&modal==='talk'&&G.xp>xp&&G.cash>=c2+300,'derrubou o Diabo: Teiniaguá livre, escada aberta e recompensa');talkAll();checkAchievements();check(!!G.achievements.jarau,'conquista: A Salamanca do Jarau');
-   caveRun=null;st.floor=5;run=caveFloorRun();check(run.torch,'a luz do carbúnculo clareia os outros andares');st.floor=20;caveRun=null;run=caveFloorRun();check(!salamancaBoss(run)&&run.ladder.shown,'o salão fica livre, com a escada à vista');
+   caveRun=null;run=caveFloorRun();check(run.fled&&!salamancaBoss(run)&&!run.ladder.shown&&/fugiu/.test(jarauGoal()),'no mesmo dia o salão fica vazio');
+   G.day++;caveRun=null;run=caveFloorRun();b=salamancaBoss(run);check(b&&b.hp===b.max,'no outro dia ele volta com a vida cheia');
+   // vitória: cena com a Teiniaguá livre e o São Dunstano
+   const xp=G.xp,c2=G.cash;p=worldOut;b.x=p.x+90;b.y=p.y;b.hp=1;run.cd=0;run.freeze=0;p.dx=1;p.dy=0;
+   withScenes(()=>{caveAttack();check(scene?.id==='salamanca-vitoria'&&scene.steps.some(x=>x.say==='dunstano')&&scene.steps.some(x=>x.actor==='dunstano'),'derrubou o Diabo: cena de vitória com o São Dunstano');while(scene)sceneSkip();});
+   check(missionDone('jarau')&&st.salamanca===G.day&&run.ladder.shown&&modal==='talk'&&G.xp>xp&&G.cash>=c2+500,'missão concluída: Teiniaguá livre, escada aberta e recompensa');talkAll();
+   checkAchievements();check(!!G.achievements.jarau,'conquista: A Salamanca do Jarau');
+   caveRun=null;st.floor=5;run=caveFloorRun();check(run.torch,'a luz do carbúnculo clareia os outros andares');st.floor=20;caveRun=null;run=caveFloorRun();check(!salamancaBoss(run)&&!run.sleeping&&run.ladder.shown,'o salão fica livre, com a escada à vista');
    G.day--;caveLeave();closeDialog(true);talkAll();goInside();}
+  // ---------- a lição da torrada vem no mesmo dia em que o salame é liberado ----------
+  {goInside();Object.assign(G,{phase:'open',openedDay:G.day,elapsed:60,groups:[],shop:[],toastLesson:null});G.up.salame=false;goOutside();unlockGood('salame');
+   check(G.toastLesson?.day===G.day,'liberou o salame: a lição da torrada é pro mesmo dia');simulate(.05);check(!G.toastLesson.actor&&modal!=='toastLesson','na rua, a lição espera o Sadi voltar pra bodega');
+   goInside();closeDialog(true);simulate(.05);check(G.toastLesson.actor&&modal==='toastLesson','dentro da bodega aberta, a lição da torrada vem na hora');closeDialog(true);G.toastLesson.done=true;G.groups=[];G.phase='prep';}
   // ---------- o sonho do Sadi não trava ----------
   {worldOut=null;const seen=[],P=CanvasRenderingContext2D.prototype,di=P.drawImage;P.drawImage=function(...a){seen.push(this.filter);return di.apply(this,a);};try{drawSceneSonho();}finally{P.drawImage=di;}
    check(seen.length>20&&!seen.some(f=>/sepia/.test(f)),'o sonho do Sadi pinta o sépia por cima do quadro, sem filtro em cada desenho');}

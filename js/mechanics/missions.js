@@ -113,7 +113,7 @@ function sportCups(type) { return G.sportCups?.[type] || 0; }
 // Segunda missão do Badin: a despensa da colônia abre (salame e muda de uva).
 function openBadinShop() {
   G.badinShop = true;
-  if (!G.up.salame) { G.up.salame = true; const n = GOODS.salame.starter || 4; G.stock.salame = (G.stock.salame || 0) + n; if (!G.toastLesson) G.toastLesson = { day: G.day + 1, done: false, actor: null }; }
+  if (!G.up.salame) { G.up.salame = true; const n = GOODS.salame.starter || 4; G.stock.salame = (G.stock.salame || 0) + n; if (!G.toastLesson) G.toastLesson = { day: G.day, done: false, actor: null }; }
   showBanner('Despensa da colônia aberta!', 'Salame curado e muda de uva na casa do Badin, na Serra.', 'level', { world: true }); save();
 }
 // Saves com a missão antiga do queijo (que abria a Serra) passam para a cadeia nova.

@@ -51,7 +51,7 @@ const HARVEST_UNLOCKS = ['bergamota', 'pinhao', 'vinho'];
 function unlockGood(k) {
   const g = GOODS[k]; if (!g?.unlock || G.up[g.unlock] || g.removed) return false;
   G.up[g.unlock] = true; G.upOwned ??= {}; G.upOwned[g.unlock] = true;
-  if (k === 'salame' && !G.toastLesson) G.toastLesson = { day: G.day + 1, done: false, actor: null };
+  if (k === 'salame' && !G.toastLesson) G.toastLesson = { day: G.day, done: false, actor: null };
   showBanner('Novo no balcão: ' + nameOf(k), 'O que tu ganha, colhe ou produz já pode ser vendido na bodega.', 'level', { world: true });
   if (HARVEST_UNLOCKS.includes(k)) valterTip(k);
   return true;

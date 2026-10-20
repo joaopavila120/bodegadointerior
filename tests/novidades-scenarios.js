@@ -248,6 +248,72 @@
   {goInside();Object.assign(G,{phase:'open',openedDay:G.day,elapsed:60,groups:[],shop:[],toastLesson:null});G.up.salame=false;goOutside();unlockGood('salame');
    check(G.toastLesson?.day===G.day,'liberou o salame: a lição da torrada é pro mesmo dia');simulate(.05);check(!G.toastLesson.actor&&modal!=='toastLesson','na rua, a lição espera o Sadi voltar pra bodega');
    goInside();closeDialog(true);simulate(.05);check(G.toastLesson.actor&&modal==='toastLesson','dentro da bodega aberta, a lição da torrada vem na hora');closeDialog(true);G.toastLesson.done=true;G.groups=[];G.phase='prep';}
+  // ---------- a Mãe do Ouro: a bola de fogo das noites da Serra ----------
+  {goInside();G.phase='closed';G.report=null;goOutside();delete G.maeOuro;maeOuroKey='';maeOuro=null;
+   const M=WORLD_MAPS.serra;let nights=0,firstDay=0,walk=true;
+   for(let d=300;d<400;d++){G.day=d;switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);maeOuroKey='';maeOuroTick(.01);if(maeOuro){nights++;walk=walk&&M.canWalk(maeOuro.x,maeOuro.y);if(!firstDay)firstDay=d;}}
+   check(nights>20&&nights<60&&walk,'a Mãe do Ouro aparece em algumas noites da Serra, nunca em todas, sempre no campo');
+   G.day=firstDay;maeOuroKey='';maeOuroTick(.01);let b=maeOuro;const p=worldOut;check(b&&b.state==='roam'&&Math.hypot(b.x-p.x,b.y-p.y)>500,'de longe, ela ronda o campo');
+   G.phase='prep';check(!maeOuroHere(),'de dia, nada de bola de fogo');G.phase='closed';
+   p.x=b.x+300;p.y=b.y;$('floatNotes').innerHTML='';maeOuroTick(.05);check(b.state==='lure'&&/Mãe do Ouro/.test($('floatNotes').textContent),'chegou perto: ela foge na frente, e o Sadi descobre que é a Mãe do Ouro');
+   let closest=1e9;for(let i=0;i<200&&b.state==='lure';i++){const d=Math.hypot(b.x-p.x,b.y-p.y)||1;if(d>250){p.x+=(b.x-p.x)/d*13;p.y+=(b.y-p.y)/d*13;}closest=Math.min(closest,d);maeOuroTick(.05);}
+   check(b.state==='sink'&&closest>60,'seguida de perto uns segundos (sem deixar alcançar), ela afunda na terra');
+   for(let i=0;i<40&&b.state==='sink';i++)maeOuroTick(.05);check(b.state==='glow'&&M.canWalk(b.x,b.y),'onde ela sumiu fica um brilho no chão, num lugar onde dá pra pisar');
+   p.x=b.x+30;p.y=b.y;check(worldNearest()?.id==='maeouro'&&/Cavar/.test(worldNearest().label),'E no brilho: cavar');
+   const c0=G.cash;Math.random=()=>.9;try{interact();}finally{Math.random=randomBefore;}check(G.cash>c0&&modal==='talk'&&!maeOuro&&G.maeOuro.day===G.day,'cavou: moedas enterradas');talkAll();
+   maeOuroKey='';maeOuroTick(.01);check(!maeOuro,'uma por noite');
+   checkAchievements();check(!!G.achievements.maedoouro,'conquista: Seguiu a Mãe do Ouro');
+   // perder de vista: ela volta a rondar
+   G.day++;const forced=maeOuroForced;maeOuroForced=()=>true;maeOuroKey='';maeOuroTick(.01);b=maeOuro;p.x=b.x+300;p.y=b.y;maeOuroTick(.05);check(b.state==='lure','outra noite, outra bola de fogo');
+   p.x=b.x+1500>M.W?b.x-1500:b.x+1500;for(let i=0;i<130&&b.state==='lure';i++)maeOuroTick(.05);check(b.state==='roam','perdeu de vista: ela volta a rondar o campo');
+   // os outros prêmios: figurinha e minério
+   const prize=k=>{Math.random=()=>k;try{return maeOuroPrize();}finally{Math.random=randomBefore;}};
+   const ore=prize(.4);check(ore.kind==='ore'&&BAG_RAW[ore.id]&&ore.n>0,'ou minério da caverna (ouro, opala…)');
+   const cardP=prize(.1);check(cardP.kind==='card'&&looseCards().some(c=>c.id===cardP.id)&&!hasCard(cardP.id),'ou uma figurinha nova do álbum');
+   Object.assign(b,{state:'glow',x:p.x,y:p.y});Math.random=()=>.1;let got=null;try{const before=new Set(Object.keys(G.cards||{}));maeOuroDig();got=Object.keys(G.cards||{}).find(k=>!before.has(k));}finally{Math.random=randomBefore;}
+   check(got&&modal==='talk','cavou: uma figurinha embrulhada num pano');talkAll();closeDialog(true);maeOuroForced=forced;G.phase='prep';goInside();}
+  // ---------- cobrar o fiado na rua ----------
+  {goInside();Object.assign(G,{phase:'prep',shop:[],groups:[]});goOutside();const cuscoBefore=G.cusco;G.cusco=null;
+   const [i,j]=minorPeople();G.fiado=[];G.friends[i]=0;
+   G.fiado.push({id:9001,person:i,amount:30,day:G.day-3,due:G.day-1,status:'open',charged:0});
+   worldWalkersKey='';walkersTick(0);let w=worldWalkers.find(x=>x.person===i);check(w,'quem deve anda pela Fronteira');
+   let s=walkerSpots().find(x=>x.id==='walker:'+i);check(/Cobrar o fiado/.test(s.label)&&s.label.includes(money(30)),'o E vira “Cobrar o fiado”, com o valor');
+   const c0=G.cash;Math.random=()=>0;try{s.act();}finally{Math.random=randomBefore;}check(G.cash===c0+30&&G.fiado[0].status==='paid'&&worldTalkOpen(),'cara a cara: pagou na hora');skipWorldTalk();
+   G.fiado.push({id:9002,person:i,amount:20,day:G.day-3,due:G.day,status:'open',charged:0});const e2=G.fiado.at(-1);
+   s=walkerSpots().find(x=>x.id==='walker:'+i);Math.random=()=>.999;try{s.act();}finally{Math.random=randomBefore;}
+   check(e2.status==='open'&&e2.due>=G.day+3&&!/Cobrar/.test(walkerSpots().find(x=>x.id==='walker:'+i).label),'pediu prazo: conta adiada, e só se cobra de novo outro dia');skipWorldTalk();
+   G.fiado.push({id:9003,person:j,amount:25,day:G.day-6,due:G.day-4,status:'open',charged:0});const e3=G.fiado.at(-1);
+   worldWalkersKey='';walkersTick(0);w=worldWalkers.find(x=>x.person===j);check(w,'outro devedor na rua');
+   const o=fiadoRuaOdds(e3);Math.random=()=>o.pay+o.run/2;try{walkerSpots().find(x=>x.id==='walker:'+j).act();}finally{Math.random=randomBefore;}
+   check(e3.status==='open'&&e3.hideUntil===G.day+2&&w.flee,'atrasado: inventou desculpa e saiu correndo');skipWorldTalk();
+   for(let k=0;k<80;k++)walkersTick(.05);check(!worldWalkers.includes(w),'o fujão some do mapa');
+   worldWalkersKey='';walkersTick(0);check(!worldWalkers.some(x=>x.person===j&&x.kind==='debtor'),'e não aparece por uns dias');
+   e3.hideUntil=0;e3.charged=0;G.cusco={day:1,mode:'follow'};worldWalkersKey='';walkersTick(0);w=worldWalkers.find(x=>x.person===j);
+   const c1=G.cash;Math.random=()=>o.pay+o.run/2;try{walkerSpots().find(x=>x.id==='walker:'+j).act();}finally{Math.random=randomBefore;}
+   check(e3.status==='paid'&&G.cash===c1+25&&!w.flee,'com o cusco junto, o fujão é cercado e paga de vergonha');skipWorldTalk();
+   G.cusco=cuscoBefore;G.fiado=[];goInside();}
+  // ---------- torneio de pesca no trapiche ----------
+  {goInside();G.regions={serra:true,sc:true};const day0=G.day;let d=G.day;for(;d<G.day+300;d++)if(mapEventFor(d)==='pesca')break;
+   check(mapEventFor(d)==='pesca','o torneio de pesca entra no calendário');
+   G.day=d;G.mapEv=null;G.fish=null;Object.assign(G,{phase:'prep',elapsed:0});const st=torneioToday();st.intro=true;
+   check(torneioOn()&&fishLeft()===FISH_PER_DAY+TORNEIO.extra,'no dia do torneio, lances a mais no trapiche');
+   check(torneioRivals().length===3&&!torneioLeader(),'de manhã, ninguém pescou ainda');
+   G.phase='open';G.elapsed=DAY*.5;const lead=torneioLeader();check(lead&&lead.who!=='sadi'&&lead.kg<=3,'de tarde os rivais vão marcando peixe');
+   fishing={phase:'fight',kind:'traira',t:0};Math.random=()=>.999;try{fishEnd(true,'',true);}finally{Math.random=randomBefore;fishing=null;}
+   check(st.best>3&&torneioLeader().who==='sadi','uma traíra das grandes: o Sadi passa na frente');
+   goOutside();switchMap({map:'vila',x:900,y:900});closeDialog(true);const ps=WORLD_MAPS.vila.spots().find(x=>x.id==='torneio:peixinho');check(ps&&/placar/.test(ps.label),'no trapiche, o Peixinho mostra o placar');
+   ps.act();check(worldTalkOpen()&&/Sadi/.test($('worldTalkReply').textContent+$('worldTalkUI').textContent),'placar com o Sadi');skipWorldTalk();goInside();
+   G.elapsed=DAY*.8;mapEventsTick();check(st.ended&&st.winner==='sadi'&&!torneioOn(),'escureceu: o placar fecha com o Sadi na frente');
+   G.phase='closed';closeDialog(true);
+   withScenes(()=>{mapEventsTick();check(scene?.id==='torneio-pesca'&&scene.steps.some(x=>x.say==='peixinhonabrasa'),'de noite: peixinho na brasa na casa do Peixinho');while(scene)sceneSkip();});
+   check(modal==='talk'&&G.trophies?.pesca&&st.done,'campeão: prêmio e troféu');const cardAsk=talkState?.then;talkAll();closeDialog(true);
+   check(lembrancas().includes('pesca')&&(hasCard('peixinhonabrasa')||cardAsk),'troféu de pesca na estante de casa e figurinha no álbum');
+   // perdeu: prêmio de participação
+   G.mapEv=null;delete G.trophies.pesca;const st2=torneioToday();st2.intro=true;Object.assign(G,{phase:'open',elapsed:DAY*.3});
+   fishing={phase:'fight',kind:'jundia',t:0};Math.random=()=>0;try{fishEnd(true,'',true);}finally{Math.random=randomBefore;fishing=null;}
+   G.elapsed=DAY*.8;mapEventsTick();const c2=G.cash;G.phase='closed';mapEventsTick();
+   check(st2.done&&st2.winner!=='sadi'&&G.cash>c2&&!G.trophies.pesca,'perdeu: prêmio de participação, sem troféu');
+   G.day=day0;G.mapEv=null;G.phase='prep';G.elapsed=0;}
   // ---------- o sonho do Sadi não trava ----------
   {worldOut=null;const seen=[],P=CanvasRenderingContext2D.prototype,di=P.drawImage;P.drawImage=function(...a){seen.push(this.filter);return di.apply(this,a);};try{drawSceneSonho();}finally{P.drawImage=di;}
    check(seen.length>20&&!seen.some(f=>/sepia/.test(f)),'o sonho do Sadi pinta o sépia por cima do quadro, sem filtro em cada desenho');}

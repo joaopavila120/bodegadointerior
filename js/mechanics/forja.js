@@ -327,7 +327,7 @@ function dunstanFirstMeeting() {
     { say: 'sadi', text: 'Bah! Uma assombração! Valei-me, Nossa Senhora!' },
     sceneSet('sadi', { hop: 0, speed: 320 }), { walk: 'sadi', to: { x: 440, y: 740 } }, sceneSet('sadi', { dx: 1 }),
     { say: 'dunstano', text: 'Calma, vivente! Assombração que bate ferro não faz mal pra ninguém.' },
-    { say: 'dunstano', text: 'Sou Dunstano. Fui ferreiro e ourives antes de ser santo, lá na Inglaterra, faz mais de mil anos.' },
+    { say: 'dunstano', text: 'Sou Dunstano. Fui ferreiro e ourives antes de ser santo, faz mais de mil anos.' },
     { say: 'sadi', text: 'Um santo… numa gruta da Serra Gaúcha?!' },
     { say: 'dunstano', text: 'Onde tem forja acesa e gente de coragem, eu apareço. Teu vô me conheceu: desceu aqui com esse mesmo facão de cabo de chifre.' },
     sceneSet('sadi', { speed: 150 }), { walk: 'sadi', to: { x: 560, y: 750 } },
@@ -346,21 +346,22 @@ Object.assign(AudioEngine, {
 });
 
 // ---------- Lore: o que ele conta, na gruta e na estrada ----------
-// Fatos do Dunstano histórico (Inglaterra, século X) e os causos que o povo conta dele; os causos vêm como causos.
+// Fatos do Dunstano histórico (século X) e os causos que o povo conta dele; os causos vêm como causos. De onde ele veio
+// não se fala: ele só é o santo ferreiro da gruta.
 const DUNSTAN_LORE = [
-  [['dunstano', 'Nasci lá pelo ano de 909, perto de Glastonbury, na Inglaterra. Meu nome, no inglês antigo, é algo como “pedra escura” ou “pedra do morro”.'], ['sadi', 'Pedra escura… combina com a gruta!'], ['dunstano', 'Por isso eu me sinto em casa aqui embaixo, vivente.']],
-  [['dunstano', 'Fui abade de Glastonbury. Arrumei o mosteiro pela regra de São Bento: oração, estudo e trabalho com as mãos.'], ['dunstano', 'E trabalho com as mãos, pra mim, era fole, bigorna e martelo.']],
+  [['dunstano', 'Nasci lá pelo ano de 909, faz mais de mil anos. Meu nome quer dizer algo como “pedra escura” ou “pedra do morro”.'], ['sadi', 'Pedra escura… combina com a gruta!'], ['dunstano', 'Por isso eu me sinto em casa aqui embaixo, vivente.']],
+  [['dunstano', 'Fui abade de um mosteiro antigo. Arrumei ele pela regra de São Bento: oração, estudo e trabalho com as mãos.'], ['dunstano', 'E trabalho com as mãos, pra mim, era fole, bigorna e martelo.']],
   [['dunstano', 'Eu era ferreiro, ourives, pintava livro e tocava harpa. Por isso até hoje ferreiros, ourives e músicos me têm como padroeiro.'], ['sadi', 'Bah, então o senhor é padroeiro do Baitaca também!'], ['dunstano', 'Se ele tocar com fé, sou sim!']],
   [['dunstano', 'O causo mais contado é este: o diabo apareceu na minha forja, disfarçado. Eu peguei ele pelo nariz com a tenaz em brasa.'], ['sadi', 'Pelo nariz?!'], ['dunstano', 'Saiu berrando que se ouviu três léguas. É causo, mas é dos bons.']],
   [['dunstano', 'Outro causo: o diabo veio pedir ferradura pro casco dele. Eu preguei com tanta força que ele implorou pra eu tirar.'], ['dunstano', 'Só tirei quando jurou nunca entrar em casa com ferradura na porta. Dizem que daí vem a ferradura da sorte.'], ['sadi', 'Vou pregar uma na porta da bodega!']],
-  [['dunstano', 'Tive briga com um rei moço, o Eadwig, e fui mandado pro exílio em Gante, em Flandres.'], ['dunstano', 'Lá conheci mosteiros reformados e voltei com ideia nova. Às vezes o exílio ensina mais que a casa.']],
-  [['dunstano', 'Fui arcebispo de Cantuária de 959 até morrer. Em 973 coroei o rei Edgar, em Bath.'], ['dunstano', 'O jeito que montei aquela coroação ainda é a base da coroação dos reis ingleses.'], ['sadi', 'E agora o senhor coroa bodegueiro com espada de ametista.']],
-  [['dunstano', 'Morri num 19 de maio, em 988, em Cantuária. Os ourives de Londres contaram o ano da marca do ouro a partir do meu dia por uns seiscentos anos.'], ['dunstano', 'Por isso, quando tu me traz minério bom, eu sinto o cheiro da ourivesaria de novo.']],
+  [['dunstano', 'Tive briga com um rei moço e fui mandado pro exílio, longe do meu mosteiro.'], ['dunstano', 'Lá conheci mosteiros reformados e voltei com ideia nova. Às vezes o exílio ensina mais que a casa.']],
+  [['dunstano', 'Fui arcebispo de 959 até morrer. Em 973 coroei um rei.'], ['dunstano', 'O jeito que montei aquela coroação virou costume de coroar rei por mais de mil anos.'], ['sadi', 'E agora o senhor coroa bodegueiro com espada de ametista.']],
+  [['dunstano', 'Morri num 19 de maio, em 988. Os ourives contaram o ano da marca do ouro a partir do meu dia por uns seiscentos anos.'], ['dunstano', 'Por isso, quando tu me traz minério bom, eu sinto o cheiro da ourivesaria de novo.']],
   [['dunstano', 'Dizem que a minha harpa, pendurada na parede, tocou sozinha um hino.'], ['dunstano', 'Eu não confirmo nem desminto. Mas aqui na gruta, quando venta pela fenda, parece música.']]
 ];
 // Na gruta, as falas de conselho ganham também a lore curtinha.
 WORLD_TALK.dunstano.push(
-  { player: 'De onde o senhor é, afinal?', reply: 'De perto de Glastonbury, na Inglaterra. Nasci lá pelo ano de 909. Dunstan quer dizer algo como “pedra escura”.' },
+  { player: 'Quem é o senhor, afinal?', reply: 'Sou Dunstano: ferreiro, ourives e santo. Nasci lá pelo ano de 909, e meu nome quer dizer algo como “pedra escura”.' },
   { player: 'É verdade o causo do diabo e da tenaz?', reply: 'Dizem que peguei o diabo pelo nariz com a tenaz em brasa. Causo de ferreiro… mas olha bem a minha tenaz.' },
   { player: 'O senhor é padroeiro de quem?', reply: 'De ferreiros, ourives e músicos. Quem bate ferro ou toca gaita pode contar comigo.' },
   { player: 'O que eu faço com tanto minério?', reply: 'Cobre e ferro viram facão; ametista vira espada. Afiar também gasta minério. O resto eu compro.' }

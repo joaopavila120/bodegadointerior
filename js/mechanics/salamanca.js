@@ -280,7 +280,7 @@ function salamancaArrival() {
     { say: 'teiniagua', text: 'Gaúcho… faz mil anos que ninguém diz o meu nome aqui embaixo.' },
     { say: 'diabo', text: 'A princesa moura é minha! Fui eu que tranquei o carbúnculo dela nessa gaiola de luz.' },
     { say: 'sadi', text: 'O São Dunstano encantou o meu facão. Hoje tu solta ela.' },
-    { say: 'diabo', text: 'Dunstano! O ferreiro que me torceu o nariz com a tenaz em brasa, lá na Inglaterra… Eu não esqueço, gaúcho. Eu não esqueço.' },
+    { say: 'diabo', text: 'Dunstano! O ferreiro que me torceu o nariz com a tenaz em brasa, faz mil anos… Eu não esqueço, gaúcho. Eu não esqueço.' },
     sceneSet('diabo', { rage: true }), { do: () => { sceneShout('HAHAHA!', boss.x, boss.y - 200, '#ffb3a0', 26); AudioEngine.caveGrowl(1.1, .12); } },
     { say: 'diabo', text: 'Então vem! Vou te devolver lá pra cima feito cinza de fogo de chão!' },
     { fade: 'out', time: .6 }], 'salamanca-chegada', begin);

@@ -37,7 +37,7 @@ function forjaSino() {
   if (!dunstanShopOpen() || !missionActive('sino') || sinoForged()) return;
   if (!hasNeeds(SINO_NEEDS)) { say('Falta minério pro sino: ' + Object.entries(SINO_NEEDS).map(([k, q]) => q + ' ' + bagName(k).toLowerCase()).join(' e ') + '.'); AudioEngine.bad(); return; }
   takeNeeds(SINO_NEEDS); G.missions.sino.forged = G.day; AudioEngine.caveAnvil(); sinoBells(.5); save(); closeDialog(true);
-  talk([['dunstano', 'Na Inglaterra, mil anos atrás, eu fundia sino pros mosteiros. Sino bom se afina no martelo, de ouvido.'], ['dunstano', 'Pronto. Leva pro padre e diz que o ferreiro mandou lembrança: sino que chama pra mesa também vale, hehe.']], null, 'Levar o sino');
+  talk([['dunstano', 'Mil anos atrás, eu fundia sino pros mosteiros. Sino bom se afina no martelo, de ouvido.'], ['dunstano', 'Pronto. Leva pro padre e diz que o ferreiro mandou lembrança: sino que chama pra mesa também vale, hehe.']], null, 'Levar o sino');
 }
 
 // ---------- A corrente do Dianho ----------

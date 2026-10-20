@@ -70,7 +70,9 @@
    G.phase='closed';let d=G.day;while(caveRand(d*733+11)()>=.3)d++;G.day=d;switchMap({map:'serra',x:1600,y:1000});closeDialog(true);for(let i=0;i<3;i++)outsideTick(.05);
    const w=dunstanOut;check(!!w&&WORLD_MAPS.serra.canWalk(w.x,w.y),'em algumas noites o São Dunstano caminha pela estrada da Serra');
    worldOut.x=w.x;worldOut.y=w.y;const sp=walkerSpots().find(s=>s.id==='walker:dunstano');check(!!sp,'dá pra prosear com ele na estrada');sp.act();
-   const lore=DUNSTAN_LORE.flat().map(l=>l[1]).join(' ');check(modal==='talk'&&['909','Glastonbury','São Bento','ourives','tenaz','ferradura','Gante','Cantuária','973','Edgar','988','19 de maio'].every(t=>lore.includes(t)),'na estrada, ele conta a vida dele: Glastonbury, a forja, a tenaz, Cantuária, Edgar, 988');talkAll();
+   const lore=DUNSTAN_LORE.flat().map(l=>l[1]).join(' ');const falas=lore+' '+WORLD_TALK.dunstano.map(l=>l.reply).join(' ')+' '+DUNSTAN_TEACH.flat().join(' ');
+   check(modal==='talk'&&['909','São Bento','ourives','tenaz','ferradura','973','988','19 de maio'].every(t=>lore.includes(t)),'na estrada, ele conta a vida dele: 909, a forja, a tenaz, a coroação, 988');
+   check(!/Inglaterra|ingl[eê]s|Glastonbury|Cantu[aá]ria|Gante|Flandres|Bath|Londres|Edgar|Eadwig/.test(falas),'o santo não fala de onde veio: ele só é');talkAll();
    G.phase='prep';outsideTick(.05);check(!dunstanOut,'de dia ele não sai da gruta');});
 
   // ---------- pescaria e o dourado ----------

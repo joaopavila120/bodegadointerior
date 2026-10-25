@@ -416,7 +416,7 @@ function querosTick(L,dt){
  L.queros??=makeQueros();const p=G.player;
  for(const q of activeQueros(L)){
   q.t-=dt;q.flap+=dt;const near=Math.hypot(p.x-q.nest.x,p.y-q.nest.y),ox=q.x;
-  if(q.state==='guard'){q.x=q.nest.x;q.y=q.nest.y;q.h=0;if(near<QUERO_ALERT||L.time>=(q.wake??0)){q.state='rise';q.t=.55;AudioEngine.queroquero(.09,3);effect('Quero-quero!',q.x,q.y-100,'#ffe28a');startleBois(q.x,q.y);}}
+  if(q.state==='guard'){q.x=q.nest.x;q.y=q.nest.y;q.h=0;if(near<QUERO_ALERT||L.time>=(q.wake??0)){q.state='rise';q.t=.55;AudioEngine.queroquero(.09,3);startleBois(q.x,q.y);}}
   else if(q.state==='rise'){q.h=Math.min(180,q.h+330*dt);if(q.t<=0){q.state='circle';q.t=.9+Math.random()*.6;}}
   else if(q.state==='circle'){
    const a=L.time*1.9+q.id*2.1,tx=p.x+Math.cos(a)*230,ty=p.y+Math.sin(a)*90,k=Math.min(1,dt*2.6);q.h+=(180-q.h)*Math.min(1,dt*3);q.x+=(tx-q.x)*k;q.y+=(ty-q.y)*k;
@@ -439,7 +439,7 @@ function querosTick(L,dt){
 }
 function queroHit(L,q){
  const p=G.player;L.immune=QUERO_GRACE;L.charging=false;L.knock=QUERO_KNOCK;L.knockX=q.vx*680;L.knockY=q.vy*430;L.pecks=(L.pecks||0)+1;
- AudioEngine.ouch();AudioEngine.queroquero(.1,2);effect('Rasante de quero-quero!',p.x,p.y-150,'#ffb3a0');fxPuffs(p.x,p.y-70,6,90,'#efece6');
+ AudioEngine.ouch();AudioEngine.queroquero(.1,2);fxPuffs(p.x,p.y-70,6,90,'#efece6');
 }
 function lassoDash(){const L=G.lasso;if(!L||L.dash>0||L.dashCool>0||L.stun>0)return;L.charging=false;L.dash=.2;L.dashCool=.7;L.dashX=L.fx;L.dashY=L.fy;AudioEngine.swoosh(.05);fxPuffs(G.player.x,G.player.y,4,60,'#9c8a52');}
 function drawQuero(frame,x,y,scale=2,flip=false,angle=0){
@@ -500,7 +500,7 @@ function campoBirdsTick(dt){
   }
   else if(b.state==='warn'){b.t-=dt;b.h=Math.min(70,b.h+180*dt);if(b.t<=0){const d=Math.hypot(b.tx-b.x,b.ty-b.y)||1;b.state='dive';b.vx=(b.tx-b.x)/d;b.vy=(b.ty-b.y)/d;b.dist=d;b.travel=0;b.h0=b.h;AudioEngine.swoosh();}}
   else if(b.state==='dive'){const step=620*dt;b.x+=b.vx*step;b.y+=b.vy*step;b.travel+=step;const k=b.travel/b.dist;b.h=k<1?b.h0+(30-b.h0)*k:30+(k-1)*120;
-   if(!b.hit&&b.h<60&&Math.hypot(G.player.x-b.x,G.player.y-b.y)<40){b.hit=true;campoKnock={t:.3,vx:b.vx*650,vy:b.vy*420};AudioEngine.ouch();effect('Rasante de quero-quero!',G.player.x,G.player.y-150,'#ffb3a0');fxPuffs(G.player.x,G.player.y-70,6,90,'#efece6');}
+   if(!b.hit&&b.h<60&&Math.hypot(G.player.x-b.x,G.player.y-b.y)<40){b.hit=true;campoKnock={t:.3,vx:b.vx*650,vy:b.vy*420};AudioEngine.ouch();fxPuffs(G.player.x,G.player.y-70,6,90,'#efece6');}
    if(k>1.6){b.hit=false;b.calm=4+Math.random()*4;
     // depois do rasante: metade pousa de novo noutro canto, metade vai embora
     const spot=Math.random()<.5&&CAMPO_BIRD_SPOTS.filter(([x,y])=>Math.hypot(G.player.x-x,G.player.y-y)>260);

@@ -157,7 +157,7 @@ function butiaIconHTML(size) { return `<span style="display:inline-flex;width:${
   };
   const mataU = mataUseItem; mataUseItem = function (id) { if (id === 'butia') { if (!mataHere() || scene || modal) return false; return butiaUse(() => caveState().hp, caveMaxHp, mataBeltRefresh); } return mataU(id); };
   // A ferraria do São Dunstano vale na mata também.
-  for (const [id, desc] of [['chapeu', 'Aba firme com barbicacho: 15% menos dano em cada pancada, na caverna e na mata.'], ['botas', 'Couro macio de garrão: anda 15% mais ligeiro na caverna e na mata.'], ['lampiao', 'Clareia bem mais longe no escuro da caverna e da mata fechada.'], ['bornal', 'Cabe o dobro: até 10 de cada item do bolicho e 6 de cada no bornal da mata.'], ['guaiaca', 'Cinto de tropeiro com bolso: +30% de moedas dos bichos e dos baús, na caverna e na mata.']]) { const u = CAVE_UPGRADES.find(x => x.id === id); if (u) u.desc = desc; }
+  for (const [id, desc] of [['chapeu', 'Aba firme com barbicacho: 15% menos dano em cada pancada, na caverna e na mata.'], ['botas', 'Couro macio de garrão: anda 15% mais ligeiro na caverna e na mata.'], ['lampiao', 'Clareia bem mais longe no escuro da caverna e da mata fechada.'], ['bornal', 'Cabe o dobro: até 10 de cada item do bolicho e 6 de cada no bornal da mata.'], ['guaiaca', 'Cinto de tropeiro com bolso: +30% de moedas dos baús, na caverna e na mata.']]) { const u = CAVE_UPGRADES.find(x => x.id === id); if (u) u.desc = desc; }
   const speaker = sceneSpeaker; sceneSpeaker = function (who) { return who === 'olmiro' ? { person: PEOPLE.findIndex(p => p.id === 'olmiro'), name: 'Olmiro Mimoso' } : speaker(who); };
 }
 

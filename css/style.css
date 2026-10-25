@@ -610,3 +610,9 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 #phone .phone-keys button:active{transform:translateY(1px)}
 @media(max-height:780px){#phone .phone-pad{display:none}}
 @media(max-width:750px){#phone{padding:9px 10px 10px;border-radius:30px 30px 36px 36px}#phone .phone-pad,#phone .phone-cap,#phone::before{display:none}}
+
+/* Acordar (player-home.js): tela escura com o dia, que some devagar. */
+.wake-card{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#0b0806;color:#ffe2a6;font-family:Georgia,serif;pointer-events:none;transition:opacity .9s ease;animation:wakeIn .4s ease}
+.wake-card b{font-size:clamp(36px,7vw,64px)}.wake-card span{font-size:clamp(20px,3.4vw,30px)}.wake-card small{font-size:clamp(14px,2vw,18px);color:#d9c79f;font-family:Arial,sans-serif}
+.wake-card.out{opacity:0}
+@keyframes wakeIn{from{opacity:0}to{opacity:1}}

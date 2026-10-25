@@ -90,7 +90,7 @@ function mataQueixadaTick(N, dt, p) {
     h.t -= dt; h.cool = Math.max(0, h.cool - dt);
     for (const b of m) { b.hurt = Math.max(0, b.hurt - dt); b.attack = Math.max(0, b.attack - dt); b.frame += dt * 8; }
     if (h.state === 'roam') {
-      if (d < MATA_BICHOS.estouro && h.cool <= 0) { h.state = 'gather'; h.t = .75; h.vx = dxp / d; h.vy = dyp / d; h.cx = cx; h.cy = cy; for (const b of m) { b.state = 'windup'; b.dx = h.vx < 0 ? -1 : 1; } AudioEngine.caveSnort?.(); effect('Queixadas!', cx, cy - 100, '#ffb3a0', 16); continue; }
+      if (d < MATA_BICHOS.estouro && h.cool <= 0) { h.state = 'gather'; h.t = .75; h.vx = dxp / d; h.vy = dyp / d; h.cx = cx; h.cy = cy; for (const b of m) { b.state = 'windup'; b.dx = h.vx < 0 ? -1 : 1; } AudioEngine.caveSnort?.(); continue; }
       if (Math.hypot(h.tx - cx, h.ty - cy) < 40 || h.t <= 0) { const n = mataSpotNear(Math.random, { x: cx, y: cy }, 120) || { x: cx, y: cy }; if (Math.hypot(n.x - cx, n.y - cy) < 500) { h.tx = n.x; h.ty = n.y; } h.t = 4; }
       for (const b of m) { b.state = 'roam'; mataGo(b, { x: h.tx + b.ox, y: h.ty + b.oy }, 55, dt); }
     } else if (h.state === 'gather') {

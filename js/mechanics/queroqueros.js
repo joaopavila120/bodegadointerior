@@ -75,7 +75,7 @@ function qqTick(dt) {
     if (b.state === 'ground') {
       b.calm = Math.max(0, b.calm - dt);
       if (near < QQ_ALERT && !b.calm) {
-        AudioEngine.queroquero(.08, 3); effect('Quero-quero!', b.x, b.y - 60, '#ffe28a', 13);
+        AudioEngine.queroquero(.08, 3);
         if (Math.random() < b.aggr) { Object.assign(b, { state: 'warn', t: .8, tx: p.x, ty: p.y }); b.face = p.x > b.x ? 1 : -1; } else qqFlyOff(b, M);
         continue;
       }
@@ -88,7 +88,7 @@ function qqTick(dt) {
     } else if (b.state === 'dive') {
       const step = 560 * dt; b.x += b.vx * step; b.y += b.vy * step; b.travel += step; const k = b.travel / b.dist; b.h = k < 1 ? b.h0 + (24 - b.h0) * k : 24 + (k - 1) * 120;
       if (!b.hit && b.h < 50 && Math.hypot(p.x - b.x, p.y - b.y) < QQ_HIT) {
-        b.hit = true; qqKnock = { t: .25, vx: b.vx * 520, vy: b.vy * 340, map: M.id }; AudioEngine.ouch(); effect('Rasante de quero-quero!', p.x, p.y - 150, '#ffb3a0', 14); fxPuffs(p.x, p.y - 70, 5, 80, '#efece6');
+        b.hit = true; qqKnock = { t: .25, vx: b.vx * 520, vy: b.vy * 340, map: M.id }; AudioEngine.ouch(); fxPuffs(p.x, p.y - 70, 5, 80, '#efece6');
       }
       if (k > 1.6) qqFlyOff(b, M);
     } else if (b.state === 'fly') {

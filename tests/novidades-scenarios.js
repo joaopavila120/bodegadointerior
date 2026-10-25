@@ -55,7 +55,7 @@
    run.inv=0;caveHurt(20,{x:p.x-10,y:p.y});check(st.hp===hp-17,'chapéu de aba larga: 15% menos dano');
    check(caveUse('ticao')&&run.torch,'tição de angico clareia o andar');
    b.kind='lobisomem';caveUse('aguabenta');check(caveHitDmg(b)===caveDmg()*2&&caveHitDmg({kind:'javali'})===caveDmg(),'água benta: dano em dobro só nas assombrações');
-   const n=run.drops.length;caveKill({kind:'javali',x:p.x,y:p.y});const coin=run.drops.slice(n).find(d=>d.k==='moeda');check(coin&&coin.q>=Math.round((CAVE_BEASTS.javali.cash[0]+2)*1.3)-1,'guaiaca: mais moedas dos bichos');
+   const n=run.drops.length;caveKill({kind:'javali',x:p.x,y:p.y});check(!run.drops.slice(n).some(d=>d.k==='moeda'),'bicho da caverna não deixa dinheiro');
    check(movementBonus()>=.15,'botas de garrão: mais ligeiro na caverna');
    closeDialog(true);document.dispatchEvent(new KeyboardEvent('keydown',{key:'b',bubbles:true}));check(modal==='caveBag'&&$('dialogTitle').textContent==='Bornal da caverna','B na caverna abre o bornal dela');closeDialog(true);
    st.hp=40;const ch=caveBag().chimarrao;document.dispatchEvent(new KeyboardEvent('keydown',{key:'1',bubbles:true}));check(caveBag().chimarrao===ch-1&&st.hp===80,'tecla 1 usa o primeiro item do cinto');
@@ -121,10 +121,9 @@
 
   // ---------- Teiniaguá e Anhangá ----------
   withScenes(()=>{goInside();let d=G.day+1;const neg=x=>{const k=G.day;G.day=x;const r=negrinhoTonight();G.day=k;return r;};while(mapEventFor(d)||neg(d))d++;G.day=d;G.phase='closed';G.report={};goOutside();
-   for(const id of ['teiniagua','anhanga']){G.folk={};G.folkNight={day:G.day,id};const map=FOLK[id].map;switchMap({map,x:1600,y:1000});closeDialog(true);const sp=folkSpots(map)[0];check(sp&&WORLD_MAPS[map].canWalk(sp.x,sp.y),'de noite, '+FOLK[id].name+' aparece no mapa');
+   caveState().facao=true;for(const id of ['teiniagua','anhanga']){G.folk={};G.folkNight={day:G.day,id};const map=FOLK[id].map;switchMap({map,x:1600,y:1000});closeDialog(true);const sp=folkSpots(map)[0];check(sp&&WORLD_MAPS[map].canWalk(sp.x,sp.y),'de noite, '+FOLK[id].name+' aparece no mapa');
     worldOut.x=sp.x;worldOut.y=sp.y;interact();check(scene?.id==='folk-'+id,'cena do encontro: '+FOLK[id].name);skip();
-    if(id==='teiniagua'){check(modal==='salamanca','as provas da Salamanca: ouro, amor e poder');for(const [,,ok] of SALAMANCA_PROVAS)action('salamancaAnswer',String(ok));}
-    else{check(modal==='farmGame','soltar o filhote do laço e ficar quieto');let k=0;while(farmGame&&k++<200){const s=farmStage();if(s.kind==='alternate')farmGameKey(k%2?'a':'d');else{farmGame.pos=(s.zone[0]+s.zone[1])/2;farmGameKey('e');}}}
+    check(inArena()&&lendaFight?.id===id,'luta de chefe na clareira da lenda: '+FOLK[id].name);const winLenda=()=>{for(let k=0;k<5&&!mataNight?.beasts[0];k++)simulate(1/30);const b=mataNight.beasts[0];b.hp=1;b.stun=1;worldOut.x=b.x-60;worldOut.y=b.y;worldOut.dx=1;worldOut.dy=0;mataNight.cd=0;mataAttack();for(let k=0;k<60&&inArena();k++)simulate(1/30);};winLenda();
     check(G.relics?.[FOLK[id].relic],'vencendo, a lembrança vai pra estante: '+FOLK[id].relic);talkAll();}
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
   // ---------- missões dos encontros: sino, corrente, reportagem e rio ----------

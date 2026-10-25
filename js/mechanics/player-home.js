@@ -68,19 +68,25 @@ function homeBedMenu(){
   if(!nearHomeBed())return;
   openDialog('Sua cama','<p>O pelego está ajeitado e a casa está quieta. Dormir encerra este dia; amanhã você acorda aqui para uma nova lida.</p><div class="actions"><button class="primary" data-act="homeSleep">Dormir até amanhã</button><button data-act="close">Ainda vou dar uma volta</button></div>','homeBed');
 }
+// Acordou: a tela escura com o dia, que some devagar mostrando o quarto.
+function showWakeCard(){
+  if(!scenesEnabled())return;const e=eventInfo(),el=document.createElement('div');el.className='wake-card';
+  el.innerHTML=`<b>Bom dia!</b><span>Dia ${dayNumber()} · ${calendar().name}</span><small>${e.icon} ${e.name}</small>`;
+  document.body.appendChild(el);setTimeout(()=>el.classList.add('out'),2200);setTimeout(()=>el.remove(),3100);
+}
 function prepareHomeSleep(){
   G.homeSleepDay=G.day;
-  // Night visitors and scenes still happen in the bodega before sleep completes.
-  worldOut=null;worldAway=null;showRpgBox('worldTalk',null);keys.clear();
+  // O Sadi fica na cama: as visitas da noite já aconteceram na bodega, logo depois de fechar.
+  worldAway=null;showRpgBox('worldTalk',null);keys.clear();
   G.player={x:ENTRY.x,y:ENTRY.y-40,dx:0,dy:-1,walk:false};
 }
 {
-  const next=nextDay;nextDay=function(eventId){
-    const day=G.day;next(eventId);
+  const next=nextDay;nextDay=function(eventId,asleep){
+    const day=G.day;next(eventId,asleep);
     if(G.day>day&&G.homeSleepDay===day){
       delete G.homeSleepDay;
       worldOut={map:'casa:sadi',...HOME_BED_POINT,dx:0,dy:1,walk:false,back:{map:'vila',...front(PLAYER_HOME,40)}};
-      keys.clear();save();saveDayStart();refreshHUD();
+      keys.clear();save();saveDayStart();refreshHUD();showWakeCard();
     }
   };
   const act=action;action=function(name,id){if(name==='homeSleep'){sleepDay();return;}return act(name,id);};
@@ -113,6 +119,6 @@ function homeLessonHint(){
     const st=!worldOut&&!modal&&!prologueActive()&&!sportState().waiting&&homeLesson();if(!st){arrow();return;}
     const f=st==='sleep'?{x:ENTRY.x-20,y:H-60,w:40}:furniture().find(f=>f.id==='service');if(f)drawGuideArrow(f.x+f.w/2,f.y-40);
   };
-  const sleep=nextDay;nextDay=function(eventId){const day=G.day,lesson=homeLesson()==='sleep';sleep(eventId);if(lesson&&G.day>day){G.tutorial.wokeHome=true;save();}};
+  const sleep=nextDay;nextDay=function(eventId,asleep){const day=G.day,lesson=homeLesson()==='sleep';sleep(eventId,asleep);if(lesson&&G.day>day){G.tutorial.wokeHome=true;save();}};
   const open=openDay;openDay=function(){const lesson=homeLesson()==='open';open();if(lesson&&G.phase==='open'){G.tutorial.homeDone=true;save();}};
 }

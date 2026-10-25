@@ -47,7 +47,7 @@ function scareQuero(a) {
   if (a.kind === 'lasso') { b.state = 'flee'; b.t = 9; b.fleeDir = away; b.face = away; }
   else { b.state = 'out'; b.face = away; b.h = Math.max(b.h, 40); b.hit = true; }
   AudioEngine.thud(); AudioEngine.queroquero(.1, 3);
-  fxPuffs(pos.x, pos.y, 8, 110, '#f2efe8'); effect('Quero-quero espantado!', pos.x, pos.y - 40, '#e1ff9e'); gainXP(2);
+  fxPuffs(pos.x, pos.y, 8, 110, '#f2efe8'); gainXP(2);
 }
 function drawSlingAim() {
   const a = sling.aim; if (!a || !slingAlive(a)) return;

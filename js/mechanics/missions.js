@@ -578,7 +578,7 @@ function updateQuestTracker() {
   if (lines.length) setHTML(el, lines.map(l => `<div class="qt-line${l.kind ? ' ' + l.kind : ''}"><b>${l.icon || (l.kind === 'side' ? '◇' : '◆')} ${l.title}</b><span>${l.goal}</span></div>`).join(''));
 }
 function storyTick() {
-  missionsTick(); teachTick(); mapEventsTick();
+  missionsTick(); teachTick(); mapEventsTick(); nightVisitsTick();
   if (morningActive()) teach('manha');
   if (worldOut?.map === 'serra' || worldOut?.map === 'sc') teach(worldOut.map);
 }

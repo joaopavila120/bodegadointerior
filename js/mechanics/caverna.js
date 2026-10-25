@@ -297,8 +297,9 @@ function caveAttack() {
 }
 function caveKill(b) {
   if (b.idx != null) caveDayFloor(caveFloorRun().floor).beasts.push(b.idx);
-  const run = caveFloorRun(), B = CAVE_BEASTS[b.kind], [lo, hi] = B.cash, cash = lo + Math.floor(Math.random() * (hi - lo + 1)) + Math.floor(run.floor / 4);
-  run.drops.push({ x: b.x, y: b.y, k: 'moeda', q: cash }); if (Math.random() < .12) run.drops.push({ x: b.x + 20, y: b.y + 8, k: 'pinhao', q: 1 });
+  // Bicho não deixa dinheiro: o que rende na caverna são os minérios, os baús e o pinhão de vez em quando.
+  const run = caveFloorRun(), B = CAVE_BEASTS[b.kind];
+  if (Math.random() < .12) run.drops.push({ x: b.x + 20, y: b.y + 8, k: 'pinhao', q: 1 });
   const smoke = { boitata: '#ff9a40', sanguanel: '#b8a8d8', lobisomem: '#5a4a3a', mula: '#ffb060' }[b.kind] || '#8a7a6a';
   fxPuffs(b.x, b.y - 30, 12, 140, smoke); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18); G.stats.caveKills = (G.stats.caveKills || 0) + 1; caveState().killsTotal = (caveState().killsTotal || 0) + 1; caveTripNow().kills++;
   caveReveal();

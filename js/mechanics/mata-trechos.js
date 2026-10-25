@@ -19,7 +19,7 @@
 
 const TRECHO = { W: 3200, H: 2000, camps: [6, 11, 16, 21, 26, 31], last: 31, half: 40, branch: 30, shoreY: 1720, beachFrom: 28 };
 const TRECHO_BOSSES = { 11: 'cachaco', 21: 'papo' };
-const TRECHO_CHEST_CHANCE = .38;   // cada ramal do dia tem essa chance de esconder um baú de mateiro
+const TRECHO_CHEST_CHANCE = .15;   // cada ramal do dia tem essa chance de esconder um baú de mateiro
 function trechoBiome(n) { return n > TRECHO.last ? 'laguna' : n >= 22 ? 'restinga' : n >= 12 ? 'encosta' : 'mata'; }
 const TRECHO_BIOME_NAMES = { mata: 'Pinheiral', encosta: 'Encosta da Serra', restinga: 'Restinga do litoral', laguna: 'Barra de Laguna' };
 const TRECHO_BIOME_TEXT = {
@@ -578,7 +578,7 @@ function mataBeltRefresh() {
   };
   // Bicho derrubado fica no chão até o outro dia; dá experiência de mateiro.
   const kill = mataKill; mataKill = function (b) {
-    kill(b); if (caveUp('guaiaca')) { const d = mataNight?.drops.at(-1); if (d) d.q = Math.round(d.q * 1.3); }
+    kill(b);
     mataXP({ javali: 4, onca: 8, jararaca: 5, cascavel: 6, coral: 5, teiu: 7, ourico: 6, corposeco: 10, queixada: 3, lobisomem: 15 }[b.kind] || 4);
     if (inTrecho() && b.idx != null && mataNight?.trecho) trechoDay(mataNight.trecho).killed.push(b.idx);
   };

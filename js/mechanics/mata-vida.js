@@ -107,7 +107,7 @@ function mataNearestTree(o, not = null) { let best = null, bd = Infinity; for (c
 function mataQuatisFlee() {
   AudioEngine.note?.(1800, .05, 'square', .02); AudioEngine.note?.(2200, .05, 'square', .02, .06);
   for (const q of mataFauna.quatis) { q.state = 'flee'; q.fleeT = 0; q.tree = mataNearestTree(q); }
-  effect('Quatis!', mataFauna.quatis[0].x, mataFauna.quatis[0].y - 70, '#ffe2a6', 15);
+ 
 }
 // Quati: corpo ruivo, focinho comprido e o rabo listrado em pé.
 function drawQuati(q) {
@@ -222,8 +222,8 @@ function mataBeastTick(b, dt, p) {
   else if (b.state === 'retreat') { b.dx = dxp < 0 ? 1 : -1; mataStep(b, -dxp / d * 200, -dyp / d * 200, dt); if (b.t <= 0) b.state = 'stalk'; }
 }
 function mataKill(b) {
-  const B = CAVE_BEASTS[b.kind], [lo, hi] = B.cash, cash = lo + Math.floor(Math.random() * (hi - lo + 1)) + 2;
-  mataNight.drops.push({ x: b.x, y: b.y, q: cash }); fxPuffs(b.x, b.y - 30, 12, 140, b.kind === 'onca' ? '#8a6a40' : '#5a4a3a'); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18);
+  // Bicho da mata não deixa dinheiro.
+  const B = CAVE_BEASTS[b.kind]; fxPuffs(b.x, b.y - 30, 12, 140, b.kind === 'onca' ? '#8a6a40' : '#5a4a3a'); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18);
   AudioEngine.caveCry?.(b.kind, true); G.stats.mataKills = (G.stats.mataKills || 0) + 1; gainXP?.(b.kind === 'onca' ? 6 : 3);
 }
 function mataAttack() {

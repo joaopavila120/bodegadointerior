@@ -80,8 +80,10 @@ function drawBarbaqua() {
   for (let k = 0; k < 3; k++) { const t = (frameClock * .35 + k / 3) % 1; ctx.globalAlpha = .45 * (1 - t); ellipse(x - 20 + k * 20 + Math.sin(t * 5 + k) * 10, y - 110 - t * 80, 14 + t * 18, 9 + t * 10, '#d8d4cc'); ctx.globalAlpha = 1; }
 }
 function drawRanchoFogo() { const { x, y } = RANCHO_FOGO; if (!worldSprite('rural', 6, x - 70, y - 110, 140, 110)) sceneFire(x, y); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 30, 170, .32 + .06 * Math.sin(frameClock * 9), '255,150,60'); ctx.restore(); }
-function drawMarco() {
-  const { x, y } = RANCHO_MARCO; ellipse(x, y + 2, 16, 5, 'rgba(10,14,8,.35)'); rect(x - 5, y - 110, 10, 112, '#5a3a20', 2);
+function drawMarco() { drawMarcoAt(RANCHO_MARCO.x, RANCHO_MARCO.y); }
+// O poste com uma fita colorida pra cada acampamento aceso (o do refúgio e o da praia de Laguna).
+function drawMarcoAt(x, y) {
+  ellipse(x, y + 2, 16, 5, 'rgba(10,14,8,.35)'); rect(x - 5, y - 110, 10, 112, '#5a3a20', 2);
   const st = G?.mata ? mataState() : null; TRECHO.camps.forEach((n, k) => { const on = st?.camps[n]; ctx.fillStyle = on ? ['#d83a2a', '#2a8ad8', '#e8c030', '#3aa04a', '#e0cbb0', '#9a5ad8'][k] : 'rgba(200,190,160,.5)'; ctx.beginPath(); ctx.moveTo(x + 5, y - 106 + k * 14); ctx.lineTo(x + 34 + Math.sin(frameClock * 3 + k) * 3, y - 101 + k * 14); ctx.lineTo(x + 5, y - 96 + k * 14); ctx.closePath(); ctx.fill(); });
 }
 

@@ -556,6 +556,7 @@
    delete G.mata.faintDay;
    navioBoard();mataNight=null;mataCombatTick(.01);boss=navioBoss();boss.met=true;for(const x of mataNight.beasts)if(!x.boss)x.hp=0;boss.hp=1;Object.assign(boss,{state:'stagger',t:5,x:worldOut.x+80,y:worldOut.y});worldOut.dx=1;worldOut.dy=0;mataNight.cd=0;mataAttack();
    talkAll();talkAll();check(lagunaState().won&&worldOut.map==='laguna'&&hasCard('canabarro')&&!mataCombatOn(),'vencido: o navio some e Laguna fica em paz');
+   {const mk=WORLD_MAPS.laguna.spots().find(s=>s.id==='laguna:marco');check(mk&&WORLD_MAPS.laguna.canWalk(mk.x,mk.y),'depois da vitória, o marco das trilhas aparece na praia');mk.act();check(modal==='mataCamps'&&$('dialogContent').querySelector('[data-act="mataRancho"]'),'o marco da praia leva de volta pro refúgio (e pros acampamentos)');action('mataRancho');check(worldOut.map==='mata','voltou pro começo da mata');switchMap({map:'laguna',x:900,y:1000});closeDialog(true);}
    withScenes(()=>{missionsTick();});check(missionDone('laguna')&&modal==='talk','a Batalha de Laguna termina');talkAll();
    check(MISSIONS.find(m=>m.id==='lendaria').when(),'e a Bodega lendária pode começar');
    checkAchievements();check(['mata5','cachaco','papo','laguna'].every(id=>G.achievements[id]),'conquistas da mata adentro');

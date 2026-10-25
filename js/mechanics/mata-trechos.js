@@ -485,7 +485,9 @@ function mataGoCamp(n) {
 function trechoCampName(n) { const f = typeof campFolk === 'function' ? campFolk(n) : null; return f && mataFolk(f.id) ? 'Fogo ' + (f.id === 'anita' ? 'da ' : 'do ') + f.name : 'Acampamento · ' + TRECHO_BIOME_NAMES[trechoBiome(n)]; }
 function mataCampsDialog() {
   const st = mataState(), list = TRECHO.camps.filter(n => st.camps[n]);
-  openDialog('Trilhas e acampamentos', `<p>Fitas coloridas no mapa marcam os acampamentos que tu já acendeu. A picada até eles tá aberta.</p><div class="store-list">${TRECHO.camps.filter(n => st.camps[n] || st.deepest >= n).map(n => `<div class="supply"><span class="icon"><span class="bag-emoji">${st.camps[n] ? '🔥' : '🌲'}</span></span><div><b>${trechoCampName(n)}</b><p>${TRECHO_BIOME_NAMES[trechoBiome(n)]} · ${st.camps[n] ? 'direto pro fogo de chão.' : 'descansa no fogo pra marcar.'}</p></div><button class="primary" data-act="mataCamp" data-id="${n}" ${st.camps[n] ? '' : 'disabled'}>${st.camps[n] ? 'Ir' : 'Fechado'}</button></div>`).join('')}</div>${list.length ? '' : '<p class="small-note">Os acampamentos ficam no meio da picada, mata adentro: descansa no fogo pra marcar no mapa.</p>'}`, 'mataCamps');
+  // Longe do refúgio (no marco da praia de Laguna), a primeira trilha volta pro começo da mata.
+  const home = ['mata', 'casa:garibaldi'].includes(worldOut?.map) ? '' : `<div class="supply"><span class="icon"><span class="bag-emoji">🏕️</span></span><div><b>Refúgio do Garibaldi</b><p>${TRECHO_BIOME_NAMES.mata} · o começo da mata, onde ela é mansa.</p></div><button class="primary" data-act="mataRancho">Ir</button></div>`;
+  openDialog('Trilhas e acampamentos', `<p>Fitas coloridas no mapa marcam os acampamentos que tu já acendeu. A picada até eles tá aberta.</p><div class="store-list">${home}${TRECHO.camps.filter(n => st.camps[n] || st.deepest >= n).map(n => `<div class="supply"><span class="icon"><span class="bag-emoji">${st.camps[n] ? '🔥' : '🌲'}</span></span><div><b>${trechoCampName(n)}</b><p>${TRECHO_BIOME_NAMES[trechoBiome(n)]} · ${st.camps[n] ? 'direto pro fogo de chão.' : 'descansa no fogo pra marcar.'}</p></div><button class="primary" data-act="mataCamp" data-id="${n}" ${st.camps[n] ? '' : 'disabled'}>${st.camps[n] ? 'Ir' : 'Fechado'}</button></div>`).join('')}</div>${list.length ? '' : '<p class="small-note">Os acampamentos ficam no meio da picada, mata adentro: descansa no fogo pra marcar no mapa.</p>'}`, 'mataCamps');
 }
 
 
@@ -636,6 +638,7 @@ function mataBeltRefresh() {
   const act = action; action = function (name, id) {
     if (name === 'mataUse') { mataUseItem(id); return; }
     if (name === 'mataCamp') { mataGoCamp(id); return; }
+    if (name === 'mataRancho') { closeDialog(true); mataGoRancho(); return; }
     return act(name, id);
   };
 }

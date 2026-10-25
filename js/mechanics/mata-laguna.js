@@ -10,7 +10,7 @@
 //   · Vencido, o capitão baixa a bandeira e o navio some na neblina; na praia, a última prosa com o Garibaldi e a Anita.
 'use strict';
 
-const LAGUNA = { W: 3000, H: 1800, entryY: 820, shoreY: 1250, barraX: 2500, fogo: { x: 620, y: 930 }, carreta: { x: 930, y: 850 }, boat: { x: 1360, y: 1300 }, ghost: { x: 1150, y: 1010 }, anita: { x: 1250, y: 1040 }, ship: { x: 1980, y: 1500 } };
+const LAGUNA = { W: 3000, H: 1800, entryY: 820, shoreY: 1250, barraX: 2500, fogo: { x: 620, y: 930 }, marco: { x: 450, y: 960 }, carreta: { x: 930, y: 850 }, boat: { x: 1360, y: 1300 }, ghost: { x: 1150, y: 1010 }, anita: { x: 1250, y: 1040 }, ship: { x: 1980, y: 1500 } };
 CAVE_BEASTS.mariath = { name: 'Capitão Mariath', hp: 1500, speed: 170, dmg: 20, r: 32, cash: [80, 120], from: 999, weight: 0 };
 CAVE_BEASTS.marinheiro = { name: 'Marinheiro imperial', hp: 40, speed: 150, dmg: 10, r: 26, cash: [3, 6], from: 999, weight: 0 };
 PEOPLE.push({ id: 'mariath', name: 'Capitão Frederico Mariath', worldOnly: true, unique: true, origin: 'Alma do comandante da esquadra imperial', sprite: (PEOPLE.find(p => p.id === 'jayme') || PEOPLE[0]).sprite });
@@ -49,7 +49,9 @@ WORLD_MAPS.laguna = {
     const st = lagunaState(), list = [
       { id: 'laguna:placa', x: 380, y: 760, label: 'Placa da Barra de Laguna', info: true, text: 'Laguna, em Santa Catarina: em julho de 1839 os farrapos, com Garibaldi e Davi Canabarro, tomaram a cidade e proclamaram a República Juliana, irmã da República Rio-Grandense. Em 15 de novembro de 1839, a esquadra imperial de Frederico Mariath forçou a barra e retomou Laguna.' },
       { id: 'laguna:fogo', x: LAGUNA.fogo.x, y: LAGUNA.fogo.y + 40, radius: 100, label: 'Descansar no fogo da praia', act: () => { caveState().hp = caveMaxHp(); mataBuffs.veneno = 0; AudioEngine.ready?.(); save(); worldSay('Fogo na areia, o barulho do mar. A vida voltou inteira.'); } },
-      { id: 'laguna:volta', x: LAGUNA.fogo.x - 150, y: LAGUNA.fogo.y + 20, radius: 90, label: 'Voltar pro refúgio do Garibaldi', act: () => mataGoRancho() },
+      // Vencido o navio, o marco das trilhas (como o do refúgio) leva de volta pro começo da mata ou pros acampamentos.
+      st.won ? { id: 'laguna:marco', x: LAGUNA.marco.x, y: LAGUNA.marco.y + 30, radius: 90, label: 'Marco das trilhas · voltar pro refúgio ou pros acampamentos', act: mataCampsDialog }
+        : { id: 'laguna:volta', x: LAGUNA.fogo.x - 150, y: LAGUNA.fogo.y + 20, radius: 90, label: 'Voltar pro refúgio do Garibaldi', act: () => mataGoRancho() },
       { id: 'laguna:garibaldi', x: LAGUNA.ghost.x, y: LAGUNA.ghost.y, radius: 110, label: 'Prosear com o Garibaldi', act: lagunaGaribaldiTalk },
       { id: 'laguna:anita', x: LAGUNA.anita.x, y: LAGUNA.anita.y, radius: 100, label: 'Prosear com a Anita', act: () => campFolkTalk(CAMP_FOLKS[19]) }
     ];
@@ -137,6 +139,7 @@ function drawLaguna(view, seen, layers) {
   else { const b = lagunaBoatPos(), bob = Math.sin(frameClock * 1.3) * 3; layers.push({ y: b.y, draw: () => drawSeival(b.x, b.y + bob, 380) }); layers.push({ y: LAGUNA.carreta.y, draw: () => drawCarreta(LAGUNA.carreta.x + 280, lagunaShoreY(LAGUNA.carreta.x + 280) - 110, false) }); }
   layers.push({ y: LAGUNA.ghost.y, draw: () => drawGaribaldi(LAGUNA.ghost.x, LAGUNA.ghost.y, 1, worldOut.x < LAGUNA.ghost.x ? -1 : 1) }, { y: LAGUNA.anita.y, draw: () => drawCampFolk('anita', LAGUNA.anita.x, LAGUNA.anita.y, 1, worldOut.x < LAGUNA.anita.x ? -1 : 1) });
   if (!st.won) layers.push({ y: LAGUNA.ship.y, draw: () => drawNavioFar(LAGUNA.ship.x, LAGUNA.ship.y) });
+  else layers.push({ y: LAGUNA.marco.y, draw: () => drawMarcoAt(LAGUNA.marco.x, LAGUNA.marco.y) });
   layers.push({ y: 8e9, draw: () => { mataNightVeil(view, .56); darkHole(worldOut.x, worldOut.y - 40, 240, 760, '4,8,14', .5); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(LAGUNA.fogo.x, LAGUNA.fogo.y - 20, 300, .18, '255,150,60'); if (!st.won) glow(LAGUNA.ship.x, LAGUNA.ship.y - 120, 380, .14 + .04 * Math.sin(frameClock * 1.3), '120,255,190'); ctx.restore(); } });
 }
 

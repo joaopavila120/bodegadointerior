@@ -1,11 +1,10 @@
-// A mata no jogo inteiro: a missão secundária "O fantasma de camisa vermelha", o butiá que cura em qualquer briga e a
-// prosa dos fregueses sobre a mata.
-//   · Na segunda noite das três que o Valter pede (capítulo 2), quando o Sadi sai pra rua, o Olmiro, o último tropeiro,
-//     chega a cavalo e conta do fantasma de camisa vermelha que ensinou ele a secar erva no barbaquá. A missão começa e a
-//     Mata de Araucárias abre (no fim da estrada da Serra). Antes disso, a estrada termina num pinheiral fechado.
-//   · Na mata: a cena de chegada com o Garibaldi; prosando de novo, ele conta a história dele, e a missão vira descer até
-//     a barra de Laguna e vencer o navio imperial. É secundária, mas a "Bodega lendária" (último capítulo) só começa
-//     depois dela.
+// A mata no jogo inteiro: o capítulo 2, "O fantasma de camisa vermelha", a missão secundária "A Batalha de Laguna", o
+// butiá que cura em qualquer briga e a prosa dos fregueses sobre a mata.
+//   · Capítulo 2, logo depois do trago de pura: de noite, quando o Sadi sai pra rua, o Olmiro, o último tropeiro, chega a
+//     cavalo e conta do fantasma de camisa vermelha que ensinou ele a secar erva no barbaquá. A estrada da Serra abre e,
+//     no fim dela, a Mata de Araucárias. O capítulo é só chegar lá: termina na cena de chegada com o Garibaldi.
+//   · Prosando de novo com o Garibaldi, ele conta a história dele e começa a missão secundária: descer a mata até a barra
+//     de Laguna e vencer o navio imperial. A "Bodega lendária" (último capítulo) só começa depois dela.
 //   · Butiá: cura um pouco de vida, no cinto da caverna e no bornal da mata. Os butiazeiros dão pouco e demoram a carregar.
 //   · Os especiais comentam no balcão o que o Sadi anda fazendo na mata.
 // Arma, vida e resistência são da ferraria do São Dunstano: o chapéu de aba larga e as botas de garrão valem na mata.
@@ -14,23 +13,29 @@
 const BUTIA_HEAL = 20;
 const BUTIA_ITEM = { id: 'butia', name: 'Butiá', icon: '🟠', art: 'butia', heal: BUTIA_HEAL, desc: 'Butiá maduro do butiazeiro: recupera ' + BUTIA_HEAL + ' de vida em qualquer briga.' };
 function mataAberta() { return !!missionState('fantasma') || !!G.mataSeen || !!G.mata?.metGaribaldi; }
-function fantasmaStage() { return !G.mata?.metGaribaldi ? 'ir' : !G.mata.historia ? 'prosa' : 'laguna'; }
 
-// ---------- A missão ----------
-MISSIONS.push({ id: 'fantasma', title: 'O fantasma de camisa vermelha', giver: 'olmiro', side: true, when: () => false, where: 'Mata de Araucárias, no fim da estrada da Serra',
-  goal: () => { const s = fantasmaStage(); if (s === 'ir') return regionLocked('serra') ? 'Quando a estrada da Serra abrir, siga até o fim dela: a Mata de Araucárias' : 'Siga a estrada da Serra até o fim e entre na Mata de Araucárias'; if (s === 'prosa') return 'Converse de novo com o Garibaldi, no refúgio do pinheiral'; return 'Desça a mata até a barra de Laguna e vença o navio imperial' + (G.mata?.deepest > 1 ? ' · mais fundo: ' + TRECHO_BIOME_NAMES[trechoBiome(Math.min(G.mata.deepest, TRECHO.last + 1))] : ''); },
+// ---------- Capítulo 2: o fantasma de camisa vermelha ----------
+MISSIONS.push({ id: 'fantasma', chapter: 2, title: 'O fantasma de camisa vermelha', giver: 'olmiro', where: 'Mata de Araucárias, no fim da estrada da Serra',
+  // Começa com o Olmiro, de noite, na rua da Fronteira (não com a conversa de capítulo do Valter).
+  direct: () => olmiroFantasma(), when: () => olmiroReady(), waitText: () => 'de noite, na rua da Fronteira: o Olmiro, o último tropeiro, passa a cavalo',
+  start: () => unlockRegion('serra'),
+  goal: () => 'Siga a estrada da Serra até o fim e entre na Mata de Araucárias',
+  done: () => !!G.mata?.metGaribaldi, reward: { cash: 60, xp: 40, rep: 1, unlock: 'Mata de Araucárias e o refúgio do Garibaldi' }, outroBy: 'garibaldi',
+  outro: ['Volta e senta no fogo quando quiser, gaúcho. Tenho muito causo pra te contar.'] });
+// ---------- Missão secundária: a Batalha de Laguna ----------
+MISSIONS.push({ id: 'laguna', title: 'A Batalha de Laguna', giver: 'garibaldi', side: true, when: () => false, where: 'Mata adentro, do pinheiral até a barra de Laguna',
+  goal: () => 'Desça a mata até a barra de Laguna e vença o navio imperial' + (G.mata?.deepest > 1 ? ' · mais fundo: ' + TRECHO_BIOME_NAMES[trechoBiome(Math.min(G.mata.deepest, TRECHO.last + 1))] : ''),
   done: () => !!G.mata?.laguna?.won, reward: { cash: 300, xp: 250, rep: 6 }, outroBy: 'garibaldi',
   outro: ['Tu foi do meu pinheiral até a barra de Laguna, gaúcho. Nem eu, nos tempos de farrapo, andei tanto a pé.', 'Diz pro Olmiro que o fantasma de camisa vermelha agora descansa. E que a erva dele segue boa.'] });
 {
   // A "Bodega lendária" espera a Batalha de Laguna.
   const L = MISSIONS.find(m => m.id === 'lendaria');
-  if (L) { const when = L.when; L.when = () => (!when || when()) && missionDone('fantasma'); L.waitText = () => 'depois da Batalha de Laguna (missão secundária “O fantasma de camisa vermelha”)'; }
+  if (L) { const when = L.when; L.when = () => (!when || when()) && missionDone('laguna'); L.waitText = () => 'depois da Batalha de Laguna (missão secundária do Garibaldi, na Mata de Araucárias)'; }
 }
+// O Olmiro passa na rua da Fronteira de noite, depois do trago de pura.
 function olmiroReady() {
-  if (!G.missions || missionState('fantasma') || prologueActive() || tutorialActive() || scene || modal || worldTalkOpen() || paused) return false;
-  if (worldOut?.map !== 'vila' || !worldNight()) return false;
-  const ab = missionState('abertura'), streak = G.openStreak || 0;
-  return missionDone('abertura') || ab?.status === 'active' && (streak >= 2 || streak >= 1 && G.phase === 'open');
+  if (!G.missions || missionState('fantasma') || !missionDone('trago') || prologueActive() || tutorialActive() || scene || modal || worldTalkOpen() || paused) return false;
+  return worldOut?.map === 'vila' && worldNight();
 }
 function olmiroFantasma() {
   const m = MISSIONS.find(x => x.id === 'fantasma'), p = { x: worldOut.x, y: worldOut.y };
@@ -45,7 +50,7 @@ function olmiroFantasma() {
     ['olmiro', 'Quando acordei, o fogo era cinza fria. Mas a erva tava lá, sequinha, no meu bornal.'],
     ['olmiro', 'Se um dia tu subir a Serra, vai até o fim da estrada. Diz pro homem de camisa vermelha que o Olmiro mandou lembranças.']
   ];
-  const start = () => { startMission(m); talk([['dica', '<b>🌲 Missão secundária: O fantasma de camisa vermelha</b><br>' + m.goal() + '.<br><br>A Mata de Araucárias fica no fim da estrada da Serra. Não precisa ir agora: é uma aventura à parte, como a caverna. Mas a <b>Bodega lendária</b> só começa depois dela.', 'Nova missão']], null, 'Entendi'); };
+  const start = () => { startMission(m); talk([['dica', '<b>📖 Capítulo 2 · O fantasma de camisa vermelha</b><br>' + m.goal() + '.<br><i>Onde: ' + m.where + '</i><br><br>A estrada da Serra abriu: segue a estrada da Fronteira pra direita e vai até o fim dela.<br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo 2']], null, 'Bora!'); };
   if (!scenesEnabled()) { G.missions.fantasma = { status: 'offered', day: G.day }; talk(lines, () => { delete G.missions.fantasma; start(); }, 'Vou lembrar'); return; }
   const horse = (a, y) => mountedPose('olmiro-mounted-v1', a.x, y, a.dx, a.dy || 0, !!a.walk);
   G.missions.fantasma = { status: 'offered', day: G.day };
@@ -56,10 +61,10 @@ function olmiroFantasma() {
     ...lines.map(([say, text]) => ({ say, text })),
     sceneSet('olmiro', { dx: -1, speed: 190 }), { walk: 'olmiro', to: { x: p.x - 800, y: p.y + 10 } }, { fade: 'out', time: .5 }], 'olmiro-fantasma', () => { delete G.missions.fantasma; start(); });
 }
-// Segunda prosa com o Garibaldi: a história dele, e a missão vira a descida até Laguna.
+// Segunda prosa com o Garibaldi: a história dele, e começa a missão secundária da descida até Laguna.
 function garibaldiHistoria() {
   G.mata.historia = G.day; caveState().hp = caveMaxHp(); save();
-  const m = MISSIONS.find(x => x.id === 'fantasma');
+  const m = MISSIONS.find(x => x.id === 'laguna');
   talk([['garibaldi', 'O Olmiro te mandou? O tropeiro perdido! Ainda seca a erva do jeito que eu ensinei?'],
     ['sadi', 'Seca sim, e mandou lembranças. Mas me conta: quem é o senhor, afinal?'],
     ['garibaldi', 'Antes do Sul eu já era marinheiro, e brigava por gente que queria ser livre. Cheguei aqui e achei os farrapos.'],
@@ -68,8 +73,8 @@ function garibaldiHistoria() {
     ['garibaldi', 'Depois veio Ponche Verde, a paz, e o resto da vida em outras guerras. Mas a alma ficou presa aqui, no Sul.'],
     ['garibaldi', 'Toda noite, o navio do capitão Mariath volta pra barra de Laguna. Enquanto ele rondar, eu não descanso.'],
     ['garibaldi', 'Se tu descer a mata inteira, pinheiral, encosta e restinga, até o mar, a gente acerta essa conta junto.'],
-    ['dica', '<b>🌲 O fantasma de camisa vermelha</b><br>' + m.goal() + '.<br><br>O caminho é longo: os acampamentos ficam espaçados, e os bichos ficam mais fortes conforme tu desce. Arma, vida e resistência se melhoram na ferraria do São Dunstano.', 'Missão atualizada']],
-    () => showBanner('Missão: ' + m.title, m.goal(), 'info', { world: true }), 'Bora');
+    ['dica', '<b>🌲 Missão secundária: A Batalha de Laguna</b><br>' + m.goal() + '.<br><br>Não precisa ir agora: é uma aventura à parte, como a caverna. Mas a <b>Bodega lendária</b> só começa depois dela. O caminho é longo: os acampamentos ficam espaçados, e os bichos ficam mais fortes conforme tu desce. Arma, vida e resistência se melhoram na ferraria do São Dunstano (e com o Garibaldi).<br><br>Recompensa:' + rewardHTML(m.reward), 'Nova missão']],
+    () => startMission(m), 'Bora');
 }
 
 // ---------- Prosa de balcão sobre a mata ----------
@@ -116,11 +121,12 @@ function butiaIconHTML(size) { return `<span style="display:inline-flex;width:${
 
 // ---------- Ligações ----------
 {
-  // O Olmiro chega a cavalo, de noite, na rua da Fronteira.
+  // O Olmiro chega pelo capítulo (missionsTick). Saves de antes: quem já tinha achado a mata segue com o capítulo, e
+  // quem já ouviu a história do Garibaldi segue com a Batalha de Laguna.
   const tick = outsideTick; outsideTick = function (dt) {
-    tick(dt);
-    if (G.missions && !missionState('fantasma') && (G.mataSeen || G.mata?.metGaribaldi)) { G.missions.fantasma = { status: 'active', day: G.day }; save(); }
-    if (olmiroReady()) olmiroFantasma();
+    tick(dt); if (!G.missions) return;
+    if (!missionState('fantasma') && (G.mataSeen || G.mata?.metGaribaldi)) { G.missions.fantasma = { status: 'active', day: G.day }; save(); }
+    if (!missionState('laguna') && G.mata?.historia) { G.missions.laguna = { status: G.mata?.laguna?.won ? 'done' : 'active', day: G.day }; save(); }
   };
   // Antes da missão, a estrada da Serra termina num pinheiral fechado.
   const serra = WORLD_MAPS.serra, edge = serra.edge; let warned = 0;
@@ -130,7 +136,7 @@ function butiaIconHTML(size) { return `<span style="display:inline-flex;width:${
     return r;
   };
   // A segunda prosa com o Garibaldi conta a história dele.
-  const talkG = garibaldiTalk; garibaldiTalk = function () { if (G.mata?.metGaribaldi && missionActive('fantasma') && !G.mata.historia) { garibaldiHistoria(); return; } return talkG(); };
+  const talkG = garibaldiTalk; garibaldiTalk = function () { if (G.mata?.metGaribaldi && !G.mata.historia && !missionState('laguna')) { garibaldiHistoria(); return; } return talkG(); };
   // Os especiais comentam a mata no balcão (cada novidade, uma vez por pessoa).
   const prose = nextProse; nextProse = function (person) { if (Math.random() < .5) { const l = mataProseLine(person); if (l) return l; } return prose(person); };
   // Butiá no cinto da caverna e no bornal da mata.

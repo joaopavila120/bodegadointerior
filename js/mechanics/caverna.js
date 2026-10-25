@@ -80,8 +80,8 @@ function caveLootTiles(t) {
 }
 function caveLootHTML(t) { const l = caveLootTiles(t); return l.length ? `<div class="bag-grid cave-loot">${l.map(([icon, big, small]) => `<div class="bag-item">${icon}<b>${big}</b><small>${small}</small></div>`).join('')}</div>` : ''; }
 function caveState() { G.cave ??= { facao: false, floor: 1, deepest: 1, hp: CAVE.maxHp, vo: false }; G.cave.up ??= {}; return G.cave; }
-// A gruta só aparece depois de aceitar procurar a Baia (ou pra quem já desceu nela antes).
-function caveOpen() { return !!G.cave?.facao || ['active', 'done'].includes(missionState('baia')?.status); }
+// A gruta só aparece com a Cadela Baia ou com o sino da capela (ou pra quem já desceu nela antes).
+function caveOpen() { return !!G.cave?.facao || ['baia', 'sino'].some(id => ['active', 'done'].includes(missionState(id)?.status)); }
 // Melhorias do facão, na ferraria de São Dunstano no primeiro andar.
 const CAVE_UPGRADES = [
   { id: 'dash', name: 'Passo de esquiva', icon: '↗', cost: 160, desc: 'Libera o dash com Shift: invulnerável durante a esquiva, com 1,2 s de recarga.' },

@@ -10,7 +10,7 @@
   action('new');sceneSkip();closeDialog(true);
   G.prologue.done=true;G.prologue.step=PROLOGUE_STEPS.length;G.tutorial.day=4;G.calOffset=3;G.day=30;G.tutorial.complete=true;G.phase='prep';G.valterQueue=[];G.teachQueue=[];
   G.taught={manha:true,pesca:true,pedidos:true,missoes:true,javali:true,cavalo:true};G.regions={serra:true,sc:true};G.cash=5000;
-  G.missions={};for(const m of storyChapters())if(m.chapter<13)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.chapter<14)G.missions[m.id]={status:'done',day:1};
   const talkAll=()=>{let k=0;while(modal==='talk'&&k++<40)talkNext();};
   const skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
   const withScenes=f=>{const ns=window.NO_SCENES;window.NO_SCENES=false;try{return f();}finally{window.NO_SCENES=ns;}};
@@ -129,7 +129,7 @@
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
   // ---------- missões dos encontros: sino, corrente, reportagem e rio ----------
   {G.cave={facao:true,floor:1,deepest:12,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'igreja',x:600,y:700});closeDialog(true);
-   delete G.missions.sino;worldTalk({person:PADRE_ROMIO,x:600,y:470});check(modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'aceitou: cobre e ferro pro São Dunstano');
+   delete G.missions.sino;startChapter(MISSIONS.find(m=>m.id==='sino'));check(MISSIONS.find(m=>m.id==='sino').chapter===6&&modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'capítulo 6, Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'cobre e ferro pro São Dunstano');
    const ab=CAVE_ITEMS.find(i=>i.id==='aguabenta').cost,c0=bagQty('cobre'),f0=bagQty('ferro');bagAdd('cobre',SINO_NEEDS.cobre);bagAdd('ferro',SINO_NEEDS.ferro);
    goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();
    check(/forjaSino/.test($('dialogContent').innerHTML),'na ferraria, o santo oferece fundir o sino');action('forjaSino');talkAll();check(sinoForged()&&bagQty('cobre')===c0&&bagQty('ferro')===f0,'sino fundido com cobre e ferro');
@@ -344,19 +344,20 @@
   {goInside();G.phase='prep';G.report=null;goOutside();delete G.mataSeen;delete G.mataGralha;delete G.mata;delete G.missions.fantasma;const M=WORLD_MAPS.mata,facaoBefore=caveState().facao,pausedBefore=paused;caveState().facao=true;
    check(mataTrails().some(t=>t.id==='leste')&&M.canWalk(MATA.W-60,770),'ao lado da centenária, a picada do leste vai até a borda direita');
    check(!WORLD_MAPS.serra.edge({x:SERRA.W-1,y:SERRA.roadY+45}),'antes do causo do Olmiro, a estrada da Serra termina num pinheiral fechado');
-   // a segunda das três noites do Valter: o Olmiro chega a cavalo na rua
-   const ab=G.missions.abertura,streak=G.openStreak;G.missions.abertura={status:'active',day:G.day};G.openStreak=1;G.phase='open';G.elapsed=DAY*.8;paused=false;switchMap({map:'vila',x:1200,y:1300});closeDialog(true);
-   withScenes(()=>{outsideTick(.02);check(scene?.id==='olmiro-fantasma'&&scene.steps.some(s=>s.say==='olmiro'&&/camisa vermelha/.test(s.text)),'na segunda noite do Valter, saindo pra rua: o Olmiro conta do fantasma de camisa vermelha');while(scene)sceneSkip();});
-   check(missionActive('fantasma')&&!MISSIONS.find(m=>m.id==='fantasma').chapter&&modal==='talk','vira missão secundária');talkAll();
-   G.missions.abertura=ab;G.openStreak=streak;G.phase='prep';G.elapsed=0;paused=pausedBefore;
+   // capítulo 2, logo depois do trago de pura: de noite, na rua, o Olmiro chega a cavalo (como num jogo novo: só o trago feito)
+   const mis0=G.missions;G.missions={trago:{status:'done',day:1}};G.phase='closed';paused=false;switchMap({map:'vila',x:1200,y:1300});closeDialog(true);
+   withScenes(()=>{missionsTick();check(scene?.id==='olmiro-fantasma'&&scene.steps.some(s=>s.say==='olmiro'&&/camisa vermelha/.test(s.text)),'depois do trago de pura, de noite na rua: o Olmiro conta do fantasma de camisa vermelha');while(scene)sceneSkip();});
+   check(missionActive('fantasma')&&MISSIONS.find(m=>m.id==='fantasma').chapter===2&&modal==='talk'&&/Capítulo 2/.test($('dialogContent').innerHTML),'vira o capítulo 2 da história');talkAll();
+   G.phase='prep';G.elapsed=0;paused=pausedBefore;
    check(WORLD_MAPS.serra.edge({x:SERRA.W-1,y:SERRA.roadY+45})?.map==='mata','e a Mata de Araucárias abre no fim da estrada da Serra');
    check(!MISSIONS.find(m=>m.id==='lendaria').when(),'a Bodega lendária espera a Batalha de Laguna');
    withScenes(()=>{switchMap({map:'mata',...M.spawn()});check(scene?.id==='mata-garibaldi'&&scene.steps.some(s=>s.say==='garibaldi'&&/farrapos/.test(s.text))&&scene.steps.some(s=>s.say==='garibaldi'&&/Laguna/.test(s.text))&&sceneSpeaker('garibaldi').name==='Giuseppe Garibaldi','primeira vez na mata: a cena de chegada com o Garibaldi, que conta da descida até a barra de Laguna');while(scene)sceneSkip();});
    check(G.mataSeen===G.day&&G.mata.metGaribaldi&&hasCard('garibaldi')&&modal==='talk'&&talkState?.lines.some(l=>/Pinheiral/.test(l[1])&&/Restinga/.test(l[1])&&/sempre escuro/.test(l[1])),'depois da cena: a figurinha do Garibaldi e a dica das três regiões, sempre escuras');talkAll();
    check(worldOut.map==='mata'&&Math.hypot(worldOut.x-garibaldiFront().x,worldOut.y-garibaldiFront().y)<5,'e o Sadi fica na frente do refúgio');
-   check(/Garibaldi/.test(MISSIONS.find(m=>m.id==='fantasma').goal()),'a missão manda prosear de novo com o Garibaldi');
+   withScenes(()=>{missionsTick();});check(missionDone('fantasma')&&!missionState('laguna'),'chegou na mata e achou o Garibaldi: capítulo 2 concluído');talkAll();
    garibaldiTalk();check(modal==='talk'&&talkState.lines.some(l=>/Olmiro/.test(l[1]))&&talkState.lines.some(l=>/Mariath/.test(l[1]))&&!talkState.lines.some(l=>/Itália|Nice/.test(l[1])),'na segunda prosa, o Garibaldi conta a história dele');talkAll();
-   check(G.mata.historia&&/Laguna/.test(MISSIONS.find(m=>m.id==='fantasma').goal()),'e a missão vira descer até a barra de Laguna');
+   check(G.mata.historia&&missionActive('laguna')&&MISSIONS.find(m=>m.id==='laguna').side&&/Laguna/.test(MISSIONS.find(m=>m.id==='laguna').goal()),'e começa a missão secundária: descer até a barra de Laguna');
+   G.missions={...mis0,fantasma:G.missions.fantasma,laguna:G.missions.laguna};
    switchMap({map:'serra',x:SERRA.W-120,y:SERRA.roadY+45});closeDialog(true);withScenes(()=>{switchMap({map:'mata',...M.spawn()});check(!scene,'da segunda vez em diante, sem cena');});closeDialog(true);
    withScenes(()=>{worldOut.x=MATA.big.x-200;worldOut.y=MATA.big.y+200;outsideTick(.02);check(scene?.id==='mata-gralha'&&scene.steps.some(s=>s.say==='gralha'&&/esqueço/.test(s.text))&&scene.steps.some(s=>s.walk==='gralha'),'perto da araucária centenária: a gralha-azul conta que planta o pinhão porque esquece');while(scene)sceneSkip();});
    check(G.mataGralha&&sceneSpeaker('gralha').name==='Gralha-azul','a gralha fala com retrato próprio, uma vez só');
@@ -555,7 +556,7 @@
    delete G.mata.faintDay;
    navioBoard();mataNight=null;mataCombatTick(.01);boss=navioBoss();boss.met=true;for(const x of mataNight.beasts)if(!x.boss)x.hp=0;boss.hp=1;Object.assign(boss,{state:'stagger',t:5,x:worldOut.x+80,y:worldOut.y});worldOut.dx=1;worldOut.dy=0;mataNight.cd=0;mataAttack();
    talkAll();talkAll();check(lagunaState().won&&worldOut.map==='laguna'&&hasCard('canabarro')&&!mataCombatOn(),'vencido: o navio some e Laguna fica em paz');
-   withScenes(()=>{missionsTick();});check(missionDone('fantasma')&&modal==='talk','a missão do fantasma de camisa vermelha termina');talkAll();
+   withScenes(()=>{missionsTick();});check(missionDone('laguna')&&modal==='talk','a Batalha de Laguna termina');talkAll();
    check(MISSIONS.find(m=>m.id==='lendaria').when(),'e a Bodega lendária pode começar');
    checkAchievements();check(['mata5','cachaco','papo','laguna'].every(id=>G.achievements[id]),'conquistas da mata adentro');
    // morrer na mata: a mesma queda da caverna, a tela escurece, e acorda no refúgio

@@ -1,4 +1,4 @@
-// Ajudantes da bodega: no fim da primeira noite do capítulo 2 (três noites seguidas), o Valter entra e conta que dá para
+// Ajudantes da bodega: no fim da primeira noite do capítulo 3 (três noites seguidas), o Valter entra e conta que dá para
 // contratar os amigos especiais. Ele mesmo já tem amizade pra ser o primeiro.
 // · Balconista: atende tudo que se pede no balcão (prateleiras, erva e granel na balança, vinho e café da cambona).
 // · Garçom: leva às mesas chope, refri, trago, bitter, café, petiscos e os lanches prontos no apoio; sem pedido, limpa mesa.
@@ -241,7 +241,7 @@ function staffPayday() {
   return wages;
 }
 
-// ---------- A conversa do Valter (fim da primeira noite do capítulo 2) ----------
+// ---------- A conversa do Valter (fim da primeira noite do capítulo 3) ----------
 // Fechada a primeira noite das três seguidas, o Valter entra na bodega. Saves que passaram disso sem a conversa (ou que
 // pularam o capítulo) ainda recebem ela depois de uma semana de bodega, de manhã.
 function staffIntroDue() {

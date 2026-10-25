@@ -14,8 +14,9 @@ function sinoForged() { return !!G.missions?.sino?.forged; }
 function sinoBells(delay = 0) {
   for (let k = 0; k < 3; k++) { const f = [523, 659, 523][k], t = delay + k * .9; AudioEngine.note(f, 1.5, 'sine', .06, t); AudioEngine.note(f * 2.01, 1.1, 'sine', .025, t); AudioEngine.note(f * 2.98, .7, 'sine', .012, t); }
 }
-MISSIONS.push({ id: 'sino', title: 'O sino da capela', giver: 'padre_romio', side: true, where: 'Capela da Serra e a ferraria de São Dunstano, no primeiro andar da caverna',
-  when: () => !regionLocked('serra') && !!G.cave?.dunstanTaught,
+// Capítulo 6 (no lugar do antigo queijo pra nona): a gruta da Serra aparece com ele.
+MISSIONS.push({ id: 'sino', chapter: 6, title: 'O sino da capela', giver: 'padre_romio', where: 'Capela da Serra e a ferraria de São Dunstano, no primeiro andar da caverna',
+  when: () => !regionLocked('serra'),
   intro: [['padre_romio', 'Vivente, uma tristeza: o sino da capela rachou na geada. Agora, em vez de chamar pra missa, ele tosse.'],
     ['padre_romio', 'Dizem que lá embaixo, na gruta, mora um ferreiro antigo que sabe fundir sino: São Dunstano, o padroeiro dos ferreiros.'],
     ['padre_romio', 'Leva cobre e ferro da caverna pra ele? Cobre pro corpo do sino, ferro pro badalo.']],
@@ -73,7 +74,8 @@ function reportGoal() {
   const id = folkTonight(), tonight = id && reportWants(id) ? ' · hoje: ' + FOLK[id].name + ' na ' + REGION_NAMES[FOLK[id].map] : '';
   return 'De noite, depois de fechar, filme ' + left + ' (' + Object.keys(f).length + '/' + (REPORT_FOLK + 1) + ')' + tonight;
 }
-MISSIONS.push({ id: 'reportagem', title: 'Reportagem do além', giver: 'indavirus', side: true, after: 'indaial', where: 'De noite, na Fronteira e na Serra, com o Gustavo e o Lauro',
+// Capítulo 9, logo depois do convite de Indaial.
+MISSIONS.push({ id: 'reportagem', chapter: 9, title: 'Reportagem do além', giver: 'indavirus', where: 'De noite, na Fronteira e na Serra, com o Gustavo e o Lauro',
   intro: [['indavirus', 'Atenção, Sul do Brasil! O Jornal Indavírus vai fazer a maior reportagem da história: “Assombrações do Sul, ao vivo”!'],
     ['lauro', 'O Gustavo quer filmar o Saci, ja. E umas assombrações. Eu vou junto segurar a lanterna… de longe.'],
     ['indavirus', 'De noite, depois que tu fechar a bodega, a gente vai contigo. Tu enquadra o bicho na câmera, uns passos na tua frente, e aperta E. Eu narro!']],

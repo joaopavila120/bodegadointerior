@@ -19,30 +19,37 @@
   storeShop('ferragem');check($('dialogContent').textContent.includes('Missão · Trago de pura'),'o caixa da loja mostra o que a missão pede');
   {const cash=G.cash;action('upgrade','trago');check(G.up.trago&&G.cash===cash&&!!document.querySelector('#dialogContent .bought-tag'),'a Mesa de tragos sai de graça e o botão confirma a compra');}closeDialog(true);
   tick(2);check(modal==='talk','com a mesa instalada, o Valter agradece com a recompensa');talkAll();check(missionDone('trago'),'missão do trago concluída');
-  // a história segue em capítulos que começam sozinhos (sem "!" sobre as casas)
-  switchMap({map:'vila',x:1600,y:735});tick(4);check(modal==='talk'&&G.missions.abertura?.status==='offered','o capítulo 2 começa sozinho, sem precisar achar o Valter');
-  {let k=0;while(modal==='talk'&&!$('dialogContent').textContent.includes('Capítulo 2')&&k++<10)talkNext();check($('dialogContent').innerHTML.includes('reward-list'),'o capítulo mostra o objetivo e a recompensa');}
-  talkAll();check(missionActive('abertura')&&activeChapter()?.id==='abertura','o capítulo fica em andamento');
-  check(TEACH.missoes&&trackerLines()[0]?.kind==='story'&&trackerLines()[0].title.includes('Três noites seguidas'),'a história aparece primeiro no canto da tela');
-  check(!MISSIONS.filter(m=>m.chapter).some(m=>missionForGiver(m.giver||'valter')?.id===m.id),'capítulo da história não vira oferta de casa');
-  G.showTracker=false;refreshHUD();check($('questTracker').classList.contains('hidden'),'no celular dá para esconder as missões da tela');G.showTracker=true;
-  G.openStreak=3;tick(2);check(modal==='talk','três noites seguidas: vem a conversa de conclusão');talkAll();
-  check(missionDone('abertura')&&!regionLocked('serra')&&regionLocked('sc'),'abrir três noites seguidas conclui a missão do Valter e abre a Serra');
-  // capítulo 3, logo depois: a Cadela Baia sumiu (dá pra fazer de noite, com a casa do Mano Lima de luz acesa)
-  check(currentChapter()?.id==='baia'&&chapterWaiting()?.id==='baia'&&!G.missions.conhecer,'o capítulo 3 é a Cadela Baia: o Mano Lima procura o Sadi na bodega');
-  {const skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};worldOut=null;goInside();G.phase='closed';G.report={};closeDialog(true);tick(4);check(scene?.id==='baia-chamado','fechada a terceira noite, o Mano Lima entra na bodega: a Baia fugiu');skip();
-   check(baiaCalling()&&trackerLines()[0]?.kind==='story'&&/Capítulo 3/.test(trackerLines()[0].title)&&/Mano Lima quer falar/.test(trackerLines()[0].goal),'o capítulo 3 chama pra casa do Mano Lima, no canto da tela');
-   check(/Capítulo 3[^<]*A Cadela Baia sumiu/.test(missionsPanel())&&/Mano Lima quer falar/.test(missionsPanel()),'e na aba Missões do celular');
+  // capítulo 2: de noite, na rua da Fronteira, o Olmiro conta do fantasma de camisa vermelha e a estrada da Serra abre
+  check(currentChapter()?.id==='fantasma'&&chapterWaiting()?.id==='fantasma'&&/Olmiro/.test(trackerLines()[0]?.goal||'')&&regionLocked('serra'),'o capítulo 2 espera a noite: o Olmiro passa na rua da Fronteira');
+  {const skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};G.phase='closed';G.report={};goOutside();switchMap({map:'vila',x:1600,y:735});closeDialog(true);tick(4);check(scene?.id==='olmiro-fantasma','de noite, na rua, o Olmiro chega a cavalo');skip();
+   {let k=0;while(modal==='talk'&&!$('dialogContent').textContent.includes('Capítulo 2')&&k++<10)talkNext();check($('dialogContent').innerHTML.includes('reward-list'),'o capítulo mostra o objetivo e a recompensa');}
+   talkAll();check(missionActive('fantasma')&&activeChapter()?.id==='fantasma'&&!regionLocked('serra')&&regionLocked('sc'),'capítulo 2 em andamento: a estrada da Serra abre');
+   check(TEACH.missoes&&trackerLines()[0]?.kind==='story'&&trackerLines()[0].title.includes('O fantasma de camisa vermelha'),'a história aparece primeiro no canto da tela');
+   check(!MISSIONS.filter(m=>m.chapter).some(m=>missionForGiver(m.giver||'valter')?.id===m.id),'capítulo da história não vira oferta de casa');
+   G.showTracker=false;refreshHUD();check($('questTracker').classList.contains('hidden'),'no celular dá para esconder as missões da tela');G.showTracker=true;
+   switchMap({map:'mata',...WORLD_MAPS.mata.spawn()});closeDialog(true);worldOut.x=RANCHO_GHOST.x+200;worldOut.y=RANCHO_GHOST.y;outsideTick(.05);skip();talkAll();
+   for(let k=0;k<4&&!missionDone('fantasma');k++){tick(3);talkAll();}check(missionDone('fantasma')&&G.mata.metGaribaldi&&!missionState('laguna'),'chegou na mata e achou o Garibaldi: capítulo 2 concluído');
+   garibaldiTalk();talkAll();check(missionActive('laguna')&&!MISSIONS.find(m=>m.id==='laguna').chapter,'prosando de novo, o Garibaldi conta a história: a Batalha de Laguna é missão secundária');
+   check(!G.missions.abertura&&chapterWaiting()?.id==='abertura','o capítulo 3 espera a volta pra bodega');
+   G.phase='prep';G.report=null;worldOut=null;goInside();closeDialog(true);}
+  // capítulo 3: três noites seguidas, contadas a partir do começo do capítulo
+  tick(4);check(modal==='talk'&&G.missions.abertura?.status==='offered','de volta na bodega, o capítulo 3 começa sozinho');talkAll();check(missionActive('abertura')&&activeChapter()?.id==='abertura','o capítulo fica em andamento');
+  G.openStreak=5;G.lastOpenDay=G.day-1;tick(2);check(!missionDone('abertura')&&/0\/3/.test(activeChapter().goal()),'noites abertas antes do capítulo não contam');
+  G.openStreak=3;G.lastOpenDay=G.day+2;for(let k=0;k<5&&!missionDone('abertura');k++){tick(2);talkAll();}check(missionDone('abertura'),'abrir três noites seguidas, a partir do capítulo, conclui a missão do Valter');
+  // a Cadela Baia sumiu: missão à parte do Mano Lima, na mesma noite (dá pra fazer de noite, com a casa de luz acesa)
+  check(!storyChapters().some(m=>m.id==='baia')&&currentChapter()?.id==='conhecer','a Cadela Baia não é mais capítulo: o próximo é conhecer o Badin');
+  {const skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};worldOut=null;goInside();G.phase='closed';G.report={};closeDialog(true);tick(4);check(scene?.id==='baia-chamado','fechada a noite, o Mano Lima entra na bodega: a Baia fugiu');skip();
+   check(baiaCalling()&&trackerLines().some(l=>l.kind==='side'&&/Mano Lima quer falar/.test(l.goal)),'o chamado do Mano Lima aparece entre as secundárias');
    goOutside();switchMap({map:'vila',x:1600,y:735});closeDialog(true);const hv=WORLD_MAPS.vila.spots().find(s=>s.id==='house:manolima');check(lateNight()&&!hv.house&&!/trancada/.test(spotLabel(hv)),'de noite, depois das 23h30, a casa do Mano Lima fica aberta');
    worldOut.x=hv.x;worldOut.y=hv.y;interact();closeDialog(true);skipWorldTalk();check(worldOut.map==='casa:manolima'&&atHome('manolima'),'entra na casa dele de noite e ele está esperando');
-   const hm=WORLD_MAPS['casa:manolima'].spots().find(s=>s.id==='home:manolima');worldOut.x=hm.x;worldOut.y=hm.y;interact();check(modal==='talk'&&/Capítulo 3/.test(JSON.stringify(talkState?.lines||'')),'o Mano Lima conta da Baia e o capítulo começa, sem botão de recusar');talkAll();
-   check(missionActive('baia')&&activeChapter()?.id==='baia'&&caveOpen()&&/Capítulo 3/.test(trackerLines()[0].title),'capítulo 3 em andamento: a gruta da Serra aparece');
+   const hm=WORLD_MAPS['casa:manolima'].spots().find(s=>s.id==='home:manolima');worldOut.x=hm.x;worldOut.y=hm.y;interact();talkAll();check(modal==='baiaOffer','o Mano Lima conta da Baia e oferece a missão');action('baiaAccept');
+   check(missionActive('baia')&&caveOpen(),'missão da Baia em andamento: a gruta da Serra aparece');
    interact();check(modal==='talk'&&/Serra/.test(JSON.stringify(talkState?.lines||'')),'procurando ainda, ele dá a pista da Serra');talkAll();
-   baiaArc().stage='return';interact();talkAll();check(missionDone('baia')&&baiaStage()==='done','a Baia de volta: capítulo 3 concluído');
+   baiaArc().stage='return';interact();talkAll();check(missionDone('baia')&&baiaStage()==='done','a Baia de volta: missão concluída');
    tick(4);check(!G.missions.conhecer&&chapterWaiting()?.id==='conhecer'&&/amanhã/.test(trackerLines()[0]?.goal||''),'o capítulo 4 espera a manhã seguinte');
-   G.missions.baia.day=G.day-1;G.phase='prep';G.report=null;worldOut=null;goInside();closeDialog(true);}
+   G.missions.abertura.day=G.day-1;G.phase='prep';G.report=null;worldOut=null;goInside();closeDialog(true);}
   tick(4);check(modal==='talk'&&!!G.missions.conhecer,'capítulo 4 começa sozinho na manhã seguinte: conhecer o Badin, na Serra');talkAll();check(missionActive('conhecer'),'capítulo 4 em andamento');
-  // casa do Badin: primeiro encontro, o campeonato de bocha, o queijo pra nona (abre a despensa) e o baile da comunidade
+  // casa do Badin: primeiro encontro e o campeonato de bocha (abre a despensa); o sino da capela; o baile da comunidade
   goOutside();switchMap({map:'serra',x:1800,y:200});check(worldOut.map==='serra'&&!worldGuidePoint(),'a Serra já abre; fora dos tutoriais não tem seta (o jogador explora)');
   check(atHome('badin'),'quem a história precisa encontrar espera em casa');
   const hb=WORLD_MAPS.serra.spots().find(s=>s.id==='house:badin');worldOut.x=hb.x;worldOut.y=hb.y;interact();check(worldOut.map==='casa:badin','entra na casa do Badin');
@@ -52,13 +59,12 @@
   check(missionDone('conhecer')&&missionActive('campeonato'),'conhecido o Badin, o capítulo 5 começa: organizar um campeonato de bocha');
   G.cash=Math.max(G.cash,100);createSportTournament('bocha');closeDialog(true);recordSportMatch(false);check(sportState().bracket.finished,'perdendo na primeira partida, o campeonato se encerra');
   goInside();tick(2);talkAll();check(missionDone('campeonato')&&regionLocked('sc'),'ganhando ou perdendo, o campeonato conclui a missão (Santa Catarina ainda fechada)');
-  for(let k=0;k<3;k++){tick(3);talkAll();}check(!missionState('queijo')&&questMarker('badin')==='new'&&trackerLines().some(t=>/Badin quer falar com você/.test(t.goal)),'longe do Badin: o aviso "Badin quer falar com você", sem começar o capítulo');
-  goOutside();switchMap({map:'serra',x:hb.x,y:hb.y+60});closeDialog(true);worldOut.x=hb.x;worldOut.y=hb.y;interact();for(let k=0;k<3&&!missionActive('queijo');k++){talkAll();tick(3);}check(worldOut.map==='casa:badin'&&missionActive('queijo'),'capítulo 6: na casa dele, o Badin pede o queijo pra nona');
-  worldOut.x=home.x;worldOut.y=home.y;interact();talkAll();if(modal!=='quest')interact();check(modal==='quest'&&$('dialogTitle').textContent.includes('Queijo pra nona')&&$('dialogContent').textContent.includes('Recompensa'),'o pedido mostra o que levar e a recompensa');
-  G.stock.queijo=10;showQuest(badin);const cash=G.cash;action('questDeliver',String(badin));
-  check(G.cash-cash===120&&!G.stock.queijo&&modal==='talk'&&$('dialogContent').textContent.includes('Badin'),'entregue o queijo: R$ 120 e o agradecimento é do próprio Badin');talkAll();
-  check(missionDone('queijo')&&G.badinShop&&G.up.salame&&!STORE_GOODS.acougue.includes('salame'),'duas missões do Badin: ele passa a vender salame (que saiu do açougue e das melhorias)');
-  for(let k=0;k<3&&!missionActive('festa');k++){tick(3);talkAll();}check(missionActive('festa'),'capítulo 7, ali mesmo: o baile da comunidade');
+  check(G.badinShop&&G.up.salame&&!STORE_GOODS.acougue.includes('salame'),'o campeonato abre a despensa da colônia: o Badin passa a vender salame (que saiu do açougue e das melhorias)');
+  // capítulo 6: o sino da capela (no lugar do queijo pra nona), e a gruta da Serra aparece com ele
+  for(let k=0;k<3&&!missionActive('sino');k++){tick(3);talkAll();}check(missionActive('sino')&&activeChapter()?.id==='sino'&&caveOpen()&&!MISSIONS.some(m=>['queijo','pomar','costelao'].includes(m.id)),'capítulo 6: o Padre Romio pede o sino novo (queijo, pomar e costelão saíram)');
+  G.missions.sino.forged=G.day;sinoTalk();talkAll();check(missionDone('sino'),'o sino forjado na caverna volta pra capela: capítulo 6 concluído');
+  goOutside();switchMap({map:'casa:badin',x:600,y:700});closeDialog(true);skipWorldTalk();
+  for(let k=0;k<3&&!missionActive('festa');k++){tick(3);talkAll();}check(missionActive('festa'),'capítulo 7, na casa do Badin: o baile da comunidade');
   {const h=()=>WORLD_MAPS['casa:badin'].spots().find(s=>s.id==='home:badin'),c0=G.cash;G.cash=FESTA_DONATION-1;check(/Doar/.test(h().label),'o Badin pede a doação pro baile');worldOut.x=h().x;worldOut.y=h().y;interact();talkAll();check(festaState().donated==null&&G.cash===FESTA_DONATION-1,'sem os R$ 100, não dá pra doar');
    G.cash=FESTA_DONATION+50;interact();talkAll();check(festaState().donated===G.day&&G.cash===50&&mapEventFor()==='capela'&&!missionDone('festa'),'doados R$ 100: o baile de capela é hoje à noite');
    check(![...Array(60).keys()].some(d=>d!==G.day&&mapEventFor(d)==='capela'),'antes do baile, o baile de capela não está no calendário');
@@ -67,10 +73,11 @@
    G.serve.t=.01;tick(2);talkAll();for(let k=0;k<3&&!missionDone('festa');k++){tick(3);talkAll();}check(missionDone('festa')&&decorOwned('fogao_lenha'),'baile feito: capítulo concluído');
    check([...Array(80).keys()].some(d=>d>G.day&&mapEventFor(d)==='capela'),'e o baile de capela entra no calendário');G.cash=c0;G.phase='prep';worldOut=null;goInside();}
   {for(let k=0;k<3&&!missionActive('indaial');k++){tick(3);talkAll();}check(missionActive('indaial')&&!regionLocked('sc'),'capítulo 8: a carta de Indaial chega na bodega e abre Santa Catarina');}
+  {const ind=MISSIONS.find(m=>m.id==='indaial'),rep=MISSIONS.find(m=>m.id==='reportagem');check(rep.chapter===ind.chapter+1&&!rep.side,'a Reportagem do além é o capítulo logo depois do convite de Indaial');}
   {goOutside();switchMap({map:'casa:badin',x:600,y:700});closeDialog(true);skipWorldTalk();const it=WORLD_MAPS['casa:badin'].spots().find(s=>/Despensa/.test(s.label));worldOut.x=it.x;worldOut.y=it.y;interact();check(modal==='worldStore'&&$('dialogContent').innerHTML.includes('seed:uva')&&$('dialogContent').innerHTML.includes('data-id="salame"'),'na despensa da colônia: salame e muda de uva');
    action('hortaDo','seed:uva');check(hortaState().seeds.uva===CROPS.uva.pack,'compra muda de parreira');closeDialog(true);}
   {G.questOpen=[];G.questNextDay=0;const f=G.friends[badin];G.friends[badin]=0;check(questMarker('badin')===null,'sem amizade, o pedido da casa ainda não aparece');G.friends[badin]=Math.max(f,QUEST_FRIEND[0]);check(questMarker('badin')==='new','com amizade, o Badin tem um pedido novo');}
-  worldOut.x=home.x;worldOut.y=home.y;interact();check(modal==='quest'&&$('dialogContent').innerHTML.includes('questAccept'),'o pedido da casa aparece para aceitar');
+  worldOut.x=home.x;worldOut.y=home.y;interact();if(modal==='talk'){check(/Pedidos dos especiais/.test($('dialogTitle').textContent),'no primeiro pedido de casa, a dica de como funcionam os pedidos');talkAll();if(modal!=='quest')interact();}check(modal==='quest'&&$('dialogContent').innerHTML.includes('questAccept'),'o pedido da casa aparece para aceitar');
   action('questAccept',String(badin));check(questState('badin').active&&questMarker('badin')==='waiting','pedido aceito: o Badin espera');
   bagAdd('ovo',8);worldOut.x=home.x;worldOut.y=home.y;interact();check($('dialogContent').innerHTML.includes('questDeliver'),'com os ovos no inventário, dá para entregar');
   const sal0=G.stock.salame||0;action('questDeliver',String(badin));check($('dialogContent').textContent.includes('Badin')&&!$('dialogContent').textContent.includes('Valter'),'o agradecimento do pedido é de quem pediu');talkAll();check(questState('badin').step===1&&!questState('badin').active&&(G.stock.salame||0)-sal0===2&&G.questsDone===1,'pedido entregue: salame de recompensa e o próximo pedido fica para outro dia');
@@ -140,8 +147,8 @@
   // mensagens e lembretes flutuantes
   $('floatNotes').replaceChildren();say('Regador vazio: encha no poço.');check($('floatNotes').textContent.includes('Regador vazio')&&!$('toasts').textContent,'as mensagens flutuam no meio da tela, não no canto');
   G.reminders={};G.morning=250;hortaState().tiles[2]={crop:'alface',growth:0,water:null,fert:false,dry:0};reminderTick();check($('floatNotes').textContent.includes('horta está com sede'),'depois das 10h, lembrete flutuante para regar a horta');check(!doorReminder(),'sem o quadro fixo de abrir a bodega');
-  // costelão já feito: a missão do Mano Lima não aparece, conclui sozinha
-  delete G.missions.costelao;G.costelaoTaught=true;check(missionForGiver('manolima')?.id!=='costelao','com o costelão já feito, o Mano Lima não oferece a missão dele');G.teachQueue=[];G.valterQueue=[];tick(3);talkAll();check(missionDone('costelao'),'e ela conclui sozinha, com a recompensa');
+  // horta já no nível 5: a missão do Valter não aparece, conclui sozinha
+  {const hl=hortaLevel;hortaLevel=()=>5;delete G.missions.horta5;check(missionForGiver('valter')?.id!=='horta5','com a horta já no nível 5, o Valter não oferece a missão dele');G.teachQueue=[];G.valterQueue=[];tick(3);talkAll();check(missionDone('horta5'),'e ela conclui sozinha, com a recompensa');hortaLevel=hl;}
   // eventos de mapa no calendário
   G.tutorial.day=10;G.calOffset=9;check(mapEventFor(15)==='javali'&&calendar(15).name==='Quarta'&&mapEventFor(18)==='fandango'&&calendar(18).name==='Sábado','primeira quarta: invasão de javalis; segundo sábado: fandango no CTG');
   while(scene)sceneSkip();talkAll();G.day=15;G.phase='prep';G.mapEv=null;G.teachQueue=[];G.valterQueue=[];goInside();tick(3);check(scene?.id==='evento-javali','de manhã, uma cena: o Valter entra na bodega e explica a caçada');while(scene)sceneSkip();check(modal==='talk'&&$('dialogContent').textContent.includes('javali'),'depois da cena, o cartão do evento');talkAll();
@@ -181,7 +188,7 @@
    const dayOf=id=>{for(let d=G.day;d<G.day+90;d++)if(mapEventFor(d)===id)return d;};
    check(['penalti','oktoberfest','rodeio','uva'].every(dayOf),'pênaltis, Oktoberfest, rodeio e Festa da Uva entram no calendário');
    const night=id=>{G.day=dayOf(id);G.phase='closed';G.mapEv=null;mapEvState(id).intro=true;closeDialog(true);};
-   G.day=dayOf('rodeio');G.phase='prep';G.mapEv=null;worldOut=null;closeDialog(true);mapEventsTick();check(scene?.id==='evento-rodeio'&&scene.steps.some(s=>s.say==='guri'),'o rodeio começa com a cena do Guri na bodega');while(scene)sceneSkip();talkAll();
+   {let k=0;while(scene&&k++<99)sceneSkip();}talkAll();G.day=dayOf('rodeio');G.phase='prep';G.mapEv=null;worldOut=null;closeDialog(true);mapEventsTick();check(scene?.id==='evento-rodeio'&&scene.steps.some(s=>s.say==='guri'),'o rodeio começa com a cena do Guri na bodega');while(scene)sceneSkip();talkAll();
    night('penalti');goOutside();switchMap({map:'serra',x:2760,y:1464});const camp=WORLD_MAPS.serra.spots().find(s=>s.id==='campinho');check(/Campeonato de pênaltis/.test(camp.label),'de noite, o campinho da Serra vira campeonato');camp.act();talkAll();
    for(let r=0;r<3;r++){const m=G.penalties;check(m?.cup?.round===r,'fase '+(r+1)+' do campeonato de pênaltis');m.score=[5,2];m.used=[5,5];m.winner=0;m.phase='over';settlePenalties();leavePenalties();talkAll();}
    check(mapEvState('penalti').won&&G.trophies.penalti,'ganhando as três fases, troféu de pênaltis');
@@ -264,9 +271,10 @@
     action('contactFire',String(ji));check(!G.staff.garcom&&!!card(ji)?.querySelector('[data-act="contactHire"]'),'e dispensa pelo cartão também');togglePhone(false);}
    G.staff={};}
   // história do vô: gaita, baú, carta e o último trago
-  check(storyChapters().map(m=>m.id).slice(-5).join()==='gaita,bau,carta,oktober,lendaria'&&MISSIONS.find(m=>m.id==='lendaria').chapter===13&&storyChapters().map(m=>m.id).slice(0,4).join()==='trago,abertura,baia,conhecer','a história do vô fecha o jogo: gaita, baú, carta e a bodega lendária');
-  {const before=G.missions,vo=G.vo,upTo=n=>Object.fromEntries(storyChapters().filter(m=>m.chapter<n).map(m=>[m.id,{status:'done',day:1}]));G.missions={...before,...upTo(9),gaita:{status:'active',day:G.day}};G.vo={};check(/Valter/.test(gaitaGoal())&&storyNeeds('valter'),'capítulo 9: a gaita está com o Valter');G.vo.gaita='found';check(/Pomerode/.test(gaitaGoal())&&storyNeeds('loligebien'),'depois vai pro Seu Otto, o avô do Loli, em Pomerode');
-   G.missions={...before,...upTo(10),bau:{status:'active',day:G.day}};worldOut=null;goOutside();switchMap({map:'vila',x:2330,y:1860});const pz=WORLD_MAPS.vila.spots().find(s=>s.id==='pouso');check(pz.label==='Abrir o baú do vô','capítulo 10: o baú fica no Pouso de tropeiros');worldOut.x=pz.x;worldOut.y=pz.y;interact();check(scene?.id==='bau'&&scene.steps.some(s=>s.overlay==='photo'),'no baú, a foto da bodega em 1968 e a carta');while(scene)sceneSkip();check(G.vo.bau&&G.relics.foto1968,'a foto vai pra estante');
+  check(storyChapters().map(m=>m.id).slice(-5).join()==='gaita,bau,carta,oktober,lendaria'&&MISSIONS.find(m=>m.id==='lendaria').chapter===14&&storyChapters().map(m=>m.id).join()==='trago,fantasma,abertura,conhecer,campeonato,sino,festa,indaial,reportagem,gaita,bau,carta,oktober,lendaria','a história do vô fecha o jogo: gaita, baú, carta e a bodega lendária');
+  {const before=G.missions,vo=G.vo,upTo=n=>Object.fromEntries(storyChapters().filter(m=>m.chapter<n).map(m=>[m.id,{status:'done',day:1}]));G.missions={...before,...upTo(10),baia:{status:'active',day:1},gaita:null};delete G.missions.gaita;check(currentChapter()?.id==='gaita'&&!MISSIONS.find(m=>m.id==='gaita').when()&&/Baia/.test(MISSIONS.find(m=>m.id==='gaita').waitText()),'a gaita do vô espera a Cadela Baia');
+   G.missions={...before,...upTo(10),gaita:{status:'active',day:G.day}};G.vo={};check(/Valter/.test(gaitaGoal())&&storyNeeds('valter'),'capítulo 10: a gaita está com o Valter');G.vo.gaita='found';check(/Pomerode/.test(gaitaGoal())&&storyNeeds('loligebien'),'depois vai pro Seu Otto, o avô do Loli, em Pomerode');
+   G.missions={...before,...upTo(11),bau:{status:'active',day:G.day}};worldOut=null;goOutside();switchMap({map:'vila',x:2330,y:1860});const pz=WORLD_MAPS.vila.spots().find(s=>s.id==='pouso');check(pz.label==='Abrir o baú do vô','capítulo 11: o baú fica no Pouso de tropeiros');worldOut.x=pz.x;worldOut.y=pz.y;interact();check(scene?.id==='bau'&&scene.steps.some(s=>s.overlay==='photo'),'no baú, a foto da bodega em 1968 e a carta');while(scene)sceneSkip();check(G.vo.bau&&G.relics.foto1968,'a foto vai pra estante');
    G.missions=before;G.voDream=true;G.phase='closed';G.report={};goInside();closeDialog(true);talkState=null;G.mapEv={day:G.day,id:mapEventFor(),intro:true};storyTick();check(scene?.id==='ultimoTrago'&&scene.steps.some(s=>s.say==='vo'),'no fim, o sonho com o vô: o último trago');while(scene)sceneSkip();talkAll();G.missions=before;G.vo=vo;}
   // folclore à noite: lobisomem nas sextas, Sanguanel na Serra, Boitatá no banhado
   {check(Object.keys(FOLK).join()==='lobisomem,sanguanel,boitata,mula,teiniagua,anhanga','seis encantados do folclore (com Teiniaguá e Anhangá)');G.folk={};G.folkNight={day:G.day,id:'boitata'};G.phase='closed';G.report={};G.mapEv=null;while(mapEventFor(G.day))G.day++;G.folkNight.day=G.day;worldOut=null;goOutside();switchMap({map:'vila',x:1600,y:735});
@@ -379,9 +387,9 @@
    questMarker=qm;G.day=day;worldOut=null;}
   // A Baia sumiu: o Mano Lima chama na bodega, a gruta só aparece aceitando, o rastro do sanguanel, a Baia e o cusco no
   // andar 2, a volta (casa aberta até depois das 23h30) e o balcão de melhorias do facão
-  {const ns=window.NO_SCENES;window.NO_SCENES=false;const m=MISSIONS.find(m=>m.id==='baia'),skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};delete G.missions.baia;G.baiaArc=null;G.cusco=null;G.cave=null;G.phase='prep';worldOut=null;goInside();closeDialog(true);talkState=null;skip();
-   G.baiaSide=false;syncChapters();check(G.baiaSide&&!m.chapter&&!storyChapters().includes(m),'save antigo, já depois do capítulo 3 sem a Baia: ela segue como missão à parte');
-   {const d=G.day;while(mapEventFor(G.day))G.day++;check(m.after==='abertura'&&m.direct&&m.when(),'depois do capítulo 2, numa manhã sem evento, na bodega: a missão do Mano Lima');G.day=d;}
+  {const ns=window.NO_SCENES,sino0=G.missions.sino;window.NO_SCENES=false;const m=MISSIONS.find(m=>m.id==='baia'),skip=()=>{let k=0;while(scene&&k++<99)sceneSkip();};delete G.missions.baia;delete G.missions.sino;G.baiaArc=null;G.cusco=null;G.cave=null;G.phase='prep';worldOut=null;goInside();closeDialog(true);talkState=null;skip();
+   check(m.side&&!m.chapter&&!storyChapters().includes(m),'a Baia é missão à parte do Mano Lima');
+   {const d=G.day;while(mapEventFor(G.day))G.day++;check(m.after==='abertura'&&m.direct&&m.when(),'depois das três noites, numa manhã sem evento, na bodega: a missão do Mano Lima');G.day=d;}
    baiaCall();check(scene?.id==='baia-chamado','o Mano Lima entra na bodega: a Baia fugiu');skip();
    check(baiaCalling()&&trackerLines().some(t=>/Mano Lima quer falar/.test(t.goal))&&!caveOpen(),'o painel chama pra casa dele e a gruta ainda não existe');
    goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+300});closeDialog(true);check(!WORLD_MAPS.serra.spots().some(s=>s.id==='caverna'),'sem aceitar, nada de gruta na Serra');
@@ -397,7 +405,7 @@
    check(missionDone('baia')&&baiaStage()==='done'&&baiaAtHome(),'a Baia em casa: missão concluída');
    G.phase='prep';check(!WORLD_MAPS['casa:manolima'].items.some(i=>i.kind==='balcaoMano')&&!questOffer('manolima'),'a Baia volta para casa, mas a ferraria fica na caverna');
    const cash=G.cash;G.cash=500;enterCave(1);talkAll();const bc=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:forge');worldOut.x=bc.x;worldOut.y=bc.y;interact();check(modal==='dunstanShop','São Dunstano oferece as melhorias na ferraria');action('facaoBuy','afiado');check(caveDmg()===18&&G.cash===380,'facão afiado: mais dano');
-   G.cash=cash;closeDialog(true);G.baiaSide=false;window.NO_SCENES=ns;worldOut=null;}
+   G.cash=cash;closeDialog(true);if(sino0)G.missions.sino=sino0;window.NO_SCENES=ns;worldOut=null;}
   // laçando a partir do curral, o Sadi anda com passada (não fica estático)
   {G.phase='prep';G.herd=Math.max(G.herd||0,1);worldOut=null;goOutside();switchMap({map:'curral',x:800,y:520});closeDialog(true);startLasso();closeDialog(true);let st=0;keys.add('d');for(let i=0;i<12;i++){frameClock+=.05;lassoTick(.05);st=playerWalkPose(G.player.x,G.player.y).stride;}keys.clear();
    check(G.lasso&&st>.8,'laçando a partir do curral, o Sadi anda com passada (não fica estático)');finishLasso();closeDialog(true);talkState=null;worldOut=null;}

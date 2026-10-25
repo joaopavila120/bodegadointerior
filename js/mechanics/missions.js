@@ -107,23 +107,31 @@ function unlockRegion(map) {
   if (!G.regions || G.regions[map]) return; G.regions[map] = true;
   showBanner('Nova região: ' + (map === 'serra' ? 'Serra Gaúcha' : 'Santa Catarina'), map === 'serra' ? 'Siga a estrada da Fronteira para a direita.' : 'Na Serra, pegue a estrada que sobe para o norte, no meio da vila.', 'level', { world: true }); AudioEngine.ready(); save();
 }
-function regionLockText(map) { return map === 'serra' ? 'A estrada da Serra abre quando o Valter confiar na bodega: abra a bodega <b>três noites seguidas</b> (missão do Valter).' : 'Santa Catarina abre com o <b>convite de Indaial</b>: uma carta do Lauro que chega na bodega, depois das missões do Badin.'; }
+function regionLockText(map) { return map === 'serra' ? 'A estrada da Serra abre com o causo do Olmiro, o último tropeiro: depois do trago de pura, saia na rua de noite.' : 'Santa Catarina abre com o <b>convite de Indaial</b>: uma carta do Lauro que chega na bodega, depois das missões do Badin.'; }
 // Campeonatos de bocha e truco já encerrados (ganhando ou perdendo).
 function sportCups(type) { return G.sportCups?.[type] || 0; }
-// Segunda missão do Badin: a despensa da colônia abre (salame e muda de uva).
-function openBadinShop() {
+// Depois do campeonato de bocha, a despensa da colônia abre na casa do Badin (salame e muda de uva).
+function openBadinShop(quiet = false) {
   G.badinShop = true;
   if (!G.up.salame) { G.up.salame = true; const n = GOODS.salame.starter || 4; G.stock.salame = (G.stock.salame || 0) + n; if (!G.toastLesson) G.toastLesson = { day: G.day, done: false, actor: null }; }
-  showBanner('Despensa da colônia aberta!', 'Salame curado e muda de uva na casa do Badin, na Serra.', 'level', { world: true }); save();
+  if (!quiet) showBanner('Despensa da colônia aberta!', 'Salame curado e muda de uva na casa do Badin, na Serra.', 'level', { world: true }); save();
 }
 // Saves com a missão antiga do queijo (que abria a Serra) passam para a cadeia nova.
 function migrateMissions() {
-  const M = G.missions; if (!M || G.missionsV === 2) return;
+  const M = G.missions; if (!M || G.missionsV >= 3) return;
+  if (G.missionsV !== 2) migrateMissionsV2(M);
+  // Ordem nova: saíram o queijo pra nona, o pomar do vô e o domingo de costelão; a despensa da colônia abre no campeonato.
+  for (const id of ['queijo', 'pomar', 'costelao']) delete M[id];
+  if (M.campeonato?.status === 'done' && !G.badinShop) openBadinShop(true);
+  G.missionsV = 3;
+}
+function migrateMissionsV2(M) {
   if (M.serra) { M.queijo ??= { status: M.serra.status === 'done' ? 'done' : 'active', day: M.serra.day }; if (M.queijo.status === 'active') M.campeonato ??= { status: 'done', day: G.day }; delete M.serra; }
   if (M.abertura?.status === 'done' && G.regions?.serra === false) G.regions.serra = true;
   if (M.queijo?.status === 'done') G.badinShop = true;
-  G.missionsV = 2;
 }
+// Três noites contadas desde o começo do capítulo (as noites abertas antes dele não valem).
+function aberturaNights() { const st = missionState('abertura'); return st ? Math.min(G.openStreak || 0, Math.max(0, (G.lastOpenDay || 0) - (st.from ?? st.day) + 1)) : 0; }
 
 // ---------- Missões da história ----------
 const MISSIONS = [
@@ -135,16 +143,19 @@ const MISSIONS = [
     goal: () => 'Compre a Mesa de tragos na Ferragem da Fronteira, à direita da cancha (sai de graça)',
     done: () => upgradeOwned('trago'), reward: { cash: 30, xp: 20, rep: 1 },
     outro: ['Agora sim, bodega de respeito! A mesa fica embaixo da torneira de cerveja: segura E pra servir a dose.', 'E a primeira dose de pura quem toma sou eu, hehe.'] },
-  { id: 'abertura', chapter: 2, title: 'Três noites seguidas', giver: 'valter', where: 'Na bodega: abra no caixa todos os dias',
-    when: () => G.tutorial?.complete && !tutorialActive(),
-    intro: ['Bodega que se preze abre todo santo dia, vivente. Freguês gosta de porta aberta.', 'Abre a bodega três noites seguidas, sem falhar nenhuma. Aí eu te mostro a estrada da Serra: o Badin, lá de Erechim, quer te conhecer.'],
-    goal: () => 'Abra a bodega 3 noites seguidas (' + Math.min(3, G.openStreak || 0) + '/3)',
-    done: () => (G.openStreak || 0) >= 3, reward: { cash: 100, xp: 40, items: { vidro: 4 }, unlock: 'Estrada da Serra Gaúcha liberada' },
+  { id: 'abertura', chapter: 3, title: 'Três noites seguidas', giver: 'valter', where: 'Na bodega: abra no caixa todos os dias',
+    // Depois da mata (capítulo 2), o Valter fala quando o Sadi volta pra bodega.
+    when: () => G.tutorial?.complete && !tutorialActive() && !worldOut, waitText: () => 'de volta na bodega',
+    intro: ['Bodega que se preze abre todo santo dia, vivente. Freguês gosta de porta aberta.', 'Abre a bodega três noites seguidas, sem falhar nenhuma. Aí o Badin, lá de Erechim, vai querer te conhecer.'],
+    // Começou de noite, com a bodega já fechada: a primeira noite que conta é a de amanhã.
+    start: () => { G.missions.abertura.from = G.phase === 'closed' ? G.day + 1 : G.day; },
+    goal: () => 'Abra a bodega 3 noites seguidas (' + Math.min(3, aberturaNights()) + '/3)',
+    done: () => aberturaNights() >= 3, reward: { cash: 100, xp: 40, items: { vidro: 4 } },
     onDone: () => unlockRegion('serra'),
-    outro: ['Três noites seguidas! A freguesia já fala da bodega até na Serra.', 'A estrada da Serra Gaúcha tá liberada: segue a estrada da Fronteira pra direita.'] },
+    outro: ['Três noites seguidas! A freguesia já fala da bodega até na Serra.', 'Até o Badin, lá de Erechim, ouviu falar de ti.'] },
   { id: 'conhecer', chapter: 4, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
-    // Depois da noite da Cadela Baia (capítulo 3), o Valter manda subir a Serra na manhã seguinte.
-    when: () => !!G.baiaSide || missionDone('baia') && G.day > (missionState('baia')?.day || 0), waitText: () => 'amanhã de manhã, na bodega',
+    // Na manhã seguinte às três noites, o Valter manda subir a Serra.
+    when: () => G.day > (missionState('abertura')?.day || 0), waitText: () => 'amanhã de manhã, na bodega',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: ['O Badin, lá de Erechim, mandou dizer que quer te conhecer. Gente boa, mas a nona dele é brava que só.', 'Sobe a estrada da Serra e bate na casa de pedra dele. Vai que ele tem serviço pra ti!'],
     goal: () => 'Vá à Serra Gaúcha e fale com o Badin, na casa de pedra',
@@ -157,26 +168,8 @@ const MISSIONS = [
     start: () => { G.missions.campeonato.base = sportCups('bocha'); },
     goal: () => 'Organize um campeonato de bocha na cancha da bodega (Cancha → Jogar campeonato). Ganhar ou perder, tanto faz',
     done: () => sportCups('bocha') > (G.missions.campeonato?.base || 0),
-    reward: { cash: 120, xp: 60, rep: 3, friend: { badin: 10 } },
-    outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'Passa lá em casa um dia desses, que a nona quer te pedir uma coisa.']] },
-  // Segunda missão do Badin: o queijo pra nona. Cumprida, ele passa a vender salame e muda de uva.
-  { id: 'queijo', chapter: 6, title: 'Queijo pra nona', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha, casa de pedra do Badin',
-    guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
-    intro: [['badin', 'A nona provou um xis da tua bodega e quer saber de onde vem esse queijo.'], ['badin', 'Me traz 10 fatias do queijo da tua vaca? Se ela aprovar, a despensa da colônia abre pra ti: salame curado e muda de uva.']],
-    deliver: { to: 'badin', items: { queijo: 10 } },
-    goal: () => 'Leve 10 fatias de queijo ao Badin, na casa de pedra da Serra Gaúcha',
-    thanks: [['badin', 'A nona aprovou! Disse que tu é “um bom rapaz”, o maior elogio que ela já deu.'], ['badin', 'A despensa da colônia tá aberta pra ti: salame da nona e muda de uva pra fazer vinho de garrafão. É só passar aqui em casa.']],
-    reward: { cash: 120, xp: 50, friend: { badin: 10 }, unlock: 'Salame e muda de uva na casa do Badin' },
-    onDone: () => openBadinShop() },
-  { id: 'pomar', title: 'O pomar do vô', giver: 'valter', after: 'abertura', side: true, skipIfDone: true,
-    intro: ['Teu vô tinha bergamota e pinhão no fundo da horta. Planta uma bergamoteira e uma araucária nas covas.', 'Muda tem no Armazém Querência. Quando derem fruto, a venda no balcão se libera sozinha.'],
-    goal: () => 'Plante uma bergamoteira e uma araucária na horta (' + ['bergamota', 'araucaria'].filter(k => hortaState().trees.some(c => c.crop === k)).length + '/2)',
-    done: () => ['bergamota', 'araucaria'].every(k => hortaState().trees.some(c => c.crop === k)),
-    reward: { cash: 60, xp: 30, seeds: { adubo: 3 } } },
-  { id: 'costelao', title: 'Domingo de costelão', giver: 'manolima', after: 'abertura', side: true, skipIfDone: true,
-    intro: [['manolima', 'Buenas, vivente! Domingo é dia de costelão no campo, e índio véio não perde um.'], ['manolima', 'Laça um boi na cerca, que a carne vira manta pro fogo de chão. No domingo, abre a bodega no caixa: ela vira campo, com freguesia comprando costela no peso.']],
-    goal: () => 'Faça o primeiro costelão de domingo', done: () => !!G.costelaoTaught,
-    reward: { cash: 100, xp: 60, items: { racao: 2 } } },
+    reward: { cash: 120, xp: 60, rep: 3, friend: { badin: 10 }, unlock: 'Salame e muda de uva na casa do Badin' }, onDone: () => openBadinShop(),
+    outro: [['badin', 'Que campeonato! Até a nona torceu, e ela nem gosta de bocha.'], ['badin', 'A despensa da colônia tá aberta pra ti: salame da nona e muda de uva pra fazer vinho de garrafão. É só passar lá em casa.']] },
   { id: 'caderno', title: 'O caderno do vô', giver: 'jayme', after: 'abertura', side: true,
     intro: [['jayme', 'Vivente, teu vô me mostrou uma vez um caderno: receita, causo, verso e o nome de cada boi.'], ['jayme', 'Dizem que o vento espalhou as páginas pela Fronteira, pela Serra e por Santa Catarina. Onde o chão brilhar de perto, olha com calma.']],
     goal: () => 'Encontre as 3 páginas do caderno do vô (' + pagesFound() + '/3)', done: () => pagesFound() >= 3,
@@ -196,7 +189,7 @@ const MISSIONS = [
     goal: () => festaGoal(), done: () => !!G.missions.festa?.baile,
     reward: { cash: 220, xp: 100, rep: 6, decor: 'fogao_lenha', unlock: 'Baile de capela no calendário' }, outroBy: 'badin',
     outro: [['badin', 'Que baile! Até o padre dançou vanerão.'], ['badin', 'A comunidade decidiu: de tempos em tempos agora tem baile de capela. E a nona mandou um fogão a lenha que tava sobrando no porão!']] },
-  { id: 'horta5', title: 'Mão boa pra terra', giver: 'valter', after: 'pomar', side: true, skipIfDone: true,
+  { id: 'horta5', title: 'Mão boa pra terra', giver: 'valter', after: 'abertura', side: true, skipIfDone: true,
     intro: ['Tua horta tá linda, guri. Teu vô chegou a ter a horta mais caprichada da Fronteira.', 'Chega no nível 5 e o espantalho reforçado acaba com as pragas de vez.'],
     goal: () => 'Leve a horta ao nível 5 (agora: nível ' + hortaLevel() + ')', done: () => hortaLevel() >= 5,
     reward: { cash: 150, xp: 80 } },
@@ -204,7 +197,7 @@ const MISSIONS = [
     intro: [['jayme', 'Achou uma relíquia? A Fronteira, a Serra e Santa Catarina estão cheias de histórias perdidas.'], ['jayme', 'São doze, contando as páginas do caderno do teu vô. Junta todas e a bodega vira museu!']],
     goal: () => 'Encontre as 12 relíquias escondidas (' + secretsFound() + '/12)', done: () => secretsFound() >= SECRETS.length,
     reward: { cash: 400, xp: 150, rep: 8 } },
-  { id: 'lendaria', chapter: 13, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
+  { id: 'lendaria', chapter: 14, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
     intro: ['Tu já é conhecido da Fronteira até Santa Catarina. Falta pouco pra virar lenda.', 'Chega no último nível da bodega e a gente faz a maior festa que esse galpão já viu.'],
     goal: () => 'Chegue ao nível ' + LEVELS.length + ' da bodega (agora: nível ' + bodegaLevel() + ')', done: () => bodegaLevel() >= LEVELS.length,
     reward: { cash: 1000, rep: 10 } }

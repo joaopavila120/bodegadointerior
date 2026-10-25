@@ -1,4 +1,5 @@
-// Capítulo 3 da história, "A Cadela Baia sumiu", logo depois das três noites seguidas do capítulo 2:
+// Missão à parte do Mano Lima, "A Cadela Baia sumiu", logo depois das três noites seguidas (capítulo 3). A gaita do vô
+// (capítulo 10) só começa depois dela:
 //   1. Fechada a terceira noite, o Mano Lima entra na bodega: a Baia, a cadela dele, fugiu. Pede pra passar na casa dele,
 //      que fica de luz acesa o capítulo inteiro (dá pra fazer tudo de noite, mesmo depois das 23h30).
 //   2. Lá, ele explica e o capítulo começa: a gruta da Serra aparece.
@@ -6,7 +7,6 @@
 //   4. No segundo andar da caverna estão a Baia e um cusco véio. Dá pra adotar o cusco (ele ganha a casinha no campo).
 //   5. A Baia vai junto com o Sadi até a casa do Mano Lima.
 //   6. O Sadi conta da caverna; Mano Lima indica a ferraria de São Dunstano.
-// Saves de antes, que já tinham passado do capítulo 3 sem concluir a Baia, seguem com ela como missão à parte (G.baiaSide).
 'use strict';
 
 const BAIA_TRAIL_RANGE = 380;
@@ -15,7 +15,8 @@ function baiaStage() { return G.baiaArc?.stage || null; }   // search → trail 
 function baiaReturning() { return baiaStage() === 'return'; }
 function baiaCalling() { return missionState('baia')?.status === 'calling'; }
 function baiaMission() { return MISSIONS.find(m => m.id === 'baia'); }
-function baiaChapter() { return !G.baiaSide; }
+// A Baia é missão à parte do Mano Lima (antes era o capítulo 3); a gaita do vô espera ela.
+function baiaChapter() { return false; }
 // Do chamado até devolver a Baia, a casa do Mano Lima fica aberta e ele espera em casa.
 function baiaOngoing() { return baiaCalling() || missionActive('baia'); }
 function baiaGoal() {
@@ -25,9 +26,9 @@ function baiaGoal() {
   return 'Procure a Cadela Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
 }
 const BAIA_CALL_WHERE = 'casa dele, na Fronteira (de luz acesa: pode ir de noite)';
-MISSIONS.push({ id: 'baia', get chapter() { return G?.baiaSide ? 0 : 3; }, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
+MISSIONS.push({ id: 'baia', side: true, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
   where: 'Casa do Mano Lima, na Fronteira, e a gruta da Serra · dá pra fazer de noite',
-  // Na bodega, logo depois do capítulo 2 (na mesma noite); de manhã, só num dia sem evento no mapa, pra não cruzar com a
+  // Na bodega, logo depois das três noites (capítulo 3, na mesma noite); de manhã, só num dia sem evento no mapa, pra não cruzar com a
   // visita da manhã do evento.
   when: () => missionDone('abertura') && !worldOut && !tutorialActive() && (G.phase === 'closed' || G.phase === 'prep' && !mapEventFor()),
   waitText: () => 'na bodega: o Mano Lima vai te procurar lá',
@@ -142,7 +143,7 @@ function baiaReturn() { completeMission(baiaMission()); }
     return talkHome(i, x, y);
   };
   const marker = questMarker; questMarker = function (id) { if (questKey(id) === 'manolima') { if (baiaCalling()) return 'new'; if (missionActive('baia') && baiaReturning()) return 'deliver'; } return marker(id); };
-  // Capítulo: o chamado aparece como a linha da história; saves antigos (missão à parte) usam a linha das secundárias.
+  // O chamado do Mano Lima aparece na linha das secundárias.
   const callLine = chapterCallLine; chapterCallLine = function () { return baiaCalling() && baiaChapter() ? { icon: '📣', title: 'Capítulo 3 · A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · ' + BAIA_CALL_WHERE, kind: 'story' } : callLine(); };
   const tl = trackerLines; trackerLines = function () {
     if (baiaChapter()) return tl();
@@ -158,10 +159,5 @@ function baiaReturn() { completeMission(baiaMission()); }
   cave.spots = function () { const list = cvsp.call(this); if (baiaInCave()) { const p = baiaCaveSpot(caveFloorRun()); if (p) list.push({ id: 'cave:baia', x: p.x + 20, y: p.y + 24, radius: 100, label: cuscoAdopted() ? 'A Cadela Baia!' : 'A Cadela Baia e um cusco véio', act: baiaFound }); } return list; };
   cave.draw = function (view, seen, layers) { cvdraw.call(this, view, seen, layers); drawCaveDogs(layers); };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); baiaTrailTick(); baiaFollowTick(dt); };
-  // Saves de antes da Baia virar o capítulo 3: quem já tinha começado um capítulo depois dela segue com a Baia à parte.
-  const sync = syncChapters; syncChapters = function () {
-    if (G.missions && !G.baiaSide && !missionDone('baia') && storyChapters().some(m => m.chapter > 3 && missionState(m.id) && missionState(m.id).status !== 'offered')) G.baiaSide = true;
-    sync();
-  };
   document.addEventListener('DOMContentLoaded', () => { const land = worldLandscape; worldLandscape = function (M, seen, layers, view) { land(M, seen, layers, view); baiaFollowLayers(seen, layers); }; });
 }

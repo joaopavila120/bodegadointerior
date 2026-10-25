@@ -265,7 +265,7 @@ WORLD_MAPS.cancha = {
   spots() { const b = CANCHA_IN.bocha, w = waitingSpot(); return [...(w ? [w] : []), { id: 'bocha', x: b.x + b.w / 2, y: b.y + b.h + 20, label: 'Bocha · jogar, campeonato ou aprender', act: canchaOptions }]; },
   draw(view, seen, layers) {
     rect(view.x, view.y, view.w, view.h, '#20180f');
-    if (bocceArt.complete && bocceArt.naturalWidth) { ctx.imageSmoothingEnabled = false; ctx.drawImage(bocceArt, 0, 0, this.W, this.H); ctx.imageSmoothingEnabled = true; }
+    const art = bocceBackdrop(); if (art.complete && art.naturalWidth) { ctx.imageSmoothingEnabled = false; ctx.drawImage(art, 0, 0, this.W, this.H); ctx.imageSmoothingEnabled = true; }
     const b = CANCHA_IN.bocha, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
     drawWaitingPlayer(layers);
     layers.push({ y: b.y + b.h, draw: () => { ellipse(cx, cy + 8, 60, 14, 'rgba(40,20,10,.35)'); ellipse(cx, cy, 6, 6, '#f4f0e0'); for (const [dx, dy, col] of [[-34, 4, '#3a6ad0'], [-14, -6, '#d03a3a'], [22, 6, '#3a6ad0'], [36, -4, '#d03a3a']]) { ellipse(cx + dx, cy + dy, 13, 12, col); ellipse(cx + dx - 4, cy + dy - 4, 4, 3, 'rgba(255,255,255,.5)'); } } });

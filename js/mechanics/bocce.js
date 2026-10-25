@@ -15,6 +15,9 @@ const BOCCE_LEVELS={
 const BOCCE_SKILL={marcio:'pessimo',marcelo:'pessimo',peixinhonabrasa:'fraco',indavirus:'medio',lauro:'bom',manolima:'bom',badin:'bom',guri:'bom',dianho:'fraco',mitodosul:'medio',loligebien:'fraco',jayme:'bom',baitaca:'bom',gaudencio:'medio',valter:'medio'};
 function bocceSkill(person){return BOCCE_SKILL[PEOPLE[person]?.id]||'medio';}
 const bocceArt=new Image();bocceArt.src='assets/images/bocha.webp';
+// De noite (bodega fechada ou fim do expediente), a cancha com os lampiões acesos e a lua; enquanto não carrega, a de dia.
+const bocceArtNight=new Image();bocceArtNight.src='assets/images/bocha_noite.webp';
+function bocceBackdrop(){return worldNight()&&bocceArtNight.complete&&bocceArtNight.naturalWidth?bocceArtNight:bocceArt;}
 const bocceCanvas=$('bocceCanvas'),bocceContext=bocceCanvas.getContext('2d');
 let bocceAccumulator=0;
 
@@ -179,7 +182,7 @@ function drawBocce(){
  if(bocceCanvas.width!==Math.round(cw*dpr)||bocceCanvas.height!==Math.round(ch*dpr)){bocceCanvas.width=Math.round(cw*dpr);bocceCanvas.height=Math.round(ch*dpr);}
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#20180f';c.fillRect(0,0,cw,ch);
  const scale=Math.min(cw/1672,ch/941),ox=(cw-1672*scale)/2,oy=(ch-941*scale)/2;c.translate(ox,oy);c.scale(scale,scale);c.imageSmoothingEnabled=false;
- if(bocceArt.complete&&bocceArt.naturalWidth)c.drawImage(bocceArt,0,0,1672,941);
+ {const art=bocceBackdrop();if(art.complete&&art.naturalWidth)c.drawImage(art,0,0,1672,941);}
  const px=b.turn===0?b.playerX:b.aiX,p=projectBocce(px,BOCCE.launchY);
  // O lançador fica atrás da linha, sem ocultar as bochas no centro da cancha.
  drawCharacterPortrait(c,b.turn===0?avatarSprite():PEOPLE[b.opponent??sportPeople()[0]].sprite,clamp(p.x-80,95,1540),p.y+25,230);

@@ -90,6 +90,11 @@
       check(frontierBakes===warmed,'A paisagem da Fronteira foi recomposta a cada quadro');
       check(ctx===mainContext,'Cache da Fronteira não restaurou o contexto');
     } finally {paintFrontierTerrain=bakeFrontier;}
+    // O rio Uruguai: as plantas da margem ficam em terra (ou na outra margem), nunca dentro d'água, e o trapiche fica livre.
+    const bank=frontierBankPlants();
+    check(bank.some(p=>p.kind==='reed')&&bank.some(p=>p.kind==='tree')&&bank.filter(p=>p.kind==='reed').every(p=>p.y<820||p.y>1030||p.x>600),'Margem do rio sem taboa, sem mato na outra margem ou tapando o trapiche');
+    check(bank.filter(p=>p.kind!=='reed').every(p=>!WORLD_MAPS.vila.canWalk(p.x,p.y)),'Mato da outra margem caiu no lado de cá');
+    {const T=frameClock;worldOut={map:'vila',x:400,y:600,dx:0,dy:1,walk:false};let strokes=0;const P=CanvasRenderingContext2D.prototype,st=P.stroke;P.stroke=function(...a){strokes++;return st.apply(this,a);};try{drawVilaRiver();}finally{P.stroke=st;}check(strokes>20,'Correnteza e espuma do rio não foram desenhadas');}
     results.push('margem irregular sem caminhada na água, trapiche acessível e paisagem em cache limitado');
     const bakeRegional=paintRegionalTerrain,random=Math.random;
     let regionalBakes=0;

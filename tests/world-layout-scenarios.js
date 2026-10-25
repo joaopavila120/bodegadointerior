@@ -18,6 +18,10 @@
    check(dressing===worldDressing(M)&&worldDoorPaths(M)===worldDoorPaths(M),'Landscaping must reuse its cache');
    const roads=worldDoorPaths(M);
    for(const r of buildings){const p=front(r,38);check(roads.some(([x,y,w,h])=>p.x>=x&&p.x<=x+w&&p.y>=y&&p.y<=y+h),'Missing doorstep path: '+id+'/'+(r.id||r.x));}
+   // Caminhos desenhados como fitas de terra: cada porta tem a sua trilha, que encosta na porta e chega na estrada.
+   const net=worldPathNet(M),trails=net.filter(p=>p.kind==='trail'),near=(q,pts)=>pts.some(([x,y])=>Math.hypot(x-q.x,y-q.y)<34);
+   check(net.filter(p=>p.kind==='road').length===worldMainRoads(id).length&&trails.length>=buildings.length,'Path ribbons: '+id);
+   for(const r of buildings){const d={x:front(r,38).x,y:r.y+r.h};check(trails.some(t=>near(d,t.pts)),'Doorstep ribbon missing: '+id+'/'+(r.id||r.x));}
   }
   for(const id of ['agro','gado','atacado','acougue','ferragem']){
    const door=WORLD_MAPS.vila.spots().find(s=>s.id===id);

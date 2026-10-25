@@ -529,3 +529,84 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .store-list .forja-card{grid-template-columns:76px minmax(0,1fr)}
 .store-list .forja-card>.icon{width:76px;height:76px;line-height:1}
 #caveBelt .campeira-icon{width:36px;height:36px}
+/* Retrato do fantasma do Garibaldi (arte do álbum, com o brilho azul) */
+.garibaldi-portrait{display:inline-block;flex:none;background-repeat:no-repeat;border-radius:6px;box-shadow:inset 0 0 22px rgba(150,200,255,.6);filter:saturate(.75) brightness(1.05)}
+
+/* Fishing keeps a stable viewport and message area throughout the cast. */
+.dialog:has(#fishCanvas){width:min(1040px,96vw);background:#f1e6ca;border-color:#735536}
+.fish-canvas{aspect-ratio:38 / 21;background:#315d68;contain:paint;box-shadow:0 3px 12px #211b1833}
+.dialog .fish-msg{min-height:calc(4.5em + 20px);margin:12px 0 0;padding:10px 14px;border-left:3px solid #607e65;background:#e1e6ce;color:#304d3b;line-height:1.5}
+.dialog:has(#fishCanvas) .actions{margin-top:12px}
+.fish-hold{min-width:170px;touch-action:none;user-select:none}
+
+/* Celular retrô (js/ui/phone-retro.js): aparelho de teclas com antena, LCD esverdeado, menu de ícones em pixel e teclado. */
+#phone{--shell:#253446;--lcd:#c9d6a8;--lcd2:#b4c58f;--ink:#1d2914;--dim:#4c5f35;--sel:#2c3d1d;--mono:'Lucida Console','Courier New',monospace;border:0;border-radius:40px 40px 48px 48px;padding:12px 13px 14px;gap:8px;overflow:visible;color:var(--ink);background:linear-gradient(100deg,#40536a 0%,var(--shell) 16%,var(--shell) 80%,#16202b 100%);box-shadow:inset 0 2px 0 #ffffff26,inset 0 -4px 0 #0006,inset 3px 0 0 #ffffff10,0 16px 44px #0b0806cc}
+#phone::before{content:'';position:absolute;top:-22px;right:48px;width:18px;height:23px;border-radius:9px 9px 0 0;background:linear-gradient(90deg,#46566a,#1b2531);box-shadow:inset 0 2px 0 #ffffff1f}
+#phone .phone-cap{display:flex;flex-direction:column;align-items:center;gap:6px;padding:2px 0 0}
+#phone .phone-speaker{width:62px;height:8px;border-radius:5px;background:repeating-linear-gradient(90deg,#0a0f15 0 4px,#33445a 4px 7px);box-shadow:inset 0 1px 2px #000b}
+#phone .phone-brand{font:bold 10px/1 var(--mono);letter-spacing:.34em;padding-left:.34em;color:#b8c4d0;text-shadow:0 1px 0 #0009}
+#phone .phone-screen{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;border:7px solid #0e141a;border-radius:12px 12px 20px 20px;background:linear-gradient(180deg,var(--lcd),var(--lcd2));box-shadow:0 0 0 2px #5b6b7c,inset 0 0 22px #2f3d1f40;overflow:hidden}
+#phone .phone-screen::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(140deg,#ffffff2a,#fff0 38%),repeating-linear-gradient(0deg,#0000 0 2px,#1d291406 2px 3px)}
+#phone .phone-status{display:flex;align-items:flex-end;justify-content:space-between;padding:6px 9px 3px;font:bold 12px/1 var(--mono)}
+#phone .phone-signal{display:flex;align-items:flex-end;gap:2px;height:12px}
+#phone .phone-signal i{width:3px;background:var(--ink)}
+#phone .phone-signal i:nth-child(1){height:4px}#phone .phone-signal i:nth-child(2){height:6px}#phone .phone-signal i:nth-child(3){height:9px}#phone .phone-signal i:nth-child(4){height:12px}
+#phone .phone-signal.s0 i,#phone .phone-signal.s1 i:nth-child(n+2),#phone .phone-signal.s2 i:nth-child(n+3),#phone .phone-signal.s3 i:nth-child(4){opacity:.2}
+#phone .phone-battery{position:relative;display:flex;gap:1px;width:24px;height:12px;padding:1px;border:2px solid var(--ink)}
+#phone .phone-battery::after{content:'';position:absolute;right:-5px;top:2px;width:3px;height:4px;background:var(--ink)}
+#phone .phone-battery i{flex:1;background:var(--ink)}
+#phone .phone-battery.b2 i:nth-child(3),#phone .phone-battery.b1 i:nth-child(n+2){opacity:.18}
+#phone .phone-top{gap:4px;margin:0 6px;padding:3px 0 4px;border-bottom:2px solid var(--ink)}
+#phone .phone-top b{flex:1;text-align:center;font:bold 15px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#phone .phone-top button{min-width:30px;min-height:28px;padding:0 6px;color:var(--ink);font:bold 17px/1 var(--mono);border-radius:4px}
+#phone .phone-top button:hover,#phone .phone-top button:focus-visible{background:var(--sel);color:var(--lcd);outline:0}
+#phone.home .phone-back{visibility:hidden}
+#phone .phone-top .phone-back{font-size:13px}
+#phone .phone-operator{padding:7px 8px 0;text-align:center;font:bold 12px/1.2 var(--mono);letter-spacing:.08em}
+#phone .phone-note{padding:2px 10px 6px;text-align:center;color:var(--dim);font-size:12px}
+#phone:not(.home) .phone-operator,#phone:not(.home) .phone-note,#phone:not(.home) .phone-menu,#phone:not(.home) .phone-agenda,#phone.home .phone-scroll{display:none}
+#phone .phone-agenda{min-height:0;margin:0 10px 8px;padding:6px 8px;border:2px solid var(--ink);border-radius:4px;background:transparent;box-shadow:none;color:var(--ink);font:bold 12px/1.3 var(--mono);text-align:left}
+#phone .phone-agenda:hover,#phone .phone-agenda:focus-visible{background:var(--sel);color:var(--lcd);outline:0}
+#phone .phone-menu{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:6px;padding:4px 10px 10px}
+#phone .phone-tabs,#phone .phone-shortcuts{display:contents}
+#phone .phone-app{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:0;padding:10px 2px 6px;background:transparent;border:2px dashed transparent;border-radius:6px;box-shadow:none;color:var(--ink);font-weight:normal}
+#phone .phone-app::before{content:attr(data-num);position:absolute;top:3px;left:5px;font:bold 10px/1 var(--mono);opacity:.55}
+#phone .phone-app span{display:block;line-height:0}
+#phone .phone-app .pixel-icon{width:40px;height:40px}
+#phone .phone-app b{font:bold 11px/1.1 var(--mono);text-transform:uppercase;letter-spacing:.02em}
+#phone .phone-app small{min-height:12px;font-size:10px;line-height:1.2;color:var(--dim)}
+#phone .phone-app:hover,#phone .phone-app.sel,#phone .phone-app:focus-visible{background:var(--sel);color:var(--lcd);outline:0}
+#phone .phone-app:hover small,#phone .phone-app.sel small,#phone .phone-app:focus-visible small{color:#b6c693}
+#phone .phone-app.needed{border-color:var(--ink);animation:phoneBlink 1s steps(2) infinite}
+#phone .phone-app .new{position:absolute;top:2px;right:2px;padding:0 4px;border-radius:3px;background:#a8321e;color:#fff;font:bold 9px/14px var(--mono);text-transform:uppercase}
+@keyframes phoneBlink{50%{background:var(--sel);color:var(--lcd)}}
+#phone .phone-scroll{padding:8px 9px;color:#26301c}
+#phone .phone-scroll .supply,#phone .phone-scroll .phone-event,#phone .phone-scroll .contact-card{background:#eef3dd;border-color:#93a473}
+#phone .phone-softbar{display:flex;justify-content:space-between;margin:0 6px;padding:3px 2px 5px;border-top:2px solid var(--ink);font:bold 12px/1.2 var(--mono);text-transform:uppercase}
+#phone .phone-softbar span{cursor:pointer;padding:0 4px;border-radius:3px}
+#phone .phone-softbar span:hover{background:var(--sel);color:var(--lcd)}
+#phone .phone-keys{display:flex;flex-direction:column;gap:7px;padding:1px 3px 0}
+#phone .phone-keys button{min-height:0;border:0;color:#25303c;box-shadow:0 2px 0 #0009,inset 0 1px 0 #fff;background:linear-gradient(#eef1f3,#bcc3ca)}
+#phone .phone-nav{display:grid;grid-template-columns:1fr 1fr auto 1fr 1fr;align-items:center;gap:6px}
+#phone .phone-nav>button{height:30px;padding:0;border-radius:15px 15px 8px 8px}
+#phone .phone-soft i{display:block;width:16px;height:3px;margin:auto;border-radius:2px;background:#56616d}
+#phone .phone-call,#phone .phone-end{display:flex;align-items:center;justify-content:center}
+#phone .phone-call span,#phone .phone-end span{line-height:0}
+#phone .phone-call .pixel-icon,#phone .phone-end .pixel-icon{width:20px;height:9px}
+#phone .phone-keys .phone-call{color:#1d7a34}
+#phone .phone-keys .phone-end{color:#b3261e}
+#phone .phone-end .pixel-icon{transform:rotate(135deg)}
+#phone .phone-dpad{position:relative;width:76px;height:58px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#f1f3f5,#aab2ba);box-shadow:0 2px 0 #0009,inset 0 1px 0 #fff}
+#phone .phone-keys .phone-dpad button{position:absolute;padding:0;background:transparent;box-shadow:none;color:#3d4855;font-size:9px;line-height:1}
+#phone .phone-dpad button:nth-child(1){top:2px;left:23px;width:30px;height:15px}
+#phone .phone-dpad button:nth-child(5){bottom:2px;left:23px;width:30px;height:15px}
+#phone .phone-dpad button:nth-child(2){left:2px;top:17px;width:18px;height:24px}
+#phone .phone-dpad button:nth-child(4){right:2px;top:17px;width:18px;height:24px}
+#phone .phone-keys .phone-dpad .phone-ok{left:25px;top:18px;width:26px;height:22px;border-radius:50%;background:linear-gradient(#dfe3e7,#b3bbc3);box-shadow:inset 0 1px 2px #0005}
+#phone .phone-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px 9px}
+#phone .phone-pad button{display:flex;align-items:baseline;justify-content:center;gap:5px;height:26px;padding:0 6px;border-radius:13px 13px 15px 15px/10px 10px 15px 15px;font:bold 14px/26px Arial,sans-serif}
+#phone .phone-pad small{font-size:8px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:#5d6875}
+#phone .phone-keys button:hover{filter:brightness(1.06)}
+#phone .phone-keys button:active{transform:translateY(1px)}
+@media(max-height:780px){#phone .phone-pad{display:none}}
+@media(max-width:750px){#phone{padding:9px 10px 10px;border-radius:30px 30px 36px 36px}#phone .phone-pad,#phone .phone-cap,#phone::before{display:none}}

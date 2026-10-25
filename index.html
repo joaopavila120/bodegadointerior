@@ -20,7 +20,7 @@
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 <div class="touch"><button data-move="ArrowLeft">←</button><button data-move="ArrowUp">↑</button><button data-move="ArrowDown">↓</button><button data-move="ArrowRight">→</button><button id="touchE" class="touch-e">E</button></div>
 
-</aside></main><section class="phone hidden" id="phone" aria-label="Celular"><div class="phone-top"><b>Minha bodega</b><button data-act="phone" aria-label="Fechar celular">×</button></div><div class="phone-shortcuts" id="phoneShortcuts"></div><div class="phone-note" id="phoneNote">O expediente continua. C fecha na hora.</div><div class="phone-tabs"><button data-act="tab" data-id="supplier" class="active">Compras</button><button data-act="tab" data-id="missions">Missões</button><button data-act="tab" data-id="upgrades">Melhorias</button><button data-act="tab" data-id="decor">Estética</button><button data-act="tab" data-id="fiado">Fiado</button><button data-act="tab" data-id="contacts">Contatos</button></div><div class="phone-scroll" id="phoneContent"></div></section>
+</aside></main><section class="phone hidden" id="phone" aria-label="Celular"><div class="phone-cap" aria-hidden="true"><span class="phone-speaker"></span><span class="phone-brand">SADIFONE</span></div><div class="phone-screen"><div class="phone-status" aria-hidden="true"><span class="phone-signal s4" id="phoneSignal"><i></i><i></i><i></i><i></i></span><span id="phoneClock">--:--</span><span class="phone-battery b3" id="phoneBattery"><i></i><i></i><i></i></span></div><div class="phone-top"><button class="phone-back" data-act="phoneKey" data-id="left" aria-label="Voltar ao menu">◀</button><b id="phoneTitle">Minha bodega</b><button data-act="phone" aria-label="Fechar celular">×</button></div><div class="phone-operator" id="phoneOperator"></div><div class="phone-note" id="phoneNote">O expediente continua. C fecha na hora.</div><div class="phone-menu" id="phoneMenu"><div class="phone-tabs"><button class="phone-app" data-act="tab" data-id="upgrades"><span data-icon="melhorias"></span><b>Melhorias</b><small></small></button><button class="phone-app" data-act="tab" data-id="supplier"><span data-icon="compras"></span><b>Compras</b><small></small></button><button class="phone-app" data-act="tab" data-id="missions"><span data-icon="missoes"></span><b>Missões</b><small></small></button><button class="phone-app" data-act="tab" data-id="contacts"><span data-icon="contatos"></span><b>Contatos</b><small></small></button><button class="phone-app" data-act="tab" data-id="fiado"><span data-icon="fiado"></span><b>Fiado</b><small></small></button><button class="phone-app" data-act="tab" data-id="decor"><span data-icon="estetica"></span><b>Estética</b><small></small></button></div><div class="phone-shortcuts" id="phoneShortcuts"></div></div><button class="phone-agenda" data-act="event" id="phoneEvent"></button><div class="phone-scroll" id="phoneContent"></div><div class="phone-softbar"><span data-act="phoneKey" data-id="softL" id="phoneSoftL">Selec.</span><span data-act="phoneKey" data-id="softR">Sair</span></div></div><div class="phone-keys"><div class="phone-nav"><button class="phone-soft" data-act="phoneKey" data-id="softL" aria-label="Tecla da esquerda"><i></i></button><button class="phone-call" data-act="phoneKey" data-id="call" aria-label="Contatos"><span data-icon="fone"></span></button><div class="phone-dpad"><button data-act="phoneKey" data-id="up" aria-label="Para cima">▲</button><button data-act="phoneKey" data-id="left" aria-label="Para a esquerda">◀</button><button class="phone-ok" data-act="phoneKey" data-id="ok" aria-label="OK"></button><button data-act="phoneKey" data-id="right" aria-label="Para a direita">▶</button><button data-act="phoneKey" data-id="down" aria-label="Para baixo">▼</button></div><button class="phone-end" data-act="phoneKey" data-id="end" aria-label="Desligar"><span data-icon="fone"></span></button><button class="phone-soft" data-act="phoneKey" data-id="softR" aria-label="Tecla da direita"><i></i></button></div><div class="phone-pad"><button data-act="phoneKey" data-id="1" aria-label="Tecla 1">1<small></small></button><button data-act="phoneKey" data-id="2" aria-label="Tecla 2">2<small>abc</small></button><button data-act="phoneKey" data-id="3" aria-label="Tecla 3">3<small>def</small></button><button data-act="phoneKey" data-id="4" aria-label="Tecla 4">4<small>ghi</small></button><button data-act="phoneKey" data-id="5" aria-label="Tecla 5">5<small>jkl</small></button><button data-act="phoneKey" data-id="6" aria-label="Tecla 6">6<small>mno</small></button><button data-act="phoneKey" data-id="7" aria-label="Tecla 7">7<small>pqrs</small></button><button data-act="phoneKey" data-id="8" aria-label="Tecla 8">8<small>tuv</small></button><button data-act="phoneKey" data-id="9" aria-label="Tecla 9">9<small>wxyz</small></button><button data-act="phoneKey" data-id="*" aria-label="Tecla *">*<small></small></button><button data-act="phoneKey" data-id="0" aria-label="Tecla 0">0<small>+</small></button><button data-act="phoneKey" data-id="#" aria-label="Tecla #">#<small></small></button></div></div></section>
 <section id="bocceScreen" class="bocce-screen hidden" aria-label="Cancha de bocha">
   <div class="bocce-court"><canvas id="bocceCanvas" width="1672" height="941" tabindex="0" aria-label="Cancha: A e D escolhem a posição; E trava a direção e depois lança."></canvas><section id="bocceTalkUI" class="rpg-box hidden" data-act="bocceTalkClick" aria-live="polite"><div id="bocceTalkPortrait" class="rpg-portrait"></div><div class="rpg-text"><b id="bocceTalkName"></b><p id="bocceTalkPlayer" class="rpg-player"></p><p id="bocceTalkReply" class="rpg-reply"></p></div><span class="rpg-next" aria-hidden="true">▼</span></section></div>
   <aside class="bocce-sidebar">
@@ -136,6 +136,7 @@
   <script src="js/render/world-dressing.js"></script>
   <script src="js/render/frontier-environment.js"></script>
   <script src="js/render/regional-environment.js"></script>
+  <script src="js/render/world-paths.js"></script>
   <script src="js/render/garden-art.js"></script>
   <script src="js/render/item-art.js"></script>
   <script src="js/render/sprites.js"></script>
@@ -172,6 +173,16 @@
   <script src="js/mechanics/maedoouro.js"></script>
   <script src="js/mechanics/fiado-rua.js"></script>
   <script src="js/mechanics/torneio-pesca.js"></script>
+  <script src="js/mechanics/mata-araucaria.js"></script>
+  <script src="js/mechanics/mata-vida.js"></script>
+  <script src="js/mechanics/mata-criaturas.js"></script>
+  <script src="js/mechanics/mata-bichos.js"></script>
+  <script src="js/mechanics/mata-trechos.js"></script>
+  <script src="js/mechanics/mata-garibaldi.js"></script>
+  <script src="js/mechanics/mata-chefes.js"></script>
+  <script src="js/mechanics/mata-acampamentos.js"></script>
+  <script src="js/mechanics/mata-laguna.js"></script>
+  <script src="js/mechanics/mata-missao.js"></script>
   <script src="js/mechanics/economia.js"></script>
   <script src="js/render/campeira-art-crops.js"></script>
   <script src="js/render/campeira-art.js"></script>
@@ -181,6 +192,16 @@
   <script src="js/render/dunstan-refuge.js"></script>
   <script src="js/render/world-character-poses.js"></script>
   <!-- Inicializa estado, imagens e loop somente depois de todas as definições. -->
-  <script src="js/core/bootstrap.js"></script>
+  <script src="js/render/mata-art.js"></script>
+<script src="js/render/mata-biomas.js"></script>
+<script src="js/render/mata-fauna.js"></script>
+<script src="js/mechanics/garibaldi-refuge.js"></script>
+<script src="js/render/environment-polish.js"></script>
+<script src="js/render/bodega-interior.js"></script>
+<script src="js/render/regional-identity.js"></script>
+<script src="js/mechanics/frutas-campo.js"></script>
+<script src="js/render/fishing-art.js"></script>
+<script src="js/ui/phone-retro.js"></script>
+<script src="js/core/bootstrap.js"></script>
 </body>
 </html>

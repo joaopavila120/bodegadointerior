@@ -37,4 +37,4 @@ function guideContent(){
 function gameGuide(){if(G.game||G.bocce)return;openDialog('Guia e progresso',guideContent(),'guide');}
 // Atalhos no topo do celular: o álbum de figurinhas e o guia com as conquistas, sempre à vista.
 function phoneShortcutsHTML(){const got=Object.keys(G.achievements||{}).length;return `<button data-act="phoneAlbum">🃏 Álbum · ${cardsOwned()}/${CARDS.length}${G.cardsNew?'<span class="new">novo</span>':''}</button><button data-act="phoneGuide">📘 Guia e progresso · ${got}/${ACHIEVEMENTS.length}</button>`;}
-{const render=renderPhone;renderPhone=function(){render();const el=$('phoneShortcuts');if(el)el.innerHTML=phoneShortcutsHTML();};}
+{const render=renderPhone;renderPhone=function(){render();const el=$('phoneShortcuts');if(el)setHTML(el,phoneShortcutsHTML());};}

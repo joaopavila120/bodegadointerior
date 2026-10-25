@@ -115,6 +115,41 @@ function glow(x,y,radius,alpha,color){
  const g=ctx.createRadialGradient(x,y,0,x,y,radius);g.addColorStop(0,`rgba(${color},${alpha})`);g.addColorStop(1,`rgba(${color},0)`);
  ctx.fillStyle=g;ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
 }
+// Escuro com um furo de luz (caverna, mata, vinheta de pouca vida). Sem placa de vídeo, pintar o degradê radial
+// ou esticar uma imagem na tela inteira a cada quadro custa caro; carimbar uma textura já no tamanho dos pixels
+// da tela, sem escala, custa quase o mesmo que uma cor lisa. A textura só é refeita quando o raio ou o zoom mudam.
+const DARK_HOLES=new Map();
+function darkHoleTexture(key,size,r0,r1,rgb){
+ let tex=DARK_HOLES.get(key);
+ if(tex){DARK_HOLES.delete(key);DARK_HOLES.set(key,tex);return tex;}
+ tex=document.createElement('canvas');tex.width=tex.height=size;
+ const g=tex.getContext('2d'),c=size/2,gr=g.createRadialGradient(c,c,r0,c,c,r1);
+ gr.addColorStop(0,`rgba(${rgb},0)`);gr.addColorStop(1,`rgba(${rgb},1)`);g.fillStyle=gr;g.fillRect(0,0,size,size);DARK_HOLES.set(key,tex);
+ let px=0;for(const c of DARK_HOLES.values())px+=c.width*c.height;
+ for(const[k,c]of DARK_HOLES){if(px<=16e6||k===key)break;px-=c.width*c.height;c.width=c.height=0;DARK_HOLES.delete(k);}
+ return tex;
+}
+function darkHole(x,y,r0,r1,rgb,alpha){
+ if(alpha<=0||r1<=0)return;
+ const t=ctx.getTransform(),W=ctx.canvas.width,H=ctx.canvas.height,q=Math.round(t.a*50)/50,half=Math.ceil(Math.min(r1*q,Math.max(W,H)))+2,e=half*2;
+ ctx.save();ctx.globalAlpha*=Math.min(1,alpha);
+ if(!t.b&&!t.c&&t.a===t.d&&q>0&&e*e<=75e5){
+  const tex=darkHoleTexture(['tela',q,Math.round(r0),Math.round(r1),rgb,half].join('|'),e,r0*q,r1*q,rgb),px=Math.round(t.a*x+t.e)-half,py=Math.round(t.d*y+t.f)-half;
+  ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(tex,px,py);
+  // Fora da textura o escuro é liso: retângulos alinhados ao pixel, sem emenda.
+  ctx.fillStyle=`rgb(${rgb})`;const top=Math.max(0,py),bot=Math.min(H,py+e);
+  if(py>0)ctx.fillRect(0,0,W,py);
+  if(py+e<H)ctx.fillRect(0,py+e,W,H-py-e);
+  if(bot>top){if(px>0)ctx.fillRect(0,top,px,bot-top);if(px+e<W)ctx.fillRect(px+e,top,W-px-e,bot-top);}
+ }else{
+  // Tela girada ou grande demais: uma textura pequena esticada por cima da vista.
+  const m=t.inverse();let need=1;
+  for(const[cx,cy]of[[0,0],[W,0],[0,H],[W,H]]){const p=m.transformPoint({x:cx,y:cy});need=Math.max(need,Math.abs(p.x-x)/r1*1.04,Math.abs(p.y-y)/r1*1.04);}
+  const k=[1.25,1.5,2,2.5,3,4,6,8].find(s=>s>=need)||Math.ceil(need),inner=Math.round(clamp(r0/r1,0,.98)*50)/50,s=r1*k;
+  ctx.drawImage(darkHoleTexture(['esticada',k,inner,rgb].join('|'),384,192/k*inner,192/k,rgb),x-s,y-s,s*2,s*2);
+ }
+ ctx.restore();
+}
 function drawDecorLights(){
  ctx.save();ctx.globalCompositeOperation='lighter';
  const night=nightLevel();

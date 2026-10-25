@@ -34,8 +34,8 @@ function fishSprite(g, key, x, y, height, flip = false) {
 }
 
 // ---------- A pescaria ----------
-let fishing = null;
-const FW = 760, FH = 420, WATER = 250, TIP = { x: 178, y: 196 };
+let fishing = null, fishAnimationFrame = 0;
+const FW = 760, FH = 420, WATER = 250, TIP = { x: 178, y: 146 };
 // Quem aprendeu a ler o rio com o Arami (missão "O caminho do rio") fisga o dourado bem mais vezes.
 function douradoLuck() { return missionDone('rio') ? 2.5 : 1; }
 function pickFish(power) {
@@ -47,19 +47,31 @@ function goFishingNew() {
   teachFirst('pesca', startFishing);
 }
 function startFishing() {
+  // A reopened dialog must not inherit an animation callback from the previous cast.
+  cancelAnimationFrame(fishAnimationFrame);
+  if(fishing&&!['aim','done'].includes(fishing.phase))fishEnd(false,null,true);
   fishing = { phase: 'aim', t: 0, power: 0, charge: 0, holding: false, msg: 'Segure E pra medir o arremesso. Solte pra jogar.', ripples: [], splash: [] };
-  openDialog('Pescaria no trapiche', `<canvas id="fishCanvas" class="fish-canvas" width="${FW}" height="${FH}" aria-label="Rio Uruguai visto do trapiche"></canvas><p id="fishMsg" class="small-note fish-msg"></p><div class="actions"><button id="fishHold" class="primary fish-hold" type="button">Segurar (E)</button><button data-act="close">Largar a vara</button></div>`, 'fishing');
-  const hold = $('fishHold'), down = e => { e.preventDefault(); fishKey(true); }, up = e => { e.preventDefault(); fishKey(false); };
-  hold.addEventListener('pointerdown', down); hold.addEventListener('pointerup', up); hold.addEventListener('pointerleave', up); $('fishCanvas').addEventListener('pointerdown', down); $('fishCanvas').addEventListener('pointerup', up);
-  fishing.last = performance.now(); requestAnimationFrame(fishFrame); fishDraw();
+  openDialog('Pescaria no trapiche', `<canvas id="fishCanvas" class="fish-canvas" width="${FW}" height="${FH}" aria-label="Rio Uruguai visto do trapiche"></canvas><p id="fishMsg" class="small-note fish-msg" role="status" aria-live="polite"></p><div class="actions"><button id="fishHold" class="primary fish-hold" type="button">Segurar (E)</button><button data-act="close">Largar a vara</button></div>`, 'fishing');
+  const session=fishing,hold=$('fishHold');
+  const down=e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);fishKey(true);};
+  const up=e=>{e.preventDefault();if(fishing===session&&session.holding)fishKey(false);};
+  for(const element of [hold,$('fishCanvas')]){
+    element.addEventListener('pointerdown',down);element.addEventListener('pointerup',up);
+    element.addEventListener('pointercancel',up);element.addEventListener('lostpointercapture',up);
+  }
+  fishing.last = performance.now(); fishAnimationFrame=requestAnimationFrame(now=>fishFrame(now,session)); fishDraw();
 }
-function fishFrame(now) {
+function fishFrame(now,session=fishing) {
+  if(session!==fishing)return;
+  fishAnimationFrame=0;
   if (!fishing || modal !== 'fishing') { if (fishing && !['done', 'aim'].includes(fishing.phase)) fishEnd(false, null, true); fishing = null; return; }
-  const dt = Math.min(.05, (now - fishing.last) / 1000); fishing.last = now; fishTick(dt); fishDraw(); requestAnimationFrame(fishFrame);
+  const dt = Math.min(.05, Math.max(0,(now - fishing.last) / 1000)); fishing.last = now;
+  if(!document.hidden){fishTick(dt);fishDraw();}
+  fishAnimationFrame=requestAnimationFrame(next=>fishFrame(next,session));
 }
 function fishSay(text) { if (fishing) fishing.msg = text; }
 function fishKey(down) {
-  const F = fishing; if (!F || F.phase === 'done') return; F.holding = down;
+  const F = fishing; if (!F || F.phase === 'done'||F.holding===down) return; F.holding = down;
   if (F.phase === 'aim') { if (down) { F.charging = true; F.charge = 0; } else if (F.charging) { F.charging = false; fishCast(); } }
   else if (F.phase === 'wait' && down) {
     // Puxou cedo: a boia salta, o peixe se assusta e a espera recomeça.
@@ -73,7 +85,7 @@ function fishCast() {
 }
 function fishSplash(x, y, n) { for (let i = 0; i < n; i++) fishing.splash.push({ x, y, vx: (Math.random() - .5) * 120, vy: -60 - Math.random() * 110, life: .6 + Math.random() * .3 }); }
 function fishTick(dt) {
-  const F = fishing; if (!F) return; F.t += dt;
+  const F = fishing; if (!F) return; F.t += dt; F.clock=(F.clock||0)+dt;
   for (const s of F.splash) { s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 300 * dt; } F.splash = F.splash.filter(s => s.life > 0);
   for (const r of F.ripples) r.life -= dt; F.ripples = F.ripples.filter(r => r.life > 0);
   if (F.phase === 'aim') { if (F.charging) F.charge += dt; return; }
@@ -86,6 +98,7 @@ function fishTick(dt) {
   }
   if (F.phase === 'bite') { if (F.t > F.window) { fishSay('Demorou… o peixe levou a isca.'); fishEnd(false, 'isca'); } return; }
   if (F.phase === 'fight') {
+    if(F.run&&Math.random()<dt*18)fishSplash(fishBobber(F,F.t).x,WATER,1);
     const K = FISH_KINDS[F.kind], s = K.strength;
     F.runIn -= dt; if (!F.run && F.runIn <= 0) { F.run = K.runs[1] * (.8 + Math.random() * .5); fishSay(F.kind === 'dourado' ? 'Ele correu e PULOU! Solta o molinete!' : 'Ele correu! Solta o molinete!'); AudioEngine.swoosh(.06); if (K.jumps) F.jump = 1; }
     if (F.run) { F.run -= dt; if (F.run <= 0) { F.run = 0; F.runIn = K.runs[0] * (.7 + Math.random() * .6); fishSay('Cansou um pouco. Recolhe!'); } }
@@ -114,8 +127,13 @@ function fishEnd(ok, why, silent = false) {
 }
 // ---------- Desenho ----------
 function fishDraw() {
-  const cv = $('fishCanvas'); if (!cv || !fishing) return; const F = fishing, g = cv.getContext('2d'), t = performance.now() / 1000, night = worldNight();
-  $('fishMsg') && ($('fishMsg').textContent = F.msg || '');
+  const cv = $('fishCanvas'); if (!cv || !fishing) return;
+  const F=fishing,t=F.clock||0,night=worldNight(),scale=Math.min(2,Math.max(1,Math.ceil(cv.clientWidth/FW*(window.devicePixelRatio||1))));
+  if(!F.surface){F.surface=document.createElement('canvas');F.surface.width=Math.round(FW*scale);F.surface.height=Math.round(FH*scale);}
+  const g=F.surface.getContext('2d');g.setTransform(F.surface.width/FW,0,0,F.surface.height/FH,0,0);
+  g.globalAlpha=1;g.globalCompositeOperation='source-over';g.textBaseline='alphabetic';
+  const msg=$('fishMsg');if(msg&&msg.textContent!==F.msg)msg.textContent=F.msg||'';
+  if(typeof drawFishingBackdrop!=='function'||!drawFishingBackdrop(g,night)){
   const sky = g.createLinearGradient(0, 0, 0, 170); sky.addColorStop(0, night ? '#0c1430' : '#8ec4e8'); sky.addColorStop(1, night ? '#24305a' : '#f4dca0'); g.fillStyle = sky; g.fillRect(0, 0, FW, 170);
   if (night) { for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(240,236,210,${.3 + .3 * Math.sin(t * 1.5 + i)})`; g.fillRect((i * 97.3) % FW, (i * 41.7) % 120, 2, 2); } g.fillStyle = '#f1ecd6'; g.beginPath(); g.arc(640, 50, 20, 0, Math.PI * 2); g.fill(); }
   else { g.fillStyle = '#fff2c0'; g.beginPath(); g.arc(640, 60, 26, 0, Math.PI * 2); g.fill(); }
@@ -125,11 +143,13 @@ function fishDraw() {
   const water = g.createLinearGradient(0, 175, 0, FH); water.addColorStop(0, night ? '#1a2c44' : '#5a8aa8'); water.addColorStop(1, night ? '#0a1424' : '#2a5a78'); g.fillStyle = water; g.fillRect(0, 178, FW, FH - 178);
   g.strokeStyle = night ? 'rgba(200,220,255,.12)' : 'rgba(255,255,255,.22)'; g.lineWidth = 2; for (let i = 0; i < 14; i++) { const y = 200 + i * 16, x = ((i * 137 + t * (20 + i * 3)) % (FW + 200)) - 100; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 60 + i * 4, y); g.stroke(); }
   // trapiche e o Sadi
-  g.fillStyle = '#6a4424'; g.fillRect(0, 300, 190, 22); for (let x = 0; x < 190; x += 24) { g.fillStyle = x % 48 ? '#7a5030' : '#8a5a34'; g.fillRect(x, 300, 22, 18); } for (const x of [20, 100, 170]) { g.fillStyle = '#4a2e18'; g.fillRect(x, 318, 10, 110); }
-  const keep = ctx; ctx = g; try { personDraw(avatarSprite(), 92, 302, false, true, 1); } finally { ctx = keep; }
+  g.fillStyle = '#6a4424'; g.fillRect(0, 248, 190, 22); for (let x = 0; x < 190; x += 24) { g.fillStyle = x % 48 ? '#7a5030' : '#8a5a34'; g.fillRect(x, 248, 22, 18); } for (const x of [20, 100, 170]) { g.fillStyle = '#4a2e18'; g.fillRect(x, 266, 10, 154); }
+  }
+  // Local portrait: never advance the world player's walk/tray animation on this canvas.
+  g.save();drawCharacterPortrait(g,avatarSprite()===0?SADI_SIDE[8]:avatarSprite(),92,250,124);g.restore();
   // vara
   const bend = F.phase === 'fight' ? Math.min(1, F.tension) * 26 : F.phase === 'aim' && F.charging ? -20 : 0;
-  g.strokeStyle = '#5a3a1a'; g.lineWidth = 4; g.beginPath(); g.moveTo(110, 250); g.quadraticCurveTo(150, 210 - bend * .3, TIP.x, TIP.y + bend); g.stroke();
+  g.strokeStyle = '#5a3a1a'; g.lineWidth = 4; g.beginPath(); g.moveTo(110, 198); g.quadraticCurveTo(150, 160 - bend * .3, TIP.x, TIP.y + bend); g.stroke();
   // linha e boia
   const bob = fishBobber(F, t);
   if (F.phase !== 'aim' && bob) { g.strokeStyle = 'rgba(240,240,240,.85)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(TIP.x, TIP.y + bend); const sag = F.phase === 'fight' ? (1 - Math.min(1, F.tension)) * 50 : 40; g.quadraticCurveTo((TIP.x + bob.x) / 2, Math.max(TIP.y, bob.y) + sag, bob.x, bob.y); g.stroke(); }
@@ -139,7 +159,6 @@ function fishDraw() {
   if (F.phase === 'fight' && bob) {
     if (F.jump > 0) { const k = 1 - F.jump; fishSprite(g, F.kind, bob.x + 20, WATER - Math.sin(k * Math.PI) * 90, 56, Math.sin(t * 6) > 0); }
     else { g.fillStyle = 'rgba(10,20,30,.45)'; g.beginPath(); g.ellipse(bob.x, WATER + 26, 34, 10, 0, 0, Math.PI * 2); g.fill(); }
-    if (F.run && Math.random() < .3) fishSplash(bob.x, WATER, 1);
   }
   for (const s of F.splash) { g.fillStyle = `rgba(230,240,255,${s.life})`; g.fillRect(s.x, s.y, 3, 3); }
   // painel: força do arremesso, tensão da linha e distância do peixe
@@ -151,6 +170,9 @@ function fishDraw() {
   } else g.fillText(F.phase === 'done' ? (F.ok ? 'Peixe no balaio!' : 'Escapou…') : 'Lances hoje: ' + fishLeft(), 22, 36);
   if (F.phase === 'bite') { g.fillStyle = '#ffe28a'; g.font = 'bold 54px Georgia'; g.textAlign = 'center'; g.fillText('!', bob.x, WATER - 40 - Math.abs(Math.sin(t * 20)) * 8); }
   if (F.phase === 'done' && F.ok) { g.fillStyle = 'rgba(20,14,10,.82)'; g.fillRect(FW / 2 - 170, 120, 340, 150); g.strokeStyle = '#d9b25e'; g.lineWidth = 3; g.strokeRect(FW / 2 - 170, 120, 340, 150); fishSprite(g, F.kind, FW / 2, 175, 70); g.fillStyle = '#ffe2a6'; g.font = 'bold 20px Georgia'; g.textAlign = 'center'; g.fillText(fishName(F.kind) + ' · ' + String(F.kg).replace('.', ',') + ' kg', FW / 2, 236); g.font = '13px Arial'; g.fillText(F.kind === 'dourado' ? 'O rei do rio Uruguai!' : F.best ? 'Recorde da espécie!' : 'Pro inventário', FW / 2, 258); }
+  // Present a complete frame once; no partial clears or canvas resizes during animation.
+  if(cv.width!==F.surface.width||cv.height!==F.surface.height){cv.width=F.surface.width;cv.height=F.surface.height;}
+  cv.getContext('2d').drawImage(F.surface,0,0);
 }
 function fishBobber(F, t) {
   if (F.phase === 'aim') return null; if (F.phase === 'fly') return { x: F.bobX, y: F.bobY };
@@ -163,4 +185,7 @@ function fishBobber(F, t) {
   // E e Espaço seguram a vara; Esc larga.
   document.addEventListener('keydown', e => { if (modal !== 'fishing') return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (k === 'e' || k === ' ' || k === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) fishKey(true); } }, true);
   document.addEventListener('keyup', e => { if (modal !== 'fishing') return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (k === 'e' || k === ' ' || k === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); fishKey(false); } }, true);
+  const release=()=>{if(fishing){fishing.holding=false;fishing.charging=false;}};
+  window.addEventListener('blur',release);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
 }

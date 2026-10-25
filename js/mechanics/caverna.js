@@ -461,8 +461,9 @@ function drawCaveDrop(d) {
 // Escuro de caverna: só a lamparina do Sadi clareia; por cima, a vida e o andar.
 function drawCaveLight() {
   if (!inCave()) return;
-  const p = worldOut, run = caveFloorRun(), st = caveState(), g = ctx.createRadialGradient(p.x, p.y - 40, run.floor === 1 || run.torch ? 600 : caveUp('lampiao') ? 160 : 90, p.x, p.y - 40, run.floor === 1 || run.torch ? 1800 : caveUp('lampiao') ? 820 : 560);
-  g.addColorStop(0, 'rgba(8,6,4,0)'); g.addColorStop(1, 'rgba(8,6,4,.92)'); ctx.fillStyle = g; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000);
+  const p = worldOut, run = caveFloorRun(), st = caveState(), open = run.floor === 1 || run.torch;
+  const ambient = typeof environmentCaveReady === 'function' && environmentCaveReady() && run.floor > 1 ? .78 : .92;
+  darkHole(p.x, p.y - 40, open ? 600 : caveUp('lampiao') ? 160 : 90, open ? 1800 : caveUp('lampiao') ? 820 : 560, '8,6,4', ambient);
   // No escuro, o que interessa brilha de longe: a escada, o baú fechado e as pedras caídas.
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (run.ladder.shown) glow(run.ladder.x, run.ladder.y - 20, 90 + run.ladderPing * 40, .2 + .08 * Math.sin(frameClock * 3), '255,220,140');
@@ -479,7 +480,7 @@ function drawCaveLight() {
   }
   if (run.hurt > 0) { ctx.fillStyle = `rgba(200,30,20,${run.hurt})`; ctx.fillRect(p.x - 3000, p.y - 3000, 6000, 6000); }
   const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, H = canvas.clientHeight, X = W - 264; ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if (st.hp <= caveMaxHp() * .3) { const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); v.addColorStop(0, 'rgba(160,0,0,0)'); v.addColorStop(1, `rgba(180,10,10,${.42 + .16 * Math.sin(frameClock * 7)})`); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); }
+  if (st.hp <= caveMaxHp() * .3) darkHole(W / 2, H / 2, Math.min(W, H) * .3, Math.max(W, H) * .7, '180,10,10', .42 + .16 * Math.sin(frameClock * 7));
   const left = run.beasts.filter(b => b.hp > 0).length, t = caveTripNow(), got = [t.cash ? '🪙 ' + money(t.cash) : '', t.ametista ? '💜 ' + t.ametista : '', t.agata ? '🟠 ' + t.agata : '', ...['cobre', 'ferro', 'opala', 'ouro'].map(k => t[k] ? k + ' ' + t[k] : ''), t.cards.length ? '🃏 ' + t.cards.length : ''].filter(Boolean).join('  ');
   rect(X, 14, 250, 84, 'rgba(20,14,10,.82)', 8, '#a77439'); txt('Caverna da Serra · andar ' + run.floor, X + 12, 34, 14, '#ffe2a6', 'left', 'Georgia', false);
   rect(X + 12, 46, 160, 14, '#2a1608', 5); rect(X + 12, 46, 160 * Math.min(1, st.hp / caveMaxHp()), 14, st.hp > caveMaxHp() * .3 ? '#d84a3a' : '#ff7a3a', 5); txt('❤ ' + st.hp + '/' + caveMaxHp(), X + 178, 57, 12, '#ffe2a6', 'left', 'Arial', false);

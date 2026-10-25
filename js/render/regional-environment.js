@@ -46,12 +46,12 @@ function paintRegionalTerrain(M,view) {
   const {x,y,w,h}=view;
   paintRegionalMeadow(M,view);
   const roads=regionalRoads(M).filter(r=>r[0]+r[2]+18>x&&r[0]-18<x+w&&r[1]+r[3]+18>y&&r[1]-18<y+h);
-  for(const [expansion,alpha] of [[15,.12],[9,.25],[4,.5],[0,1]])for(const r of roads){
+  if(M.id==='serra'||M.id==='sc'){
+    // Flores no campo e os caminhos como fitas de terra (na SC, o calçamento colonial só nas ruas).
+    paintWorldFlowers(view,(fx,fy)=>M.canWalk(fx,fy)&&M.canWalk(fx,fy+40),M.id==='sc'?.88:.9);
+    paintWorldPaths(M,view,{paving:M.id==='sc'});
+  }else for(const [expansion,alpha] of [[15,.12],[9,.25],[4,.5],[0,1]])for(const r of roads){
     ctx.save();ctx.clip(frontierRoadPath(r,expansion));ctx.globalAlpha=alpha;frontierTexture(1,x,y,w,h);ctx.restore();
-  }
-  // Small colonial paving, worn into the ground rather than giant outlined slabs.
-  if(M.id==='sc')for(const r of roads){
-    ctx.save();ctx.clip(frontierRoadPath(r,-3));ctx.globalAlpha=.32;worldTexture(2,x,y,w,h,70);ctx.restore();
   }
   for(const r of worldDressingBuildings(M.id)){
     const cx=r.x+r.w/2,cy=r.y+r.h+15;

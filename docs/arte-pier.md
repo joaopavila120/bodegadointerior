@@ -1,0 +1,9 @@
+# Píer da Fronteira
+
+Arte gerada com a ferramenta integrada imagegen, salva em `assets/images/environment/pier-v1.png`. O deck e a canoa são recortados separadamente no renderer; o balanço da canoa continua animado. O piso preserva o corredor caminhável e a interação de pesca existentes.
+
+A estrada usa a terra fina da folha `materials-v2.png`, em escala menor e com contraste reduzido sobre uma base de terra compactada. A caverna mantém suas texturas.
+
+## Prompt final
+
+Use case: stylized-concept. Production pixel-art sprite atlas on TRUE TRANSPARENT background for a rustic southern Brazilian 2D RPG. Elevated TOP-DOWN 3/4 orthographic camera, NOT isometric diagonals. Two isolated sprites arranged vertically, no overlap. Upper two thirds: one detailed wooden river fishing pier, long and horizontal from left to right, its open shore entrance at the RIGHT end. Weathered honey brown timber plank deck with subtle grain, iron nails, wooden crossbeams and four stout round support posts extending BELOW deck, rope ties, a small coiled rope at far left corner. The deck is an almost rectangular platform approx 1200 pixels wide by 280 pixels deep, with nearly horizontal long edges and vertical short ends, centered in the canvas. NO rails blocking the walking space, no roof, no signs. Lower third: separate slim wooden rowing canoe pointing horizontally left-right, visible interior ribs, two simple bench seats and a single paddle inside, approx 650px wide by 180px high. Leave large transparent gutters separating sprites, all parts safely inside canvas. Rich restrained hand-drawn pixel art, crisp wooden texture, believable top surfaces and short front faces, warm daylight from upper left. Match a detailed colonial Brazilian village game with realistic adult sprites. NO river, NO land, NO solid shadows or ground plates, NO labels, no text, no perspective horizon, no vignette background. Landscape canvas 1536x1024.

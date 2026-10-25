@@ -19,7 +19,9 @@ function campeiraSprite(key,index,x,y,w,h){
 const campeiraIcons=new Map();
 function campeiraIcon(key,index){
   const cacheKey=key+':'+index;if(campeiraIcons.has(cacheKey))return campeiraIcons.get(cacheKey);
-  const meta=CAMPEIRA_CROPS[key],c=meta.frames[index];
+  const meta=CAMPEIRA_CROPS[key],c=meta?.frames[index];
+  // Ícone que não existe na folha não pode derrubar o quadro do jogo: fica vazio.
+  if(!c)return '';
   // Nested SVG clips the atlas to the object even when a wide icon is letterboxed.
   const html=`<span class="campeira-icon"><svg viewBox="0 0 ${c[2]} ${c[3]}" role="presentation" aria-hidden="true"><svg width="${c[2]}" height="${c[3]}" viewBox="${c.join(' ')}" overflow="hidden" preserveAspectRatio="none"><image href="assets/images/campeira/${key}.png" width="${meta.width}" height="${meta.height}" /></svg></svg></span>`;
   campeiraIcons.set(cacheKey,html);return html;

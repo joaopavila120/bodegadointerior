@@ -54,18 +54,49 @@ function frontierRoads() {
   return [...VILA_ROADS, ...worldApproachRects(WORLD_MAPS.vila),
     [505,885,95,65], [1690,VILA.rail-20,VILA.W-1690,48]];
 }
+// O rio Uruguai: água de rio (verde-barrento, mais escura no fundo e mais clara na beira), a outra margem com mato e
+// a beira molhada com uma linha de espuma. A água que se mexe (correnteza, brilhos, espuma) fica em drawVilaRiver.
+const FRONTIER_FAR = x => 66 + Math.sin(x / 150) * 18 + Math.sin(x / 47) * 6;   // a margem uruguaia, lá do outro lado
+function frontierFarBankPath(grow = 0) {
+  const p = new Path2D(); p.moveTo(-10, -10);
+  for (let y = -10; y <= VILA.H + 20; y += 16) p.lineTo(FRONTIER_FAR(y) + grow, y);
+  p.lineTo(-10, VILA.H + 20); p.closePath(); return p;
+}
+function frontierFarSouthPath(grow = 0) {
+  const p = new Path2D(), y0 = VILA.H - 52; p.moveTo(-10, VILA.H + 20);
+  for (let x = -10; x <= VILA.W + 20; x += 16) p.lineTo(x, y0 - Math.sin(x / 170) * 14 - Math.sin(x / 53) * 5 - grow);
+  p.lineTo(VILA.W + 20, VILA.H + 20); p.closePath(); return p;
+}
 function paintFrontierTerrain(view) {
   const {x,y,w,h} = view;
+  // Água: a textura do rio puxada pro verde-barrento do Uruguai, mais funda longe das margens.
   frontierTexture(2,x,y,w,h);
-  // A narrow opposite bank hints at the far shore without boxing the river in.
-  ctx.save(); ctx.beginPath(); ctx.moveTo(0,0);
-  for(let py=0;py<=VILA.H+20;py+=20)ctx.lineTo(48+Math.sin(py/150)*16,py);
-  ctx.lineTo(0,VILA.H+20);ctx.closePath();ctx.clip();frontierTexture(0,x,y,w,h);ctx.restore();
+  ctx.fillStyle='rgba(74,70,34,.30)';ctx.fillRect(x,y,w,h);
+  ctx.fillStyle='rgba(10,30,30,.18)';ctx.fillRect(x,y,w,h);
+  // Mais clara perto das margens, em degraus bem miúdos (sem faixas marcadas).
+  for(let step=0;step<16;step++){
+    const k=8+step*step*.75,a=.035;
+    ctx.fillStyle=`rgba(150,152,98,${a})`;
+    ctx.save();ctx.clip(frontierLandPath(-k));ctx.fillRect(x,y,w,h);ctx.restore();
+    ctx.save();ctx.clip(frontierFarBankPath(k));ctx.fillRect(x,y,w,h);ctx.restore();
+    ctx.save();ctx.clip(frontierFarSouthPath(k));ctx.fillRect(x,y,w,h);ctx.restore();
+  }
+  // A outra margem (Uruguai) e a de baixo: barranco de terra e campo mais escuro.
+  for(const far of [frontierFarBankPath,frontierFarSouthPath]){
+    ctx.save();ctx.clip(far(0));frontierTexture(3,x,y,w,h);ctx.fillStyle='#4a3c2440';ctx.fillRect(x,y,w,h);ctx.restore();
+    ctx.save();ctx.clip(far(-12));frontierTexture(0,x,y,w,h);ctx.fillStyle='#22381e70';ctx.fillRect(x,y,w,h);ctx.restore();
+  }
   for (const [inset,material] of [[0,3],[26,3],[48,0]]) {
     ctx.save();ctx.clip(frontierLandPath(inset));frontierTexture(material,x,y,w,h);
     if(inset===26){ctx.fillStyle='#52613e40';ctx.fillRect(x,y,w,h);}
     ctx.restore();
   }
+  // Beira molhada (areia escura) e a linha de espuma na água.
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(52,48,30,.38)';ctx.lineWidth=12;ctx.stroke(frontierShorePath(5));
+  ctx.strokeStyle='rgba(226,232,214,.42)';ctx.lineWidth=3;ctx.stroke(frontierShorePath(-6));
+  ctx.strokeStyle='rgba(226,232,214,.16)';ctx.lineWidth=2;ctx.stroke(frontierShorePath(-16));
+  ctx.restore();
   ctx.save();ctx.clip(frontierLandPath(48));
   // Large, quiet changes in grass tone instead of repeating bright lawn stamps.
   for(let gy=Math.floor(y/190)*190-380;gy<y+h+380;gy+=190)for(let gx=Math.floor(x/230)*230-460;gx<x+w+460;gx+=230){
@@ -74,18 +105,18 @@ function paintFrontierTerrain(view) {
     gradient.addColorStop(0,n>.62?'#b5a36940':'#263e2b48');gradient.addColorStop(1,'#455b3200');
     ctx.fillStyle=gradient;ctx.fillRect(cx-260,cy-260,520,520);
   }
-  const roads=frontierRoads().filter(r=>r[0]+r[2]+15>x&&r[0]-15<x+w&&r[1]+r[3]+15>y&&r[1]-15<y+h);
-  // All edge passes precede road centers, so intersections have no outlines.
-  for(const [expansion,alpha] of [[15,.12],[9,.25],[4,.5],[0,1]])for(const r of roads){
-    ctx.save();ctx.clip(frontierRoadPath(r,expansion));ctx.globalAlpha=alpha;
-    frontierTexture(1,x,y,w,h);ctx.restore();
-  }
+  // Flores miúdas no campo (o caminho pinta por cima).
+  paintWorldFlowers(view,(fx,fy)=>frontierOnLand(fx-70,fy)&&frontierOnLand(fx,fy+70));
+  // Cascalho sob os trilhos do trem.
+  for(const [expansion,alpha] of [[9,.25],[4,.5],[0,1]]){const r=[1690,VILA.rail-20,VILA.W-1690,48];if(r[1]+r[3]+15<y||r[1]-15>y+h)break;ctx.save();ctx.clip(frontierRoadPath(r,expansion));ctx.globalAlpha=alpha;frontierTexture(1,x,y,w,h);ctx.restore();}
+  // Estradas e as trilhas até as portas: fitas de terra com as pontas e os cantos arredondados.
+  paintWorldPaths(WORLD_MAPS.vila,view);
   // Scuffed clearings connect thresholds to the paths, with feathered edges.
   for(const r of worldDressingBuildings('vila')){
     const cx=r.x+r.w/2,cy=r.y+r.h+12;
     if(cx+r.w<x||cx-r.w>x+w||cy+70<y||cy-70>y+h)continue;
-    ctx.save();ctx.translate(cx,cy);ctx.scale(r.w*.57,55);
-    const g=ctx.createRadialGradient(0,0,.3,0,0,1);g.addColorStop(0,'#9b895960');g.addColorStop(1,'#9b895900');
+    ctx.save();ctx.translate(cx,cy);ctx.scale(r.w*.45,46);
+    const g=ctx.createRadialGradient(0,0,.3,0,0,1);g.addColorStop(0,'#9b895948');g.addColorStop(1,'#9b895900');
     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);ctx.restore();
   }
   ctx.restore();
@@ -121,18 +152,46 @@ function drawFrontierTerrain(view) {
   }
   return true;
 }
+// A água viva do rio, só no pedaço que aparece na tela: correnteza no sentido do rio (descendo a oeste, indo pro
+// oeste embaixo), brilhos de sol e a espuma batendo na beira.
+let frontierShoreFoam = null;
+function frontierRipple(x, y, len, a) { ctx.strokeStyle = `rgba(218,232,214,${a})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x - len, y); ctx.quadraticCurveTo(x, y + 3.2, x + len, y); ctx.stroke(); }
+function frontierRiverView() { const p = worldOut, z = typeof camera !== 'undefined' && camera.zoom ? camera.zoom : 1, hw = 900 / z, hh = 620 / z; return { x0: p.x - hw, x1: p.x + hw, y0: p.y - hh, y1: p.y + hh }; }
 useWorldArt('drawVilaRiver', () => {
   if(!WORLD_ART['frontier-terrain']?.naturalWidth)return false;
-  // Gentle current, rather than bright ocean foam. Static detail is cached above.
-  ctx.save();ctx.fillStyle='#afc3b328';
-  for(let i=0;i<36;i++){
-    const py=(i*71+frameClock*7)%VILA.H,px=100+(i*97)%280;
-    ctx.fillRect(px,py,13+i%13,1.5);
-    const sx=650+(i*137+frameClock*5)%(VILA.W-700),sy=VILA.border+110+i%5*26;
-    ctx.fillRect(sx,sy,17+i%9,1.5);
+  const v = frontierRiverView(), t = frameClock;
+  ctx.save();
+  // Correnteza: riscos compridos e macios, cada um com seu ritmo.
+  if (v.x0 < 520) for (let i = 0; i < 70; i++) {
+    const n = frontierNoise(i, 31), py = ((i * 137.7 + t * (16 + n * 14)) % (VILA.border + 60)), far = FRONTIER_FAR(py) + 24, bank = frontierWestBank(py) - 26;
+    if (py < v.y0 - 40 || py > v.y1 + 40) continue;
+    const px = far + frontierNoise(i, 7) * (bank - far), len = 10 + n * 14, a = .12 + .16 * (.5 + .5 * Math.sin(t * .7 + i));
+    frontierRipple(px, py, len, a);
+  }
+  if (v.y1 > VILA.border) for (let i = 0; i < 70; i++) {
+    const n = frontierNoise(i, 57), px = VILA.W + 40 - ((i * 211.3 + t * (14 + n * 12)) % (VILA.W - 560)), top = frontierSouthBank(px) + 24, bot = VILA.H - 70;
+    if (px < v.x0 - 40 || px > v.x1 + 40) continue;
+    const py = top + frontierNoise(i, 13) * (bot - top), len = 10 + n * 14, a = .12 + .16 * (.5 + .5 * Math.sin(t * .6 + i));
+    frontierRipple(px, py, len, a);
+  }
+  // Brilhos de sol piscando na água.
+  for (let i = 0; i < 46; i++) {
+    const west = i % 2 === 0, k = Math.max(0, Math.sin(t * 2.1 + i * 1.7)); if (k < .55) continue;
+    let px, py; if (west) { py = (frontierNoise(i, 91) * VILA.border) | 0; const far = FRONTIER_FAR(py) + 20; px = far + frontierNoise(i, 93) * (frontierWestBank(py) - far - 30); } else { px = 600 + frontierNoise(i, 95) * (VILA.W - 640); const top = frontierSouthBank(px) + 22; py = top + frontierNoise(i, 97) * (VILA.H - 80 - top); }
+    if (px < v.x0 || px > v.x1 || py < v.y0 || py > v.y1) continue;
+    const a = (k - .55) / .45 * .7; ctx.fillStyle = `rgba(255,252,230,${a})`; ctx.fillRect(px - 3, py, 7, 1.4); ctx.fillRect(px, py - 2, 1.4, 5);
+  }
+  // A espuma vai e vem na beira.
+  frontierShoreFoam ??= frontierShorePoints(-4).map((q, i, a) => { const b = a[Math.min(a.length - 1, i + 1)], c = a[Math.max(0, i - 1)], dx = b[0] - c[0], dy = b[1] - c[1], L = Math.hypot(dx, dy) || 1; return { x: q[0], y: q[1], nx: -dy / L, ny: dx / L, tx: dx / L, ty: dy / L }; });   // normal pra água
+  ctx.lineCap = 'round'; ctx.lineWidth = 2.2;
+  for (let i = 0; i < frontierShoreFoam.length; i += 2) {
+    const f = frontierShoreFoam[i]; if (f.x < v.x0 - 20 || f.x > v.x1 + 20 || f.y < v.y0 - 20 || f.y > v.y1 + 20) continue;
+    const w = Math.sin(t * 1.1 + i * .23), out = 4 + (w + 1) * 5, a = .16 + .22 * Math.max(0, w);
+    ctx.strokeStyle = `rgba(236,240,226,${a})`; ctx.beginPath(); ctx.moveTo(f.x + f.nx * out - f.tx * 8, f.y + f.ny * out - f.ty * 8); ctx.lineTo(f.x + f.nx * out + f.tx * 8, f.y + f.ny * out + f.ty * 8); ctx.stroke();
   }
   ctx.restore();
   // Timber landing stays exactly over the walkable pier.
+  if(typeof drawEnvironmentPier==='function'&&drawEnvironmentPier())return true;
   rect(250,942,290,12,'#243b3090');
   rect(250,892,290,50,'#795b3c',1,'#493c2b');
   for(let px=252;px<540;px+=18){rect(px,894,15,46,px%3?'#93704c':'#896442');rect(px+3,900,1,30,'#b89a6955');rect(px+4,897,2,2,'#443b2c');}

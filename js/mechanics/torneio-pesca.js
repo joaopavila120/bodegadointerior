@@ -2,6 +2,8 @@
 // Guri e o Mano Lima pescam na beira do rio e vão marcando peixe no placar. O Sadi ganha lances a mais no trapiche e
 // precisa dar uma escapada da bodega: quem tirar o peixe mais pesado até o fim da tarde ganha prêmio, figurinha e o
 // troféu de pesca. De noite, depois de fechar, todo mundo come peixinho na brasa na casa do Peixinho, em Santa Catarina.
+// O primeiro torneio é uma missão: depois do arco do dourado, visitando o Peixinho, ele convida pro torneio do dia
+// seguinte. Feito o primeiro, o torneio entra no calendário a cada três semanas.
 'use strict';
 
 const TORNEIO = {
@@ -12,13 +14,39 @@ MAP_EVENTS.pesca = {
   id: 'pesca', name: 'Torneio de pesca', icon: '🎣', giver: 'peixinhonabrasa', place: 'Trapiche da Fronteira, até o fim da tarde',
   desc: 'O Peixinho na Brasa organizou um torneio de pesca no trapiche: quem tirar o peixe mais pesado até o fim da tarde ganha prêmio, figurinha e troféu. Hoje tu tem ' + TORNEIO.extra + ' lances a mais. De noite, depois de fechar, peixinho na brasa na casa dele.',
   reward: TORNEIO.prize,
-  days: n => n === 31 || n > 31 && (n - 31) % 21 === 0, requires: () => !regionLocked('sc'),
+  days: (n, day) => { const m = G.missions?.torneio; if (m?.status === 'active') return day === m.on; return m?.status === 'done' && day > m.day && (n === 31 || n > 31 && (n - 31) % 21 === 0); }, requires: () => !regionLocked('sc'),
   scene: [['peixinhonabrasa', 'Ô loco, meu! Hoje tem torneio de pesca no trapiche da Fronteira!'],
     ['peixinhonabrasa', 'Quem tirar o peixe mais pesado até o fim da tarde ganha prêmio e figurinha. O Lauro, o Guri e o Mano Lima já tão com a vara na mão.'],
     ['sadi', 'E a bodega, quem cuida?'],
     ['peixinhonabrasa', 'Dá uma escapada entre um freguês e outro, meu! Hoje tu tem mais lances no trapiche. E de noite é peixinho na brasa lá em casa, pra todo mundo!']],
-  tracker: () => { const st = mapEvState('pesca'); if (st.done) return null; return { icon: '🎣', title: 'Torneio de pesca', goal: torneioGoal() }; }
+  tracker: () => { const st = mapEvState('pesca'); if (st.done || missionActive('torneio')) return null; return { icon: '🎣', title: 'Torneio de pesca', goal: torneioGoal() }; }
 };
+
+// ---------- A missão: o primeiro torneio ----------
+// Primeiro dia livre (sem outro evento no mapa) a partir de um dia.
+function torneioFreeDay(from) {
+  for (let d = from; d < from + 40; d++) if (!Object.values(MAP_EVENTS).some(e => e.id !== 'pesca' && e.days(dayNumber(d), d) && e.requires())) return d;
+  return from;
+}
+function torneioWhen(day) { return day === G.day ? 'hoje' : day === G.day + 1 ? 'amanhã' : 'no dia ' + dayNumber(day); }
+MISSIONS.push({ id: 'torneio', title: 'Torneio de pesca no trapiche', giver: 'peixinhonabrasa', side: true,
+  where: 'Trapiche da Fronteira, de dia; de noite, a casa do Peixinho, em Santa Catarina',
+  when: () => !regionLocked('sc') && missionDone('peixinho'),
+  get intro() { return [['peixinhonabrasa', 'Ô loco, meu! Depois daquele dourado, a piazada só fala de pescaria.'],
+    ['peixinhonabrasa', 'Bora fazer um torneio de pesca no trapiche da Fronteira! Quem tirar o peixe mais pesado até o fim da tarde ganha prêmio, figurinha e troféu.'],
+    ['sadi', 'E quem vai pescar?'],
+    ['peixinhonabrasa', 'O Lauro, o Guri e o Mano Lima já toparam. É ' + torneioWhen(torneioFreeDay(G.day + 1)) + ', no trapiche! E de noite é peixinho na brasa aqui em casa, pra todo mundo.'],
+    ['dica', 'No dia do torneio tu tem <b>' + TORNEIO.extra + ' lances a mais</b> no trapiche. Dá uma escapada da bodega entre um freguês e outro: vale o peixe mais pesado até o fim da tarde.', 'Torneio de pesca']]; },
+  goal: () => { const m = G.missions?.torneio; if (!m?.on || G.day < m.on) return 'Torneio de pesca no trapiche da Fronteira ' + torneioWhen(m?.on ?? torneioFreeDay(G.day + 1)) + ': o peixe mais pesado até o fim da tarde ganha'; return torneioGoal(); },
+  done: () => false,
+  get reward() { return MAP_EVENTS.pesca.reward; },
+  start: () => { G.missions.torneio.on = torneioFreeDay(G.day + 1); } });
+// Fim do primeiro torneio: a missão conclui e o torneio vira evento do calendário.
+function torneioMissionDone() {
+  if (!missionActive('torneio')) return null;
+  G.missions.torneio = { status: 'done', day: G.day }; save();
+  return ['dica', '<b>🎣 Torneio de pesca no calendário</b><br>O Peixinho gostou tanto que agora o torneio é de três em três semanas. Fica de olho no calendário da bodega.', 'Torneio de pesca'];
+}
 
 // ---------- Estado e placar ----------
 function torneioToday() { const ev = mapEventToday(); return ev?.id === 'pesca' ? ev.st : null; }
@@ -69,8 +97,8 @@ function torneioFigurinha() { const id = !hasCard('peixinhonabrasa') ? 'peixinho
 function torneioFinale() {
   const st = torneioToday(); if (!st || st.done) return; st.done = true; save();
   const won = st.winner === 'sadi', rw = torneioPrize(won), w = st.win, kind = w ? fishName(w.kind).toLowerCase() : '';
-  const done = () => { grantReward(rw); const card = won ? torneioFigurinha() : null; talk([['reward', rw, won ? 'Campeão do torneio de pesca · troféu na estante de casa' : 'Torneio de pesca · prêmio de participação']], card ? () => albumCard(card, true) : null, won ? 'Valeu, Peixinho!' : 'Na próxima eu ganho'); };
-  if (!st.best) { showBanner('Torneio de pesca: ' + (w ? torneioWho(w.who) + ' ganhou' : 'ninguém pescou'), w ? 'Com ' + kind + ' de ' + kgText(w.kg) + '. O Sadi nem molhou a linha.' : '', 'info', { world: true }); return; }
+  const done = () => { grantReward(rw); const card = won ? torneioFigurinha() : null, cal = torneioMissionDone(); talk([['reward', rw, won ? 'Campeão do torneio de pesca · troféu na estante de casa' : 'Torneio de pesca · prêmio de participação'], ...(cal ? [cal] : [])], card ? () => albumCard(card, true) : null, won ? 'Valeu, Peixinho!' : 'Na próxima eu ganho'); };
+  if (!st.best) { showBanner('Torneio de pesca: ' + (w ? torneioWho(w.who) + ' ganhou' : 'ninguém pescou'), w ? 'Com ' + kind + ' de ' + kgText(w.kg) + '. O Sadi nem molhou a linha.' : '', 'info', { world: true }); const cal = torneioMissionDone(); if (cal) talk([cal], null, 'Combinado'); return; }
   if (!scenesEnabled()) { done(); return; }
   const h = peixinhoHouse(), cx = h.x + 120, cy = h.y + 190, gx = cx + 28, gy = cy - 8;
   const grill = layers => layers.push({ y: gy + 30, draw: () => { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(gx, gy - 40, 70, .35 + .08 * Math.sin(frameClock * 8), '255,140,50'); ctx.restore(); rect(gx - 34, gy - 30, 68, 8, '#3a3a3a', 2); for (let k = 0; k < 3; k++) fishSprite(ctx, k ? 'traira' : (w?.kind || 'piava'), gx - 20 + k * 20, gy - 40, 18); for (let k = 0; k < 3; k++) { const a = (frameClock * .8 + k / 3) % 1; ctx.globalAlpha = .5 * (1 - a); ellipse(gx - 10 + k * 10, gy - 60 - a * 40, 6 + a * 8, 5 + a * 6, '#d8d4cc'); ctx.globalAlpha = 1; } } });
@@ -115,6 +143,11 @@ function torneioPlacar() {
   // Cada peixe pescado durante o torneio vai pro placar.
   const end = fishEnd; fishEnd = function (ok, why, silent) { const F = fishing; end(ok, why, silent); if (ok && F?.kg) torneioCatch(F.kind, F.kg); };
   const tick = mapEventsTick; mapEventsTick = function () {
+    const ms = G.missions?.torneio;
+    if (ms?.status === 'active' && ms.on && !prologueActive()) {
+      if (G.day > ms.on) { ms.on = torneioFreeDay(G.day + 1); save(); showBanner('O Peixinho remarcou o torneio de pesca', 'Agora é ' + torneioWhen(ms.on) + ', no trapiche da Fronteira.', 'info', { world: true }); }
+      else if (G.day === ms.on) { const today = torneioToday(); if (today && !today.intro) { today.intro = true; save(); showBanner('Hoje: torneio de pesca do Peixinho!', 'No trapiche da Fronteira, até o fim da tarde. Tu tem ' + TORNEIO.extra + ' lances a mais.', 'info', { world: true }); } }
+    }
     tick(); const st = torneioToday(); if (!st || st.done || prologueActive() || tutorialActive()) return;
     if (!st.ended && worldNight()) torneioEnd(st);
     if (torneioOn() && worldOut?.map === 'vila') remindOnce('torneio-pesca', '🎣 Torneio de pesca no trapiche: o peixe mais pesado até o fim da tarde ganha!');

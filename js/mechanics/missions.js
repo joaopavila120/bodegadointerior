@@ -491,15 +491,17 @@ function drawSecrets() {
 
 // ---------- Frutas do mato ----------
 const FORAGE = [
-  { id: 'butiazeiro', map: 'vila', x: 760, y: 1560, item: 'butia', n: 6, name: 'Butiazeiro', of: 'do', color: '#f0a020' },
+  { id: 'butiazeiro', map: 'vila', x: 760, y: 1560, item: 'butia', n: 2, every: 4, name: 'Butiazeiro', of: 'do', color: '#f0a020' },
   { id: 'guabirobeira', map: 'serra', x: 1340, y: 1820, item: 'guabiroba', n: 6, name: 'Guabirobeira', of: 'da', color: '#e8b040' },
   { id: 'pitangueira', map: 'sc', x: 2300, y: 900, item: 'pitanga', n: 6, name: 'Pitangueira', of: 'da', color: '#d42a2a' }
 ];
 const FORAGE_EVERY = 2;
-function forageReady(f) { const last = G.forage?.[f.id]; return last == null || G.day - last >= FORAGE_EVERY; }
+// O butiá cura nas brigas (mata-missao.js): o butiazeiro dá pouco e demora mais a carregar.
+function forageWait(f) { return f.every || (f.item === 'butia' ? 4 : FORAGE_EVERY); }
+function forageReady(f) { const last = G.forage?.[f.id]; return last == null || G.day - last >= forageWait(f); }
 function forageSpots() {
   if (!worldOut || prologueActive()) return [];
-  return FORAGE.filter(f => f.map === worldOut.map).map(f => ({ id: 'forage:' + f.id, x: f.x, y: f.y + 40, label: forageReady(f) ? 'Colher ' + bagName(f.item).toLowerCase() + ' ' + f.of + ' ' + f.name.toLowerCase() : f.name + ' · fruta de novo em ' + (FORAGE_EVERY - (G.day - G.forage[f.id])) + ' dia(s)', act: () => pickForage(f) }));
+  return FORAGE.filter(f => f.map === worldOut.map).map(f => ({ id: 'forage:' + f.id, x: f.x, y: f.y + 40, label: forageReady(f) ? 'Colher ' + bagName(f.item).toLowerCase() + ' ' + f.of + ' ' + f.name.toLowerCase() : f.name + ' · fruta de novo em ' + (forageWait(f) - (G.day - G.forage[f.id])) + ' dia(s)', act: () => pickForage(f) }));
 }
 function pickForage(f) {
   if (!forageReady(f)) { worldSay((f.of === 'da' ? 'A ' : 'O ') + f.name.toLowerCase() + ' ainda está sem fruta madura.'); return; }

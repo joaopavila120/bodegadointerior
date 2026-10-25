@@ -27,6 +27,10 @@ async function initializeGame() {
     } catch (_) { /* O modo sem persistência ainda permite jogar. */ }
 
     await Promise.all([
+      bodegaArtReady,
+      fishingArtReady,
+      regionalIdentityReady,
+      environmentArtReady,
       sadiArtLoaded,
       expansionArtLoaded,
       ...Object.entries(CAMPEIRA_ART).map(([key,image])=>waitForImage(image,'assets/images/campeira/'+key+'.png')),

@@ -81,7 +81,7 @@
   check(SECRETS.every(s=>WORLD_MAPS[s.map].canWalk(s.x,s.y)),'todas as relíquias ficam em lugar alcançável');
   check(FORAGE.every(f=>WORLD_MAPS[f.map].canWalk(f.x,f.y+40)),'todas as frutas do mato ficam em lugar alcançável');
   const bt=WORLD_MAPS.vila.spots().find(s=>s.id==='forage:butiazeiro');worldOut.x=bt.x;worldOut.y=bt.y;interact();talkAll();
-  check(bagQty('butia')===6&&/de novo em/.test(WORLD_MAPS.vila.spots().find(s=>s.id==='forage:butiazeiro').label),'o butiazeiro dá 6 butiás e frutifica de novo depois');
+  check(bagQty('butia')===2&&/de novo em 4 dia/.test(WORLD_MAPS.vila.spots().find(s=>s.id==='forage:butiazeiro').label),'o butiazeiro dá 2 butiás e demora 4 dias pra carregar de novo');
   // pescaria no trapiche
   const rv=WORLD_MAPS.vila.spots().find(s=>s.id==='river');worldOut.x=rv.x;worldOut.y=rv.y;interact();talkAll();check(modal==='fishing'&&fishing?.phase==='aim'&&!!$('fishCanvas'),'no trapiche, a pescaria de verdade: arremesso, boia e briga');
   fishKey(true);for(let i=0;i<14;i++)fishTick(.05);fishKey(false);for(let i=0;i<14;i++)fishTick(.05);fishing.kind='jundia';fishing.biteIn=0;fishTick(.05);fishKey(true);{let k=0;while(fishing.phase==='fight'&&k++<3000){fishing.holding=!fishing.run&&fishing.tension<.6;fishTick(.05);}}
@@ -319,7 +319,7 @@
    const lad=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:ladder');worldOut.x=lad.x;worldOut.y=lad.y;interact();check(caveState().floor===2&&caveState().deepest===2,'desce pro andar de baixo');
    run=caveFloorRun();const b=run.beasts[0],hp=caveState().hp;worldOut.x=b.x;worldOut.y=b.y+5;run.inv=0;caveTick(.05);check(caveState().hp<hp,'bicho machuca');
    caveState().hp=1;run.inv=0;caveHurt(10,{x:worldOut.x-10,y:worldOut.y});check(caveDefeatActive()&&worldOut.map==='caverna','desmaiou: mostra a queda antes da recuperação');caveDefeatTick(4.5);check(worldOut.map==='serra'&&caveState().hp===CAVE.maxHp&&modal==='talk','desmaiou: acorda na boca da gruta após a animação');talkAll();
-   caveState().deepest=CAVE.deep;enterCave(CAVE.deep);run=caveFloorRun();check(run.chest?.vo,'no andar 10, o baú do vô');const ch=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:chest');worldOut.x=ch.x;worldOut.y=ch.y;interact();talkAll();
+   check(caveLockedToday(),'desmaiou: a gruta fica fechada até amanhã');delete caveState().faintDay;caveState().deepest=CAVE.deep;enterCave(CAVE.deep);run=caveFloorRun();check(run.chest?.vo,'no andar 10, o baú do vô');const ch=WORLD_MAPS.caverna.spots().find(s=>s.id==='cave:chest');worldOut.x=ch.x;worldOut.y=ch.y;interact();talkAll();
    check(caveState().vo&&bagQty('ametista')>=3,'o baú do vô tem moedas, ametistas e o bilhete dele');caveLeave();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);worldOut.x=d.x;worldOut.y=d.y;interact();
    check(modal==='caveStops'&&$('dialogContent').querySelectorAll('[data-act="caveGo"]').length===3,'a corda desce direto pros andares 1, 5 e 10');closeDialog(true);worldOut=null;G.phase='prep';}
   // caverna: retorno do jogo — sons de golpe, grito e dano, números que sobem, o baú mostra o que tinha e o saldo da descida

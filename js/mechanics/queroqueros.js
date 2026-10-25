@@ -1,10 +1,11 @@
-// Quero-queros no mundo aberto: não são todo dia. Em alguns dias aparece um (às vezes um casal) ciscando num campo da
-// Fronteira, mais raro na Serra e em Santa Catarina. Chegou perto, ele grita: uns levantam voo e pousam mais adiante,
+// Quero-queros no mundo aberto: quase todo dia tem algum ciscando nos campos (até três bandos, de um, um casal ou três),
+// mais na Fronteira, um pouco menos na Serra e em Santa Catarina. Chegou perto, ele grita: uns levantam voo e pousam mais adiante,
 // outros marcam um alvo no chão e dão o rasante, que empurra o Sadi. São menores que na laçada (escala do mapa), e o
 // bodoque não sai da guaiaca aqui: ele é só da laçada dos bois.
 'use strict';
 
-const QQ_CHANCE = { vila: .4, serra: .22, sc: .14 }, QQ_SCALE = .8, QQ_ALERT = 210, QQ_HIT = 36;
+const QQ_CHANCE = { vila: .92, serra: .75, sc: .6 }, QQ_SCALE = .8, QQ_ALERT = 210, QQ_HIT = 36;
+const QQ_GROUPS = { vila: 3, serra: 2, sc: 2 };   // bandos por mapa no mesmo dia
 const QQ_SALT = { vila: 11, serra: 29, sc: 47 };
 let qqFlock = { key: '', birds: [] }, qqKnock = { t: 0, vx: 0, vy: 0 }, qqSlingNote = 0;
 
@@ -46,9 +47,14 @@ function qqBirds(M = worldMap()) {
   const key = M.id + ':' + G.day; if (qqFlock.key === key) return qqFlock.birds;
   qqFlock = { key, birds: [] };
   const R = caveRand(G.day * 6151 + QQ_SALT[M.id]); if (R() >= QQ_CHANCE[M.id]) return qqFlock.birds;
-  const home = qqSpot(M, R); if (!home) return qqFlock.birds;
-  qqFlock.birds.push(qqBird(home.x, home.y, R));
-  if (R() < .4) { const x = home.x + 70 + R() * 40, y = home.y + (R() - .5) * 40; if (qqOpen(M, x, y)) qqFlock.birds.push(qqBird(x, y, R)); }
+  const homes = [];
+  for (let g = 0; g < QQ_GROUPS[M.id]; g++) {
+    if (g && R() >= .6) continue;
+    let home = null; for (let k = 0; k < 6 && !home; k++) { const at = qqSpot(M, R); if (at && homes.every(h => Math.hypot(h.x - at.x, h.y - at.y) > 700)) home = at; }
+    if (!home) continue; homes.push(home); qqFlock.birds.push(qqBird(home.x, home.y, R));
+    // Casal (e às vezes um terceiro) ciscando junto.
+    for (let k = 0; k < 2; k++) { if (R() >= (k ? .25 : .55)) break; const x = home.x + (k ? -60 - R() * 30 : 70 + R() * 40), y = home.y + (R() - .5) * 40; if (qqOpen(M, x, y)) qqFlock.birds.push(qqBird(x, y, R)); }
+  }
   return qqFlock.birds;
 }
 // Levanta voo e pousa um pouco adiante.

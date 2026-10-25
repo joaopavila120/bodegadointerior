@@ -96,6 +96,106 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='fishingRegions'){
+      await load(base+'/index.html');
+      assert.equal(await evaluate('regionalIdentityReady'),true);assert.equal(await evaluate('fishingArtReady'),true);
+      await evaluate('Promise.all([mataArtReady,environmentArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      for(const file of ['fishing-regional-scenarios.js','novidades-scenarios.js','environment-polish-scenarios.js','world-layout-scenarios.js'])
+        console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await load(base+'/index.html');await evaluate('Promise.all([mataArtReady,environmentArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.regions={serra:true,sc:true};started=true;scene=null;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');worldWalkers=[];`);
+      for(const [name,map,x,y] of [['serra','serra',1800,840],['serra-vila','serra',1800,1780],['sc','sc',1500,950]]){
+        await evaluate(`worldOut={map:'${map}',x:${x},y:${y},dx:0,dy:1};refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/regional-'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      for(const map of ['vila','serra','sc']){
+        console.log('Extra trees '+map+': '+await evaluate(`regionalExtraTrees(WORLD_MAPS['${map}']).length`));
+        await evaluate(`(()=>{const t=regionalExtraTrees(WORLD_MAPS['${map}'])[0];worldOut={map:'${map}',x:t.x+150,y:t.y+30,dx:0,dy:1};refreshHUD();draw();})()`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/tree-varieties-'+map+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await evaluate(`worldOut={map:'vila',x:400,y:920,dx:1,dy:0};draw();startFishing();`);
+      const worldStill=await evaluate('canvas.toDataURL()');await delay(350);
+      assert.equal(await evaluate('canvas.toDataURL()'),worldStill,'world canvas stays frozen behind fishing');
+      await delay(150);const initialBox=await evaluate(`(()=>{const r=$('fishCanvas').getBoundingClientRect();return [r.x,r.y,r.width,r.height];})()`);
+      const point=await evaluate(`(()=>{const r=$('fishHold').getBoundingClientRect();return {x:r.x+30,y:r.y+20};})()`);
+      await send('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});await delay(300);
+      await send('Input.dispatchMouseEvent',{type:'mouseMoved',x:point.x+400,y:point.y-100,button:'left',buttons:1});
+      await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x+400,y:point.y-100,button:'left',clickCount:1});await delay(750);
+      assert.equal(await evaluate('fishing.holding'),false,'release outside the button is captured');
+      assert.deepEqual(await evaluate(`(()=>{const r=$('fishCanvas').getBoundingClientRect();return [r.x,r.y,r.width,r.height];})()`),initialBox,'canvas stays fixed when the instruction changes');
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/pescaria-renovada.png'),Buffer.from(shot.data,'base64'));
+      await evaluate(`closeDialog(true);G.phase='closed';startFishing();fishDraw();`);
+      const nightShot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/pescaria-noite.png'),Buffer.from(nightShot.data,'base64'));
+      await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+      await evaluate('closeDialog(true);startFishing();fishDraw();');
+      const mobileBox=await evaluate(`(()=>{const r=$('fishCanvas').getBoundingClientRect();return [r.width,r.height];})()`);
+      await evaluate(`fishing.msg='Puxou cedo! O peixe se assustou. Espera a boia afundar de vez.';fishDraw();`);
+      assert.deepEqual(await evaluate(`(()=>{const r=$('fishCanvas').getBoundingClientRect();return [r.width,r.height];})()`),mobileBox,'mobile canvas dimensions stay stable');
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);
+      assert.equal(await evaluate('regionalIdentityReady'),true);assert.equal(await evaluate('fishingArtReady'),true);
+      blockedPath='/assets/images/fishing/uruguai-v1.png';await load(base+'/index.html');assert.equal(await evaluate('fishingArtReady'),false);
+      await evaluate('startFishing();fishDraw();closeDialog(true)');assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='bodegaArt'){
+      await load(base+'/index.html');assert.equal(await evaluate('bodegaArtReady'),true);
+      await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      for(const file of ['bodega-interior-scenarios.js','expansion-scenarios.js','sadi-tray-scenarios.js'])
+        console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await load(base+'/index.html');await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;started=true;scene=null;worldOut=null;phoneOpen=false;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');G.player={x:810,y:710,dx:0,dy:1};camera.fit=true;camera.zoom=1;`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const state of ['inicial','decorada','chuva']){
+        await evaluate(state==='inicial'?`G.decor={};G.phase='open';G.event={id:'normal',seen:true,fired:{}};refreshHUD();draw();`:
+          `G.decor=Object.fromEntries(DECOR.map(d=>[d.id,true]));for(const f of FIXED)if(f.unlock)G.up[f.unlock]=true;G.up.table3=G.up.table4=true;for(const k of Object.keys(G.stock))G.stock[k] ||= bulk(k)?5000:10;G.phase='open';G.event={id:'${state==='chuva'?'chuva':'normal'}',seen:true,fired:{}};refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/bodega-'+state+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('bodegaArtReady'),true);
+      blockedPath='/assets/images/bodega/room-v1.png';await load(base+'/index.html');
+      assert.equal(await evaluate('bodegaArtReady'),false);
+      assert.equal(await evaluate('drawBodegaRoom()'),false,'missing new background uses the original room');
+      await evaluate('draw()');assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='fauna'){
+      await load(base+'/index.html');await evaluate('Promise.all([mataArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      for(const file of ['mata-fauna-art-scenarios.js','novidades-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.mataSeen=1;G.mata={metGaribaldi:1};started=true;scene=null;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');worldOut={map:'mata',x:1300,y:1055,dx:0,dy:1};mataNight=null;mataParrots=null;mataFauna={day:G.day,quatis:[{x:1400,y:1065,frame:1,state:'walk',dx:1},{x:1490,y:1100,frame:2,state:'walk',dx:-1}],tatus:[{x:1150,y:1085,frame:1,state:'walk',dx:1},{x:1240,y:1150,frame:0,state:'walk',dx:-1}]};refreshHUD();draw();`);
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/mata-fauna-animada.png'),Buffer.from(shot.data,'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('mataArtReady'),true);
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='environment'){
+      await load(base+'/index.html');
+      assert.equal(await evaluate('environmentArtReady'),true);
+      await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,expansionArtLoadAll(),dunstanRoomReady])');
+      for(const file of ['environment-polish-scenarios.js','world-layout-scenarios.js','cave-movement-scenarios.js','road-cave-performance-scenarios.js'])
+        console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await evaluate(`G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;started=true;paused=true;scene=null;$('start').classList.add('hidden');closeDialog(true);worldWalkers=[];skipWorldTalk();document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const [name,map,x,y,n] of [['fronteira','vila',1700,1520],['pier','vila',470,917],['serra','serra',1170,1900],['sc','sc',1500,1030],['caverna-2','caverna',800,650,2],['caverna-11','caverna',800,650,11]]){
+        await evaluate(`worldOut={map:${JSON.stringify(map)},x:${x},y:${y},dx:0,dy:1};G.cave={facao:true,floor:${n||1},hp:100,up:{},dunstanTaught:true};caveRun=null;refreshHUD();draw();`);
+        await delay(200);await evaluate('draw()');const shot=await send('Page.captureScreenshot',{format:'png'});
+        fs.writeFileSync(path.join(root,'docs/previews/environment-'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('environmentArtReady'),true,'art loads when opening HTML directly');
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='forestPerformance'){
+      await load(base+'/index.html');await evaluate('Promise.all([mataArtReady,expansionArtLoadAll(),walkArtLoaded])');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'mata-performance-scenarios.js'),'utf8'));
+      console.log(JSON.stringify(results,null,2));assert.equal(errors.length,0,errors.join('\n'));return;
+    }
+    if(process.env.BODEGA_FOCUS==='forest'){
+      await load(base+'/index.html');await evaluate('Promise.all([mataArtReady,expansionArtLoadAll(),walkArtLoaded])');
+      console.log('PASS forest: '+(await evaluate(fs.readFileSync(path.join(__dirname,'mata-biomas-scenarios.js'),'utf8'))).length+' checks');
+      await evaluate(`G.day=4;G.mata.metGaribaldi=1;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);scene=null;worldWalkers=[];fx=[];mataNight=null;document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const shotName of ['refugio-exterior','refugio-interior','mata','encosta','restinga','praia','equipamentos']){
+        await evaluate(`(()=>{const id=${JSON.stringify(shotName)};closeDialog(true);paused=true;mataNight=null;mataFauna=null;if(id==='equipamentos'){worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(1120,430),dx:0,dy:1};garibaldiTab='loja';garibaldiShop();}else if(id==='refugio-interior')worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(760,650),dx:0,dy:1};else if(id==='refugio-exterior')worldOut={map:'mata',x:640,y:1460,dx:0,dy:1};else{mataState().trecho={mata:4,encosta:16,restinga:24,praia:29}[id];trechoCache=null;worldOut={map:'trecho',dx:0,dy:1};const T=trechoLayout();trechoDay(T.n).pinguela=true;const q=id==='praia'?{x:T.trails.find(t=>t.id==='praia').pts.at(-1)[0]+160,y:TRECHO.shoreY-170}:T.crossing||{x:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][0],y:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][1]};Object.assign(worldOut,{x:q.x-160,y:q.y});}refreshHUD();draw();})()`);
+        await delay(200);await evaluate('draw();');const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/mata-'+shotName+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);const checkLocal=await evaluate('mataArtReady');assert.equal(checkLocal,true,'artes via file://');
+      assert.equal(errors.length,0,errors.join('\n'));return;
+    }
     if(process.env.BODEGA_FOCUS==='collections'){
       await load(base+'/index.html');await evaluate('expansionArtLoadAll()');await evaluate('walkArtLoaded');
       for(const file of ['home-collections-scenarios.js','player-home-scenarios.js','interior-walk-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length);
@@ -154,7 +254,7 @@ async function main() {
       assert.equal(errors.length,0,errors.join('\n'));return;
     }
     if(process.env.BODEGA_FOCUS==='novidades'){
-      await load(base+'/index.html');await evaluate('expansionArtLoadAll()');
+      await load(base+'/index.html');await evaluate('Promise.all([expansionArtLoadAll(),mataArtReady])');
       const results=await evaluate(fs.readFileSync(path.join(__dirname,'novidades-scenarios.js'),'utf8'));
       console.log('PASS novidades: '+results.length+' checks');assert.equal(errors.length,0,errors.join('\n'));return;
     }
@@ -169,7 +269,7 @@ async function main() {
     }
     if(process.env.BODEGA_FOCUS==='cavePerf'){
       await load(base+'/index.html');
-      await evaluate('expansionArtLoadAll()');
+      await evaluate('Promise.all([expansionArtLoadAll(),environmentArtReady])');
       console.log(JSON.stringify(await evaluate(`(()=>{
         const original={G,worldOut,ctx,caveRun};const results=[];
         try{G=fresh();G.day=5;G.prologue={done:true};G.cave={floor:10,up:{},hp:100};worldOut={map:'caverna',x:1000,y:800};

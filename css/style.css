@@ -505,8 +505,8 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .tcard-photo{width:100%;height:100%;object-fit:cover;object-position:center 25%;display:block}
 .tcard-encounter{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(ellipse,#d6bc86,#51412e)}
 .tcard-encounter .portrait{width:90%;height:90%;max-width:100%;border:0;border-radius:0;background:none;object-fit:contain}
-#dunstanTradeButton{align-self:center;flex-shrink:0;max-width:160px;white-space:normal}
-@media(max-width:650px){#dunstanTradeButton{max-width:110px;font-size:11px;padding:5px}}
+#dunstanTradeButton,#garibaldiTradeButton{align-self:center;flex-shrink:0;max-width:160px;white-space:normal}
+@media(max-width:650px){#dunstanTradeButton,#garibaldiTradeButton{max-width:110px;font-size:11px;padding:5px}}
 
 .domingo-card{position:fixed;inset:0;z-index:999999;display:grid;place-content:center;gap:10px;background:#000;color:#f1e6c8;text-align:center;animation:domingoCard 3.2s ease forwards;cursor:pointer}.domingo-card p{margin:0;font:italic clamp(28px,5vw,64px)/1.2 Georgia,serif}.domingo-card small{font:clamp(14px,1.6vw,20px) Georgia,serif;color:#d9b25e}
 @keyframes domingoCard{0%{opacity:0}12%{opacity:1}78%{opacity:1}100%{opacity:0}}

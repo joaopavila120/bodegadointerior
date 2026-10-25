@@ -168,7 +168,7 @@ function drawMataTerrain(view) {
     if (!tile) { tile = document.createElement('canvas'); tile.width = w + pad * 2; tile.height = h + pad * 2; const main = ctx; ctx = tile.getContext('2d'); ctx.translate(pad - x, pad - y); try { paintMataTerrain({ x: x - pad, y: y - pad, w: w + pad * 2, h: h + pad * 2 }); } finally { ctx = main; } }
     mataTiles.delete(key); mataTiles.set(key, tile);
     while (mataTiles.size > MATA_TILE_LIMIT) { const k = mataTiles.keys().next().value, old = mataTiles.get(k); mataTiles.delete(k); old.width = old.height = 0; }
-    ctx.drawImage(tile, pad, pad, w, h, x, y, w, h);
+    drawTileSnapped(tile, pad, pad, w, h, x, y);
   }
 }
 // A água correndo pro sul: risquinhos de luz que descem com a correnteza.

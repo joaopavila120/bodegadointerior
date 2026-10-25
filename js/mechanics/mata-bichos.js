@@ -92,7 +92,7 @@ function mataGrabTick(dt) {
   const g = mataGrab; if (!g) return; const b = g.b;
   if (b.hp <= 0 || b.state !== 'grab' || !mataNight || mataNight.faint) { mataGrab = null; if (b.state === 'grab') { b.state = 'stagger'; b.t = .8; b.cool = 2.5; } return; }
   g.t -= dt; g.tick -= dt; const p = worldOut, d = Math.hypot(p.x - b.x, p.y - b.y) || 1; if (d > 60) { p.x = b.x + (p.x - b.x) / d * 60; p.y = b.y + (p.y - b.y) / d * 60; }
-  if (g.tick <= 0) { g.tick = .45; const st = caveState(), loss = Math.max(1, Math.round(4 * (b.dmgMul || 1) * (mataUp('perneira') ? .75 : 1))); st.hp = Math.max(0, st.hp - loss); mataNight.hurt = .2; effect('−' + loss, p.x, p.y - 130, '#ff8a7a', 20); AudioEngine.caveOuch?.(); if (st.hp <= 0) { mataGrab = null; mataFaint(); return; } }
+  if (g.tick <= 0) { g.tick = .45; const st = caveState(), loss = Math.max(1, Math.round(4 * (b.dmgMul || 1) * (caveUp('chapeu') ? .85 : 1))); st.hp = Math.max(0, st.hp - loss); mataNight.hurt = .2; effect('−' + loss, p.x, p.y - 130, '#ff8a7a', 20); AudioEngine.caveOuch?.(); if (st.hp <= 0) { mataGrab = null; mataFaint(); return; } }
   if (g.t <= 0) { mataGrab = null; b.state = 'stagger'; b.t = .8; b.cool = 2.5; mataNight.inv = .8; effect('Soltou!', p.x, p.y - 150, '#d8ffac', 16); }
 }
 // Os espinhos voando (e o que mais for atirado: os torrões do cachaço usam o mesmo caminho, em mata-chefes.js).

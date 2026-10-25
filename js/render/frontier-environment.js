@@ -147,7 +147,7 @@ function drawFrontierTerrain(view) {
       }
       frontierTerrainTiles.delete(key);frontierTerrainTiles.set(key,tile);
       while(frontierTerrainTiles.size>FRONTIER_TILE_LIMIT){const oldest=frontierTerrainTiles.keys().next().value;const old=frontierTerrainTiles.get(oldest);frontierTerrainTiles.delete(oldest);old.width=old.height=0;}
-      ctx.drawImage(tile,pad,pad,w,h,x,y,w,h);
+      drawTileSnapped(tile,pad,pad,w,h,x,y);
     }
   }
   return true;

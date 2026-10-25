@@ -226,7 +226,7 @@ function folkArt(id) {
   } finally { ctx = main; }
   folkCanvas.set(id, c); return c;
 }
-function drawFolk(id, x, y, alpha = 1, dx = 1) {
+function drawCampFolk(id, x, y, alpha = 1, dx = 1) {
   const f = CAMP_FOLK_LIST.find(q => q.id === id), c = folkArt(id), bob = f?.ghost ? Math.sin(frameClock * 1.6 + x) * 4 : 0;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (f?.ghost) glow(x, y - 80 + bob, 120, .2 * alpha, '140,190,255');
@@ -262,7 +262,7 @@ function campFolkMeet(T, f) {
   playSteps([...sceneWorld({ map: 'trecho', x: T.camp.x - 150, y: T.camp.y - 20, night: .25, fires: [], lights: [{ x: T.camp.x - 60, y: T.camp.y, r: 320, a: .3, color: '255,150,60' }] }),
     { actor: 'sadi', x: worldOut.x, y: worldOut.y, dx: -1 }, { fade: 'in', time: .6 },
     { walk: 'sadi', to: me },
-    { actor: f.id, x: at.x, y: at.y, dx: 1, alpha: 0, draw: (a, y) => drawFolk(f.id, a.x, y, a.alpha ?? 1, a.dx) },
+    { actor: f.id, x: at.x, y: at.y, dx: 1, alpha: 0, draw: (a, y) => drawCampFolk(f.id, a.x, y, a.alpha ?? 1, a.dx) },
     { do: () => { if (f.id === 'jasy') { for (let k = 0; k < 3; k++) AudioEngine.note?.(2200 + k * 300, .12, 'sine', .03, k * .15); } else AudioEngine.caveGhost?.(); const a = scene.actors[f.id], up = () => { if (!scene || scene.actors[f.id] !== a) return; a.alpha = Math.min(1, a.alpha + .05); if (a.alpha < 1) setTimeout(up, 40); }; up(); } }, { wait: 1.2 },
     ...lines.map(([who, text]) => ({ say: who, text })),
     { fade: 'out', time: .5 }], 'mata-' + f.id, () => { Object.assign(worldOut, { x: me.x, y: me.y, dx: -1, dy: 0, walk: false }); done(); });
@@ -287,7 +287,7 @@ function campFolkTalk(f) {
   };
   const draw = drawTrecho; drawTrecho = function (view, seen, layers) {
     draw(view, seen, layers); const T = trechoLayout(), f = T.camp && campFolk(T.n);
-    if (f && mataFolk(f.id) && !scene) { const at = campFolkSpot(T); if (seen(at.x, at.y, 300)) layers.push({ y: at.y, draw: () => drawFolk(f.id, at.x, at.y, 1, worldOut.x < at.x ? -1 : 1) }); }
+    if (f && mataFolk(f.id) && !scene) { const at = campFolkSpot(T); if (seen(at.x, at.y, 300)) layers.push({ y: at.y, draw: () => drawCampFolk(f.id, at.x, at.y, 1, worldOut.x < at.x ? -1 : 1) }); }
   };
   // O Lanceiro de sentinela: descansando num acampamento, um butiá no fogo (um por dia).
   const rest = trechoRest; trechoRest = function (T) {

@@ -432,11 +432,14 @@
    worldOut.x=RANCHO_GHOST.x+200;worldOut.y=RANCHO_GHOST.y;outsideTick(.05);check(modal==='talk'&&G.mata.metGaribaldi&&talkState?.lines.some(l=>/Laguna/.test(l[1])),'chegou perto do refúgio: o Garibaldi se apresenta e explica a mata adentro');talkAll();
    check(hasCard('garibaldi'),'a figurinha do Garibaldi vai pro álbum');
    garibaldiTalk();check(modal==='talk'&&/garibaldi-ghost/.test($('talkUI').innerHTML),'o Garibaldi fala com seu retrato de fantasma');talkAll();
+   G.mata.historia=G.mata.historia||G.day;garibaldiTalk();check($('garibaldiTradeButton'),'como o São Dunstano, a prosa com o Garibaldi tem o botão da loja');
+   action('garibaldiOpenShop');check(modal==='garibaldiShop'&&!talkState&&!$('garibaldiTradeButton'),'o botão encerra a prosa e abre a loja do rancho');closeDialog(true);
+   garibaldiTalk();talkAll();check(!$('garibaldiTradeButton'),'terminada a prosa, o botão some');
    check(!GARIBALDI_LORE.flat().some(l=>/Itália|italian|Nice/i.test(l[1])),'o Garibaldi conta da Farroupilha, sem falar de onde veio');
    check(GARIBALDI_LORE.flat().some(l=>/Tramandaí/.test(l[1]))&&GARIBALDI_LORE.flat().some(l=>/Ponche Verde/.test(l[1])),'causos: os lanchões por terra até o Tramandaí e a Paz de Ponche Verde');
    // a loja do refúgio
-   garibaldiTab='loja';garibaldiShop();check(modal==='garibaldiShop'&&$('dialogContent').querySelectorAll('[data-act="garibaldiBuy"]').length>=3&&!$('dialogContent').querySelector('[data-act="garibaldiBuy"][data-id="lampiao"]'),'refúgio: melhorias da mata (o lampião pede nível de mateiro)');
-   action('garibaldiBuy','facao_mato');check(mataUp('facao_mato'),'comprou o facão de mato');
+   garibaldiTab='loja';garibaldiShop();check(modal==='garibaldiShop'&&$('dialogContent').querySelector('[data-act="forjaMake"]')&&$('dialogContent').querySelector('[data-act="facaoBuy"][data-id="chapeu"]')&&!$('dialogContent').querySelector('[data-act="garibaldiBuy"]')&&typeof MATA_UPS==='undefined','refúgio: as mesmas armas e o mesmo equipamento da ferraria do São Dunstano, sem ferramenta da mata');
+   {const had=caveUp('bornal');G.cash+=300;action('facaoBuy','bornal');check(!had&&caveUp('bornal')&&mataBagMax()===6&&modal==='garibaldiShop','comprou o bornal de couro cru no rancho: vale na caverna e dobra o bornal da mata');delete caveState().up.bornal;}
    action('garibaldiTab','bornal');action('garibaldiItem','marcela');check(mataBag().marcela===1,'bornal da mata: chá de marcela');closeDialog(true);
    bagAdd('erva_verde',3);const e0=G.stock.erva||0;barbaquaSecar();check((G.stock.erva||0)===e0+3*BARBAQUA_G&&BARBAQUA_G===200&&!bagQty('erva_verde'),'barbaquá: cada ramo de erva nativa vira 200 g no saco de erva da bodega');talkAll();
    G.stock.pinhao=2000;caveState().hp=10;ranchoRest();check(G.stock.pinhao===2000&&caveState().hp===caveMaxHp(),'fogo de chão descansa sem preparar pinhão');
@@ -450,18 +453,14 @@
    check(off&&!TM.canWalk(off.x,off.y),'mata fechada: fora das picadas e clareiras é mato cerrado');
    mataNight=null;mataCombatTick(.01);check(mataCombatOn()&&mataNight.beasts.length>0&&trechoDarkness(T)>=.6,'mata adentro é braba desde o trecho 2, e lá dentro é sempre noite');
    const kinds=()=>mataNight.beasts.map(b=>b.kind).sort().join();const dayKinds=kinds();G.phase='closed';mataNight=null;mataCombatTick(.01);check(kinds()===dayKinds,'de dia ou de noite, os mesmos bichos');G.phase='prep';
-   const g=T.gates.find(x=>x.kind==='cipo');check(g&&!TM.canWalk(g.x,g.y),'no trecho 2, o cipó fecha a picada');
-   for(const sd of [-1,1]){Object.assign(worldOut,{x:g.x+Math.cos(g.a)*sd*48,y:g.y+Math.sin(g.a)*sd*48});check(worldNearest()?.id==='gate:'+g.id,'chegando pelos dois lados da picada, o E do obstáculo aparece');}
-   mataState().up.facao_mato=false;check(/precisa/.test(TM.spots().find(s=>s.id==='gate:'+g.id).label),'sem o facão de mato, não corta');
-   mataState().up.facao_mato=true;TM.spots().find(s=>s.id==='gate:'+g.id).act();check(TM.canWalk(g.x,g.y),'com o facão de mato, cortou o cipó');
+   check(!T.gates&&!TM.spots().some(s=>/^gate:/.test(s.id)),'sem cipó, banhado, arroio cheio nem barranco: nada de ferramenta pra passar');
+   {const blocked=[],st0={deepest:mataState().deepest,xp:mataState().xp};for(const n of [2,3,5,7,12,14,22,25]){switchMap({map:'trecho',trecho:n,x:90,y:trechoEnds(n).yIn});closeDialog(true);const t=trechoLayout();if(!t.trails[0].pts.filter(([x])=>x>60&&x<t.W-60).every(([x,y])=>TM.canWalk(x,y)))blocked.push(n);}check(!blocked.length,'a picada principal anda de ponta a ponta (só os chefes seguram) '+blocked.join());Object.assign(mataState(),st0);switchMap({map:'trecho',trecho:2,x:90,y:trechoEnds(2).yIn});closeDialog(true);T=trechoLayout();}
    const pin=T.resources.find(r=>r.kind==='pinha'),p0=G.stock.pinhao||0;trechoCollect(T,pin);check(G.stock.pinhao>p0&&G.stock.pinhao-p0<=400&&trechoDay().got.includes(pin.id)&&!TM.spots().some(s=>s.id==='res:'+pin.id),'juntou um punhado de pinhão: direto pro estoque da bodega');
    check(T.resources.filter(r=>r.kind==='pinha').length<=4,'pouca pinha por trecho');
    const er=T.resources.find(r=>r.kind==='erva');if(er){const ev0=bagQty('erva_verde');trechoCollect(T,er);check(bagQty('erva_verde')>ev0&&bagQty('erva_verde')-ev0<=2,'colheu um ou dois ramos de erva-mate nativa');}
-   const col=T.resources.find(r=>r.kind==='colmeia');mataState().up.fumaceiro=false;trechoCollect(T,col);check(!trechoDay().got.includes(col.id),'colmeia de jataí: sem fumaceiro, não dá');
-   mataState().up.fumaceiro=true;G.up.mel=false;const m0=G.stock.mel||0;trechoCollect(T,col);check(G.stock.mel>m0&&G.up.mel&&furniture().some(f=>f.id==='shop:mel'),'com o fumaceiro: mel de jataí, produto novo no balcão');
-   // trecho 3: banhado
+   const col=T.resources.find(r=>r.kind==='colmeia');G.up.mel=false;const m0=G.stock.mel||0;trechoCollect(T,col);check(G.stock.mel>m0&&G.up.mel&&furniture().some(f=>f.id==='shop:mel'),'colmeia de jataí: mel (sem fumaceiro), produto novo no balcão');
+   // trecho 3
    const e3=TM.edge({x:T.W-1,y:T.yOut});check(e3?.trecho===3,'segue pro trecho 3');switchMap(e3);closeDialog(true);T=trechoLayout();
-   const bh=T.gates.find(x=>x.kind==='banhado');mataState().up.bota=false;check(!TM.canWalk(bh.x,bh.y),'banhado fundo: sem bota, atola');mataState().up.bota=true;check(TM.canWalk(bh.x,bh.y),'com a bota de couro cru, atravessa');
    mataNight=null;mataCombatTick(.01);const b=mataNight.beasts.find(x=>x.hp>0);b.hp=0;mataKill(b);mataNight=null;mataCombatTick(.01);check(mataNight.beasts[b.idx].hp<=0,'bicho derrubado não volta no mesmo dia');
    check(TM.edge({x:1,y:T.yIn})?.trecho===2,'pela esquerda, volta pro trecho 2');
    // trecho 6: o primeiro acampamento e o Jasy Jaterê (sem placa de trecho pelo caminho)
@@ -480,9 +479,16 @@
    check(T.tocos,'trecho 8: clareira de tocos');G.stock.pinhao=1500;trechoPlant(T);check(mataState().plant[8]&&G.stock.pinhao===500,'plantou pinhão entre os tocos');talkAll();
    G.day=day0+3;trechoCache=null;T=trechoLayout();check(trechoPlantGrown(8)&&T.resources.filter(r=>r.kind==='pinha'&&Math.hypot(r.x-T.tocos.x,r.y-T.tocos.y)<T.tocos.rx).length>=1,'três dias depois, as mudas cresceram e a clareira dá pinhão');
    trechoPlant(T);check(mataState().plant[8].thanked&&modal==='talk'&&talkState?.lines.some(l=>l[0]==='gralha'),'e a gralha-azul agradece');talkAll();G.day=day0;trechoCache=null;
-   switchMap({map:'trecho',trecho:14,x:90,y:trechoEnds(14).yIn});closeDialog(true);T=trechoLayout();mataState().up.lampiao=false;
-   check(T.biome==='encosta'&&trechoDarkness(T)>=.8&&!TM.edge({x:T.W-1,y:T.yOut}),'trecho 14: a mata escura da encosta; sem lampião, não acha a saída');
-   mataBag().ticao=1;check(mataUseItem('ticao')&&trechoDarkness(T)<.5,'o tição de nó de pinho clareia o trecho');mataState().up.lampiao=true;
+   switchMap({map:'trecho',trecho:14,x:90,y:trechoEnds(14).yIn});closeDialog(true);T=trechoLayout();
+   check(T.biome==='encosta'&&trechoDarkness(T)>.7&&TM.edge({x:T.W-1,y:T.yOut})?.trecho===15,'trecho 14: a encosta é escura, mas a saída aparece sem lampião');
+   {const l0=trechoLight()[1],had=caveUp('lampiao');caveState().up.lampiao=true;check(trechoLight()[1]>l0,'o lampião da ferraria abre a luz na mata também');if(!had)delete caveState().up.lampiao;}
+   mataBag().ticao=1;check(mataUseItem('ticao')&&trechoDarkness(T)<.5,'o tição de nó de pinho clareia o trecho');
+   // baús de mateiro nos ramais
+   {let Tc=null;for(let dd=0;dd<8&&!Tc;dd++)for(let n=3;n<=9&&!Tc;n++){G.day=day0+dd;trechoCache=null;switchMap({map:'trecho',trecho:n,x:90,y:trechoEnds(n).yIn});closeDialog(true);const t=trechoLayout();if(t.chests.length)Tc=t;}
+    check(Tc&&Tc.chests.every(c=>Tc.clearings.some(q=>q.id.startsWith('coleta')&&((c.x-q.x)/q.rx)**2+((c.y-q.y)/q.ry)**2<1)),'baú de mateiro: só no fundo dos ramais');
+    const c=Tc.chests[0],cash0=G.cash;TM.spots().find(s=>s.id==='bau:'+c.id).act();check(G.cash>cash0&&trechoDay(Tc.n).got.includes(c.id)&&modal==='talk'&&talkState?.lines.some(l=>/Baú de mateiro/.test(l[1]))&&!TM.spots().some(s=>s.id==='bau:'+c.id),'abriu o baú: moeda e coisa pro bornal, e fica aberto até amanhã');talkAll();
+    const avg=n=>{let s=0;for(let k=0;k<60;k++)s+=trechoChestLoot(n).cash;return s/60;};check(avg(30)>avg(3)+40&&Object.values(trechoChestLoot(30).items).reduce((a,b)=>a+b,0)>=3,'quanto mais fundo, melhor o baú');
+    G.day=day0;trechoCache=null;}
    // quem mora em cada região
    G.phase='prep';mataState().cachaco=G.day;mataState().papo=G.day;
    check(trechoStrength(30).hp>trechoStrength(12).hp&&trechoStrength(12).hp>trechoStrength(3).hp&&trechoStrength(30).hp<2.6,'quanto mais fundo, os bichos um pouco mais fortes');
@@ -540,7 +546,8 @@
    caveState().hp=caveMaxHp();mataNight.inv=0;for(let i=0;i<40;i++)mataCombatTick(.05);check(caveState().hp<caveMaxHp(),'quem fica na faixa leva a bala');
    Object.assign(boss,{state:'idle',t:0,fogo:9,board:0,x:420,y:650});Object.assign(worldOut,{x:900,y:700});mataCombatTick(.05);boss.t=0;mataCombatTick(.05);check(mataNight.beasts.filter(x=>x.kind==='marinheiro'&&x.hp>0).length===3,'“Abordagem!”: marinheiros sobem pela escotilha');
    navioFx.anita=0;navioFx.ball=null;for(let i=0;i<25;i++)mataCombatTick(.05);check(mataNight.beasts.filter(x=>x.kind==='marinheiro'&&x.hp>0).length<3,'do Seival, a Anita dispara o canhãozinho');
-   check(navioFx.lanceiro&&(()=>{let n=0;const old=drawFolk;drawFolk=(id)=>{if(id==='lanceiro'||id==='bento')n++;};try{drawOutside();}finally{drawFolk=old;}return n>=2;})(),'na batalha estão o Lanceiro Negro, no convés, e o Bento Gonçalves, no Seival');
+   check(navioFx.lanceiro&&(()=>{let n=0;const old=drawCampFolk;drawCampFolk=(id)=>{if(id==='lanceiro'||id==='bento')n++;};try{drawOutside();}finally{drawCampFolk=old;}return n>=2;})(),'na batalha estão o Lanceiro Negro, no convés, e o Bento Gonçalves, no Seival');
+   {let err='';try{for(const id of ['lobisomem','sanguanel','mula','boitata'])drawFolk(id,200,200,1);}catch(e){err=e.message;}check(!err,'as lendas da vila (lobisomem, mula...) continuam com o desenho delas, sem trocar pelos bonecos da mata '+err);}
    const sl=B=>({kind:'marinheiro',x:navioFx.lanceiro.x+40,y:navioFx.lanceiro.y,hp:40,max:40,minion:true,dx:1,state:'chase',t:1,hurt:0,frame:0,cool:5,attack:0});const mar=sl();mataNight.beasts.push(mar);Object.assign(navioFx.lanceiro,{state:'idle',t:0});for(let i=0;i<10&&mar.hp>0;i++)navioAlliesTick(mataNight,.05,worldOut);check(mar.hp<=0,'o Lanceiro Negro carrega de lança nos marinheiros');
    caveState().hp=20;navioFx.bento=0;navioAlliesTick(mataNight,.05,worldOut);check(caveState().hp===35,'o Bento grita ânimo do Seival e o Sadi recupera um pouco de vida');
    caveState().hp=1;mataNight.inv=0;mataHurt(30,{x:worldOut.x-10,y:worldOut.y});check(worldOut.map==='laguna'&&modal==='talk'&&talkState.lines.some(l=>l[0]==='garibaldi'),'caiu no mar: o Garibaldi puxa o Sadi pra areia');talkAll();

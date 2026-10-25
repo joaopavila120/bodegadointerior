@@ -3,7 +3,6 @@
   G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.mataSeen=1;G.cash=5000;
   caveState().facao=true;mataState().metGaribaldi=1;mataState().xp=1200;
   worldOut={map:'mata',...garibaldiFront(),dx:0,dy:1};started=true;paused=true;
-  for(const id of MATA_GEAR_IDS)mataState().up[id]=true;
   check(TRECHO.last===31&&TRECHO.camps.join()==='6,11,16,21,26,31','progressão: 31 trechos e acampamentos a cada cinco');
   for(const [n,b] of [[2,'mata'],[11,'mata'],[12,'encosta'],[21,'encosta'],[22,'restinga'],[31,'restinga'],[32,'laguna']])check(trechoBiome(n)===b,'região do trecho '+n);
   check(TRECHO_BOSSES[11]==='cachaco'&&TRECHO_BOSSES[21]==='papo','chefes no fim do pinheiral e da encosta');
@@ -15,15 +14,15 @@
   for(const [x,y] of [[760,825],[760,730],[760,650],[1100,420],[785,420],[380,445]]){const p=garibaldiRoomPoint(x,y);check(room.canWalk(p.x,p.y),'interação do refúgio acessível '+x+','+y);}
   for(const [x,y,w,h] of GARIBALDI_ROOM_SOLIDS){const p=garibaldiRoomPoint(x+w/2,y+h/2);check(!room.canWalk(p.x,p.y),'mobiliário sólido');}
   check(room.edge(garibaldiRoomPoint(760,975)).map==='mata','saída devolve à mata');
-  garibaldiShop();check(modal==='garibaldiShop'&&$('dialogContent').querySelector('.mata-item-art'),'loja interna com arte própria');closeDialog(true);
+  garibaldiTab='bornal';garibaldiShop();check(modal==='garibaldiShop'&&$('dialogContent').querySelector('.mata-item-art'),'bornal da loja com arte própria');garibaldiTab='loja';garibaldiShop();check($('dialogContent').querySelector('[data-act="forjaMake"] , [data-act="forjaEquip"]'),'loja do rancho com as armas da ferraria');closeDialog(true);
   caveState().hp=10;ranchoRest();check(caveState().hp===caveMaxHp(),'acampamento recupera vida');
   bagAdd('erva_verde',3);const e=G.stock.erva||0;barbaquaSecar();check(G.stock.erva===e+3*BARBAQUA_G&&!bagQty('erva_verde'),'barbaquá continua secando erva');closeDialog(true);
   for(const day of [4,17])for(let n=2;n<=TRECHO.last;n++){
-    G.day=day;mataState().trecho=n;worldOut.map='trecho';const T=trechoLayout(),d=trechoDay(n);d.gates=T.gates.map(g=>g.id);d.pinguela=true;
+    G.day=day;mataState().trecho=n;worldOut.map='trecho';const T=trechoLayout();
     check(T.biome===trechoBiome(n),'geração regional '+day+'/'+n);
-    if(T.biome==='restinga')check(T.flora.trees.every(t=>['butia','jeriva','folha'].includes(t.art))&&!T.gateKinds.includes('escuro'),'restinga: butiazais e palmeiras, céu aberto '+n);
+    if(T.biome==='restinga')check(T.flora.trees.every(t=>['butia','jeriva','folha'].includes(t.art)),'restinga: butiazais e palmeiras '+n);
     if(T.biome==='encosta')check(T.flora.trees.some(t=>t.art==='xaxim'||t.art==='folha'),'encosta: mata de folha larga e xaxim '+n);
-    // Flood-fill actual movement, including solids, bridge and tools, not just the trail's drawing.
+    // Flood-fill actual movement, including solids and the river crossing, not just the trail's drawing.
     const cw=T.open.cw,ch=T.open.ch,visited=new Uint8Array(cw*ch),q=[];
     const start=Math.floor(T.yIn/20)*cw+4;q.push(start);visited[start]=1;
     for(let at=0;at<q.length;at++){

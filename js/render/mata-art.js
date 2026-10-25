@@ -98,15 +98,8 @@ let mataPainting=false;
   Object.assign(RANCHO,{x:420,y:1130,w:440,h:260});
   drawRancho=function(){if(!MATA_ART['garibaldi-refuge-exterior'].naturalWidth)return rancho();mataArtRect('garibaldi-refuge-exterior',[24,50,1480,910],640-272,1395-335,544,335);};
   drawBarbaqua=function(){if(!MATA_ART['mata-nature'].naturalWidth)return barbaqua();mataNature(11,RANCHO_BARBAQUA.x,RANCHO_BARBAQUA.y+8,205,176);};
-  const gate=drawTrechoGate,resource=drawTrechoResource,camp=drawTrechoCamp;
-  drawTrechoGate=function(T,g){
-    if(!MATA_ART['mata-nature'].naturalWidth)return gate(T,g);
-    const ok=trechoGateCleared(T,g);
-    if(g.kind==='cipo'){if(!ok)mataNature(7,g.x,g.y+12,200,180);else mataNature(3,g.x-90,g.y+14,65,40);}
-    else if(g.kind==='marimbondo'){if(!ok){mataNature(8,g.x,g.y+10,128,160);for(let k=0;k<6;k++)ellipse(g.x+Math.sin(frameClock*6+k)*40,g.y-60+Math.cos(frameClock*5+k)*24,2,1,'#e2b54e');}}
-    else if(g.kind==='barranco'){mataNature(12,g.x,g.y+12,210,150);if(ok)mataNature(15,g.x,g.y+16,75,120);}
-    else if(g.kind==='banhado'){for(let k=0;k<5;k++)mataNature(9,g.x-140+k*70,g.y+(k%2?84:-60),70,70);}
-  };
+  const resource=drawTrechoResource,camp=drawTrechoCamp;
+
   drawTrechoResource=function(T,r){
     if(!MATA_ART['mata-nature'].naturalWidth)return resource(T,r);
     if(trechoDay(T.n).got.includes(r.id)&&r.kind!=='colmeia')return;

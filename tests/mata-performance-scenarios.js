@@ -2,14 +2,12 @@
   const checks=[],check=(v,s)=>{if(!v)throw Error(s);checks.push(s);};
   G=fresh();G.day=4;G.prologue={done:true};G.tutorial.complete=true;G.mataSeen=1;
   caveState().facao=true;mataState().metGaribaldi=1;mataState().xp=1200;
-  for(const u of MATA_UPS)mataState().up[u.id]=true;
   started=true;closeDialog(true);paused=false;scene=null;phoneOpen=false;
   $('start').classList.add('hidden');const results=[];
   for(const n of [6,8,11,12,14,16,20,21,22,25,28,31]){
     mataState().trecho=n;worldOut={map:'trecho',x:90,y:900,dx:0,dy:1};trechoCache=null;mataNight=null;mataFauna=null;
     let start=performance.now();const T=trechoLayout(),generation=performance.now()-start;
     const q=T.trails[0].pts[Math.floor(T.trails[0].pts.length*.4)];worldOut.x=q[0];worldOut.y=q[1];
-    const d=trechoDay(n);d.pinguela=true;d.gates=T.gates.map(g=>g.id);
     start=performance.now();trechoBeastsStart();const spawn=performance.now()-start;
     let tick=0,drawTime=0,cold=0,error=null;
     try{

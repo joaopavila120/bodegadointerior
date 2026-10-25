@@ -78,6 +78,9 @@ function worldPathStroke(m, list, grow, jitter = true) {
   }
 }
 // Pinta a rede num pedaço do mundo: a terra batida com a beira esfumada.
+// A beira das estradas: oito faixas de 3 em 3 px, com a opacidade somada subindo numa curva suave (com quatro faixas,
+// cada degrau aparecia como uma linha reta ao longo da estrada).
+const WORLD_PATH_FEATHER = (() => { const n = 8, out = []; let prev = 0; for (let i = 1; i <= n; i++) { const t = i / n, c = t * t * (3 - 2 * t); out.push([24 * (1 - t), i === n ? 1 : 1 - (1 - c) / (1 - prev)]); prev = c; } return out; })();
 function paintWorldPaths(M, view, opts = {}) {
   const { x, y, w, h } = view, list = worldPathNet(M).filter(p => p.box[2] > x - 40 && p.box[0] < x + w + 40 && p.box[3] > y - 40 && p.box[1] < y + h + 40);
   if (!list.length) return;
@@ -87,7 +90,7 @@ function paintWorldPaths(M, view, opts = {}) {
     ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(worldPathMask, 0, 0, W, H, x, y, W, H); ctx.restore();
   };
   const begin = () => { m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-over'; m.globalAlpha = 1; m.clearRect(0, 0, worldPathMask.width, worldPathMask.height); m.setTransform(1, 0, 0, 1, -x, -y); };
-  for (const [grow, alpha] of [[20, .08], [12, .2], [6, .45], [0, 1]]) { begin(); worldPathStroke(m, list, grow); fill(() => frontierTexture(1, x, y, w, h), alpha); }
+  for (const [grow, alpha] of WORLD_PATH_FEATHER) { begin(); worldPathStroke(m, list, grow); fill(() => frontierTexture(1, x, y, w, h), alpha); }
   if (opts.paving) { begin(); worldPathStroke(m, list.filter(p => p.kind === 'road'), -6, false); fill(() => worldTexture(2, x, y, w, h, 70), .3); }
 }
 

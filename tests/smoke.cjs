@@ -34,6 +34,11 @@ async function main() {
   });
   assert.deepEqual(scriptLists[0], scriptLists[1], 'As duas entradas devem carregar os mesmos scripts.');
   assert.equal(scriptLists[0].at(-1), 'js/core/bootstrap.js');
+  // Duas funções globais com o mesmo nome em arquivos diferentes: a de baixo apaga a de cima sem avisar.
+  const declared = new Map();
+  for (const file of scriptLists[0]) for (const m of fs.readFileSync(path.join(root, file), 'utf8').matchAll(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/gm)) {
+    assert(!declared.has(m[1]) || declared.get(m[1]) === file, `A função ${m[1]} está declarada em ${declared.get(m[1])} e em ${file}.`); declared.set(m[1], file);
+  }
 
   let blockedPath = null, dialogueOverride = null;
   const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg' };
@@ -190,7 +195,7 @@ async function main() {
       await evaluate(`G.day=4;G.mata.metGaribaldi=1;started=true;paused=true;$('start').classList.add('hidden');closeDialog(true);scene=null;worldWalkers=[];fx=[];mataNight=null;document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');`);
       fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
       for(const shotName of ['refugio-exterior','refugio-interior','mata','encosta','restinga','praia','equipamentos']){
-        await evaluate(`(()=>{const id=${JSON.stringify(shotName)};closeDialog(true);paused=true;mataNight=null;mataFauna=null;if(id==='equipamentos'){worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(1120,430),dx:0,dy:1};garibaldiTab='loja';garibaldiShop();}else if(id==='refugio-interior')worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(760,650),dx:0,dy:1};else if(id==='refugio-exterior')worldOut={map:'mata',x:640,y:1460,dx:0,dy:1};else{mataState().trecho={mata:4,encosta:16,restinga:24,praia:29}[id];trechoCache=null;worldOut={map:'trecho',dx:0,dy:1};const T=trechoLayout();trechoDay(T.n).pinguela=true;const q=id==='praia'?{x:T.trails.find(t=>t.id==='praia').pts.at(-1)[0]+160,y:TRECHO.shoreY-170}:T.crossing||{x:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][0],y:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][1]};Object.assign(worldOut,{x:q.x-160,y:q.y});}refreshHUD();draw();})()`);
+        await evaluate(`(()=>{const id=${JSON.stringify(shotName)};closeDialog(true);paused=true;mataNight=null;mataFauna=null;if(id==='equipamentos'){worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(1120,430),dx:0,dy:1};garibaldiTab='loja';garibaldiShop();}else if(id==='refugio-interior')worldOut={map:'casa:garibaldi',...garibaldiRoomPoint(760,650),dx:0,dy:1};else if(id==='refugio-exterior')worldOut={map:'mata',x:640,y:1460,dx:0,dy:1};else{mataState().trecho={mata:4,encosta:16,restinga:24,praia:29}[id];trechoCache=null;worldOut={map:'trecho',dx:0,dy:1};const T=trechoLayout();const q=id==='praia'?{x:T.trails.find(t=>t.id==='praia').pts.at(-1)[0]+160,y:TRECHO.shoreY-170}:T.crossing||{x:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][0],y:T.trails[0].pts[Math.floor(T.trails[0].pts.length/2)][1]};Object.assign(worldOut,{x:q.x-160,y:q.y});}refreshHUD();draw();})()`);
         await delay(200);await evaluate('draw();');const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/mata-'+shotName+'.png'),Buffer.from(shot.data,'base64'));
       }
       await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);const checkLocal=await evaluate('mataArtReady');assert.equal(checkLocal,true,'artes via file://');

@@ -74,6 +74,13 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 function deck(){const a=[];for(let s=0;s<4;s++)for(const r of [1,2,3,4,5,6,7,10,11,12])a.push({r,s,uid:`${s}-${r}`});return shuffle(a);}
 
 // Só troca o HTML quando ele muda: evita recriar imagens e refazer o layout a cada atualização.
+// Bloco de chão em cache: as bordas vão presas no pixel da tela. Com o zoom quebrado, o antialias da borda de dois
+// blocos vizinhos deixava passar o fundo e aparecia uma linha clara entre eles.
+function drawTileSnapped(tile,sx,sy,w,h,x,y){
+ const t=ctx.getTransform();if(t.b||t.c){ctx.drawImage(tile,sx,sy,w,h,x,y,w,h);return;}
+ const x0=Math.round(t.a*x+t.e),y0=Math.round(t.d*y+t.f),x1=Math.round(t.a*(x+w)+t.e),y1=Math.round(t.d*(y+h)+t.f);
+ ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(tile,sx,sy,w,h,x0,y0,x1-x0,y1-y0);ctx.restore();
+}
 function setHTML(element,html){if(element._html===html)return false;element.innerHTML=html;element._html=html;return true;}
 function cardName(c){return `${c.r} de ${['Espada','Paus','Ouro','Copas'][c.s]}`;}
 

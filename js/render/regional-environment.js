@@ -94,7 +94,7 @@ function drawRegionalTerrain(M,view) {
     }
     regionalTerrainTiles.delete(key);regionalTerrainTiles.set(key,tile);
     while(regionalTerrainTiles.size>REGIONAL_TILE_LIMIT){const key=regionalTerrainTiles.keys().next().value,old=regionalTerrainTiles.get(key);regionalTerrainTiles.delete(key);old.width=old.height=0;}
-    ctx.drawImage(tile,pad,pad,w,h,x,y,w,h);
+    drawTileSnapped(tile,pad,pad,w,h,x,y);
   }
   return true;
 }

@@ -43,7 +43,6 @@ function trechoBlotches(T, v, index, alpha, step = 230) {
       if (T.biome === 'restinga') { for (const [e, i, a] of [[26, 4, .6], [12, 4, 1], [0, 5, 1]]) { ctx.save(); ctx.clip(trechoRiverPath(T, e)); ctx.globalAlpha = a; mataTexture(i, x, y, w, h); ctx.restore(); } ctx.save(); ctx.clip(trechoRiverPath(T)); ctx.fillStyle = 'rgba(70,52,24,.32)'; ctx.fillRect(x, y, w, h); ctx.restore(); }
       else for (const [e, i, a] of [[20, 1, .35], [9, 2, 1], [0, 5, 1]]) { ctx.save(); ctx.clip(trechoRiverPath(T, e)); ctx.globalAlpha = a; mataTexture(i, x, y, w, h); ctx.restore(); }
     }
-    for (const gt of T.gates) if (gt.kind === 'banhado') { ctx.save(); ctx.beginPath(); ctx.ellipse(gt.x, gt.y, 170, 95, 0, 0, Math.PI * 2); ctx.clip(); mataTexture(5, x, y, w, h); ctx.fillStyle = '#54462a77'; ctx.fillRect(x, y, w, h); ctx.restore(); }
   };
   drawTrechoWater = function (T, v) {
     water(T, v); if (!T.beach) return;
@@ -51,11 +50,10 @@ function trechoBlotches(T, v, index, alpha, step = 230) {
     for (let k = 0; k < 3; k++) { const off = (frameClock * 14 + k * 26) % 78; ctx.globalAlpha = 1 - off / 78; ctx.beginPath(); for (let x = Math.floor(v.x / 24) * 24; x < v.x + v.w + 24; x += 24) { const y = trechoShoreY(x) + 4 + off * .5 + Math.sin(x / 50 + frameClock + k) * 3; x === Math.floor(v.x / 24) * 24 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke(); }
     ctx.restore();
   };
-  // Travessias: ponte de corda na encosta, tábuas de trapiche na sanga da restinga; no pinheiral, a pinguela de tronco.
+  // Travessias: ponte de corda na encosta, tábuas de trapiche na sanga da restinga; no pinheiral, as pedras.
   drawTrechoCrossing = function (T) {
     const c = T.crossing; if (!c || T.biome === 'mata' || c.kind === 'pedras' && T.biome !== 'restinga') return crossing(T);
-    const cx = trechoRiverX(T, c.y), half = trechoRiverHalf(T, c.y) + 52, built = c.kind === 'pedras' || trechoDay(T.n).pinguela;
-    if (!built) return crossing(T);
+    const cx = trechoRiverX(T, c.y), half = trechoRiverHalf(T, c.y) + 52;
     if (T.biome === 'encosta' && MATA_ART['mata-cliffs']?.naturalWidth) { mataCliff(2, cx, c.y + 48, half * 2 + 40, 130); return; }
     if (T.biome === 'restinga' && environmentSprite('pier-v1', 0, cx, c.y + 34, half * 2 + 30, 80)) return;
     crossing(T);

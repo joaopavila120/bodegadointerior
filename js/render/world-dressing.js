@@ -218,7 +218,9 @@ function paintWorldDressingSurface(M,view,isolated=false){
     // antialiased clip masks, which is costly in software-rendered browsers.
     ctx.globalCompositeOperation='destination-out';
     ctx.fillStyle='#000';
-    for(const [x,y,w,h] of dressing.roads)if(intersects(x,y,w,h))ctx.fillRect(x+7,y+7,Math.max(0,w-14),Math.max(0,h-14));
+    // Em degraus miúdos: a beira da estrada é ondulada e um corte reto deixava uma linha dentro da terra.
+    for(const [inset,alpha] of [[2,.2],[5,.3],[8,.4],[11,.6],[14,1]]){ctx.globalAlpha=alpha;for(const [x,y,w,h] of dressing.roads)if(intersects(x,y,w,h))ctx.fillRect(x+inset,y+inset,Math.max(0,w-inset*2),Math.max(0,h-inset*2));}
+    ctx.globalAlpha=1;
   }
   ctx.restore();
   for(const p of dressing.props)if(p.sheet==='ground'&&intersects(p.x-p.w/2,p.y-p.h,p.w,p.h)){
@@ -254,7 +256,7 @@ function drawWorldDressingSurface(M,view){
         const oldest=worldGroundTileCache.keys().next().value,discard=worldGroundTileCache.get(oldest);
         worldGroundTileCache.delete(oldest);discard.width=discard.height=0;
       }
-      ctx.drawImage(tile,pad,pad,w,h,x,y,w,h);
+      drawTileSnapped(tile,pad,pad,w,h,x,y);
     }
   } finally {ctx.restore();}
 }

@@ -102,14 +102,16 @@ const GARIBALDI_SHOP_LINES = ['Chega mais pro fogo, gaúcho. O que vai levar pra
 function garibaldiTalk() {
   if (!G.mata?.metGaribaldi) { garibaldiMeet(); return; }
   const st = mataState(), k = (st.lore || 0) % GARIBALDI_LORE.length; st.lore = (st.lore || 0) + 1; caveState().hp = caveMaxHp(); mataBuffs.veneno = 0; save();
-  talk([...GARIBALDI_LORE[k].map(l => [...l]), ['garibaldi', 'Senta, toma um mate. A vida volta inteira perto do fogo.']], null, 'Valeu, Garibaldi');
+  talk([...GARIBALDI_LORE[k].map(l => [...l]), ['garibaldi', 'Senta, toma um mate. A vida volta inteira perto do fogo.']], null, 'Valeu, Garibaldi'); garibaldiTradeButton();
 }
+// Como o São Dunstano: na prosa com o Garibaldi aparece o botão da loja dele.
+function garibaldiTradeButton() { $('garibaldiTradeButton')?.remove(); $('talkUI')?.insertAdjacentHTML('beforeend', '<button id="garibaldiTradeButton" class="small" data-act="garibaldiOpenShop">Armas, equipamento e bornal</button>'); }
 // Primeira vez na mata: o Garibaldi aparece na neblina da entrada, explica a descida até o mar e leva o Sadi pro refúgio.
 function garibaldiIntro() {
   const st = mataState(); G.mataSeen = G.day; st.metGaribaldi = G.day; save();
   const f = garibaldiFront(), done = () => {
     Object.assign(worldOut, { map: 'mata', x: f.x, y: f.y, dx: 0, dy: 1, walk: false }); giveCard('garibaldi', 'mata');
-    talk([['dica', '<b>🌲 Mata adentro</b><br>· O pinheiral do Garibaldi (trecho 1) é sempre manso. A picada do leste leva <b>mata adentro</b>: lá a mata é tão fechada que é sempre escuro, como noite, e é sempre braba. O Sadi entra de facão na mão (Espaço/F).<br>· Três regiões, uma atrás da outra: o <b>Pinheiral</b>, a <b>Encosta da Serra</b> e a <b>Restinga</b>, cada uma com muitos trechos de picada. No fim das duas primeiras, um bicho grande guarda a passagem. Depois da restinga, a <b>Barra de Laguna</b>.<br>· Não tem placa: cada trecho é gerado no dia, e amanhã a picada é outra.<br>· Os obstáculos pedem ferramenta do refúgio: cipó, banhado, arroio cheio, marimbondo, mata escura e barranco. Arma, vida e resistência continuam sendo da ferraria do São Dunstano.<br>· De tempos em tempos tem um acampamento: o fogo espanta os bichos, e sempre tem alguém pra prosear.<br>· Pinhão, erva-mate nativa e mel de jataí viram produto da bodega. O <b>nível de mateiro</b> sobe com tudo isso.<br>· No bornal da mata, as teclas <b>1 a 5</b> usam os itens.', 'Refúgio do Garibaldi']], null, 'Bora pra mata');
+    talk([['dica', '<b>🌲 Mata adentro</b><br>· O pinheiral do Garibaldi (trecho 1) é sempre manso. A picada do leste leva <b>mata adentro</b>: lá a mata é tão fechada que é sempre escuro, como noite, e é sempre braba. O Sadi entra de facão na mão (Espaço/F).<br>· Três regiões, uma atrás da outra: o <b>Pinheiral</b>, a <b>Encosta da Serra</b> e a <b>Restinga</b>, cada uma com muitos trechos de picada. No fim das duas primeiras, um bicho grande guarda a passagem. Depois da restinga, a <b>Barra de Laguna</b>.<br>· Não tem placa: cada trecho é gerado no dia, e amanhã a picada é outra.<br>· Não tem ferramenta pra comprar: a picada é aberta, e só os bichos grandes seguram a descida. Nos ramais, às vezes, um baú de mateiro.<br>· Arma, vida e resistência são as da ferraria do São Dunstano, e o Garibaldi vende as mesmas no refúgio.<br>· De tempos em tempos tem um acampamento: o fogo espanta os bichos, e sempre tem alguém pra prosear.<br>· Pinhão, erva-mate nativa e mel de jataí viram produto da bodega. O <b>nível de mateiro</b> sobe com tudo isso.<br>· No bornal da mata, as teclas <b>1 a 5</b> usam os itens.', 'Refúgio do Garibaldi']], null, 'Bora pra mata');
   };
   if (!scenesEnabled()) { done(); return; }
   const g = { x: 560, y: 960 }, ghost = (a, y) => drawGaribaldi(a.x, y, a.alpha ?? 1, a.dx, !!a.walk), facao = caveState().facao;
@@ -140,9 +142,9 @@ function garibaldiIntro() {
 }
 function garibaldiMeet() { garibaldiIntro(); }
 let garibaldiTab = 'loja';
-const GARIBALDI_TABS = [['loja', '🪓 Melhorias'], ['bornal', '🎒 Bornal'], ['vender', '💰 Vender']];
+const GARIBALDI_TABS = [['loja', '⚔️ Armas e equipamento'], ['bornal', '🎒 Bornal'], ['vender', '💰 Vender']];
 function garibaldiShop() {
-  if (!['mata','casa:garibaldi'].includes(worldOut?.map)) return; skipWorldTalk();
+  if (!['mata', 'casa:garibaldi', 'laguna'].includes(worldOut?.map)) return; skipWorldTalk();
   const st = mataState(), lv = mataLevel(), next = MATEIRO_RANKS[lv], box = $('dialogContent').closest('.dialog'), keep = modal === 'garibaldiShop' ? box.scrollTop : 0;
   const head = `<div class="rpg-speaker">${garibaldiPortrait(72)}<div><p><b>Giuseppe Garibaldi</b></p><p>${pick(GARIBALDI_SHOP_LINES)}</p></div></div>
     <div class="forja-top"><span>🌲 Nível de mateiro: <b>${mataRank()}</b> · ${st.xp}${next ? ' / ' + next[0] + ' xp' : ' xp'}</span><span>Mais fundo: ${st.deepest > 1 ? TRECHO_BIOME_NAMES[trechoBiome(Math.min(st.deepest, TRECHO.last + 1))] : 'o pinheiral do refúgio'}</span><span>❤ ${Math.round(caveState().hp)}/${caveMaxHp()}</span></div>
@@ -150,18 +152,18 @@ function garibaldiShop() {
   openDialog('Rancho do Garibaldi', head + (garibaldiTab === 'bornal' ? garibaldiBornalHTML() : garibaldiTab === 'vender' ? garibaldiVenderHTML() : garibaldiLojaHTML()), 'garibaldiShop');
   box.scrollTop = keep;
 }
+// As mesmas armas e o mesmo equipamento da ferraria do São Dunstano: é tudo uma coisa só, vale na caverna e na mata.
 function garibaldiLojaHTML() {
-  const lv = mataLevel();
-  return '<div class="store-list">' + MATA_UPS.map(u => {
-    const owned = mataUp(u.id), lowLv = lv < u.level, noDog = u.id === 'apito' && !cuscoAdopted?.(), ok = !owned && !lowLv && !noDog && hasCash(u.cost);
-    const chips = `<span class="req ${lowLv ? 'miss' : 'ok'}">${mataRank(u.level)}</span><span class="req ${hasCash(u.cost) ? 'ok' : 'miss'}">${money(u.cost)}</span>`;
-    const btn = owned ? '<button disabled>✔ É teu</button>' : lowLv ? `<button disabled>Nível: ${mataRank(u.level)}</button>` : noDog ? '<button disabled>Precisa do cusco véio</button>' : `<button class="primary" data-act="garibaldiBuy" data-id="${u.id}" ${ok ? '' : 'disabled'}>Comprar</button>`;
-    return forjaCard(`${mataGearHTML(u.id)}`, u.name, u.desc, owned ? '' : chips, btn, owned ? 'owned' : '');
-  }).join('') + '</div>';
+  const old = caveWeapon().id === 'facao' ? CAVE_UPGRADES.filter(u => ['afiado', 'aco'].includes(u.id)) : [];
+  const sec = (title, note, html) => `<h3 class="forja-sec">${title} <small>${note}</small></h3><div class="store-list">${html}</div>`;
+  return '<p class="small-note">O Garibaldi troca com o São Dunstano: as armas e o equipamento são os mesmos da ferraria, e o que tu compra num lugar vale no outro.</p>' +
+    sec('⚔️ Armas', 'minério + dinheiro · a nova já vai pra mão', dunstanWeaponsHTML()) +
+    sec('✨ Afiar', 'a arma que está na mão', dunstanAfiarHTML() + old.map(upgradeCardHTML).join('')) +
+    sec('🧥 Equipamento', 'fica contigo pra sempre', CAVE_UPGRADES.filter(u => !['afiado', 'aco'].includes(u.id)).map(upgradeCardHTML).join(''));
 }
 function garibaldiBornalHTML() {
   const bag = mataBag(), max = mataBagMax();
-  return `<p class="small-note">Na mata, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${mataUp('picua') ? '' : '; o picuá dobra'}).</p><div class="store-list">` + MATA_ITEMS.map(i => {
+  return `<p class="small-note">Na mata, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${caveUp('bornal') ? '' : '; o bornal de couro cru da ferraria dobra'}).</p><div class="store-list">` + MATA_ITEMS.map(i => {
     const have = bag[i.id] || 0, room = max - have;
     return forjaCard(`${mataGearHTML(i.id)}`, i.name + ` <small>· ${have}/${max}</small>`, i.desc, '', `<button class="primary" data-act="garibaldiItem" data-id="${i.id}" ${room > 0 && hasCash(i.cost) ? '' : 'disabled'}>${room > 0 ? 'Comprar · ' + money(i.cost) : 'Cheio'}</button>`);
   }).join('') + '</div>';
@@ -174,10 +176,6 @@ function garibaldiVenderHTML() {
     row(mataGearHTML('erva_verde'), 'Ramos de erva-mate nativa', ramos + ' ramos', 'por ramo', GARIBALDI_BUYS.erva_verde, 'erva_verde') +
     row(itemIconHTML('pinhao'), 'Pinhão', pin + ' kg', 'por kg', GARIBALDI_BUYS.pinhao, 'pinhao') +
     row(mataGearHTML('mel'), 'Mel de jataí', mel + ' potes', 'por pote', GARIBALDI_BUYS.mel, 'mel') + '</div>';
-}
-function garibaldiBuy(id) {
-  const u = MATA_UPS.find(x => x.id === id); if (!u || mataUp(id) || mataLevel() < u.level || !hasCash(u.cost)) return;
-  spendCash(u.cost); mataState().up[id] = true; AudioEngine.coins?.(); floatNote(u.icon + ' ' + u.name + ': pronto pra mata!'); save(); refreshHUD(); garibaldiShop();
 }
 function garibaldiItem(id) {
   const i = MATA_ITEMS.find(x => x.id === id), bag = mataBag(); if (!i || (bag[id] || 0) >= mataBagMax() || !hasCash(i.cost)) return;
@@ -243,12 +241,21 @@ function ranchoRest() {
   };
   const speaker = sceneSpeaker; sceneSpeaker = function (who) { return who === 'garibaldi' ? { portrait: garibaldiPortrait(), name: 'Giuseppe Garibaldi' } : speaker(who); };
   const act = action; action = function (name, id) {
+    if (name === 'garibaldiOpenShop') { talkSkip(); garibaldiShop(); return; }
     if (name === 'garibaldiTab') { garibaldiTab = id; garibaldiShop(); return; }
-    if (name === 'garibaldiBuy') { garibaldiBuy(id); return; }
     if (name === 'garibaldiItem') { garibaldiItem(id); return; }
     if (name === 'garibaldiSell') { garibaldiSell(id); return; }
     return act(name, id);
   };
+  // Arma e equipamento no rancho: as mesmas funções da ferraria, que conferem se a loja tá aberta e depois redesenham
+  // a loja. Com o rancho aberto, a loja é o rancho.
+  const viaRancho = fn => function (...a) {
+    if (modal !== 'garibaldiShop' || !['mata', 'casa:garibaldi', 'laguna'].includes(worldOut?.map)) return fn.apply(this, a);
+    const open = dunstanShopOpen, shop = dunstanShop; dunstanShopOpen = () => true; dunstanShop = garibaldiShop;
+    try { return fn.apply(this, a); } finally { dunstanShopOpen = open; dunstanShop = shop; }
+  };
+  const end = talkEnd; talkEnd = function () { $('garibaldiTradeButton')?.remove(); return end(); };
+  forjaMake = viaRancho(forjaMake); forjaEquip = viaRancho(forjaEquip); forjaAfiar = viaRancho(forjaAfiar); facaoBuy = viaRancho(facaoBuy);
   // Conquistas da mata.
   const at = ACHIEVEMENTS.findIndex(a => a.id === 'lendaria');
   ACHIEVEMENTS.splice(at < 0 ? ACHIEVEMENTS.length : at, 0,

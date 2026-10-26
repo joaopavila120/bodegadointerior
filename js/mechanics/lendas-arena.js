@@ -92,10 +92,11 @@ function drawArenaFx() {
 }
 function drawArenaBar() {
   const b = mataNight?.beasts[0]; if (!b || !lendaFight) return;
-  const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, w = Math.min(520, W - 80), x = (W - w) / 2;
+  // Embaixo, acima da dica do rodapé (no alto, os avisos de entrada cobririam a barra).
+  const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, w = Math.min(520, W - 80), x = (W - w) / 2, y = canvas.clientHeight - 118;
   ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  rect(x, 14, w, 42, 'rgba(20,14,10,.85)', 8, '#a77439'); txt(FOLK[b.kind].icon + ' ' + FOLK[b.kind].name, W / 2, 30, 14, '#ffe2a6', 'center', 'Georgia', false);
-  rect(x + 12, 38, w - 24, 10, '#2a1608', 4); rect(x + 12, 38, (w - 24) * Math.max(0, b.hp / b.max), 10, '#d84a3a', 4);
+  rect(x, y, w, 42, 'rgba(20,14,10,.85)', 8, '#a77439'); txt(FOLK[b.kind].icon + ' ' + FOLK[b.kind].name, W / 2, y + 16, 14, '#ffe2a6', 'center', 'Georgia', false);
+  rect(x + 12, y + 24, w - 24, 10, '#2a1608', 4); rect(x + 12, y + 24, (w - 24) * Math.max(0, b.hp / b.max), 10, '#d84a3a', 4);
   ctx.restore();
 }
 WORLD_MAPS.arena = {
@@ -106,7 +107,7 @@ WORLD_MAPS.arena = {
   draw(view, seen, layers) {
     drawArenaGround(view);
     if (mataCombatOn() && !scene) drawMataNightLayers(layers, seen);
-    layers.push({ y: 8e9 - 1, draw: () => { mataNightVeil(view, .35); drawArenaFx(); } }, { y: 8e9, draw: drawArenaBar });
+    layers.push({ y: 8e9 - 1, draw: () => { mataNightVeil(view, .35); drawArenaFx(); } });
   }
 };
 REGION_NAMES.arena = 'Clareira da lenda';
@@ -126,4 +127,10 @@ REGION_NAMES.arena = 'Clareira da lenda';
   // Desmaiou na arena: acorda onde estava, sem perder o dia da mata nem dinheiro.
   const faint = mataFaint; mataFaint = function () { if (!inArena() || !lendaFight) return faint(); if (mataNight) mataNight.faint = true; keys.clear(); lendaLeave(false); };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inArena() && !paused && !modal && !scene) lendaHazardsTick(dt); };
+  // Por cima da noite (como nos trechos): o clarão do golpe, a vida do Sadi no canto e a da lenda no alto.
+  const sparks = drawSparks; drawSparks = function (map = null) {
+    sparks(map); const N = mataNight; if (map !== 'arena' || !inArena() || !N || scene) return;
+    if (N.hurt > 0) { ctx.fillStyle = `rgba(200,30,20,${N.hurt * .8})`; ctx.fillRect(worldOut.x - 3000, worldOut.y - 3000, 6000, 6000); }
+    mataHudPanel('Clareira da lenda', 'facão na mão · Espaço/F'); drawArenaBar();
+  };
 }

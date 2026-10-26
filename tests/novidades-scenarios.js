@@ -580,10 +580,10 @@
     const f=all.find(x=>x.item===item);switchMap({map:f.map,x:f.x,y:f.y+60});closeDialog(true);worldOut.x=f.x;worldOut.y=f.y+40;delete G.forage?.[f.id];
     const sp=WORLD_MAPS[f.map].spots().find(x=>x.id==='forage:'+f.id);check(sp&&/Colher/.test(sp.label),'E na '+f.name.toLowerCase()+': colher');
     const before=item==='butia'?bagQty('butia'):(G.stock.bergamota||0);G.taught.mato=true;sp.act();talkAll();closeDialog(true);
-    const after=item==='butia'?bagQty('butia'):(G.stock.bergamota||0);check(after===before+f.q,'colheu '+(item==='butia'?'6 butiás':'2 kg de bergamota'));
+    const after=item==='butia'?bagQty('butia'):(G.stock.bergamota||0);check(Array.isArray(f.q)?after-before>=f.q[0]&&after-before<=f.q[1]:after===before+f.q,'colheu '+(item==='butia'?'os butiás':'entre 600 g e 1,2 kg de bergamota'));
     check(/fruta de novo/.test(WORLD_MAPS[f.map].spots().find(x=>x.id==='forage:'+f.id).label),'depois de colher, espera a fruta amadurecer');
-    let fruits=0;const fd=food;food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,environmentSprite);}finally{food=fd;}check(fruits===0,'colhida, a árvore fica sem fruta');
-    G.day+=forageWait(f);fruits=0;food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,environmentSprite);}finally{food=fd;}check(fruits>0&&forageReady(f),'dias depois, carregada de novo');G.day=day0;
+    let fruits=0,art=null;const fd=food,spy=(sheet,i)=>{art=i;};food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;}check(fruits===0&&(item==='butia'||art===3),'colhida, a árvore fica sem fruta');
+    G.day+=forageWait(f);fruits=0;art=null;food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;}check(forageReady(f)&&(item==='butia'?fruits>0:art===0),'dias depois, carregada de novo (a bergamoteira com a arte da árvore carregada)');G.day=day0;
    }
    goInside();}
   // ---------- o sonho do Sadi não trava ----------

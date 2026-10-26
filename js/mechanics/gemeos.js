@@ -24,11 +24,11 @@ function gemeosRingReady() { return gemeosStage() === 1 && !G.gemeos?.ring && ba
 // Cada pergunta tem uma resposta certa; as outras arrancam uma reação e a pergunta volta. Errou demais: ele cansa.
 const GEMEOS_ROUNDS = {
   marcelo: [
-    { q: 'Veio defender o Márcio, é? Ele ENTREGOU o sonzão do tio Lori pra Brigada, Sadi! De mão beijada!', a: [
+    { q: 'Veio defender o Márcio, é? Ele ENTREGOU o sonzão pra Brigada, Sadi! é o que?', a: [
       ['Vim porque tu é meu amigo. E porque o Márcio tá de coração partido.', '…Coração partido? Aquele lá? Hmpf. Senta aí, então.', true],
       ['O som tava alto demais mesmo. A vizinhança agradece.', 'A vizinhança que compre um sonzão pra ela!'],
       ['Bah, tu chuta mal, hein.', 'Muito engraçado, Sadi. Bem o que eu precisava hoje.']] },
-    { q: 'A brigadiana pediu pra baixar o volume e ele disse: “leva, moça, leva ele e o meu coração junto”. É o quê?!', a: [
+    { q: 'É o que? A brigadiana que pediu pra baixar o volume e ele disse: “eu falei, do portonzon pra cá quem manda é nós, é marcio e marcelo”. É o quê?!', a: [
       ['Ele vai pedir ela em namoro com um anel de opala. Eu mesmo busquei as pedras na caverna.', 'Tu desceu na caverna por ele?! …Bah. Então é sério mesmo.', true],
       ['A Grazi é bonita. Eu também entregava.', 'Tu também?! Ninguém mais tem juízo nesta Serra!'],
       ['Esquece o Márcio e compra outro sonzão.', 'Outro?! Aquele era herança do tio Lori, guri!']] },
@@ -38,7 +38,7 @@ const GEMEOS_ROUNDS = {
       ['Eu busco de volta de noite, escondido.', 'Tá louco? Aí quem vai em cana é tu!']] }
   ],
   ensaio: [
-    { q: 'O Márcio, nervoso, com o anel na mão: “Como é que eu começo, Sadi?”', a: [
+    { q: 'O Márcio, nervoso, com o anel na mão: “Show de bola, ma Como é que eu começo, Sadi?”', a: [
       ['Fala do coração: que desde aquela noite tu não pensa em outra coisa.', null, true],
       ['Começa pedindo desculpa pelo barulho.', 'Márcio: Desculpa pelo barulho? Aí ela me multa de novo, é o quê!'],
       ['Liga o som no último pra chamar a atenção dela.', 'Márcio e Marcelo: Não! Foi assim que tudo começou!']] }
@@ -87,16 +87,16 @@ function gemeosStart() {
     { actor: 'marcio', x: 900, y: 700, dx: 1 }, { actor: 'marcelo', x: 1130, y: 700, dx: -1 }, { actor: 'sadi', x: CASONA_DOOR.x, y: CASONA_DOOR.y - 20, dx: 1, dy: -1 }, { fade: 'in', time: .6 },
     { walk: 'sadi', to: { x: 820, y: 760 } },
     { say: 'sadi', text: 'Ô de casa! …Que fita crepe é essa no meio da sala?' },
-    { say: 'marcelo', text: 'É a fronteira, Sadi. Daqui pra lá é do Márcio, daqui pra cá é meu. Não pisa na linha!' },
-    { say: 'sadi', text: 'E cadê o sonzão do tio Lori? Só sobrou a marca de pó no chão.' },
-    { say: 'marcelo', text: 'Pergunta pra ele! A Brigada veio por causa do barulho, três da manhã. E ele ENTREGOU o sonzão pra brigadiana. De mão beijada!' },
-    { say: 'marcio', text: 'Ela só pediu pra baixar o volume, Sadi… E me olhou com aqueles olhos de quem multa e perdoa ao mesmo tempo.' },
-    { say: 'marcio', text: 'Eu disse: “Leva, moça. Leva ele e leva o meu coração junto.” E ela levou. O sonzão, pelo menos.' },
-    { say: 'marcelo', text: 'Herança do tio Lori, Sadi! Trocada por um olhar da Soldado Grazi! Vou chutar bola, que é melhor.' },
+    { say: 'marcelo', text: 'É o que? é a fronteira agora Sadi. Daqui pra lá é do Márcio, daqui pra cá é meu. Ele ficou com os malbec e eu com o marmorezão top. Não pisa na linha!' },
+    { say: 'sadi', text: 'E cadê o sonzão? Só sobrou a marca de pó no chão.' },
+    { say: 'marcelo', text: 'Pergunta pro marcio! E o que? A Brigada veio por causa do barulho, três da manhã. E ele deu o sonzão pra brigadiana!' },
+    { say: 'marcio', text: 'Ela pediu pra baixar o volume E me olhou com um zóinho.' },
+    { say: 'marcio', text: 'Eu disse: “show de bola, leva o sonzon então e o que moça? Leva ele e leva o meu coração junto.” E ela levou. O sonzão..' },
+    { say: 'marcelo', text: 'Trocou o sonzon! Vou chutar uma bola, que é melhor. E o que? show de bola' },
     { do: () => AudioEngine.creak() }, sceneSet('marcelo', { speed: 210 }), { walk: 'marcelo', to: { x: 760, y: 760 } }, { walk: 'marcelo', to: { x: CASONA_DOOR.x, y: CASONA_DOOR.y + 40 } }, { do: () => { delete scene.actors.marcelo; AudioEngine.thud(); } },
-    { say: 'marcio', text: 'Bah… agora ele nem fala mais comigo.' },
-    { say: 'marcio', text: 'Mas eu tenho um plano, Sadi: vou pedir a Grazi em namoro. Com anel e tudo, que nem em novela.' },
-    { say: 'marcio', text: 'Dizem que lá no fundo da caverna da Serra tem opala, aquela pedra que brilha que nem arco-íris. Me traz cinco? Anel de opala é o quê? Coisa de cinema!' },
+    { say: 'marcio', text: 'Bah… nunca fiquei sozinho na cazona, e o que?' },
+    { say: 'marcio', text: 'V pedir a Grazi em namoro. Com anel e tudo, que nem em novela, show de bola' },
+    { say: 'marcio', text: 'Dizem que lá no fundo da caverna da Serra tem opala, aquela pedra que brilha que nem arco-íris. Me traz cinco? Anel de opala é o quê? Show de bola!' },
     { say: 'sadi', text: '(Opala lá no fundo… o São Dunstano deve saber onde fica. E ele foi ourives!)' }, { fade: 'out', time: .6 }], 'gemeos-1', after);
 }
 // 2. Na forja: São Dunstano monta o anel com as cinco opalas.
@@ -109,13 +109,13 @@ function gemeosMakeRing() {
 function gemeosFindMarcelo() {
   const st = gemeosState();
   const say = text => { const i = PEOPLE.findIndex(p => p.id === 'marcelo'); worldTalkAt = { x: worldOut.x, y: worldOut.y }; showRpgBox('worldTalk', { person: i, name: 'Marcelo', reply: text }); };
-  if (st.stage < 2) { say('Nem vem, Sadi. Enquanto o sonzão do tio Lori tiver na Brigada, eu não falo com ninguém da Casona.'); return; }
+  if (st.stage < 2) { say('Nem vem, Sadi. Enquanto o sonzon tiver na Brigada, eu não falo com ninguém da Casona. Se quiser que eu volto cache e passagem ida e volta, cache e passagem ida e volta e o que?'); return; }
   if (st.stage >= 3) return;
-  if (st.tired === G.day) { say('Hoje não, Sadi. Volta amanhã, que hoje eu tô com a cabeça quente.'); return; }
+  if (st.tired === G.day) { say('Hoje não, Sadi. Volta amanhã, que hoje eu tô com a cabeça quente, show de bola.'); return; }
   const ask = () => gemeosAsk('marcelo', 'marcelo', ok => {
-    if (!ok) { st.tired = G.day; save(); talk([['marcelo', 'Quer saber? Deixa, Sadi. Hoje não tem conversa. Volta amanhã.']], null, 'Tentar amanhã'); return; }
+    if (!ok) { st.tired = G.day; save(); talk([['marcelo', 'Deixe queto Sadi. Hoje não tem conversa. Volta amanhã. E o que?']], null, 'Tentar amanhã'); return; }
     st.stage = 3; save();
-    talk([['marcelo', 'Tá bom, Sadi. Eu volto pra Casona. Mas se essa brigadiana aparecer, eu quero o meu sonzão de volta!'], ['dica', 'Leve o <b>anel</b> pro <b>Márcio</b>, na Casona.', 'A Casona dividida']], null, 'Ir até a Casona');
+    talk([['marcelo', 'Show de bola, Eu volto pra Casona. Mas se essa brigadiana aparecer, eu quero o meu sonzão de volta!'], ['dica', 'Leve o <b>anel</b> pro <b>Márcio</b>, na Casona.', 'A Casona dividida']], null, 'Ir até a Casona');
   });
   if (st.met || !scenesEnabled()) { st.met = true; save(); ask(); return; }
   st.met = true; save(); showRpgBox('worldTalk', null); keys.clear();
@@ -135,22 +135,22 @@ function gemeosFinale() {
     { say: 'sadi', text: 'Márcio! O anel. Cinco opalas, montado pelo próprio São Dunstano.' },
     { do: () => { fxStars(860, 650, 8); AudioEngine.caveGem?.(); } },
     { say: 'marcio', text: 'É o quê?! Que coisa mais linda… Marcelo, olha isso!' },
-    { say: 'marcelo', text: 'Hmpf. É bonito. Mas eu só falo contigo depois que o sonzão voltar.' }], 'gemeos-anel', () => gemeosAsk('sadi', 'ensaio', () => playSteps([...casonaView(), ...cast.map(a => ({ ...a })), { actor: 'sadi', x: 820, y: 760, dx: 1 }, { fade: 'in', time: .2 },
+    { say: 'marcelo', text: 'Hmpf. É show de bola. Mas eu só falo contigo depois que o sonzão voltar.' }], 'gemeos-anel', () => gemeosAsk('sadi', 'ensaio', () => playSteps([...casonaView(), ...cast.map(a => ({ ...a })), { actor: 'sadi', x: 820, y: 760, dx: 1 }, { fade: 'in', time: .2 },
     { say: 'marcio', text: '“Desde aquela noite eu não penso em outra coisa…” Isso! Agora é só ela…' },
     { do: () => { AudioEngine.doorChime(); [0, 220, 440].forEach(t => setTimeout(() => AudioEngine.thud(), t)); } }, { wait: .8 },
     { actor: 'grazi', ...GRAZI_ACTOR, x: CASONA_DOOR.x, y: CASONA_DOOR.y + 30, dx: 1, dy: -1 }, { walk: 'grazi', to: { x: 780, y: 740 } },
-    { say: 'grazi', text: 'Boa noite. Brigada Militar. Recebi uma denúncia… de saudade, no endereço da Casona.' },
-    { say: 'marcio', text: 'Fui eu que denunciei, Grazi. Saudade de ti.' },
+    { say: 'grazi', text: 'Boa noite. Brigada Militar. Recebi uma denúncia… de saudade, no endereço de: Casona.' },
+    { say: 'marcio', text: 'Fui eu que denunciei, Grazi. É o que? Saudade de ti.' },
     { walk: 'marcio', to: { x: 840, y: 730 } },
     { say: 'marcio', text: 'Desde aquela noite eu não penso em outra coisa. Aceita namorar comigo?' },
     { do: () => { fxStars(810, 640, 10); AudioEngine.caveGem?.(); } },
-    { say: 'grazi', text: '…Com anel de opala e tudo? Aceito, seu bobo!' },
+    { say: 'grazi', text: '…Com anel de opala podre de chiques e tudo? Aceito!' },
     { do: () => { fxHearts(810, 600, 5); AudioEngine.heart(); } },
-    { say: 'grazi', text: 'E tem mais: o sonzão do tio Lori tava no depósito do batalhão. Trouxe de volta. Volume máximo seis, combinado?' },
+    { say: 'grazi', text: 'E tem mais: o sonzon tava no depósito do batalhão. Trouxe de volta. Volume máximo seis, combinado?' },
     { do: () => { const s = gemeosState(); s.stage = 5; fxPuffs(1230, 790, 10, 120, '#e8dcc0'); AudioEngine.ready(); } },
     { say: 'marcelo', text: 'O sonzão! Voltou! Grazi… bem-vinda à família. Cunhada brigadiana, show de bola!' },
     { walk: 'marcelo', to: { x: 960, y: 720 } },
-    { say: 'marcelo', text: 'Desculpa, mano. Bora tirar essa fita crepe da sala hoje mesmo?' },
+    { say: 'marcelo', text: 'Desculpa márcio. Bora tirar essa fita crepe da sala hoje mesmo? show de bola' },
     { say: 'marcio', text: 'Bora! E desculpa por entregar o sonzão. Foi o coração que falou mais alto que o som.' },
     { do: () => { for (const a of Object.values(scene.actors)) a.hop = 9; fxHearts(900, 600, 6); AudioEngine.crowd(); } }, { wait: 1.6 }, { fade: 'out', time: .8 }], 'gemeos-pedido', () => gemeosEnd())));
 }
@@ -164,7 +164,7 @@ function gemeosEnd() {
 function gemeosTracker() {
   const s = gemeosStage(), t = (goal) => ({ icon: '🔊', title: 'A Casona dividida', goal, kind: 'side' });
   if (!s && gemeosReady()) return t('Os gêmeos da Casona brigaram: passe na Casona, na Serra');
-  if (s === 1) return t(bagQty('opala') >= GEMEOS_OPALAS ? 'Leve as ' + GEMEOS_OPALAS + ' opalas a São Dunstano, na ferraria do primeiro andar da caverna' : 'Traga ' + GEMEOS_OPALAS + ' opalas da caverna (do andar 6 pra baixo) pro anel do Márcio (' + Math.floor(bagQty('opala')) + '/' + GEMEOS_OPALAS + ')');
+  if (s === 1) return t(bagQty('opala') >= GEMEOS_OPALAS ? 'Leve as ' + GEMEOS_OPALAS + ' opalas podres de chique a São Dunstano, na ferraria do primeiro andar da caverna' : 'Traga ' + GEMEOS_OPALAS + ' opalas da caverna (do andar 6 pra baixo) pro anel do Márcio (' + Math.floor(bagQty('opala')) + '/' + GEMEOS_OPALAS + ')');
   if (s === 2) return t('Ache o Marcelo: brabo, ele vai chutar bola sozinho no campinho da Serra');
   if (s === 3 || s === 4) return t('Leve o anel ao Márcio, na Casona');
   return null;

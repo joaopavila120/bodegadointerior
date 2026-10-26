@@ -4,10 +4,10 @@
 
 MISSIONS.push({ id: 'peixinho', title: 'Peixinho na brasa', giver: 'peixinhonabrasa', side: true, mainArc: true,
   when: () => !regionLocked('sc') && friendshipOf('peixinhonabrasa') >= 10,
-  intro: [['peixinhonabrasa', 'Ô loco, meu! Tu é o bodegueiro que pesca no trapiche, né?'],
-    ['peixinhonabrasa', 'Tô com uma vontade de fazer um peixinho na brasa daqueles, chamar os piá tudo… mas peixe comum não serve, não.'],
-    ['peixinhonabrasa', 'Quero o DOURADO, o rei do rio! Só se pega lá longe, na correnteza do rio Uruguai. E ele pula e briga que nem cavalo xucro.'],
-    ['peixinhonabrasa', 'Me traz um dourado e cinco cerveja geladinha, que eu chamo os piá e faço um peixinho na brasa pros pela-saco chorar!'],
+  intro: [['peixinhonabrasa', 'Ô loco, meu! Tu é aquele bodegueiro pela saco que pesca no trapiche, né?'],
+    ['peixinhonabrasa', 'Tô com uma vontade de fazer um peixinho na brasa daqueles, só pra quem pode né, chamar os piá tudo… mas peixe comum não serve, não.'],
+    ['peixinhonabrasa', 'Quero o DOURADO, o rei do rio! Só se pega lá longe, na correnteza do rio Uruguai. Esse é só pra quem pode, vagabundo!'],
+    ['peixinhonabrasa', 'Me traz um dourado e cinco kaiser gelada, seu pela saco, que eu chamo os piá e faço um peixinho na brasa!'],
     ['dica', 'No trapiche, <b>arremesse longe</b> (força no verde) pra cair na correnteza: lá mora o dourado. Na briga, <b>solte</b> quando ele correr ou pular.', 'Peixinho na brasa']],
   deliver: { to: 'peixinhonabrasa', items: { dourado: 1, cerveja: 5 } },
   goal: () => 'Leve um dourado (arremesse longe no trapiche) e 5 cervejas ao Peixinho, em Santa Catarina (dourado ' + Math.min(1, Math.floor(haveItem('dourado'))) + '/1 · cerveja ' + Math.min(5, Math.floor(haveItem('cerveja'))) + '/5)',
@@ -25,9 +25,9 @@ function playPeixinhoScene() {
   const cry = (id) => ({ do: () => { const a = scene.actors[id]; if (!a) return; for (let i = 0; i < 6; i++) fxAdd('drop', a.x + (i % 2 ? 8 : -8), a.y - 112, { vx: (i % 2 ? 1 : -1) * fxRand(10, 30), vy: fxRand(-30, 10), g: 260, life: .9, size: 3, floor: a.y - 40 }); } });
   playSteps([...sceneWorld({ map: 'sc', x: cx, y: cy - 20, props: grill }),
     { actor: 'peixinhonabrasa', x: cx - 70, y: cy - 10, dx: 1 }, { actor: 'sadi', x: cx + 80, y: cy + 40, dx: -1 }, { fade: 'in', time: .8 },
-    { say: 'peixinhonabrasa', text: 'Agora é com o pai: brasa no ponto, sal grosso e o rei do rio no espeto.' },
+    { say: 'peixinhonabrasa', text: 'agora é só pra quem pode vagabundo: brasa no ponto, sal grosso e o rei do rio no espeto.' },
     { do: () => AudioEngine.phone() },
-    { say: 'peixinhonabrasa', text: 'Alô, piazada? Larga tudo e vem pra cá: peixinho na brasa e Kaiser gelada!' },
+    { say: 'peixinhonabrasa', text: 'Alô, seus vacabundo? Larga tudo e vem pra cá: peixinho na brasa e Kaiser gelada!' },
     ...pia.map(([id, dx, dy], k) => ({ actor: id, x: cx + (dx < 0 ? -720 : 720), y: cy + dy, dx: dx < 0 ? 1 : -1 })),
     { walk: pia.map(p => p[0]), to: pia.map(([, dx, dy]) => ({ x: cx + dx, y: cy + dy })) },
     { say: 'lauro', text: 'Opa! Me disseram que tinha dourado, ja!' },
@@ -37,7 +37,7 @@ function playPeixinhoScene() {
     { actor: 'gremio2_1', x: cx + 380, y: cy - 150, dx: -1 }, { actor: 'inter_1', x: cx + 430, y: cy - 120, dx: -1 },
     { say: 'gremio2_1', text: 'Bah… peixinho na brasa… e ninguém convidou nós…' }, cry('gremio2_1'), cry('inter_1'),
     { say: 'inter_1', text: 'Snif… e ainda é dourado…' }, cry('gremio2_1'), cry('inter_1'),
-    { say: 'peixinhonabrasa', text: 'Isso aí! Peixinho na brasa pros pela-saco chorar!' },
+    { say: 'peixinhonabrasa', text: 'Isso aí! Peixinho na brasa só pra quem pode!' },
     { do: () => { for (const [id] of pia) { const a = scene.actors[id]; a.hop = 10; sceneShout('Ô loco, meu!', a.x, a.y - 150, '#ffe28a', 15); } scene.actors.peixinhonabrasa.hop = 12; AudioEngine.crowd(); fxStars(cx, cy - 60, 8); } },
     cry('gremio2_1'), cry('inter_1'), { wait: 1.8 }, { fade: 'out', time: .9 }], 'peixinho-na-brasa', done);
 }

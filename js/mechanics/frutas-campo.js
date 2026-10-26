@@ -5,7 +5,7 @@
 'use strict';
 
 const FRUIT_TREES = {
-  0: { name: 'Bergamoteira', of: 'da', item: 'bergamota', q: 2000 },   // tree-varieties-v1: 0 é a bergamoteira carregada
+  0: { name: 'Bergamoteira', of: 'da', item: 'bergamota', q: [600, 1200] },   // tree-varieties-v1: 0 é a bergamoteira carregada (colhe de 600 g a 1,2 kg)
   1: { name: 'Butiazeiro', of: 'do', item: 'butia', q: 2, every: 4 }   // e 1 o butiazeiro carregado (butiá cura: dá pouco)
 };
 // Onde as frutas maduras ficam, em fração do tamanho da árvore (x a partir do tronco, y pra cima a partir do chão).
@@ -29,14 +29,17 @@ function fruitArtReady() { return !!ENV_ART['tree-varieties-v1']?.naturalWidth; 
 function pickFruitTree(f) {
   if (!forageReady(f)) { worldSay((f.of === 'da' ? 'A ' : 'O ') + f.name.toLowerCase() + ' ainda está sem fruta madura. Volta em ' + (forageWait(f) - (G.day - G.forage[f.id])) + ' dia(s).'); return; }
   teachFirst('mato', () => {
-    G.forage ??= {}; G.forage[f.id] = G.day; bagAdd(f.item, f.q); AudioEngine.tick();
-    farmXP(2, (f.item === 'bergamota' ? formatWeight(f.q) + ' de bergamota' : f.q + ' ' + bagName(f.item).toLowerCase()) + ' no inventário'); save();
+    const q = Array.isArray(f.q) ? Math.round((f.q[0] + Math.random() * (f.q[1] - f.q[0])) / 100) * 100 : f.q;
+    G.forage ??= {}; G.forage[f.id] = G.day; bagAdd(f.item, q); AudioEngine.tick();
+    farmXP(2, (f.item === 'bergamota' ? formatWeight(q) + ' de bergamota' : q + ' ' + bagName(f.item).toLowerCase()) + ' no inventário'); save();
   });
 }
 // A árvore sem fruta: a bergamoteira usa a copa redonda da mesma folha; o butiazeiro, o butiazeiro da beira do rio.
 function drawFruitTree(f, x, y, w, h, sprite) {
   const ready = forageReady(f);
   if (f.item === 'butia' && WORLD_ART['butia-v2']?.naturalWidth) worldSprite('butia-v2', 0, x - w / 2, y - h, w, h);
+  // Bergamoteira madura: a arte da árvore carregada; colhida, a copa sem fruta.
+  else if (f.item === 'bergamota') { sprite('tree-varieties-v1', ready ? 0 : 3, x, y, w, h); return true; }
   else sprite('tree-varieties-v1', 3, x, y, w, h);
   if (!ready) return true;
   const size = f.item === 'butia' ? Math.max(18, w * .085) : Math.max(20, w * .1);

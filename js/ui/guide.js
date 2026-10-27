@@ -8,7 +8,6 @@ function drawCharacterPortrait(context,sprite,x,y,height){
 }
 function initializeCharacterChoice(){
  // Sempre começa com o Sadi; outros personagens são liberados pela amizade máxima.
- const c=$('avatarPreview');if(c)drawCharacterPortrait(c.getContext('2d'),0,c.width/2,c.height-4,c.height-8);
 }
 const UPGRADE_TABS=['Botas','Mate','Cozinha','Balcão','Outros'];
 let upgradeTab='Cozinha';

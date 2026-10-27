@@ -5,7 +5,7 @@
  reset();
  check(['indavirus','lauro','peixinhonabrasa','manolima'].every(id=>index(id)>=0&&CHARACTER_ART[PEOPLE[index(id)].sprite.file].naturalWidth>0),'quatro novos personagens carregam suas artes');
  check(!$('startingCharacter'),'tela inicial não oferece escolha de personagem');
- $('startingName').value='Bodega do teste';
+
  const confirmBefore=window.confirm;try{window.confirm=()=>true;startGame(true);}finally{window.confirm=confirmBefore;}
  check(scene?.id==='intro'&&!modal,'jogo novo abre com a introdução: o galpão vazio');
  const runScene=(until,max=400)=>{for(let n=0;n<max&&scene&&!until();n++){if(scene.step?.say||scene.step?.overlay)sceneNext();else sceneTick(1/20);}};
@@ -17,7 +17,7 @@
  runScene(()=>scene.step?.say==='valter');check(scene.view==='bodega'&&scene.actors.valter,'o primeiro vizinho aparece na porta');
  runScene(()=>scene.step?.say==='valter'&&scene.step.text.includes('Mimosa'));check(rpgBoxes.sceneTalk.text.includes('boi'),'o Valter dá de presente um boi e a Mimosa, vaca de leite');
  runScene(()=>false);check(!scene&&!document.body.classList.contains('intro-playing'),'a introdução termina e devolve o jogo');
- check(G.avatarId==='sadi'&&G.bodegaName==='Bodega do teste'&&modal==='tutorial'&&prologueActive(),'novo jogo começa com Sadi, aplica nome e abre o prólogo da roça');
+ check(G.avatarId==='sadi'&&G.bodegaName==='Bodega Do Sadi'&&modal==='tutorial'&&prologueActive(),'novo jogo começa com Sadi, aplica nome e abre o prólogo da roça');
  check($('dialogTitle').textContent.includes('A roça do vô')&&$('dialogContent').textContent.includes('Armazém Querência'),'boas-vindas apresentam o primeiro passo da roça');G.prologue.done=true;gameGuide();check(['Mão boa na bocha','Rei do truco','Agenda cheia','Desceu na gruta','Rei do rio'].every(text=>$('dialogContent').textContent.includes(text))&&!$('dialogContent').querySelector('.guide-grid'),'guia mostra só o nível e as conquistas, com as da caverna e do mundo');
  closeDialog(true);G.xp=99999;G.levelSeen=7;
  playAs('indavirus');check(G.avatarId==='sadi','sem amizade máxima não dá para jogar com Indavirus');

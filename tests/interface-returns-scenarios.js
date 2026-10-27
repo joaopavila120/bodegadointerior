@@ -16,7 +16,7 @@
   G.player={x:f.x+f.w/2,y:f.y-20,dx:0,dy:1,walk:false};interact();check(modal==='caixa'&&$('dialogContent').innerHTML.includes('caixaClose'),'no caixa, com a bodega aberta: encerrar o expediente');closeDialog(true);G.phase='prep';}
  check(!$('orderRail')&&$('toasts').closest('#gameSidebar')&&getComputedStyle($('toasts')).position!=='fixed','nenhuma faixa de pedidos ou avisos ocupa o topo');
  $('start').classList.remove('hidden');const logo=$('startLogo');logo.scrollIntoView({block:'center'});const r=logo.getBoundingClientRect();check(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2).closest('#start'),'tela inicial cobre totalmente a interface de gameplay');$('start').classList.add('hidden');
- check(!$('startingCharacter')&&$('avatarPreview'),'tela inicial mostra só o Sadi, sem seleção de personagem');
+ check(!$('startingCharacter')&&!$('avatarPreview')&&!$('startingName')&&$('showcaseGrid').querySelectorAll('.showcase-card img').length===SHOWCASE.flatMap(s=>[].concat(s.img)).length&&$('showcaseGrid').querySelectorAll('.showcase-card').length===SHOWCASE.length&&$('heroSlides').querySelectorAll('img').length===HERO_SLIDES.length,'tela inicial sem nome da bodega nem foto do Sadi: as cenas do jogo atrás do menu e a vitrine');
  for(const day of [2,3,5]){
   const sizes=new Set();for(let i=0;i<90;i++){reset();G.day=day;G.phase='open';G.elapsed=30;const g=spawnGroup({targetTable:1});if(!g||g.size<1||g.size>difficulty().maxGroup)throw Error('Truco fora dos limites');sizes.add(g.size);}
   check(sizes.has(difficulty().maxGroup),'turmas de truco seguem a progressão do dia '+day);

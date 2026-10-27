@@ -3,7 +3,8 @@
 
 const EVENT_MUSIC={oktoberfest:'sc',capela:'serra'};
 // A Mata de Araucárias tem trilha própria: o pinheiral, a mata adentro, o refúgio do Garibaldi, a praia de Laguna e o navio.
-const MATA_MUSIC_MAPS=new Set(['mata','trecho','casa:garibaldi','laguna','navio']);
+// A mesma trilha toca na caverna da Serra (com o Diabo Vermelho no fundo) e na clareira das lendas, nas brigas com os chefões.
+const MATA_MUSIC_MAPS=new Set(['mata','trecho','casa:garibaldi','laguna','navio','caverna','arena']);
 const AudioEngine={ctx:null,master:null,on:true,music:true,tracks:null,stepClock:0,hissClock:0,noiseBuffer:null,whiteBuffer:null,loops:{},fxBus:null,ambientBus:null,bus:null,musicVol:1,ambientVol:1,fxVol:1,popClock:0,glugClock:0,fireClock:0,mooClock:6,
  initMusic(){if(this.tracks)return;this.tracks=MUSIC_DATA.map(src=>{const audio=new Audio(src);audio.loop=true;audio.preload='metadata';audio.volume=.12;const track={audio,pending:false,blocked:false};audio.addEventListener('error',()=>{track.blocked=true;if(!this.musicError){this.musicError=true;say('Não foi possível carregar a música. Os efeitos sonoros continuam disponíveis.');}});return track;});},
  syncMusic(){if(!this.tracks)return;for(const t of this.tracks)t.audio.volume=.12*this.musicVol*(this.sceneQuiet?.3:1);const active=this.on&&this.music&&started&&!paused&&!G.bocce?.paused&&!modal&&!document.hidden,region=this.musicRegion(),index=MATA_MUSIC_MAPS.has(worldOut?.map)?4:region==='sc'?2:region==='serra'?3:['open','closing'].includes(G.phase)?1:0;this.tracks.forEach((track,i)=>{const a=track.audio;if(!active||i!==index){if(!a.paused)a.pause();return;}if(a.paused&&!track.pending&&!track.blocked){track.pending=true;a.play().catch(error=>{if(error.name!=='AbortError')track.blocked=true;}).finally(()=>{track.pending=false;});}});},

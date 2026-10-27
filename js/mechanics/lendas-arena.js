@@ -139,19 +139,64 @@ function drawArenaDecor(seen, layers) {
   for (const p of D.props) if (!p.back && seen(p.x, p.y, p.h + 20)) layers.push({ y: p.y, draw: () => mataNature(p.i, p.x, p.y, p.w, p.h) });
   for (const [x, y] of ARENA_FIRES) if (seen(x, y, 120)) layers.push({ y, draw: () => { ellipse(x, y + 2, 40, 12, 'rgba(10,8,4,.35)'); for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; ellipse(x + Math.cos(a) * 30, y + Math.sin(a) * 11, 8, 6, k % 2 ? '#6a6a62' : '#85857a'); } drawFogoDeChao(x, y); } });
 }
-// Por cima da noite: a luz dos braseiros, a lua no meio da clareira, os vaga-lumes e a mata escurecendo nas bordas.
+// ---------- A noite bonita (na clareira e nos mapas abertos) ----------
+// Vaga-lumes piscando e voando devagar em volta de cada ponto (copa de árvore, beira de rio): "per" por ponto, e só em
+// "share" dos pontos.
+function drawFireflies(view, pts, alpha = 1, per = 3, share = 1) {
+  const t = frameClock, flies = [];
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  pts.forEach(([px, py], i) => {
+    if (i % 10 >= share * 10 || px < view.x - 120 || px > view.x + view.w + 120 || py < view.y - 120 || py > view.y + view.h + 120) return;
+    for (let k = 0; k < per; k++) {
+      const ph = (i * 7 + k * 3) * 2.399 % 6.283, x = px + Math.sin(t * .5 + ph) * 70 + (k - 1) * 34, y = py + Math.cos(t * .7 + ph * 1.3) * 45, a = .45 * Math.sin(t * 2.4 + ph * 3) * alpha;
+      if (a > .04) { glow(x, y, 15, a, '200,255,120'); flies.push([x, y, a]); }
+    }
+  });
+  ctx.restore();
+  for (const [x, y, a] of flies) { ctx.globalAlpha = Math.min(1, a * 2); rect(x - 1.5, y - 1.5, 3, 3, '#f2ffb0'); } ctx.globalAlpha = 1;
+}
+// Nos mapas abertos, os vaga-lumes ficam nas copas das árvores e na beira do rio Uruguai (Fronteira) e do arroio (Serra).
+const fireflySpotCache = new Map();
+function fireflySpots(M) {
+  if (fireflySpotCache.has(M.id)) return fireflySpotCache.get(M.id);
+  const list = [];
+  // (Na Serra e em SC, as árvores que ficariam em cima de casa ou estrada nem são desenhadas.)
+  for (const p of worldDressing(M).props) if (p.sheet === 'nature' && p.index < 3 && (M.id === 'vila' || regionalTreeClear(M.id, p.x, p.y, p.w, p.h))) list.push([p.x, p.y - p.h * .45]);
+  for (const t of regionalExtraTrees(M)) list.push([t.x, t.y - t.h * .45]);
+  if (M.id === 'vila') for (let y = 300; y < M.H; y += 240) list.push([VILA.river + 20, y]);
+  if (M.id === 'serra') for (let x = 120; x < M.W; x += 240) list.push([x, SERRA.arroio]);
+  fireflySpotCache.set(M.id, list); return list;
+}
+// Na clareira, na beira do mato em volta.
+const ARENA_FLY_SPOTS = [];
+for (let x = 260; x < ARENA.W - 200; x += 150) ARENA_FLY_SPOTS.push([x, 225], [x + 70, 1040]);
+for (let y = 330; y < ARENA.H - 200; y += 150) ARENA_FLY_SPOTS.push([215, y], [ARENA.W - 215, y + 70]);
+function drawMoonlight(cx, cy, r, alpha) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createRadialGradient(cx, cy, r * .12, cx, cy, r); g.addColorStop(0, `rgba(160,185,255,${alpha})`); g.addColorStop(1, 'rgba(160,185,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); ctx.restore();
+}
+// As bordas da tela escurecendo, pra focar no meio.
+function drawVignette(view, alpha) {
+  const cx = view.x + view.w / 2, cy = view.y + view.h / 2, m = Math.max(view.w, view.h), v = ctx.createRadialGradient(cx, cy, m * .36, cx, cy, m * .78);
+  v.addColorStop(0, 'rgba(4,8,4,0)'); v.addColorStop(1, `rgba(4,8,4,${alpha})`); ctx.fillStyle = v; ctx.fillRect(view.x - 40, view.y - 40, view.w + 80, view.h + 80);
+}
+// Na Fronteira, na Serra e em SC, de noite, bem de leve: uns poucos vaga-lumes (um em três a cada dez pontos) e as
+// bordas mal escurecendo.
+function drawNightAmbience(view, night) {
+  const k = Math.min(1, night / .5);
+  drawFireflies(view, fireflySpots(worldMap()), k, 1, .3);
+  drawVignette(view, .05 * k);
+}
+// Por cima da noite da clareira: a luz dos braseiros, a lua no meio, os vaga-lumes e a mata escurecendo nas bordas.
 function drawArenaLight(view) {
   const t = frameClock, { W, H } = ARENA;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const [x, y] of ARENA_FIRES) glow(x, y - 30, 240, .2 + Math.sin(t * 8 + x) * .03, '255,140,60');
-  const g = ctx.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 640); g.addColorStop(0, 'rgba(160,185,255,.14)'); g.addColorStop(1, 'rgba(160,185,255,0)');
-  ctx.fillStyle = g; ctx.fillRect(W / 2 - 660, H / 2 - 660, 1320, 1320);
-  const flies = [];
-  for (let k = 0; k < 26; k++) { const x = 230 + (k * 397) % 1140 + Math.sin(t * .5 + k * 2.1) * 50, y = 240 + (k * 271) % 780 + Math.cos(t * .7 + k * 1.3) * 36, a = .45 * Math.sin(t * 2.4 + k * 1.7); if (a > .05) { glow(x, y, 15, a, '200,255,120'); flies.push([x, y, a]); } }
   ctx.restore();
-  for (const [x, y, a] of flies) { ctx.globalAlpha = Math.min(1, a * 2); rect(x - 1.5, y - 1.5, 3, 3, '#f2ffb0'); } ctx.globalAlpha = 1;
-  const cx = view.x + view.w / 2, cy = view.y + view.h / 2, v = ctx.createRadialGradient(cx, cy, Math.max(view.w, view.h) * .36, cx, cy, Math.max(view.w, view.h) * .78);
-  v.addColorStop(0, 'rgba(4,8,4,0)'); v.addColorStop(1, 'rgba(4,8,4,.55)'); ctx.fillStyle = v; ctx.fillRect(view.x - 40, view.y - 40, view.w + 80, view.h + 80);
+  drawMoonlight(W / 2, H / 2, 640, .14);
+  drawFireflies(view, ARENA_FLY_SPOTS);
+  drawVignette(view, .55);
 }
 function drawArenaFx() {
   const F = lendaFight; if (!F) return; const L = LENDA_BOSS[F.id], b = mataNight?.beasts[0];

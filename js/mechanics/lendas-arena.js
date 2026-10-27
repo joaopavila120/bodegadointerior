@@ -74,10 +74,84 @@ function lendaHazardsTick(dt) {
   F.fires = F.fires.filter(f => f.life > 0);
   const r = F.ring; if (r) { r.r += 520 * dt; const d = Math.hypot(p.x - r.x, (p.y - r.y) * 1.3); if (!r.hit && Math.abs(d - r.r) < 30) { r.hit = true; mataHurt(dmg, from); } if (r.r > 520) F.ring = null; }
 }
+// ---------- A clareira ----------
+// O chão (grama, a trilha batida em roda, o anel de cogumelos, as flores) e a mata do fundo são pintados uma vez só
+// num canvas à parte; as árvores e o mato dos lados e da frente, os braseiros, os vaga-lumes e a luz da lua vão a
+// cada quadro.
+const ARENA_OUT = 360, ARENA_FIRES = [[205, 195], [1395, 195], [205, 1070], [1395, 1070]];
+let arenaGroundCache = null, arenaDecor = null;
+function arenaRand(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+function arenaArtReady() { return WORLD_ART.grass?.naturalWidth && WORLD_ART.nature?.naturalWidth && MATA_ART['mata-nature']?.naturalWidth; }
+// Araucárias (e umas árvores de folha) em volta, e o mato na beira da clareira, fora de onde se anda.
+function arenaDecorList() {
+  if (arenaDecor) return arenaDecor;
+  const R = arenaRand(9137), { W, H } = ARENA, trees = [], props = [];
+  const tree = (x, y, back) => { const arauc = R() < .72, w = Math.round((arauc ? 230 : 220) + R() * 80); trees.push({ x: x + (R() - .5) * 60, y: y + (R() - .5) * 36, kind: arauc ? 1 : 0, w, h: Math.round(w * (arauc ? 1.42 : 1.3)), back }); };
+  for (let x = -320; x <= W + 320; x += 150) { tree(x, -60, true); tree(x + 75, 105, true); }
+  for (let x = -320; x <= W + 320; x += 160) { tree(x, H + 130, false); tree(x + 80, H + 300, false); }
+  for (let y = 260; y < H + 60; y += 165) { tree(40, y, false); tree(-120, y + 80, false); tree(W - 40, y, false); tree(W + 120, y + 80, false); }
+  const kinds = [1, 1, 5, 2, 6, 3], prop = (x, y, back) => { const i = kinds[Math.floor(R() * kinds.length)], w = Math.round(110 + R() * 60); props.push({ i, x: x + (R() - .5) * 40, y, w, h: Math.round(w * .85), back }); };
+  for (let x = 300; x < W - 260; x += 150) { prop(x, 196, true); prop(x + 60, H - 112, false); }
+  for (let y = 330; y < H - 160; y += 150) { prop(130, y, false); prop(W - 130, y + 70, false); }
+  return arenaDecor = { trees: trees.sort((a, b) => a.y - b.y), props };
+}
+function buildArenaGround() {
+  const { W, H, pad } = ARENA, O = ARENA_OUT, R = arenaRand(4021), cv = document.createElement('canvas');
+  cv.width = W + O * 2; cv.height = H + O * 2;
+  const main = ctx; ctx = cv.getContext('2d');
+  try {
+    ctx.translate(O, O);
+    worldTexture(0, -O, -O, W + O * 2, H + O * 2);
+    ctx.save(); ctx.filter = 'blur(18px)'; for (let k = 0; k < 46; k++) ellipse(pad + R() * (W - pad * 2), pad + R() * (H - pad * 2), 60 + R() * 110, 30 + R() * 50, R() < .5 ? 'rgba(20,40,12,.08)' : 'rgba(190,200,100,.07)'); ctx.restore();
+    // A trilha batida em roda, de tanta lenda e tanto gaúcho brigando ali.
+    ctx.save(); ctx.filter = 'blur(7px)'; ctx.lineWidth = 78; ctx.strokeStyle = 'rgba(104,78,46,.42)'; ctx.beginPath(); ctx.ellipse(W / 2, H / 2 + 20, 440, 300, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 34; ctx.strokeStyle = 'rgba(140,108,66,.3)'; ctx.stroke(); ctx.restore();
+    for (let k = 0; k < 160; k++) { const a = R() * Math.PI * 2, r = .9 + R() * .2; ellipse(W / 2 + Math.cos(a) * 440 * r, H / 2 + 20 + Math.sin(a) * 300 * r, 2 + R() * 3, 1.5 + R() * 2, R() < .5 ? '#7d6a4e' : '#9a8866'); }
+    // O anel de cogumelos em volta (dizem que é onde as lendas dançam).
+    for (let a = 0; a < Math.PI * 2; a += .085 + R() * .05) {
+      if (R() < .18) continue; const x = W / 2 + Math.cos(a) * 545 + (R() - .5) * 18, y = H / 2 + 20 + Math.sin(a) * 390 + (R() - .5) * 14, s = .7 + R() * .6, red = R() < .3;
+      rect(x - 1.5 * s, y - 7 * s, 3 * s, 7 * s, '#e8dcc0'); ellipse(x, y - 7 * s, 6 * s, 3.6 * s, red ? '#c0392b' : '#d9c9a4');
+      if (red) { rect(x - 2.5 * s, y - 8.5 * s, 1.6, 1.6, '#fff4e0'); rect(x + 1.5 * s, y - 7.5 * s, 1.6, 1.6, '#fff4e0'); }
+    }
+    for (let k = 0; k < 230; k++) { const x = pad + R() * (W - pad * 2), y = pad + 40 + R() * (H - pad * 2 - 40), c = ['#f4f0e0', '#ffe27a', '#c9a6ff', '#ff9ec0', '#9fd0ff'][Math.floor(R() * 5)]; if (R() < .55) { rect(x - 1, y - 1, 3, 3, c); rect(x, y + 2, 1, 3, '#3f6a2a'); } else { ctx.fillStyle = 'rgba(28,58,18,.55)'; ctx.fillRect(x, y, 2, 6); ctx.fillRect(x + 3, y + 1, 2, 5); ctx.fillRect(x - 3, y + 2, 2, 4); } }
+    // Fora da clareira, a sombra da mata fechada.
+    const shade = document.createElement('canvas'); shade.width = cv.width; shade.height = cv.height; const s = shade.getContext('2d');
+    s.fillStyle = 'rgba(6,14,5,.72)'; s.fillRect(0, 0, shade.width, shade.height); s.globalCompositeOperation = 'destination-out'; s.filter = 'blur(46px)';
+    s.beginPath(); s.roundRect(O + pad - 10, O + pad - 30, W - pad * 2 + 20, H - pad * 2 + 50, 160); s.fill();
+    ctx.drawImage(shade, -O, -O);
+    // A mata do fundo e o mato da beira de cima ficam sempre atrás do Sadi: vão pintados aqui.
+    const D = arenaDecorList();
+    for (const t of D.trees) if (t.back) worldTreeSprite(t.kind, t.x, t.y, t.w, t.h);
+    for (const p of D.props) if (p.back) mataNature(p.i, p.x, p.y, p.w, p.h);
+  } finally { ctx = main; }
+  return cv;
+}
 function drawArenaGround(view) {
-  rect(view.x - 40, view.y - 40, view.w + 80, view.h + 80, '#14200f');
+  rect(view.x - 40, view.y - 40, view.w + 80, view.h + 80, '#0e180b');
+  if (!arenaGroundCache && arenaArtReady()) arenaGroundCache = buildArenaGround();
+  if (arenaGroundCache) { ctx.drawImage(arenaGroundCache, -ARENA_OUT, -ARENA_OUT); return; }
   const { W, H, pad } = ARENA; if (!worldTexture(0, pad, pad, W - pad * 2, H - pad * 2)) rect(pad, pad, W - pad * 2, H - pad * 2, '#3e5a2a');
-  ctx.save(); ctx.strokeStyle = 'rgba(8,14,6,.6)'; ctx.lineWidth = 26; ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2); ctx.restore();
+}
+// As árvores dos lados e da frente, o mato da beira e os braseiros entram na ordem de profundidade (o Sadi passa atrás).
+function drawArenaDecor(seen, layers) {
+  if (!arenaGroundCache) return; const D = arenaDecorList();
+  for (const t of D.trees) if (!t.back && seen(t.x, t.y, t.h + 30)) layers.push({ y: t.y, draw: () => worldTreeSprite(t.kind, t.x, t.y, t.w, t.h) });
+  for (const p of D.props) if (!p.back && seen(p.x, p.y, p.h + 20)) layers.push({ y: p.y, draw: () => mataNature(p.i, p.x, p.y, p.w, p.h) });
+  for (const [x, y] of ARENA_FIRES) if (seen(x, y, 120)) layers.push({ y, draw: () => { ellipse(x, y + 2, 40, 12, 'rgba(10,8,4,.35)'); for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; ellipse(x + Math.cos(a) * 30, y + Math.sin(a) * 11, 8, 6, k % 2 ? '#6a6a62' : '#85857a'); } drawFogoDeChao(x, y); } });
+}
+// Por cima da noite: a luz dos braseiros, a lua no meio da clareira, os vaga-lumes e a mata escurecendo nas bordas.
+function drawArenaLight(view) {
+  const t = frameClock, { W, H } = ARENA;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [x, y] of ARENA_FIRES) glow(x, y - 30, 240, .2 + Math.sin(t * 8 + x) * .03, '255,140,60');
+  const g = ctx.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 640); g.addColorStop(0, 'rgba(160,185,255,.14)'); g.addColorStop(1, 'rgba(160,185,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(W / 2 - 660, H / 2 - 660, 1320, 1320);
+  const flies = [];
+  for (let k = 0; k < 26; k++) { const x = 230 + (k * 397) % 1140 + Math.sin(t * .5 + k * 2.1) * 50, y = 240 + (k * 271) % 780 + Math.cos(t * .7 + k * 1.3) * 36, a = .45 * Math.sin(t * 2.4 + k * 1.7); if (a > .05) { glow(x, y, 15, a, '200,255,120'); flies.push([x, y, a]); } }
+  ctx.restore();
+  for (const [x, y, a] of flies) { ctx.globalAlpha = Math.min(1, a * 2); rect(x - 1.5, y - 1.5, 3, 3, '#f2ffb0'); } ctx.globalAlpha = 1;
+  const cx = view.x + view.w / 2, cy = view.y + view.h / 2, v = ctx.createRadialGradient(cx, cy, Math.max(view.w, view.h) * .36, cx, cy, Math.max(view.w, view.h) * .78);
+  v.addColorStop(0, 'rgba(4,8,4,0)'); v.addColorStop(1, 'rgba(4,8,4,.55)'); ctx.fillStyle = v; ctx.fillRect(view.x - 40, view.y - 40, view.w + 80, view.h + 80);
 }
 function drawArenaFx() {
   const F = lendaFight; if (!F) return; const L = LENDA_BOSS[F.id], b = mataNight?.beasts[0];
@@ -105,9 +179,9 @@ WORLD_MAPS.arena = {
   canWalk(x, y) { return x > ARENA.pad + 24 && x < ARENA.W - ARENA.pad - 24 && y > ARENA.pad + 60 && y < ARENA.H - ARENA.pad - 10; },
   edge() { return null; }, spots() { return []; },
   draw(view, seen, layers) {
-    drawArenaGround(view);
+    drawArenaGround(view); drawArenaDecor(seen, layers);
     if (mataCombatOn() && !scene) drawMataNightLayers(layers, seen);
-    layers.push({ y: 8e9 - 1, draw: () => { mataNightVeil(view, .35); drawArenaFx(); } });
+    layers.push({ y: 8e9 - 1, draw: () => { mataNightVeil(view, .35); drawArenaLight(view); drawArenaFx(); } });
   }
 };
 REGION_NAMES.arena = 'Clareira da lenda';

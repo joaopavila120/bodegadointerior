@@ -68,10 +68,24 @@ function reportFilmed() { const st = G.missions?.reportagem; return st ? (st.fil
 function reportFolkCount() { return Object.keys(reportFilmed()).filter(k => k !== 'saci').length; }
 function reportActive() { return missionActive('reportagem'); }
 function reportWants(id) { return reportActive() && !reportFilmed()[id] && (id === 'saci' || reportFolkCount() < REPORT_FOLK); }
-function reportNight() { return reportActive() && !!worldOut && !worldMap().indoor && worldNight() && !prologueActive() && !inCave(); }
+function reportNight() { return reportActive() && !!worldOut && ENV_MAIN_MAPS.has(worldOut.map) && worldNight() && !prologueActive() && !inCave(); }
+// Noites da reportagem: todas as assombrações aparecem de uma vez, cada uma no seu canto da Fronteira ou da Serra, só
+// pra filmar (sem cena nem briga). Se não terminar, na noite seguinte elas voltam; as já filmadas não contam de novo.
+function reportFolkNight() { return reportActive() && G.phase === 'closed' && !!G.tutorial?.complete && !prologueActive(); }
+function reportFolkAt(map) {
+  if (!reportFolkNight() || regionLocked(map)) return [];
+  const M = WORLD_MAPS[map], out = [];
+  for (const id of Object.keys(FOLK)) {
+    if (FOLK[id].map !== map) continue;
+    const list = FOLK[id].spots.filter(([x, y]) => M.canWalk(x, y)), n = list.length;
+    // Cada uma no seu lugar da noite; se cair em cima de outra, vai pro próximo lugar dela.
+    for (let k = 0; k < n; k++) { const [x, y] = list[(G.day + k) % n]; if (k === n - 1 || !out.some(o => Math.hypot(o.x - x, o.y - y) < 260)) { out.push({ id, x, y }); break; } }
+  }
+  return out.map(o => ({ ...o, x: o.x + Math.sin(frameClock * .7 + o.y) * 20 }));
+}
 function reportGoal() {
   const f = reportFilmed(), left = [!f.saci && 'o Saci', reportFolkCount() < REPORT_FOLK && (REPORT_FOLK - reportFolkCount()) + (REPORT_FOLK - reportFolkCount() > 1 ? ' assombrações' : ' assombração')].filter(Boolean).join(' e ');
-  const id = folkTonight(), tonight = id && reportWants(id) ? ' · hoje: ' + FOLK[id].name + ' na ' + REGION_NAMES[FOLK[id].map] : '';
+  const tonight = reportFolkNight() ? ' · hoje todas as assombrações estão soltas na Fronteira e na Serra' : '';
   return 'De noite, depois de fechar, filme ' + left + ' (' + Object.keys(f).length + '/' + (REPORT_FOLK + 1) + ')' + tonight;
 }
 // Capítulo 10, logo depois do convite de Indaial.
@@ -104,16 +118,19 @@ function reportCrewTick(dt) {
 function reportTargets() {
   const out = []; if (!reportNight()) return out;
   const w = saciEncounter; if (reportWants('saci') && w && w.map === worldOut.map && !['gone', 'caught'].includes(w.state)) out.push({ id: 'saci', name: 'Saci', x: w.x, y: w.y - 55 });
-  const f = folkTonight(); if (f && reportWants(f) && FOLK[f].map === worldOut.map) { const p = folkSpot(f); out.push({ id: f, name: FOLK[f].name, x: p.x, y: p.y - 55 }); }
+  for (const f of reportFolkAt(worldOut.map)) if (reportWants(f.id)) out.push({ id: f.id, name: FOLK[f.id].name, x: f.x, y: f.y - 55 });
   return out;
 }
 // A câmera aponta pra onde o Sadi olha: o quadro fica uns passos à frente dele.
 function reportFrame() { const p = worldOut; let dx = p.dx ?? 1, dy = p.dy ?? 0; if (!dx && !dy) dx = 1; return { x: p.x + dx * 240, y: p.y - 55 + dy * 170, w: 150, h: 112 }; }
 function reportFramed(t) { const f = reportFrame(); return Math.abs(t.x - f.x) < f.w && Math.abs(t.y - f.y) < f.h && Math.hypot(t.x - worldOut.x, t.y - worldOut.y + 55) > 100; }
 function reportCameraE() {
-  const near = reportTargets().filter(t => Math.hypot(t.x - worldOut.x, t.y - worldOut.y) < 700); if (!near.length) return false;
-  const spot = worldNearest(); if (spot && !['folk', 'walker:saci'].includes(spot.id)) return false;
+  const close = t => Math.hypot(t.x - worldOut.x, t.y - worldOut.y) < 700, near = reportTargets().filter(close);
+  const again = reportNight() ? reportFolkAt(worldOut.map).filter(f => reportFilmed()[f.id]).map(f => ({ x: f.x, y: f.y - 55 })).filter(close) : [];
+  if (!near.length && !again.length) return false;
+  const spot = worldNearest(); if (spot && spot.id !== 'walker:saci') return false;
   const t = near.find(reportFramed);
+  if (!t && again.some(reportFramed)) { floatNote('🎥 Essa assombração já tá gravada. Procura outra!'); AudioEngine.bad(); return true; }
   if (!t) { floatNote('🎥 Enquadra: vira pro bicho e fica a uns passos dele (nem colado, nem longe demais).'); AudioEngine.bad(); return true; }
   reportFilmed()[t.id] = G.day; AudioEngine.note(1800, .05, 'square', .03); AudioEngine.note(1200, .08, 'square', .03, .07); AudioEngine.ready();
   effect('🎥 ' + t.name + ' filmado!', t.x, t.y - 110, '#fff2b0', 18);
@@ -230,14 +247,9 @@ function drawRioHerb(h) { const x = h.x, y = h.y, t = frameClock; for (let k = 0
     b.carrier = false; bagAdd('corrente', 1); AudioEngine.heart(); effect('⛓️ A corrente do Dianho!', b.x, b.y - 150, '#ffe27a', 18); floatNote('Achou a corrente do Dianho! Leve pra ele, na casa dele, na Serra.'); save();
   };
   const beast = drawCaveBeast; drawCaveBeast = function (b) { beast(b); if (b.carrier && b.hp > 0) drawCorrente(b); };
-  // Reportagem: a assombração da noite aparece com certeza (uma que ainda falta), e o Saci também, na Fronteira.
-  const ft = folkTonight; folkTonight = function () {
-    const id = ft(); if (id || !reportActive()) return id;
-    if (G.phase !== 'closed' || !G.tutorial?.complete || prologueActive() || mapEventToday() || negrinhoTonight()) return null;
-    const st = folkState(); if (st.day === G.day && st.done) return null;
-    const pool = Object.keys(FOLK).filter(k => FOLK[k].ok() && reportWants(k)); if (!pool.length) return null;
-    const pick = pool[G.day % pool.length]; G.folkNight = { day: G.day, id: pick }; return pick;
-  };
+  // Reportagem: em vez da lenda sorteada da noite (com cena e briga), todas as assombrações ficam no mapa pra filmar;
+  // e o Saci também, na Fronteira. Terminada a reportagem, elas voltam a aparecer de vez em quando, como antes.
+  const ft = folkTonight; folkTonight = function () { return reportActive() ? null : ft(); };
   saciForced = M => M.id === 'vila' && reportWants('saci');
   const oi = outsideInteract; outsideInteract = function () { if (!worldTalkOpen() && reportCameraE()) return; oi(); };
   // Turistas do especial na TV: chegam mais fregueses.
@@ -269,7 +281,9 @@ function drawRioHerb(h) { const x = h.x, y = h.y, t = frameClock; for (let k = 0
     if (worldOut?.map === 'serra' && missionDone('sino') && G.phase === 'prep' && G.sinoRang !== G.day) { G.sinoRang = G.day; sinoBells(.2); worldSay('🔔 O sino novo da capela tocou lá na Serra.'); }
   };
   const land = worldLandscape; worldLandscape = function (M, seen, layers, view) {
-    land(M, seen, layers, view); if (!reportNight()) return;
+    land(M, seen, layers, view);
+    for (const f of reportFolkAt(M.id)) if (seen(f.x, f.y, 400)) layers.push({ y: f.y, draw: () => drawFolk(f.id, f.x, f.y, Math.sin(frameClock * .7 + f.y) > 0 ? 1 : -1) });
+    if (!reportNight()) return;
     for (const c of reportCrew.list) { const i = PEOPLE.findIndex(p => p.id === c.id); if (i >= 0 && reportCrew.map === M.id && seen(c.x, c.y)) layers.push({ y: c.y, draw: () => { personDraw(PEOPLE[i].sprite, c.x, c.y, c.walk, false, c.dx); if (c.id === 'indavirus') { rect(c.x + c.dx * 16 - 10, c.y - 92, 20, 13, '#222', 3); ellipse(c.x + c.dx * 16, c.y - 86, 4, 4, '#555'); } else glow(c.x + c.dx * 14, c.y - 80, 60, .25, '255,230,150'); } }); }
     layers.push({ y: 1e9, draw: drawReportFrame });
   };

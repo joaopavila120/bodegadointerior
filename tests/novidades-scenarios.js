@@ -140,12 +140,20 @@
    caveLeave();closeDialog(true);talkAll();check(questOffer('dianho')?.kind==='mission'&&canDeliver(questOffer('dianho').want),'na casa do Dianho, dá pra entregar a corrente');questDeliver(di);talkAll();check(missionDone('corrente')&&!bagQty('corrente'),'corrente devolvida');}
   {delete G.missions.reportagem;startMission(MISSIONS.find(m=>m.id==='reportagem'));closeDialog(true);
    const neg=x=>{const k=G.day;G.day=x;const r=negrinhoTonight();G.day=k;return r;};let d=G.day+1;while(mapEventFor(d)||neg(d))d++;G.day=d;G.phase='closed';G.report={};G.folk={};G.folkNight=null;G.saci={};
-   goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);const f=folkTonight();check(f&&reportWants(f)&&/hoje/.test(reportGoal()),'com a reportagem, toda noite aparece uma assombração que falta filmar');
+   goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);
+   {const all=['vila','serra'].flatMap(m=>reportFolkAt(m).map(f=>f.id)).sort().join();check(!folkTonight()&&all===Object.keys(FOLK).sort().join()&&/hoje/.test(reportGoal()),'com a reportagem, de noite todas as assombrações ficam no mapa, sem a lenda sorteada');
+    check(!WORLD_MAPS.vila.spots().some(s=>s.id==='folk'),'são só pra filmar: chegar perto não começa cena nem briga');}
    saciEncounterKey='';saciTick(.01);check(saciEncounter?.map==='vila','e o Saci aparece na Fronteira');
    for(let i=0;i<5;i++)outsideTick(.05);check(reportCrew.map==='vila'&&reportCrew.list.every(c=>worldCanWalk(c.x,c.y)),'o Gustavo e o Lauro andam junto, de noite');
    const s=saciEncounter;s.state='pipe';s.t=99;const aim=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({dx,dy,x:s.x-dx*240,y:s.y-dy*170})).find(q=>worldCanWalk(q.x,q.y));
    const toward={dx:aim.dx,dy:aim.dy};Object.assign(worldOut,{x:aim.x,y:aim.y,dx:-aim.dx,dy:-aim.dy});outsideInteract();check(!reportFilmed().saci,'de costas pro Saci, a câmera não pega');
    Object.assign(worldOut,toward);outsideInteract();check(reportFilmed().saci,'Saci enquadrado na frente: E filma');
+   {const f=reportFolkAt('vila').find(x=>reportWants(x.id)),aim=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({dx,dy,x:f.x-dx*240,y:f.y-dy*170})).find(q=>worldCanWalk(q.x,q.y));
+    Object.assign(worldOut,aim);outsideInteract();check(reportFilmed()[f.id]&&!scene&&!inArena()&&modal!=='farm','assombração enquadrada: E filma, sem briga');
+    const n=Object.keys(reportFilmed()).length;outsideInteract();check(Object.keys(reportFilmed()).length===n&&reportFolkAt('vila').some(x=>x.id===f.id),'a mesma assombração segue no mapa, mas não dá pra filmar de novo');
+    G.day++;G.phase='closed';check(reportFolkAt('vila').length+reportFolkAt('serra').length===Object.keys(FOLK).length,'não terminou: na noite seguinte elas aparecem de novo');
+    for(const m of ['mata','casa:manolima']){switchMap({map:m,...(WORLD_MAPS[m].spawn?.()||{x:400,y:400})});closeDialog(true);skipWorldTalk?.();for(let i=0;i<3;i++)outsideTick(.05);check(!reportNight()&&!reportCrew.map,'a equipe não entra em '+m);}
+    goInside();closeDialog(true);goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);}
    for(const k of Object.keys(FOLK).filter(k=>reportWants(k)).slice(0,REPORT_FOLK))reportFilmed()[k]=G.day;
    withScenes(()=>{closeDialog(true);talkState=null;missionsTick();});talkAll();check(missionDone('reportagem')&&G.touristsUntil===G.day+3,'filmados o Saci e duas assombrações: o especial vai ao ar');
    {const a=arrivalInterval('group');G.touristsUntil=0;check(a<arrivalInterval('group'),'e vêm turistas pra bodega');G.touristsUntil=G.day+3;}}

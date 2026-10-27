@@ -17,26 +17,25 @@ function gaitaGoal() {
 {
   const at = MISSIONS.findIndex(m => m.id === 'lendaria');
   MISSIONS.splice(at, 0,
-    { id: 'gaita', chapter: 10, title: 'A gaita do vô', giver: 'jayme', visit: true, callWhere: 'casa do Jayme, na Fronteira', get needs() { return voState().gaita ? 'loligebien' : 'valter'; }, where: 'Casa do Valter → casa do Loli, em Pomerode → bodega',
-      // A gaita espera a Cadela Baia (missão à parte do Mano Lima) e a bodega no nível 4.
-      when: () => missionDone('baia') && bodegaLevel() >= 4, waitText: () => !missionDone('baia') ? 'depois de achar a Cadela Baia (missão do Mano Lima)' : 'quando a bodega chegar ao nível 4 (agora: nível ' + bodegaLevel() + ')',
+    { id: 'gaita', chapter: 11, title: 'A gaita do vô', giver: 'jayme', visit: true, callWhere: 'casa do Jayme, na Fronteira', get needs() { return voState().gaita ? 'loligebien' : 'valter'; }, where: 'Casa do Valter → casa do Loli, em Pomerode → bodega',
+      when: () => bodegaLevel() >= 4, waitText: () => 'quando a bodega chegar ao nível 4 (agora: nível ' + bodegaLevel() + ')',
       intro: [['jayme', 'Vivente, teu vô tinha uma gaita de oito baixos que fazia o CTG inteiro levantar.'], ['jayme', 'Quando ele se foi, o Valter guardou a gaita. O fole rasgou, mas o coração dela segue lá dentro.'], ['jayme', 'Busca com o Valter e leva pro velho Otto, o avô do Loli, lá em Pomerode: ninguém conserta gaita como ele.']],
       goal: gaitaGoal, done: () => voState().gaita === 'ready' && !worldOut,
       reward: { cash: 250, xp: 120, rep: 6, decor: 'gaita' }, onDone: () => { decorState().prateleira = true; }, outroBy: 'jayme',
       outro: [['jayme', 'Ouve isso, Sadi… é o mesmo vanerão que o teu vô tocava no CTG.'], ['valter', 'Bah… parece que o velho tá aqui no galpão de novo.'], ['jayme', '“Gaita que volta pra casa nunca mais desafina.” Pendura ela na parede, que ela é da bodega.']] },
-    { id: 'bau', chapter: 11, title: 'O baú do vô', giver: 'valter', where: 'Pouso de tropeiros, na Fronteira',
+    { id: 'bau', chapter: 12, title: 'O baú do vô', giver: 'valter', where: 'Pouso de tropeiros, na Fronteira',
       when: () => bodegaLevel() >= 5, waitText: () => 'quando a bodega chegar ao nível 5 (agora: nível ' + bodegaLevel() + ')',
       intro: ['Arrumando o meu galpão, achei isto: a chave do baú do teu vô.', 'Antes da bodega, ele foi tropeiro. Deixou o baú no Pouso de tropeiros e dizia que ali guardava o que era mais dele.'],
       goal: () => 'Abra o baú do vô no Pouso de tropeiros, na Fronteira', done: () => !!voState().bau,
       reward: { cash: 200, xp: 100, rep: 4 }, outro: ['Então era ali que ele guardava as coisas dele… A foto de 1968! Olha a cara de guapo do velho.', 'E essa carta… nunca foi aberta. Acho que ela tem dono, guri.'] },
-    { id: 'carta', chapter: 12, title: 'A carta para a vó', giver: 'sadi', needs: 'loligebien', where: 'Santa Catarina, casa do Loli',
+    { id: 'carta', chapter: 13, title: 'A carta para a vó', giver: 'sadi', needs: 'loligebien', where: 'Santa Catarina, casa do Loli',
       intro: [['sadi', 'A carta é para a vó Helga, de Pomerode… e nunca foi enviada.'], ['sadi', 'O Loli vive falando da Oma dele, a Dona Erna, de uma família antiga de Pomerode. Será que ela conheceu a vó?']],
       goal: () => 'Leve a carta do vô à casa do Loli, em Pomerode', done: () => voState().carta === 'delivered',
       reward: { cash: 250, xp: 150, rep: 8, friend: { loligebien: 15 } }, outroBy: 'loligebien',
       outro: [['loligebien', 'Primo! Ja, primo! A Oma não para de chorar de alegria.'], ['loligebien', 'Quando tu vier na Oktoberfest, tu é da família, viu? Chope por conta da casa… quer dizer, da minha casa!']] }
   );
   // O sonho fica para a noite, com a bodega fechada (não no meio do expediente).
-  const lend = MISSIONS.find(m => m.id === 'lendaria'); lend.chapter = 14; lend.finale = () => { G.voDream = true; save(); };
+  const lend = MISSIONS.find(m => m.id === 'lendaria'); lend.chapter = 15; lend.finale = () => { G.voDream = true; save(); };
   // Saves que já tinham começado a bodega lendária: os capítulos novos do vô vêm antes dela.
   const migrate = migrateMissions; migrateMissions = function () { migrate(); if (G.missions?.lendaria?.status === 'active' && !G.missions.gaita) delete G.missions.lendaria; };
   const story = storyTick; storyTick = function () { story(); if (G.voDream && G.phase === 'closed' && !worldOut && storyCalm()) { G.voDream = false; playUltimoTrago(); } };

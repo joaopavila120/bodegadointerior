@@ -34,7 +34,7 @@ function oktoDeliver() {
   takeItems({ cerveja: OKTO_BEER }); o.delivered = G.day; o.festDay = G.phase === 'closed' ? G.day + 1 : G.day; save(); refreshHUD();
   talk([['loligebien', 'Ja! Barril cheio! A Oma já tá fazendo cuca pra mil pessoas.'], ['loligebien', o.festDay === G.day ? 'A Oktoberfest é hoje à noite, no salão! Tu cuida da chopeira, primo.' : 'A Oktoberfest é amanhã à noite, no salão. Tu cuida da chopeira, primo!']], null, 'Prost!');
 }
-MISSIONS.push({ id: 'oktober', chapter: 13, title: 'Oktoberfest em Pomerode', giver: 'loligebien', needs: 'loligebien', visit: true, callWhere: 'casa do Loli, em Pomerode', where: 'Santa Catarina: casa do Loli e salão da Oktoberfest, em Pomerode',
+MISSIONS.push({ id: 'oktober', chapter: 14, title: 'Oktoberfest em Pomerode', giver: 'loligebien', needs: 'loligebien', visit: true, callWhere: 'casa do Loli, em Pomerode', where: 'Santa Catarina: casa do Loli e salão da Oktoberfest, em Pomerode',
   guide: { region: 'sc', spot: 'house:loligebien', inside: 'casa:loligebien', insideSpot: 'home:loligebien' },
   intro: [['loligebien', 'Primo! Esse ano a Oktoberfest de Pomerode é coisa de família: a Oma quer que o primo do Sul cuide da chopeira!'], ['loligebien', 'Mas o barril da comunidade tá vazio, ja. Junta ' + OKTO_BEER + ' cervejas pra festa e traz aqui em casa.']],
   goal: () => oktoGoal(), done: () => !!G.missions.oktober?.fest,

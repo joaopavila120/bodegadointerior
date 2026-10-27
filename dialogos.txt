@@ -3410,7 +3410,7 @@ O que vai querer na bodega? | Só um chopp bem tirado. A espuma faz parte, mas d
 E a volta pra casa? | Com calma e companhia. Antes disso, quero ouvir mais uma música.
 
 [estela]
-Buenas, amazona! Qual é o rumo? | Sou Estela. Vou onde o campo chama, mas minha querência fica aqui na fronteira.
+Buenas! Qual é o rumo? | Sou Estela. Vou onde o campo chama, mas minha querência fica aqui na fronteira.
 Esse cavalo é parceiro antigo? | Desde potranco. Primeiro ganhou minha confiança, depois ganhou sela. Pressa não ensina ninguém.
 Como tu escolhe o caminho? | Olho o tempo, a água e o chão. Atalho que machuca o cavalo nunca vale a distância.
 Passa pra tomar um mate! | Passo sim, depois de dar água pro meu parceiro. Quem carrega a gente merece cuidado primeiro.

@@ -449,9 +449,9 @@ function trechoCollect(T, r) {
   const d = trechoDay(T.n);
   if (d.got.includes(r.id)) return;
   d.got.push(r.id); mataXP(2); const jasy = mataFolk('jasy') ? 1 : 0;
-  if (r.kind === 'pinha') { const g = Math.round((150 + Math.random() * 200) / 50) * 50; bagAdd('pinhao', g); effect('+' + formatWeight(g) + ' de pinhão', r.x, r.y - 50, '#ffe2a6', 16); AudioEngine.pop?.(1800, .06, .04); }
-  else if (r.kind === 'erva') { const q = 1 + (Math.random() < .4 ? 1 : 0) + jasy; bagAdd('erva_verde', q); effect('+' + q + ' ramos de erva-mate', r.x, r.y - 90, '#d8ffac', 16); AudioEngine.swoosh?.(.04); }
-  else if (r.kind === 'butia') { const q = Math.random() < .3 ? 2 : 1; bagAdd('butia', q); effect('+' + q + (q > 1 ? ' butiás' : ' butiá') + ' · cura ' + BUTIA_HEAL + ' de vida', r.x, r.y - 140, '#ffd27a', 16); AudioEngine.pop?.(1500, .06, .04); }
+  if (r.kind === 'pinha') { const g = Math.random() < .5 ? 25 : 50; bagAdd('pinhao', g); effect('+' + formatWeight(g) + ' de pinhão', r.x, r.y - 50, '#ffe2a6', 16); AudioEngine.pop?.(1800, .06, .04); }
+  else if (r.kind === 'erva') { const q = 1 + jasy; bagAdd('erva_verde', q); effect('+' + q + ' ramos de erva-mate', r.x, r.y - 90, '#d8ffac', 16); AudioEngine.swoosh?.(.04); }
+  else if (r.kind === 'butia') { const q = 1; bagAdd('butia', q); effect('+' + q + (q > 1 ? ' butiás' : ' butiá') + ' · cura ' + BUTIA_HEAL + ' de vida', r.x, r.y - 140, '#ffd27a', 16); AudioEngine.pop?.(1500, .06, .04); }
   else { const q = 1 + (jasy && Math.random() < .5 ? 1 : 0); AudioEngine.hiss?.(.6, .03, 900); fxPuffs(r.x + 20, r.y - 70, 10, 80, '#d8d4cc'); bagAdd('mel', q); effect('+' + q + (q > 1 ? ' potes' : ' pote') + ' de mel de jataí', r.x, r.y - 110, '#ffe27a', 16); }
   save(); refreshHUD();
 }

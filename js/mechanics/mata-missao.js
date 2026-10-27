@@ -12,6 +12,8 @@
 
 const BUTIA_HEAL = 20;
 const BUTIA_ITEM = { id: 'butia', name: 'Butiá', icon: '🟠', art: 'butia', heal: BUTIA_HEAL, desc: 'Butiá maduro do butiazeiro: recupera ' + BUTIA_HEAL + ' de vida em qualquer briga.' };
+const PITANGA_ITEM = { id: 'pitanga', name: 'Pitanga', icon: '🍒', art: 'pitanga', heal: BUTIA_HEAL, desc: 'Pitanga madura da pitangueira: recupera ' + BUTIA_HEAL + ' de vida em qualquer briga.' };
+const HEAL_FRUITS = [BUTIA_ITEM, PITANGA_ITEM];
 function mataAberta() { return !!missionState('fantasma') || !!G.mataSeen || !!G.mata?.metGaribaldi; }
 
 // ---------- Capítulo 2: o fantasma de camisa vermelha ----------
@@ -73,7 +75,7 @@ function garibaldiHistoria() {
     ['garibaldi', 'Depois veio Ponche Verde, a paz, e o resto da vida em outras guerras. Mas a alma ficou presa aqui, no Sul.'],
     ['garibaldi', 'Toda noite, o navio do capitão Mariath volta pra barra de Laguna. Enquanto ele rondar, eu não descanso.'],
     ['garibaldi', 'Se tu descer a mata inteira, pinheiral, encosta e restinga, até o mar, a gente acerta essa conta junto.'],
-    ['dica', '<b>🌲 Missão secundária: A Batalha de Laguna</b><br>' + m.goal() + '.<br><br>Não precisa ir agora: é uma aventura à parte, como a caverna. Mas a <b>Bodega lendária</b> só começa depois dela. O caminho é longo: os acampamentos ficam espaçados, e os bichos ficam mais fortes conforme tu desce. Arma, vida e resistência se melhoram na ferraria do São Dunstano (e com o Garibaldi).<br><br>Recompensa:' + rewardHTML(m.reward), 'Nova missão']],
+    ['dica', '<b>🌲 Missão secundária: A Batalha de Laguna</b><br>' + m.goal() + '.<br><br>Arma, vida e resistência se melhoram na ferraria do São Dunstano (e com o Garibaldi).<br><br>Recompensa:' + rewardHTML(m.reward), 'Nova missão']],
     () => startMission(m), 'Bora');
 }
 
@@ -110,14 +112,17 @@ function mataProseLine(person) {
   return null;
 }
 
-// ---------- Butiá: cura em qualquer briga ----------
-function butiaQty() { return Math.floor(bagQty('butia')); }
-function butiaUse(hpOf, maxOf, refresh) {
-  if (butiaQty() < 1) return false; const st = caveState(), p = worldOut;
-  if (st.hp >= maxOf()) { floatNote('Vida cheia: guarda o butiá pra hora do aperto.'); return false; }
-  st.hp = Math.min(maxOf(), st.hp + BUTIA_HEAL); bagTake('butia', 1); effect('+' + BUTIA_HEAL + ' ❤ butiá', p.x, p.y - 140, '#ffd27a', 18); fxHearts?.(p.x, p.y - 120, 2); AudioEngine.caveHeal?.(); save(); refresh(); return true;
+// ---------- Butiá e pitanga: curam em qualquer briga ----------
+function healFruit(id) { return HEAL_FRUITS.find(f => f.id === id) || null; }
+function fruitQty(id) { return Math.floor(bagQty(id)); }
+function butiaQty() { return fruitQty('butia'); }
+function healFruits() { return HEAL_FRUITS.filter(f => fruitQty(f.id) > 0); }
+function butiaUse(hpOf, maxOf, refresh, id = 'butia') {
+  if (fruitQty(id) < 1) return false; const st = caveState(), p = worldOut, name = healFruit(id).name.toLowerCase();
+  if (st.hp >= maxOf()) { floatNote('Vida cheia: guarda ' + (id === 'butia' ? 'o ' : 'a ') + name + ' pra hora do aperto.'); return false; }
+  st.hp = Math.min(maxOf(), st.hp + BUTIA_HEAL); bagTake(id, 1); effect('+' + BUTIA_HEAL + ' ❤ ' + name, p.x, p.y - 140, id === 'butia' ? '#ffd27a' : '#ff9a8a', 18); fxHearts?.(p.x, p.y - 120, 2); AudioEngine.caveHeal?.(); save(); refresh(); return true;
 }
-function butiaIconHTML(size) { return `<span style="display:inline-flex;width:${size}px;height:${size}px;align-items:center;justify-content:center">${itemIconHTML('butia')}</span>`; }
+function butiaIconHTML(size, id = 'butia') { return `<span style="display:inline-flex;width:${size}px;height:${size}px;align-items:center;justify-content:center">${itemIconHTML(id)}</span>`; }
 
 // ---------- Ligações ----------
 {
@@ -139,23 +144,23 @@ function butiaIconHTML(size) { return `<span style="display:inline-flex;width:${
   const talkG = garibaldiTalk; garibaldiTalk = function () { if (G.mata?.metGaribaldi && !G.mata.historia && !missionState('laguna')) { garibaldiHistoria(); return; } return talkG(); };
   // Os especiais comentam a mata no balcão (cada novidade, uma vez por pessoa).
   const prose = nextProse; nextProse = function (person) { if (Math.random() < .5) { const l = mataProseLine(person); if (l) return l; } return prose(person); };
-  // Butiá no cinto da caverna e no bornal da mata.
-  const caveBelt = caveBeltItems; caveBeltItems = function () { const list = caveBelt(); if (butiaQty() > 0) list.unshift(BUTIA_ITEM); return list.slice(0, CAVE_BELT); };
+  // Butiá e pitanga no cinto da caverna e no bornal da mata.
+  const caveBelt = caveBeltItems; caveBeltItems = function () { const list = caveBelt(); list.unshift(...healFruits()); return list.slice(0, CAVE_BELT); };
   caveBeltRefresh = function () {
     const el = $('caveBelt'); if (!el) return; const on = inCave() && !scene && !caveDefeatActive(), list = on ? caveBeltItems() : [];
     el.classList.toggle('hidden', !list.length);
-    const html = list.map((i, k) => `<button type="button" data-act="caveUse" data-id="${i.id}" title="${i.name}"><small>${k + 1}</small><span>${i.id === 'butia' ? butiaIconHTML(42) : caveItemIcon(i)}</span><em>${i.id === 'butia' ? butiaQty() : caveBag()[i.id]}</em></button>`).join('');
+    const html = list.map((i, k) => `<button type="button" data-act="caveUse" data-id="${i.id}" title="${i.name}"><small>${k + 1}</small><span>${healFruit(i.id) ? butiaIconHTML(42, i.id) : caveItemIcon(i)}</span><em>${healFruit(i.id) ? fruitQty(i.id) : caveBag()[i.id]}</em></button>`).join('');
     if (el.dataset.html !== html) { el.dataset.html = html; el.innerHTML = html; }
   };
-  const caveU = caveUse; caveUse = function (id) { if (id === 'butia') { if (!inCave() || caveDefeatActive() || scene) return false; return butiaUse(() => caveState().hp, caveMaxHp, caveBeltRefresh); } return caveU(id); };
-  const mataBelt = mataBeltItems; mataBeltItems = function () { const list = mataBelt(); if (butiaQty() > 0) list.unshift(BUTIA_ITEM); return list.slice(0, 5); };
+  const caveU = caveUse; caveUse = function (id) { if (healFruit(id)) { if (!inCave() || caveDefeatActive() || scene) return false; return butiaUse(() => caveState().hp, caveMaxHp, caveBeltRefresh, id); } return caveU(id); };
+  const mataBelt = mataBeltItems; mataBeltItems = function () { const list = mataBelt(); list.unshift(...healFruits()); return list.slice(0, 5); };
   mataBeltRefresh = function () {
     const el = $('mataBelt'); if (!el) return; const on = mataHere() && !scene && G?.mata, list = on ? mataBeltItems() : [];
     el.classList.toggle('hidden', !list.length);
-    const html = list.map((i, k) => `<button type="button" data-act="mataUse" data-id="${i.id}" title="${i.name}"><small>${k + 1}</small>${i.id === 'butia' ? butiaIconHTML(42) : mataGearHTML(i.id, 42)}<em>${i.id === 'butia' ? butiaQty() : mataBag()[i.id]}</em></button>`).join('');
+    const html = list.map((i, k) => `<button type="button" data-act="mataUse" data-id="${i.id}" title="${i.name}"><small>${k + 1}</small>${healFruit(i.id) ? butiaIconHTML(42, i.id) : mataGearHTML(i.id, 42)}<em>${healFruit(i.id) ? fruitQty(i.id) : mataBag()[i.id]}</em></button>`).join('');
     if (el.dataset.html !== html) { el.dataset.html = html; el.innerHTML = html; }
   };
-  const mataU = mataUseItem; mataUseItem = function (id) { if (id === 'butia') { if (!mataHere() || scene || modal) return false; return butiaUse(() => caveState().hp, caveMaxHp, mataBeltRefresh); } return mataU(id); };
+  const mataU = mataUseItem; mataUseItem = function (id) { if (healFruit(id)) { if (!mataHere() || scene || modal) return false; return butiaUse(() => caveState().hp, caveMaxHp, mataBeltRefresh, id); } return mataU(id); };
   // A ferraria do São Dunstano vale na mata também.
   for (const [id, desc] of [['chapeu', 'Aba firme com barbicacho: 15% menos dano em cada pancada, na caverna e na mata.'], ['botas', 'Couro macio de garrão: anda 15% mais ligeiro na caverna e na mata.'], ['lampiao', 'Clareia bem mais longe no escuro da caverna e da mata fechada.'], ['bornal', 'Cabe o dobro: até 10 de cada item do bolicho e 6 de cada no bornal da mata.'], ['guaiaca', 'Cinto de tropeiro com bolso: +30% de moedas dos baús, na caverna e na mata.']]) { const u = CAVE_UPGRADES.find(x => x.id === id); if (u) u.desc = desc; }
   const speaker = sceneSpeaker; sceneSpeaker = function (who) { return who === 'olmiro' ? { person: PEOPLE.findIndex(p => p.id === 'olmiro'), name: 'Olmiro Mimoso' } : speaker(who); };

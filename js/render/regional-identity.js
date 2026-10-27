@@ -42,6 +42,9 @@ function regionalExtraTrees(M){
     ...d.roads.map(([x,y,w,h])=>({x:x-20,y:y-20,w:w+40,h:h+40})),
     ...d.buildings.map(b=>({x:b.x-30,y:b.y-45,w:b.w+60,h:b.h+160})),
     ...(M.spots?.()||[]).map(p=>({x:p.x-80,y:p.y-85,w:160,h:170}))];
+  // Reading the map's spots may build this same list first (the fruit trees use it): keep that one, so the trees drawn
+  // are the ones that can be harvested.
+  if(regionalExtraTreeCache.has(M.id))return regionalExtraTreeCache.get(M.id);
   if(M.id==='serra')reserved.push(...SERRA.vines,SERRA.praca,SERRA.campinho,{x:0,y:SERRA.arroio-40,w:M.W,h:150});
   if(M.id==='vila')reserved.push(VILA.horta,VILA.fogo);
   if(M.id==='sc')reserved.push(SC.ostern,SC.canchaLauro);

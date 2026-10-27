@@ -10,7 +10,7 @@
   action('new');sceneSkip();closeDialog(true);
   G.prologue.done=true;G.prologue.step=PROLOGUE_STEPS.length;G.tutorial.day=4;G.calOffset=3;G.day=30;G.tutorial.complete=true;G.phase='prep';G.valterQueue=[];G.teachQueue=[];
   G.taught={manha:true,pesca:true,pedidos:true,missoes:true,javali:true,cavalo:true};G.regions={serra:true,sc:true};G.cash=5000;
-  G.missions={};for(const m of storyChapters())if(m.chapter<14)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.chapter<15)G.missions[m.id]={status:'done',day:1};
   const talkAll=()=>{let k=0;while(modal==='talk'&&k++<40)talkNext();};
   const skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
   const withScenes=f=>{const ns=window.NO_SCENES;window.NO_SCENES=false;try{return f();}finally{window.NO_SCENES=ns;}};
@@ -92,7 +92,7 @@
   // arco do Peixinho na Brasa: o dourado e cinco cervejas
   withScenes(()=>{const pi=PEOPLE.findIndex(p=>p.id==='peixinhonabrasa');G.friends[pi]=5;delete G.missions.peixinho;G.quests={};G.questOpen=[];G.questNextDay=0;
    check(!missionForGiver('peixinhonabrasa')&&mainArcPending('peixinhonabrasa')&&!questOffer('peixinhonabrasa'),'antes do arco do Peixinho, nada de pedido de itens dele');
-   G.friends[pi]=20;const m=missionForGiver('peixinhonabrasa');check(m?.id==='peixinho'&&m.intro.some(l=>/pela-saco/.test(l[1])),'com amizade, o Peixinho pede o dourado e 5 cervejas pros piá');
+   G.friends[pi]=20;const m=missionForGiver('peixinhonabrasa');check(m?.id==='peixinho'&&m.intro.some(l=>/pela.saco/.test(l[1])),'com amizade, o Peixinho pede o dourado e 5 cervejas pros piá');
    offerMission(m,[]);talkAll();closeDialog(true);if(!missionActive('peixinho'))startMission(m);check(missionActive('peixinho')&&/dourado/.test(m.goal()),'missão aceita: o painel mostra o dourado e as cervejas');
    G.stock.cerveja=10;bagAdd('dourado',1);switchMap({map:'casa:peixinhonabrasa',x:600,y:700});closeDialog(true);check(questMarker('peixinhonabrasa')==='deliver','com tudo na mão, dá pra entregar');
    showQuest(pi);action('questDeliver',String(pi));talkAll();check(scene?.id==='peixinho-na-brasa'&&scene.steps.some(s=>s.actor==='gremio2_1')&&scene.view==='world','a cena: o peixinho na brasa com os piá… e os pela-saco chorando');skip();talkAll();
@@ -128,7 +128,7 @@
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
   // ---------- missões dos encontros: sino, corrente, reportagem e rio ----------
   {G.cave={facao:true,floor:1,deepest:12,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'igreja',x:600,y:700});closeDialog(true);
-   delete G.missions.sino;startChapter(MISSIONS.find(m=>m.id==='sino'));check(MISSIONS.find(m=>m.id==='sino').chapter===6&&modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'capítulo 6, Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'cobre e ferro pro São Dunstano');
+   delete G.missions.sino;startChapter(MISSIONS.find(m=>m.id==='sino'));check(MISSIONS.find(m=>m.id==='sino').chapter===7&&modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'capítulo 7, Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'cobre e ferro pro São Dunstano');
    const ab=CAVE_ITEMS.find(i=>i.id==='aguabenta').cost,c0=bagQty('cobre'),f0=bagQty('ferro');bagAdd('cobre',SINO_NEEDS.cobre);bagAdd('ferro',SINO_NEEDS.ferro);
    goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();
    check(/forjaSino/.test($('dialogContent').innerHTML),'na ferraria, o santo oferece fundir o sino');action('forjaSino');talkAll();check(sinoForged()&&bagQty('cobre')===c0&&bagQty('ferro')===f0,'sino fundido com cobre e ferro');
@@ -531,6 +531,7 @@
    const bu=T.resources.find(r=>r.kind==='butia');if(bu){const b0=bagQty('butia');trechoCollect(T,bu);check(bagQty('butia')>b0&&bagQty('butia')-b0<=2,'na restinga, colhe um ou dois butiás');}
    // o butiá cura em qualquer briga: no bornal da mata e no cinto da caverna
    mataNight=null;mataCombatTick(.01);bagAdd('butia',2);caveState().hp=50;const nb=bagQty('butia');check(mataBeltItems()[0]?.id==='butia'&&mataUseItem('butia')&&caveState().hp===50+BUTIA_HEAL&&bagQty('butia')===nb-1,'butiá no bornal da mata: cura um pouco');
+   bagAdd('pitanga',1);caveState().hp=50;check(mataBeltItems().some(i=>i.id==='pitanga')&&mataUseItem('pitanga')&&caveState().hp===50+BUTIA_HEAL&&!bagQty('pitanga'),'a pitanga também cura no bornal da mata');
    check(caveBeltItems()[0]?.id==='butia','o butiá também entra no cinto da caverna');
    {const back={...worldOut};caveState().floor=1;caveRun=null;delete G.cave.faintDay;enterCave(1);let err='';try{simulate(.016);caveBeltRefresh();}catch(e){err=e.message;}check(!err&&$('caveBelt').querySelector('[data-id="butia"]'),'com butiá no bornal, a caverna roda e mostra o butiá no cinto '+err);caveLeave('',true);closeDialog(true);switchMap(back);closeDialog(true);}
    switchMap({map:'trecho',trecho:31,x:90,y:trechoEnds(31).yIn});closeDialog(true);T=trechoLayout();const at31=campFolkSpot(T);worldOut.x=at31.x+120;worldOut.y=at31.y;outsideTick(.02);check(modal==='talk'&&talkState.lines.some(l=>l[0]==='anita'&&/Mariath/.test(l[1])),'no fogo do 31, a Anita conta da batalha de Laguna');talkAll();
@@ -573,17 +574,19 @@
    for(const n of [2,8,14,18]){switchMap({map:'trecho',trecho:n,x:90,y:trechoEnds(n).yIn});closeDialog(true);drawOutside();}check(inTrecho(),'os trechos desenham sem erro');
    switchMap({map:'laguna',x:90,y:LAGUNA.entryY});closeDialog(true);drawOutside();switchMap({map:'navio',x:NAVIO.ladder.x,y:NAVIO.ladder.y-40});closeDialog(true);drawOutside();check(worldOut.map==='navio','Laguna e o navio desenham sem erro');
    caveState().facao=facaoBefore;G.cash=cash0;mataNight=null;trechoCache=null;G.phase='prep';G.day=day0;goInside();}
-  // ---------- butiazeiros e bergamoteiras do campo dão fruta, como o butiazeiro da beira do rio ----------
+  // ---------- butiazeiros, bergamoteiras e pitangueiras do campo dão fruta, como o butiazeiro da beira do rio ----------
   {goInside();Object.assign(G,{phase:'prep',elapsed:0});G.report=null;goOutside();const day0=G.day;
-   const all=['vila','serra','sc'].flatMap(id=>fruitTrees(WORLD_MAPS[id]));check(all.some(f=>f.item==='butia')&&all.some(f=>f.item==='bergamota'),'o campo tem butiazeiros e bergamoteiras');
-   for(const item of ['butia','bergamota']){
+   regionalExtraTreeCache.clear();fruitTreeCache.clear();
+   check(['vila','serra','sc'].every(id=>{const M=WORLD_MAPS[id],drawn=regionalExtraTrees(M).filter(t=>fruitKind(id,t.i)).map(t=>t.x+':'+t.y).join();return drawn===fruitTrees(M).map(f=>f.x+':'+f.y).join();}),'toda frutífera desenhada dá pra colher, e todo ponto de colher tem árvore');
+   const all=['vila','serra','sc'].flatMap(id=>fruitTrees(WORLD_MAPS[id]));check(all.some(f=>f.item==='butia')&&all.some(f=>f.item==='bergamota')&&all.filter(f=>f.item==='pitanga'&&f.map==='sc').length>=3,'o campo tem butiazeiros e bergamoteiras, e SC tem pitangueiras espalhadas');
+   for(const item of ['butia','bergamota','pitanga']){
     const f=all.find(x=>x.item===item);switchMap({map:f.map,x:f.x,y:f.y+60});closeDialog(true);worldOut.x=f.x;worldOut.y=f.y+40;delete G.forage?.[f.id];
     const sp=WORLD_MAPS[f.map].spots().find(x=>x.id==='forage:'+f.id);check(sp&&/Colher/.test(sp.label),'E na '+f.name.toLowerCase()+': colher');
-    const before=item==='butia'?bagQty('butia'):(G.stock.bergamota||0);G.taught.mato=true;sp.act();talkAll();closeDialog(true);
-    const after=item==='butia'?bagQty('butia'):(G.stock.bergamota||0);check(Array.isArray(f.q)?after-before>=f.q[0]&&after-before<=f.q[1]:after===before+f.q,'colheu '+(item==='butia'?'os butiás':'entre 600 g e 1,2 kg de bergamota'));
+    const qty=()=>item==='bergamota'?(G.stock.bergamota||0):bagQty(item),before=qty();G.taught.mato=true;sp.act();talkAll();closeDialog(true);
+    const after=qty();check(Array.isArray(f.q)?after-before>=f.q[0]&&after-before<=f.q[1]:after===before+f.q,'colheu '+(item==='bergamota'?'entre 600 g e 1,2 kg de bergamota':f.q+' '+item));
     check(/fruta de novo/.test(WORLD_MAPS[f.map].spots().find(x=>x.id==='forage:'+f.id).label),'depois de colher, espera a fruta amadurecer');
-    let fruits=0,art=null;const fd=food,spy=(sheet,i)=>{art=i;};food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;}check(fruits===0&&(item==='butia'||art===3),'colhida, a árvore fica sem fruta');
-    G.day+=forageWait(f);fruits=0;art=null;food=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;}check(forageReady(f)&&(item==='butia'?fruits>0:art===0),'dias depois, carregada de novo (a bergamoteira com a arte da árvore carregada)');G.day=day0;
+    let fruits=0,art=null;const fd=food,pf=paintFruits,spy=(sheet,i)=>{art=i;};food=paintFruits=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;paintFruits=pf;}check(fruits===0&&(item==='butia'||art===f.tree),'colhida, a árvore fica sem fruta');
+    G.day+=forageWait(f);fruits=0;art=null;food=paintFruits=(...a)=>{fruits++;};try{drawFruitTree(f,f.x,f.y,f.w,f.h,spy);}finally{food=fd;paintFruits=pf;}check(forageReady(f)&&fruits>0&&(item==='butia'||art===f.tree),'dias depois, carregada de novo (a mesma árvore, com as frutas pintadas por cima)');G.day=day0;
    }
    goInside();}
   // ---------- o sonho do Sadi não trava ----------

@@ -1,5 +1,4 @@
-// Missão à parte do Mano Lima, "A Cadela Baia sumiu", logo depois das três noites seguidas (capítulo 3). A gaita do vô
-// (capítulo 10) só começa depois dela:
+// Capítulo 4 da história, "A Cadela Baia sumiu", logo depois das três noites seguidas (capítulo 3):
 //   1. Fechada a terceira noite, o Mano Lima entra na bodega: a Baia, a cadela dele, fugiu. Pede pra passar na casa dele,
 //      que fica de luz acesa o capítulo inteiro (dá pra fazer tudo de noite, mesmo depois das 23h30).
 //   2. Lá, ele explica e o capítulo começa: a gruta da Serra aparece.
@@ -15,8 +14,8 @@ function baiaStage() { return G.baiaArc?.stage || null; }   // search → trail 
 function baiaReturning() { return baiaStage() === 'return'; }
 function baiaCalling() { return missionState('baia')?.status === 'calling'; }
 function baiaMission() { return MISSIONS.find(m => m.id === 'baia'); }
-// A Baia é missão à parte do Mano Lima (antes era o capítulo 3); a gaita do vô espera ela.
-function baiaChapter() { return false; }
+function baiaChapter() { return true; }
+const BAIA_CHAPTER = 4;
 // Do chamado até devolver a Baia, a casa do Mano Lima fica aberta e ele espera em casa.
 function baiaOngoing() { return baiaCalling() || missionActive('baia'); }
 function baiaGoal() {
@@ -26,7 +25,7 @@ function baiaGoal() {
   return 'Procure a Cadela Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
 }
 const BAIA_CALL_WHERE = 'casa dele, na Fronteira (de luz acesa: pode ir de noite)';
-MISSIONS.push({ id: 'baia', side: true, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
+MISSIONS.push({ id: 'baia', chapter: BAIA_CHAPTER, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
   where: 'Casa do Mano Lima, na Fronteira, e a gruta da Serra · dá pra fazer de noite',
   // Na bodega, logo depois das três noites (capítulo 3, na mesma noite); de manhã, só num dia sem evento no mapa, pra não cruzar com a
   // visita da manhã do evento.
@@ -52,7 +51,7 @@ function baiaCall() {
     { say: 'manolima', text: night ? 'Essa mesma. Passa lá em casa agora, mesmo de noite: deixo a luz acesa e a porta aberta. Índio véio já não tem perna pra procurar sozinho.' : 'Essa mesma. Passa lá em casa quando puder, que eu te conto onde ela costuma andar. Índio véio já não tem perna pra procurar sozinho.' },
     { walk: 'manolima', to: { x: ENTRY.x, y: ENTRY.y } }], 'baia-chamado', () => {
     G.missions.baia = { status: 'calling', day: G.day }; save();
-    showBanner((baiaChapter() ? '📖 Capítulo 3 · ' : '') + 'Mano Lima quer falar com você', 'Casa do Mano Lima, na Fronteira: a Cadela Baia sumiu' + (night ? ' (ele te espera de luz acesa)' : ''), 'info', { world: true });
+    showBanner((baiaChapter() ? '📖 Capítulo ' + BAIA_CHAPTER + ' · ' : '') + 'Mano Lima quer falar com você', 'Casa do Mano Lima, na Fronteira: a Cadela Baia sumiu' + (night ? ' (ele te espera de luz acesa)' : ''), 'info', { world: true });
   });
 }
 // ---------- 2. Na casa do Mano Lima: o capítulo começa ----------
@@ -61,7 +60,7 @@ function baiaOffer() {
   const lines = [['manolima', lateNight() ? 'Chegou, vivente! Deixei a luz acesa te esperando. Senta aí que o mate tá pronto.' : 'Chegou, vivente. Senta aí que o mate tá pronto.'], ['manolima', 'A Cadela Baia some às vezes, mas sempre volta antes de escurecer. Dessa vez, nada…'],
     ['manolima', 'Ela gosta de andar pela Fronteira e pela estrada da Serra, farejando bicho. Procura pelo mapa, olha nos cantos: de noite mesmo, que eu não prego o olho enquanto ela não voltar. Se achar, me traz ela de volta?']];
   if (baiaChapter()) {
-    talk([...lines, ['sadi', 'Pode deixar, Mano. Eu acho a Baia.'], ['dica', '<b>📖 Capítulo 3 · ' + m.title + '</b><br>' + baiaGoal() + '<br><i>Onde: ' + m.where + '</i><br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo 3']], () => baiaAccept(), 'Bora procurar!');
+    talk([...lines, ['sadi', 'Pode deixar, Mano. Eu acho a Baia.'], ['dica', '<b>📖 Capítulo ' + BAIA_CHAPTER + ' · ' + m.title + '</b><br>' + baiaGoal() + '<br><i>Onde: ' + m.where + '</i><br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo ' + BAIA_CHAPTER]], () => baiaAccept(), 'Bora procurar!');
     return;
   }
   talk(lines, () => openDialog('A Cadela Baia sumiu', `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>Mano Lima</b></p><p>Procurar a Cadela Baia pelo mapa e levar ela de volta pra casa dele.</p></div></div><h3>Recompensa</h3>${rewardHTML(m.reward)}<div class="actions"><button class="primary" data-act="baiaAccept">Aceitar: procurar a Cadela Baia</button><button data-act="close">Agora não</button></div>`, 'baiaOffer'), 'Continuar');
@@ -144,7 +143,7 @@ function baiaReturn() { completeMission(baiaMission()); }
   };
   const marker = questMarker; questMarker = function (id) { if (questKey(id) === 'manolima') { if (baiaCalling()) return 'new'; if (missionActive('baia') && baiaReturning()) return 'deliver'; } return marker(id); };
   // O chamado do Mano Lima aparece na linha das secundárias.
-  const callLine = chapterCallLine; chapterCallLine = function () { return baiaCalling() && baiaChapter() ? { icon: '📣', title: 'Capítulo 3 · A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · ' + BAIA_CALL_WHERE, kind: 'story' } : callLine(); };
+  const callLine = chapterCallLine; chapterCallLine = function () { return baiaCalling() && baiaChapter() ? { icon: '📣', title: 'Capítulo ' + BAIA_CHAPTER + ' · A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · ' + BAIA_CALL_WHERE, kind: 'story' } : callLine(); };
   const tl = trackerLines; trackerLines = function () {
     if (baiaChapter()) return tl();
     const base = tl(), g = baiaCalling() ? { icon: '📣', title: 'A Cadela Baia sumiu', goal: 'Mano Lima quer falar com você · casa dele, na Fronteira', kind: 'side' } : missionActive('baia') ? { icon: '🐕', title: 'A Cadela Baia sumiu', goal: baiaGoal(), kind: 'side' } : null;

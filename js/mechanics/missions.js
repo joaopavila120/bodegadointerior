@@ -153,16 +153,16 @@ const MISSIONS = [
     done: () => aberturaNights() >= 3, reward: { cash: 100, xp: 40, items: { vidro: 4 } },
     onDone: () => unlockRegion('serra'),
     outro: ['Três noites seguidas! A freguesia já fala da bodega até na Serra.', 'Até o Badin, lá de Erechim, ouviu falar de ti.'] },
-  { id: 'conhecer', chapter: 4, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
-    // Na manhã seguinte às três noites, o Valter manda subir a Serra.
-    when: () => G.day > (missionState('abertura')?.day || 0), waitText: () => 'amanhã de manhã, na bodega',
+  { id: 'conhecer', chapter: 5, title: 'O colono de Erechim', giver: 'valter', needs: 'badin', where: 'Serra Gaúcha, casa de pedra do Badin',
+    // Na manhã seguinte à volta da Cadela Baia (capítulo 4), o Valter manda subir a Serra.
+    when: () => missionDone('baia') && G.day > (missionState('baia')?.day || 0), waitText: () => 'amanhã de manhã, na bodega',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: ['O Badin, lá de Erechim, mandou dizer que quer te conhecer. Gente boa, mas a nona dele é brava que só.', 'Sobe a estrada da Serra e bate na casa de pedra dele. Vai que ele tem serviço pra ti!'],
     goal: () => 'Vá à Serra Gaúcha e fale com o Badin, na casa de pedra',
     done: () => !!G.metOutside?.badin, reward: { cash: 50, xp: 30, friend: { badin: 4 } }, outroBy: 'badin',
     outro: [['badin', 'Então é tu o neto do velho Sadi? A nona disse que o teu vô vendia o melhor salame da Fronteira… e que era tudo da colônia, hehe.']] },
   // O Badin manda organizar um campeonato de bocha na cancha da bodega (ganhar ou perder não importa): abre Santa Catarina.
-  { id: 'campeonato', chapter: 5, title: 'Campeonato de bocha', giver: 'badin', where: 'Cancha de bocha, ao lado da bodega',
+  { id: 'campeonato', chapter: 6, title: 'Campeonato de bocha', giver: 'badin', where: 'Cancha de bocha, ao lado da bodega',
     guide: { region: 'vila', spot: 'cancha' },
     intro: [['badin', 'Ô, Sadi! Lá na tua bodega tem cancha de bocha, né?'], ['badin', 'Organiza um campeonato de bocha na tua cancha, que o povo da Serra quer ver. Ganhar ou perder não importa: o que vale é a festa!']],
     start: () => { G.missions.campeonato.base = sportCups('bocha'); },
@@ -174,7 +174,7 @@ const MISSIONS = [
     intro: [['jayme', 'Vivente, teu vô me mostrou uma vez um caderno: receita, causo, verso e o nome de cada boi.'], ['jayme', 'Dizem que o vento espalhou as páginas pela Fronteira, pela Serra e por Santa Catarina. Onde o chão brilhar de perto, olha com calma.']],
     goal: () => 'Encontre as 3 páginas do caderno do vô (' + pagesFound() + '/3)', done: () => pagesFound() >= 3,
     reward: { cash: 200, xp: 100, rep: 5 }, finale: () => playCadernoScene() },
-  { id: 'indaial', chapter: 8, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
+  { id: 'indaial', chapter: 9, title: 'Convite de Indaial', giver: 'lauro', needs: 'lauro', letter: true, where: 'Santa Catarina, casa do Lauro',
     guide: { region: 'sc', spot: 'house:lauro', inside: 'casa:lauro', insideSpot: 'home:lauro' },
     intro: [['card', '<div class="carta-letter"><small>Indaial, Santa Catarina</small><p>Opa, Sadi!</p><p>Aqui é o Lauro, o da bocha. O Gustavo, do Jornal Indavírus, quer gravar uma reportagem contigo aqui em Indaial: bodegueiro gaúcho é notícia, ja!</p><p>A estrada de Santa Catarina tá aberta pra ti: na Serra, pega a estrada que sobe pro norte, no meio da vila. E traz uns pães de xis, que gravação dá fome.</p><p class="carta-sign">Abraço do Lauro Bolador</p></div>', 'Chegou uma carta!'], ['sadi', 'Indaial! Bora pegar a estrada de Santa Catarina.']],
     start: () => unlockRegion('sc'), deliver: { to: 'lauro', items: { pao_xis: 6 } },
@@ -183,7 +183,7 @@ const MISSIONS = [
     reward: { cash: 150, xp: 60, friend: { lauro: 10, indavirus: 6 } } },
   // Terceira e última do Badin: o baile da comunidade. Doa R$ 100, vai à missa na igreja e serve no salão; depois o
   // baile de capela entra no calendário.
-  { id: 'festa', chapter: 7, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
+  { id: 'festa', chapter: 8, title: 'Baile da comunidade', giver: 'badin', needs: 'badin', visit: true, where: 'Serra Gaúcha: casa de pedra do Badin, igreja e salão da comunidade',
     guide: { region: 'serra', spot: 'house:badin', inside: 'casa:badin', insideSpot: 'home:badin' },
     intro: [['badin', 'A comunidade vai fazer um baile de capela, com missa e tudo: o primeiro baile no salão desde que a nona era moça!'], ['badin', 'Mas o padre precisa de doação pra banda e pra comida. Tu dá uma força? Cem pila pra comunidade, e tu ainda serve o vinho e a polenta no baile.']],
     goal: () => festaGoal(), done: () => !!G.missions.festa?.baile,
@@ -197,7 +197,7 @@ const MISSIONS = [
     intro: [['jayme', 'Achou uma relíquia? A Fronteira, a Serra e Santa Catarina estão cheias de histórias perdidas.'], ['jayme', 'São doze, contando as páginas do caderno do teu vô. Junta todas e a bodega vira museu!']],
     goal: () => 'Encontre as 12 relíquias escondidas (' + secretsFound() + '/12)', done: () => secretsFound() >= SECRETS.length,
     reward: { cash: 400, xp: 150, rep: 8 } },
-  { id: 'lendaria', chapter: 14, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
+  { id: 'lendaria', chapter: 15, title: 'Bodega lendária', giver: 'valter', where: 'Na bodega: suba de nível atendendo bem',
     intro: ['Tu já é conhecido da Fronteira até Santa Catarina. Falta pouco pra virar lenda.', 'Chega no último nível da bodega e a gente faz a maior festa que esse galpão já viu.'],
     goal: () => 'Chegue ao nível ' + LEVELS.length + ' da bodega (agora: nível ' + bodegaLevel() + ')', done: () => bodegaLevel() >= LEVELS.length,
     reward: { cash: 1000, rep: 10 } }
@@ -486,10 +486,10 @@ function drawSecrets() {
 const FORAGE = [
   { id: 'butiazeiro', map: 'vila', x: 760, y: 1560, item: 'butia', n: 2, every: 4, name: 'Butiazeiro', of: 'do', color: '#f0a020' },
   { id: 'guabirobeira', map: 'serra', x: 1340, y: 1820, item: 'guabiroba', n: 6, name: 'Guabirobeira', of: 'da', color: '#e8b040' },
-  { id: 'pitangueira', map: 'sc', x: 2300, y: 900, item: 'pitanga', n: 6, name: 'Pitangueira', of: 'da', color: '#d42a2a' }
+  { id: 'pitangueira', map: 'sc', x: 2300, y: 900, item: 'pitanga', n: 3, every: 3, name: 'Pitangueira', of: 'da', color: '#d42a2a' }
 ];
 const FORAGE_EVERY = 2;
-// O butiá cura nas brigas (mata-missao.js): o butiazeiro dá pouco e demora mais a carregar.
+// O butiá e a pitanga curam nas brigas (mata-missao.js): dão pouco e demoram mais a carregar.
 function forageWait(f) { return f.every || (f.item === 'butia' ? 4 : FORAGE_EVERY); }
 function forageReady(f) { const last = G.forage?.[f.id]; return last == null || G.day - last >= forageWait(f); }
 function forageSpots() {

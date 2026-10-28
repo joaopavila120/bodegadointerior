@@ -27,6 +27,9 @@ async function initializeGame() {
     } catch (_) { /* O modo sem persistência ainda permite jogar. */ }
 
     await Promise.all([
+      actionArtReady,
+      settlementArtReady,
+      navalArtReady,
       bodegaArtReady,
       fishingArtReady,
       regionalIdentityReady,

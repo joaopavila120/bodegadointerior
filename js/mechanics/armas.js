@@ -156,11 +156,12 @@ function drawRangedWorld() {
     if (im.naturalWidth) { ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(im, d.x - 13, d.y - 28 + bob, 26, 26); ctx.restore(); }
   }
   for (const s of ranged.shots) {
+    const { x, y } = typeof rangedDrawPoint === 'function' ? rangedDrawPoint(s) : s;
     if (s.id === 'revolver38') {
       const k = 34 / Math.hypot(s.vx, s.vy) * 1.6; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(255,200,120,.45)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(s.x - s.vx * k, s.y - s.vy * k); ctx.lineTo(s.x, s.y); ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,250,220,.95)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s.x - s.vx * k * .5, s.y - s.vy * k * .5); ctx.lineTo(s.x, s.y); ctx.stroke(); ctx.restore();
-    } else { ellipse(s.x, s.y + 42, 5, 2, 'rgba(0,0,0,.25)'); ellipse(s.x, s.y, 5, 5, '#5a5048'); ellipse(s.x - 1.5, s.y - 1.5, 2, 2, '#a89c90'); }
+      ctx.strokeStyle = 'rgba(255,200,120,.45)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x - s.vx * k, y - s.vy * k); ctx.lineTo(x, y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,250,220,.95)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - s.vx * k * .5, y - s.vy * k * .5); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
+    } else { ellipse(x, y + 42, 5, 2, 'rgba(0,0,0,.25)'); ellipse(x, y, 5, 5, '#5a5048'); ellipse(x - 1.5, y - 1.5, 2, 2, '#a89c90'); }
   }
   drawRangedHand();
   if (ranged.flash > 0) {

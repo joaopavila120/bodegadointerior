@@ -23,7 +23,7 @@ WORLD_MAPS['casa:garibaldi']={
   ],
   draw(view,seen,layers){
     rect(view.x,view.y,view.w,view.h,'#110f0c');garibaldiRoomDraw();
-    layers.push({y:GARIBALDI_GUEST.y,draw:()=>drawGaribaldi(GARIBALDI_GUEST.x,GARIBALDI_GUEST.y,1,GARIBALDI_GUEST.dx,GARIBALDI_GUEST.walk)});
+    layers.push({y:GARIBALDI_GUEST.y,draw:()=>drawGaribaldi(GARIBALDI_GUEST.x,GARIBALDI_GUEST.y,1,GARIBALDI_GUEST.dx,GARIBALDI_GUEST.walk,GARIBALDI_GUEST.dy||0)});
     // Trunk silhouette: repaint only the furniture, not a rectangle of floor.
     if(worldOut.x<430&&worldOut.y<597&&worldOut.y>440)layers.push({y:597,draw:()=>{ctx.save();const p=garibaldiRoomPoint(205,570);ctx.beginPath();ctx.rect(p.x,p.y,215*.8,145*.8);ctx.clip();garibaldiRoomDraw();ctx.restore();}});
   }
@@ -32,10 +32,10 @@ WORLD_MAPS['casa:garibaldi']={
   const tick=outsideTick;
   outsideTick=function(dt){
     tick(dt);if(worldOut?.map!=='casa:garibaldi')return;const p=GARIBALDI_GUEST;
-    if(modal||scene||worldTalkOpen()){p.walk=false;return;}
+    if(paused||modal||scene||worldTalkOpen()){p.walk=false;return;}
     if(p.pause>0){p.pause-=dt;p.walk=false;return;}
     const q=garibaldiRoomPoint(...GARIBALDI_ROOM_ROUTE[p.step]),dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy),v=Math.min(d,dt*28);
     if(d<2){p.step=(p.step+1)%GARIBALDI_ROOM_ROUTE.length;p.pause=2.5;p.walk=false;return;}
-    p.walk=true;p.dx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0;p.x+=dx/d*v;p.y+=dy/d*v;
+    p.walk=true;p.dx=dx/d;p.dy=dy/d;p.x+=dx/d*v;p.y+=dy/d*v;
   };
 }

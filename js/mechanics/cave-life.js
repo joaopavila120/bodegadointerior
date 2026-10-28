@@ -132,7 +132,7 @@ function dunstanSell(id){
   const talkWorld=worldTalk;worldTalk=function(w){
     $('dunstanTradeButton')?.remove();
     const id=PEOPLE[w.person]?.id,original=WORLD_TALK[id];
-    if([...OKTO_VISITORS,...ROAD_RIDERS].some(p=>p.id===id)||id==='saci')if(customDialogues[id]?.length)WORLD_TALK[id]=customDialogues[id];
+    if([...OKTO_VISITORS,...ROAD_RIDERS].some(p=>p.id===id)||id==='saci'||id==='damiao')if(customDialogues[id]?.length)WORLD_TALK[id]=customDialogues[id];
     try{talkWorld(w);}finally{if(original)WORLD_TALK[id]=original;}
     if(w.person===DUNSTAN_PERSON&&worldTalkOpen())$('worldTalkUI').insertAdjacentHTML('beforeend','<button id="dunstanTradeButton" class="small" data-act="dunstanShop">Negociar e melhorar equipamento</button>');
   };

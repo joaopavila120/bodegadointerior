@@ -65,7 +65,10 @@ function walkerPos(w) { const a = w.line[w.seg], b = w.line[w.seg + 1]; return {
 function walkersKey(M) { return M.id + ':' + G.day + ':' + worldNight() + ':' + lateNight() + ':' + prologueActive() + ':' + (G.regions ? Object.values(G.regions).join() : ''); }
 // Personagens menores (sem casa): fregueses comuns e torcedores que também andam pelas ruas.
 const STORE_KEEPERS = ['lucia', 'anselmo', 'rosa', 'arlindo'];
-function minorPeople() { return PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && !PEOPLE[i].unique && !PEOPLE[i].removed && !STORE_KEEPERS.includes(PEOPLE[i].id) && PEOPLE[i].id !== G.avatarId); }
+function minorPeople() {
+  const busy = activeUniqueVisitors();
+  return PEOPLE.map((p, i) => i).filter(i => !isSpecial(i) && (!PEOPLE[i].unique || PEOPLE[i].wanderingCommon) && !PEOPLE[i].removed && !busy.has(i) && !STORE_KEEPERS.includes(PEOPLE[i].id) && PEOPLE[i].id !== G.avatarId);
+}
 function minorsToday(M) { const salt = { vila: 1, serra: 2, sc: 3 }[M.id] || 4, n = worldNight() ? 1 : M.id === 'vila' ? 3 : 2; return minorPeople().map(i => ({ i, h: dayHash(i, salt) })).sort((a, b) => a.h - b.h).slice(0, n).map(x => x.i); }
 function spawnWalkers(M) {
   worldWalkersKey = walkersKey(M); worldWalkers = [];

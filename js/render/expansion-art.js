@@ -61,7 +61,7 @@ function secondaryStep(steps,phase,walking){return walking?(steps===3?[0,1,2,1][
 function secondaryPose(sprite, x, y, walking, dx, dy) {
   const pose = SECONDARY_POSES.get(sprite); if (!pose || !EXPANSION_ART[pose.key]?.naturalWidth) return false;
   const gait=secondaryGait(pose.id,x,y,walking,dx,dy);({dx,dy}=gait);
-  const direction = walking ? walkDirection(dx, dy) : 0, step = secondaryStep(pose.steps,gait.phase,walking);
+  const direction = walking ? walkDirection(dx, dy) : 0, step = walking ? secondaryStep(pose.steps,gait.phase,true) : (pose.idle ?? secondaryStep(pose.steps,gait.phase,false));
   ellipse(x, y + 1, 18, 7, '#271c1755');
   // Rest uses the original front portrait, also shared with seated visitors.
   // Never freeze a profile stride or rescale the head when movement stops.

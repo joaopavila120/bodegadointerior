@@ -117,7 +117,7 @@ function garibaldiIntro() {
     talk([['dica', '<b>🌲 Mata adentro</b><br>· O pinheiral do Garibaldi (trecho 1) é sempre manso. A picada do leste leva <b>mata adentro</b>: lá a mata é tão fechada que é sempre escuro, como noite, e é sempre braba. O Sadi entra de facão na mão (Espaço/F).<br>· Três regiões, uma atrás da outra: o <b>Pinheiral</b>, a <b>Encosta da Serra</b> e a <b>Restinga</b>, cada uma com muitos trechos de picada. No fim das duas primeiras, um bicho grande guarda a passagem. Depois da restinga, a <b>Barra de Laguna</b>.<br>· Não tem placa: cada trecho é gerado no dia, e amanhã a picada é outra.<br>· Não tem ferramenta pra comprar: a picada é aberta, e só os bichos grandes seguram a descida. Nos ramais, às vezes, um baú de mateiro.<br>· Arma, vida e resistência são as da ferraria do São Dunstano, e o Garibaldi vende as mesmas no refúgio.<br>· De tempos em tempos tem um acampamento: o fogo espanta os bichos, e sempre tem alguém pra prosear.<br>· Pinhão, erva-mate nativa e mel de jataí viram produto da bodega. O <b>nível de mateiro</b> sobe com tudo isso.<br>· No bornal da mata, as teclas <b>1 a 5</b> usam os itens.<br>· O Garibaldi te deu um <b>bodoque</b>: <b>R</b> atira pedra no bicho mais perto, na tua frente (não gasta bala). O <b>revólver 38</b> e as balas, ele e o São Dunstano vendem; bala também aparece nos baús e, às vezes, onde cai um bicho. <b>X</b> troca de arma.', 'Refúgio do Garibaldi']], null, 'Bora pra mata');
   };
   if (!scenesEnabled()) { done(); return; }
-  const g = { x: 560, y: 960 }, ghost = (a, y) => drawGaribaldi(a.x, y, a.alpha ?? 1, a.dx, !!a.walk), facao = caveState().facao;
+  const g = { x: 560, y: 960 }, ghost = (a, y) => drawGaribaldi(a.x, y, a.alpha ?? 1, a.dx, !!a.walk, a.dy || 0), facao = caveState().facao;
   const fog = layers => layers.push({ y: 9e6, draw: () => { ctx.save(); for (let k = 0; k < 10; k++) { const x = 120 + k * 120 + Math.sin(frameClock * .3 + k) * 50, y = 880 + (k % 3) * 90, r = 150 + (k % 4) * 30, g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(232,240,244,.16)'); g.addColorStop(1, 'rgba(232,240,244,0)'); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); } ctx.restore(); } });
   playSteps([...sceneWorld({ map: 'mata', x: 420, y: 930, night: worldNight() ? .5 : .15, props: fog }),
     { actor: 'sadi', x: 60, y: MATA.entryY, dx: 1 }, { fade: 'in', time: 1 },
@@ -196,7 +196,7 @@ function garibaldiSell(id) {
 }
 const BARBAQUA_G = 200;   // cada ramo de erva nativa vira 200 g de erva seca
 function barbaquaSecar() {
-  const q = Math.floor(bagQty('erva_verde')); if (!q) { worldSay('O barbaquá seca os ramos de erva-mate nativa. Colhe erva nas clareiras da mata adentro (e na do mirante).'); return; }
+  const q = Math.floor(bagQty('erva_verde')); if (!q) { worldSay('O barbaquá seca os ramos de erva-mate nativa. Colhe erva nas clareiras da mata adentro, seguindo a picada do leste.'); return; }
   bagTake('erva_verde', q); bagAdd('erva', q * BARBAQUA_G); mataXP(q); AudioEngine.ignite?.(); fxPuffs(RANCHO_BARBAQUA.x, RANCHO_BARBAQUA.y - 110, 12, 90, '#d8d4cc');
   talk([['garibaldi', 'Erva no barbaquá: fogo baixo e fumaça de nó de pinho. É assim que a erva fica com gosto de mato.'], ['card', '<b>🌿 Erva seca no barbaquá</b><br>' + q + (q > 1 ? ' ramos viraram ' : ' ramo virou ') + formatWeight(q * BARBAQUA_G) + ' de erva-mate, direto no saco de erva da bodega.', 'Barbaquá']], null, 'Bah, que cheiro');
   save(); refreshHUD();

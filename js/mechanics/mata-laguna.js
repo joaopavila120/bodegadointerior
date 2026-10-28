@@ -53,7 +53,7 @@ WORLD_MAPS.laguna = {
       st.won ? { id: 'laguna:marco', x: LAGUNA.marco.x, y: LAGUNA.marco.y + 30, radius: 90, label: 'Marco das trilhas · voltar pro refúgio ou pros acampamentos', act: mataCampsDialog }
         : { id: 'laguna:volta', x: LAGUNA.fogo.x - 150, y: LAGUNA.fogo.y + 20, radius: 90, label: 'Voltar pro refúgio do Garibaldi', act: () => mataGoRancho() },
       { id: 'laguna:garibaldi', x: LAGUNA.ghost.x, y: LAGUNA.ghost.y, radius: 110, label: 'Prosear com o Garibaldi', act: lagunaGaribaldiTalk },
-      { id: 'laguna:anita', x: LAGUNA.anita.x, y: LAGUNA.anita.y, radius: 100, label: 'Prosear com a Anita', act: () => campFolkTalk(CAMP_FOLKS[19]) }
+      { id: 'laguna:anita', x: LAGUNA.anita.x, y: LAGUNA.anita.y, radius: 100, label: 'Prosear com a Anita', act: () => campFolkTalk(CAMP_FOLK_LIST.find(f => f.id === 'anita')) }
     ];
     if (st.carregado && !st.won) list.push({ id: 'laguna:seival', x: LAGUNA.boat.x - 80, y: lagunaShoreY(LAGUNA.boat.x) - 40, radius: 130, label: 'Embarcar no Seival · abordar o navio imperial', act: navioBoard });
     return list;
@@ -153,8 +153,8 @@ function lagunaArrival() {
   playSteps([...sceneWorld({ map: 'laguna', x: c.x + 120, y: c.y + 130, night: .3, lights: [{ x: LAGUNA.fogo.x, y: LAGUNA.fogo.y - 30, r: 300, a: .3, color: '255,150,60' }, { x: LAGUNA.ship.x, y: LAGUNA.ship.y - 120, r: 380, a: .16, color: '120,255,190' }], props: (layers) => { layers.push({ y: LAGUNA.ship.y, draw: () => drawNavioFar(LAGUNA.ship.x, LAGUNA.ship.y) }); } }),
     { actor: 'carreta', x: c.x, y: c.y, draw: (a, y) => drawCarreta(a.x, y, !a.empty, a.x / 26) },
     { actor: 'bois', x: c.x + 260, y: c.y + 10, draw: (a, y) => drawBoiada(a.x, y, a.walk ? Math.floor(frameClock * 6) : 0) },
-    { actor: 'garibaldi', x: c.x - 40, y: c.y + 120, dx: 1, ghost: true, draw: (a, y) => drawGaribaldi(a.x, y, 1, a.dx, !!a.walk) },
-    { actor: 'anita', x: c.x + 90, y: c.y + 140, dx: -1, draw: (a, y) => drawCampFolk('anita', a.x, y, 1, a.dx) },
+    { actor: 'garibaldi', x: c.x - 40, y: c.y + 120, dx: 1, ghost: true, draw: (a, y) => drawGaribaldi(a.x, y, 1, a.dx, !!a.walk, a.dy || 0) },
+    { actor: 'anita', x: c.x + 90, y: c.y + 140, dx: -1, draw: (a, y) => drawCampFolk('anita', a.x, y, 1, a.dx, !!a.walk, a.dy || 0) },
     { actor: 'sadi', x: 120, y: LAGUNA.entryY, dx: 1 }, { fade: 'in', time: .8 },
     { walk: 'sadi', to: { x: c.x - 160, y: c.y + 150 } },
     { say: 'sadi', text: 'O mar! Bah, depois de tanta mata, até o cheiro é outro.' },
@@ -297,7 +297,7 @@ function navioVictory(b) {
   const end = () => { giveCard('canabarro', 'mata'); grantReward(rw); talk([['card', '<b>⚓ A Batalha de Laguna</b><br>O navio imperial sumiu na neblina e não volta mais pra barra. Na areia, o Garibaldi, a Anita, o Bento e o Lanceiro ficaram olhando o mar até o dia clarear.<br><br>Em 1839 a batalha foi perdida; quase duzentos anos depois, ela terminou em paz.', 'Barra de Laguna'], ['reward', rw, 'A Batalha de Laguna']], null, 'Que história'); };
   const back = () => { const p = lagunaBoatPos(); switchMap({ map: 'laguna', x: p.x - 200, y: lagunaShoreY(p.x - 200) - 80, title: 'Barra de Laguna' }); };
   if (!scenesEnabled()) { back(); talk([['mariath', 'Basta. A guerra acabou faz muito tempo. Posso baixar a bandeira e descansar.'], ['garibaldi', 'Grazie, gaúcho. Agora Laguna dorme em paz.']], end, 'Continuar'); return; }
-  const ghost = (id, alpha = 1) => (a, y) => drawMariath(a.x, y, a.alpha ?? alpha, a.dx, 'idle');
+  const ghost = (id, alpha = 1) => (a, y) => drawMariath(a.x, y, a.alpha ?? alpha, a.dx, 'idle', 0, !!a.walk, a.dy || 0);
   playSteps([...sceneWorld({ map: 'navio', x: b.x + 120, y: b.y, night: .2 }),
     { actor: 'sadi', x: worldOut.x, y: worldOut.y, dx: worldOut.x < b.x ? 1 : -1 }, { actor: 'mariath', x: b.x, y: b.y, dx: worldOut.x < b.x ? -1 : 1, draw: ghost('mariath') }, { fade: 'in', time: .4 },
     { say: 'mariath', text: 'Basta… Tu luta como os farrapos que eu enfrentei nessa barra.' },
@@ -311,10 +311,10 @@ function navioVictory(b) {
     { fade: 'out', time: .8 }, { do: back },
     ...sceneWorld({ map: 'laguna', x: LAGUNA.boat.x - 120, y: lagunaShoreY(LAGUNA.boat.x) - 160, night: .15 }),
     { actor: 'sadi', x: LAGUNA.boat.x - 240, y: lagunaShoreY(LAGUNA.boat.x - 240) - 80, dx: 1 },
-    { actor: 'garibaldi', x: LAGUNA.boat.x - 80, y: lagunaShoreY(LAGUNA.boat.x - 80) - 100, dx: -1, ghost: true, draw: (a, y) => drawGaribaldi(a.x, y, 1, a.dx) },
-    { actor: 'anita', x: LAGUNA.boat.x + 20, y: lagunaShoreY(LAGUNA.boat.x + 20) - 90, dx: -1, draw: (a, y) => drawCampFolk('anita', a.x, y, 1, a.dx) },
-    { actor: 'bento', x: LAGUNA.boat.x - 330, y: lagunaShoreY(LAGUNA.boat.x - 330) - 150, dx: 1, draw: (a, y) => drawCampFolk('bento', a.x, y, 1, a.dx) },
-    { actor: 'lanceiro', x: LAGUNA.boat.x + 120, y: lagunaShoreY(LAGUNA.boat.x + 120) - 150, dx: -1, draw: (a, y) => drawCampFolk('lanceiro', a.x, y, 1, a.dx) }, { fade: 'in', time: .8 },
+    { actor: 'garibaldi', x: LAGUNA.boat.x - 80, y: lagunaShoreY(LAGUNA.boat.x - 80) - 100, dx: -1, ghost: true, draw: (a, y) => drawGaribaldi(a.x, y, 1, a.dx, !!a.walk, a.dy || 0) },
+    { actor: 'anita', x: LAGUNA.boat.x + 20, y: lagunaShoreY(LAGUNA.boat.x + 20) - 90, dx: -1, draw: (a, y) => drawCampFolk('anita', a.x, y, 1, a.dx, !!a.walk, a.dy || 0) },
+    { actor: 'bento', x: LAGUNA.boat.x - 330, y: lagunaShoreY(LAGUNA.boat.x - 330) - 150, dx: 1, draw: (a, y) => drawCampFolk('bento', a.x, y, 1, a.dx, !!a.walk, a.dy || 0) },
+    { actor: 'lanceiro', x: LAGUNA.boat.x + 120, y: lagunaShoreY(LAGUNA.boat.x + 120) - 150, dx: -1, draw: (a, y) => drawCampFolk('lanceiro', a.x, y, 1, a.dx, !!a.walk, a.dy || 0) }, { fade: 'in', time: .8 },
     { say: 'garibaldi', text: 'Quase duzentos anos esperando pra ver aquele navio ir embora em paz. Grazie, gaúcho.' },
     { say: 'anita', text: 'Depois de Laguna a gente fugiu pela serra, lutou em Curitibanos, foi pro Uruguai e pra Itália. Mas foi aqui que tudo começou.' },
     { say: 'garibaldi', text: 'O que fica de uma guerra não é a vitória, Sadi. É a memória: de quem lutou, de quem foi esquecido e de quem fez a paz.' },
@@ -363,8 +363,8 @@ function drawNavioMap(view, seen, layers) {
   ellipse(1100, 880, 900, 40, 'rgba(4,10,14,.4)');
   ctx.drawImage(navioDeckCanvas(), NAVIO.ox, NAVIO.oy);
   // O Seival, encostado no costado, com o Garibaldi no leme e a Anita no canhãozinho.
-  const sb = Math.sin(frameClock * 1.4) * 3; layers.push({ y: 1000, draw: () => { drawSeival(NAVIO.ladder.x + 40, 1000 + sb, 360); drawGaribaldi(NAVIO.ladder.x - 80, 985 + sb, 1, 1); drawCampFolk('bento', NAVIO.ladder.x + 40, 990 + sb, 1, -1); if (mataFolk('anita')) drawCampFolk('anita', NAVIO.ladder.x + 150, 985 + sb, 1, -1); } });
-  const L = navioFx.lanceiro; if (L && !st.won && mataCombatOn()) layers.push({ y: L.y, draw: () => drawCampFolk('lanceiro', L.x, L.y, 1, L.dx) });
+  const sb = Math.sin(frameClock * 1.4) * 3; layers.push({ y: 1000, draw: () => { drawSeival(NAVIO.ladder.x + 40, 1000 + sb, 360); drawGaribaldi(NAVIO.ladder.x - 80, 985 + sb, 1, 1); drawCampFolk('bento', NAVIO.ladder.x + 40, 990 + sb, 1, -1, false, 0, navioFx.bento > 17.2); if (mataFolk('anita')) drawCampFolk('anita', NAVIO.ladder.x + 150, 985 + sb, 1, -1, false, 0, !!navioFx.ball || navioFx.anita < 1.2); } });
+  const L = navioFx.lanceiro; if (L && !st.won && mataCombatOn()) layers.push({ y: L.y, draw: () => drawCampFolk('lanceiro', L.x, L.y, 1, L.dx, !!L.walkArt, L.dyArt || 0, L.state === 'charge' || L.strikeUntil > frameClock) });
   layers.push({ y: NAVIO.ladder.y + 20, draw: () => { for (let k = 0; k < 5; k++) rect(NAVIO.ladder.x - 18, NAVIO.ladder.y - 10 + k * 22, 36, 4, '#7a5634', 2); for (const s of [-1, 1]) rect(NAVIO.ladder.x + s * 18 - 2, NAVIO.ladder.y - 14, 4, 110, '#5a3a20', 2); } });
   for (const [mx, my] of NAVIO.masts) layers.push({ y: my, draw: () => drawNavioMast(mx, my, Math.abs(worldOut.x - mx) < 220 && worldOut.y < my + 40 ? .3 : .85) });
   layers.push({ y: 470, draw: () => drawNavioFlag(260, 470) });
@@ -441,7 +441,7 @@ function navioTop() {
   // Na praia também: depois da chegada, a prosa com o Garibaldi tem o botão da loja dele.
   const gtalk = lagunaGaribaldiTalk; lagunaGaribaldiTalk = function () { gtalk(); if (modal === 'talk' && lagunaState().carregado) garibaldiTradeButton(); };
   const hit = caveDmg; caveDmg = function () { const b = inNavio() && navioBoss(); return Math.round(hit() * (b && b.state === 'stagger' ? 1.5 : 1)); };
-  const draw = drawCaveBeast; drawCaveBeast = function (b) { if (b.kind === 'mariath') { drawMariath(b.x, b.y, 1, b.dx, b.state, b.hurt); return; } if (b.kind === 'marinheiro') { drawMarinheiro(b); return; } draw(b); };
+  const draw = drawCaveBeast; drawCaveBeast = function (b) { if (b.kind === 'mariath') { drawMariath(b.x, b.y, 1, b.dx, b.state, b.hurt, !!b.walkArt, b.dyArt || 0); return; } if (b.kind === 'marinheiro') { drawMarinheiro(b); return; } draw(b); };
   // Desmaiou no convés: o Garibaldi te puxa da água pra areia.
   const faint = mataFaint; mataFaint = function () {
     if (!inNavio()) return faint();

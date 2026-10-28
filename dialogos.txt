@@ -3433,4 +3433,22 @@ Foi tu que escondeu minha tampa? | Eu? Capaz! Mas olha atrás do fogão… e nã
 Vai entrar na bodega? | Hoje fico na estrada. Se o chapéu sair voando, corre devagar: pode ser só brincadeira minha.
 Te vi passar por aqui duas vezes! | Uma era eu, a outra era a poeira tentando acompanhar. Guarda minha figurinha pra lembrar!
 
+[damiao]
+Buenas, Damião! Como vai a lida? | Buenas, tchê! Hoje rendeu. Agora falta um mate e um banco na sombra.
+Vai um xis no capricho? | Vai sim! Bota um guardanapo a mais, que xis bom não se come de camisa limpa.
+Como tá esse tempo? | Saí de casa com frio e já tô dobrando a manga. Esse tempo muda mais que parceiro de truco!
+Tá indo pra onde? | Dar uma volta e resolver umas compras. Mas se aparecer prosa boa, eu atraso sem remorso.
+Aceita um chimarrão? | Mas é claro! Só não ferve a água, que minha língua ainda tem muito causo pra contar.
+E a pescaria, rendeu? | Trouxe história, que peixe mesmo levou minha isca e foi embora sem agradecer.
+Vai levar erva hoje? | Me separa um pacote. Lá em casa a térmica esvazia antes de a visita sentar direito.
+Tu joga bocha? | Jogo! Minha mira é boa; a cancha é que às vezes inventa uma curva.
+Como anda o truco? | Ontem perdi duas e ganhei uma prosa comprida. Já serviu pra não voltar de mãos vazias.
+Vai pro baile? | Se a gaita chamar, eu vou. Só preciso convencer minhas botas de que amanhã tem trabalho.
+Tá com fome, vivente? | Bah, passei pela tua porta e o cheiro da chapa me fez mudar de rumo!
+O que achou da bodega? | Tá ficando um baita lugar, Sadi. Comida boa e gente conhecida: é por isso que eu volto.
+Tem novidade por aí? | O vizinho arrumou a cerca. Agora as galinhas dele entram pelo portão, tudo muito organizado.
+Quer sentar um pouco? | Quero sim. Caminhei tanto hoje que até a sombra pediu descanso.
+Qual o segredo de um bom churrasco? | Brasa com calma e sal na medida. E alguém pra cuidar da carne enquanto eu corto o pão.
+Até a próxima, Damião! | Até, tchê! Guarda um lugarzinho, que uma hora dessas eu volto pra comer.
+
 */ };

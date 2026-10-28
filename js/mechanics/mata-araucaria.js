@@ -2,19 +2,19 @@
 // de chão batido e por um arroio pequeno que desce do norte pro sul, bem no meio do mapa.
 //   · Entrada pela esquerda (a estrada da Serra vira picada), com a placa da mata.
 //   · A picada principal atravessa o arroio numa ponte de madeira e sobe até a clareira da araucária centenária (nordeste).
-//   · Um ramal sobe pro mirante (norte); outro desce, cruza o arroio pelas pedras e chega na clareira do pinhão (sudeste).
+//   · Um ramal sobe à Aldeia do Pinhal; outro cruza o arroio pelas pedras até o acampamento farroupilha.
 //   · No meio do arroio, um remanso mais largo, com taboa e uma prainha de cascalho.
 //   · Ao lado da centenária, a picada do leste segue até a borda direita (o mapa continua pra lá, mais adiante).
-// Por enquanto é só o mapa: o desenho, os caminhos, o rio e onde dá pra pisar.
+// Moradias e amigos conhecidos na expedição: mata-povoamentos.js.
 'use strict';
 
 const MATA = {
   W: 3600, H: 2600, entryY: 985, trailHalf: 42, branchHalf: 32, bridgeY: 1010, stonesY: 2010, poolY: 1520,
   clearings: [
     { id: 'entrada', x: 300, y: 985, rx: 250, ry: 160 },
-    { id: 'mirante', x: 900, y: 300, rx: 240, ry: 140 },
+    { id: 'aldeia', x: 925, y: 455, rx: 525, ry: 390 },
     { id: 'centenaria', x: 3200, y: 600, rx: 320, ry: 210 },
-    { id: 'pinhao', x: 3050, y: 2210, rx: 300, ry: 190 },
+    { id: 'farroupilha', x: 3000, y: 2180, rx: 550, ry: 360 },
     { id: 'rancho', x: 640, y: 1400, rx: 320, ry: 210 }   // o rancho do Garibaldi (mata-garibaldi.js)
   ],
   sign: { x: 380, y: 880 }, big: { x: 3230, y: 560 }
@@ -45,10 +45,10 @@ function mataTrails() {
   const b = MATA.bridgeY, bx = mataRiverX(b), s = MATA.stonesY, sx = mataRiverX(s);
   const defs = [
     { id: 'principal', half: MATA.trailHalf, pts: [[-80, MATA.entryY], [260, 985], [600, 935], [960, 990], [1300, 1055], [bx - 300, b + 12], [bx - 120, b], [bx, b], [bx + 120, b], [bx + 320, b - 18], [2550, 905], [2880, 775], [3120, 680], [3260, 640]] },
-    { id: 'mirante', half: MATA.branchHalf, pts: [[600, 935], [530, 720], [590, 500], [740, 360], [880, 310]] },
+    { id: 'mirante', half: MATA.branchHalf, pts: [[600, 935], [530, 720], [590, 580], [740, 570], [920, 565]] },
     { id: 'rancho', half: MATA.branchHalf, pts: [[420, 990], [440, 1150], [490, 1350], [580, 1455], [700, 1465]] },
     { id: 'leste', half: MATA.branchHalf, pts: [[3180, 660], [3340, 720], [3480, 760], [3700, 770]] },
-    { id: 'sul', half: MATA.branchHalf, pts: [[960, 990], [1000, 1290], [1140, 1590], [1380, 1860], [sx - 260, s - 14], [sx - 100, s], [sx, s], [sx + 100, s], [sx + 260, s + 12], [2500, 2085], [2830, 2170], [3010, 2210]] }
+    { id: 'sul', half: MATA.branchHalf, pts: [[960, 990], [1000, 1290], [1140, 1590], [1380, 1860], [sx - 260, s - 14], [sx - 100, s], [sx, s], [sx + 100, s], [sx + 260, s + 12], [2500, 2085], [2460, 2270], [2570, 2410], [2870, 2410], [3000, 2320]] }
   ];
   mataTrailCache = defs.map(d => {
     const pts = mataSmooth(d.pts), normals = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], c = pts[Math.min(pts.length - 1, i + 1)], dx = c[0] - a[0], dy = c[1] - a[1], L = Math.hypot(dx, dy) || 1; return [-dy / L, dx / L]; });
@@ -98,6 +98,7 @@ function mataPlants() {
     const x = 40 + R() * (MATA.W - 80), y = 120 + R() * (MATA.H - 160), dt = mataTrailDist(x, y);
     if (dt < 6 || Math.abs(x - mataRiverX(y)) < mataRiverHalf(y) + 26 || trees.some(t => Math.hypot(t.x - x, t.y - y) < 40)) continue;
     const near = dt < 60, clear = mataInClearing(x, y);
+    if (MATA.clearings.some(c => ['aldeia','farroupilha'].includes(c.id) && ((x-c.x)/c.rx)**2+((y-c.y)/c.ry)**2<1)) continue;
     brush.push({ x, y, index: clear ? (R() < .6 ? 4 : 1) : near ? (R() < .5 ? 1 : 0) : (R() < .5 ? 0 : 5), w: 60 + R() * 46, h: 42 + R() * 30 });
   }
   // Pedras com musgo: algumas grandes (seguram o passo), na mata e na beira do arroio.
@@ -111,7 +112,7 @@ function mataPlants() {
     if (Math.abs(y - MATA.bridgeY) < 90 || Math.abs(y - MATA.stonesY) < 70 || R() < .25) continue;
     const x = mataRiverX(y) + side * (mataRiverHalf(y) + 18 + R() * 14); reeds.push({ x, y: y + R() * 20, index: R() < .65 ? 2 : 1, w: 54 + R() * 30, h: 46 + R() * 24 });
   }
-  const logs = [{ x: 1010, y: 360, w: 210, a: -.12 }, { x: 2860, y: 2290, w: 240, a: .08 }, { x: 2120, y: 1585, w: 170, a: -.3 }];
+  const logs = [{ x: 2120, y: 1585, w: 170, a: -.3 }];
   const grid = new Map(), add = (o, r) => { const k = Math.floor(o.x / 160) + ':' + Math.floor(o.y / 160); if (!grid.has(k)) grid.set(k, []); grid.get(k).push({ x: o.x, y: o.y, r }); };
   for (const t of trees) add(t, t.big ? 36 : 22);
   for (const r of rocks) if (r.solid) add({ x: r.x, y: r.y - 6 }, r.w * .32);
@@ -146,8 +147,8 @@ function paintMataTerrain(view) {
   if (x < mataRiverX(y) + 400 && x + w > mataRiverX(y + h) - 400 || true) for (const [expand, material, alpha] of [[28, 3, .2], [17, 3, .55], [8, 3, 1], [0, 2, 1]]) { ctx.save(); ctx.clip(mataRiverPath(expand)); ctx.globalAlpha = alpha; frontierTexture(material, x, y, w, h); ctx.restore(); }
   // Prainha de cascalho no remanso.
   { const px = mataRiverX(MATA.poolY) + mataRiverHalf(MATA.poolY) + 40, py = MATA.poolY + 20; ctx.save(); ctx.beginPath(); ctx.ellipse(px, py, 90, 46, .2, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha = .9; frontierTexture(3, x, y, w, h); ctx.restore(); }
-  // Pinhas caídas na clareira do pinhão e embaixo da centenária.
-  for (const c of MATA.clearings.filter(c => c.id === 'pinhao' || c.id === 'centenaria')) for (let k = 0; k < 26; k++) {
+  // Pinhas caídas embaixo da centenária; os pátios das comunidades ficam livres.
+  for (const c of MATA.clearings.filter(c => c.id === 'centenaria')) for (let k = 0; k < 26; k++) {
     const n = frontierNoise(k * 13 + c.x, c.y), a = n * Math.PI * 2, r = frontierNoise(c.y + k, k) * .85, px = c.x + Math.cos(a) * c.rx * r, py = c.y + 40 + Math.sin(a) * c.ry * r * .8;
     if (px < x - 20 || px > x + w + 20 || py < y - 20 || py > y + h + 20) continue;
     ellipse(px, py + 3, 9, 4, 'rgba(20,14,8,.35)'); ellipse(px, py, 8, 6, '#6a4424'); ellipse(px - 2, py - 2, 3, 2, '#9a6a3a');

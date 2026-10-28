@@ -254,7 +254,8 @@ function campFolkMeet(T, f) {
     if (f.card) giveCard(f.card, 'mata');
     const rw = { xp: 40, cash: 30 };
     grantReward(rw);
-    talk([['card', `<b>🔥 ${f.name}</b><br>${f.perk}`, TRECHO_BIOME_NAMES[T.biome]], ['reward', rw, 'Prosa no acampamento']], null, 'Valeu');
+    const home = typeof settlementHome === 'function' && settlementHome(f.id);
+    talk([['card', `<b>🔥 ${f.name}</b><br>${f.perk}${home ? '<br><br>Agora tu também encontra este amigo em <b>'+home.name+'</b>, '+home.direction+', na mata do Giuseppe. Ele passeia pelas picadas e para para prosear contigo.' : ''}`, TRECHO_BIOME_NAMES[T.biome]], ['reward', rw, 'Prosa no acampamento']], null, 'Valeu');
   };
   const lines = CAMP_FOLK_MEET[f.id];
   if (!scenesEnabled()) { talk(lines.map(l => [...l]), done, 'Continuar'); return; }
@@ -262,7 +263,7 @@ function campFolkMeet(T, f) {
   playSteps([...sceneWorld({ map: 'trecho', x: T.camp.x - 150, y: T.camp.y - 20, night: .25, fires: [], lights: [{ x: T.camp.x - 60, y: T.camp.y, r: 320, a: .3, color: '255,150,60' }] }),
     { actor: 'sadi', x: worldOut.x, y: worldOut.y, dx: -1 }, { fade: 'in', time: .6 },
     { walk: 'sadi', to: me },
-    { actor: f.id, x: at.x, y: at.y, dx: 1, alpha: 0, draw: (a, y) => drawCampFolk(f.id, a.x, y, a.alpha ?? 1, a.dx) },
+    { actor: f.id, x: at.x, y: at.y, dx: 1, alpha: 0, draw: (a, y) => drawCampFolk(f.id, a.x, y, a.alpha ?? 1, a.dx, !!a.walk, a.dy || 0) },
     { do: () => { if (f.id === 'jasy') { for (let k = 0; k < 3; k++) AudioEngine.note?.(2200 + k * 300, .12, 'sine', .03, k * .15); } else AudioEngine.caveGhost?.(); const a = scene.actors[f.id], up = () => { if (!scene || scene.actors[f.id] !== a) return; a.alpha = Math.min(1, a.alpha + .05); if (a.alpha < 1) setTimeout(up, 40); }; up(); } }, { wait: 1.2 },
     ...lines.map(([who, text]) => ({ say: who, text })),
     { fade: 'out', time: .5 }], 'mata-' + f.id, () => { Object.assign(worldOut, { x: me.x, y: me.y, dx: -1, dy: 0, walk: false }); done(); });

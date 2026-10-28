@@ -101,6 +101,89 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='damiao'){
+      await load(base+'/index.html');
+      await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll()])');
+      assert.equal(await evaluate('actionArtReady'),true);
+      for(const file of ['damiao-scenarios.js','action-art-scenarios.js','novidades-scenarios.js'])
+        console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      const preview=await evaluate(`(()=>{
+        const c=document.createElement('canvas');c.width=1040;c.height=490;
+        const prev=ctx,prevOut=worldOut;ctx=c.getContext('2d');worldOut=null;
+        try{
+          ctx.fillStyle='#354237';ctx.fillRect(0,0,c.width,c.height);
+          const label=(s,x,y)=>{ctx.fillStyle='#f5e6c9';ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText(s,x,y);};
+          label('Damião · poses na mesma escala dos moradores',520,28);
+          for(let n=0;n<12;n++){actionSprite('damiao',n,65+n*83,185,124);}
+          label('Lanceiro Negro · frente, lado, costas e ataque',520,228);
+          [0,5,9,11].forEach((n,k)=>actionSprite('lanceiro',n,120+k*190,445,128));
+          label('Sadi',930,290);personDraw(0,930,445,false,true,0,false,0,1);
+          return c.toDataURL('image/png');
+        }finally{ctx=prev;worldOut=prevOut;}
+      })()`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      fs.writeFileSync(path.join(root,'docs/previews/damiao-lanceiro.png'),Buffer.from(preview.split(',')[1],'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);
+      assert.equal(await evaluate('customDialogues.damiao.length'),16);
+      assert.equal(await evaluate('ACTION_ART.damiao.naturalWidth>0'),true);
+      blockedPath='/dialogos.txt';await load(base+'/index.html');
+      assert.equal(await evaluate(`WORLD_TALK.damiao.length===16&&!!personalizedProse(PEOPLE.findIndex(p=>p.id==='damiao'))`),true);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS file://, TXT e falas padrão sem TXT');return;
+    }
+    if(process.env.BODEGA_FOCUS==='navalArt'){
+      await load(base+'/index.html');assert.equal(await evaluate('navalArtReady'),true);
+      await evaluate('Promise.all([actionArtReady,mataArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      console.log('PASS naval art: '+(await evaluate(fs.readFileSync(path.join(__dirname,'naval-art-scenarios.js'),'utf8'))).length+' checks');
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      await evaluate(`G=fresh();G.day=30;G.prologue={done:true};G.tutorial.complete=true;G.regions={serra:true,sc:true};G.mataSeen=1;G.mataGralha=1;mataState().metGaribaldi=true;for(const f of CAMP_FOLK_LIST)G.mata.folks[f.id]=1;lagunaState().carregado=1;caveState().facao=true;G.phase='prep';started=true;paused=true;scene=null;closeDialog(true);skipWorldTalk();$('start').classList.add('hidden');worldOut={map:'navio',x:1180,y:780,dx:0,dy:1};navioStart();navioBoss().met=true;`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      console.log('Naval render (software Chrome): '+await evaluate(`(()=>{paused=true;draw();const t=performance.now();for(let i=0;i<45;i++)draw();return ((performance.now()-t)/45).toFixed(2)+' ms/frame';})()`));
+      for(const [name,x,y] of [['navio-renovado',1180,780],['navio-popa',590,670],['navio-proa',1730,700]]){
+        await evaluate(`worldOut.x=${x};worldOut.y=${y};refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await evaluate(`worldOut={map:'casa:garibaldi',x:730,y:590,dx:0,dy:1};mataNight=null;Object.assign(GARIBALDI_GUEST,{x:620,y:540,walk:false});refreshHUD();draw();`);
+      const gshot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/giuseppe-renovado.png'),Buffer.from(gshot.data,'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('navalArtReady'),true);
+      blockedPath='/assets/images/mata/laguna/navio-props-v1.png';await load(base+'/index.html');assert.equal(await evaluate('navalArtReady'),false);
+      await evaluate(`G=fresh();worldOut={map:'navio',x:1250,y:810,dx:0,dy:1};drawOutside();`);assert.equal(await evaluate('WORLD_MAPS.navio.canWalk(1250,810)'),true);
+      blockedPath='/assets/images/actions/garibaldi-ghost-v1.png';await load(base+'/index.html');await evaluate('mataArtReady');assert.equal(await evaluate('actionArtReady'),false);
+      await evaluate(`drawGaribaldi(300,300,1,1,true);`);assert.equal(errors.length,0,errors.join('\n'));console.log('PASS file:// and missing naval/Giuseppe asset fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='settlements'){
+      await load(base+'/index.html');assert.equal(await evaluate('settlementArtReady'),true);
+      await evaluate('Promise.all([mataArtReady,actionArtReady,worldArtLoaded,walkArtLoaded,expansionArtLoadAll()])');
+      const result=await evaluate(fs.readFileSync(path.join(__dirname,'forest-settlements-scenarios.js'),'utf8'));
+      console.log('PASS settlements: '+result.length+' checks');
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      await evaluate(`G.phase='prep';closeDialog(true);skipWorldTalk();scene=null;paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');clearTimeout(bannerTimer);bannerTimer=null;bannerQueue=[];$('banner').classList.add('hidden');settlementGame=null;settlementResidents();`);
+      for(const [name,map,x,y] of [['aldeia','mata',935,570],['farroupilha','mata',3000,2315],['casa-pinhal','casa:pinhal',700,450],['abrigo-encantados','casa:encantados',700,450],['tenda-comando','casa:comando-farrapo',700,450],['alojamento-farrapo','casa:alojamento-farrapo',700,450]]){
+        await evaluate(`worldOut={map:'${map}',x:${x},y:${y},dx:0,dy:1,walk:false};refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/mata-'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('settlementArtReady'),true);
+      blockedPath='/assets/images/mata/povoamentos/aldeia-pinhal-v1.png';await load(base+'/index.html');assert.equal(await evaluate('settlementArtReady'),false);
+      await evaluate(`worldOut={map:'mata',x:920,y:565};settlementDrawProp(SETTLEMENT_PROPS[0]);`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS file:// and settlement fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='actionArt'){
+      await load(base+'/index.html');
+      assert.equal(await evaluate('actionArtReady'),true);
+      await evaluate('Promise.all([expansionArtLoadAll(),mataArtReady,walkArtLoaded])');
+      const results=await evaluate(fs.readFileSync(path.join(__dirname,'action-art-scenarios.js'),'utf8'));
+      console.log('PASS action art: '+results.length+' checks');
+      const preview=await evaluate(fs.readFileSync(path.join(__dirname,'action-art-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      fs.writeFileSync(path.join(root,'docs/previews/history-action-art.png'),Buffer.from(preview.split(',')[1],'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);
+      assert.equal(await evaluate('actionArtReady'),true);
+      blockedPath='/assets/images/actions/cusco-v1.png';
+      await load(base+'/index.html');
+      assert.equal(await evaluate('actionArtReady'),false);
+      assert.equal(await evaluate(`(()=>{drawCusco(200,200,1,true);return !ACTION_ART.cusco.naturalWidth})()`),true);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS file:// and missing atlas fallback');return;
+    }
     if(process.env.BODEGA_FOCUS==='fishingRegions'){
       await load(base+'/index.html');
       assert.equal(await evaluate('regionalIdentityReady'),true);assert.equal(await evaluate('fishingArtReady'),true);

@@ -612,7 +612,7 @@ function mataBeltRefresh() {
     // Com o cusco véio junto, ele late e segura o bicho mais perto.
     if (mataNight && cuscoOut?.() && (mataBuffs.apito -= dt) <= 0) {
       mataBuffs.apito = 7; const b = mataNight.beasts.filter(x => x.hp > 0 && !x.boss && Math.hypot(x.x - worldOut.x, x.y - worldOut.y) < 300).sort((a, c) => Math.hypot(a.x - worldOut.x, a.y - worldOut.y) - Math.hypot(c.x - worldOut.x, c.y - worldOut.y))[0];
-      if (b) { b.stun = 2.2; cuscoBarkSound?.(); effect('Au! Au!', cusco.x, cusco.y - 70, '#ffd2a0'); fxStars(b.x, b.y - 60, 4); }
+      if (b) { b.stun = 2.2; cusco.attackUntil = frameClock + .65; cusco.dx = b.x < cusco.x ? -1 : 1; cuscoBarkSound?.(); effect('Au! Au!', cusco.x, cusco.y - 70, '#ffd2a0'); fxStars(b.x, b.y - 60, 4); }
     }
   };
   const swap = switchMap; switchMap = function (to) { if (to.map === 'trecho' && to.trecho) mataState().trecho = to.trecho; return swap(to); };

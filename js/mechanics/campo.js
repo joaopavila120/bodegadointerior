@@ -170,9 +170,11 @@ function firstCostelao(){return G.event.id==='costelao'&&campoState().firstDay==
 // Depois do primeiro costelão, sem carne e sem dinheiro para boi ou manta, o domingo vira dia normal.
 // Domingo de costelão sem carne: antes de abrir, o caixa explica o que fazer (laçar um boi da cerca ou comprar um boi
 // na Casa do Campeiro) e, sem boi nem dinheiro, deixa pular o costelão (o domingo vira dia normal).
-function costelaoMeatReady(){return !G.costelaoTaught||mantasToday()>0||G.stock.costela>0||campoState().espetos.some(Boolean);}
-function costelaoNoMeatText(){const herd=G.herd||0;return herd>0?'lace um boi da cerca antes de abrir':hasCash(BOI_COST)?'compre um boi na Casa do Campeiro e lace antes de abrir':'sem boi e sem dinheiro, dá para pular o costelão no caixa';}
+// O primeiro costelão é obrigatoriamente com o boi que o pai deu: sem a primeira laçada, não abre.
+function costelaoMeatReady(){return !G.costelaoTaught?!!G.lassoTaught:mantasToday()>0||G.stock.costela>0||campoState().espetos.some(Boolean);}
+function costelaoNoMeatText(){const herd=G.herd||0;if(!G.costelaoTaught&&!G.lassoTaught)return 'lace o boi da cerca antes do primeiro costelão';return herd>0?'lace um boi da cerca antes de abrir':hasCash(BOI_COST)?'compre um boi na Casa do Campeiro e lace antes de abrir':'sem boi e sem dinheiro, dá para pular o costelão no caixa';}
 function costelaoNoMeat(){
+ if(!G.costelaoTaught&&!G.lassoTaught){G.herd=Math.max(G.herd||0,1);openDialog('Primeiro costelão: antes, o boi',`<p>O primeiro costelão é com a carne do boi que o teu pai deu. Ele tá na <b>cerca do boi</b>, no campo: lace ele antes de abrir.</p><div class="callout">Segure <b>Q</b> para girar o laço e solte com o círculo sobre o boi. <b>Espaço</b> esquiva do rasante do quero-quero.</div><div class="actions"><button class="primary" data-act="lassoStart">Ir laçar</button><button data-act="close">Voltar</button></div>`,'costelaoMeat');return;}
  const herd=G.herd||0,btn=[];let text;
  if(herd>0){text=`Não tem manta de costela na despensa. Tem <b>${herd===1?'1 boi':herd+' bois'}</b> na cerca: lace e carneie um antes de abrir.`;btn.push('<button class="primary" data-act="lassoStart">Ir laçar</button>');}
  else if(hasCash(BOI_COST)){text=`Não tem manta nem boi. Compre um boi na <b>Casa do Campeiro</b> (${money(BOI_COST)}), volte e lace antes de abrir.`;}

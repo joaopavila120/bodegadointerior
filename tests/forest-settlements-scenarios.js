@@ -9,9 +9,13 @@
   worldOut={map:'mata',x:200,y:985,dx:0,dy:1};
   const M=WORLD_MAPS.mata;
   check(settlementResidents().length===0,'unknown friends do not spawn');
-  check(M.spots().filter(s=>s.id.startsWith('settlement:')).length===6,'two communities and four doors exist before the encounters');
+  const inside=(id,t)=>{const c=SETTLEMENT_CLEARINGS[id];return ((t.x-c.x)/c.rx)**2+((t.y-c.y)/c.ry)**2<.6;};
+  check(M.spots().filter(s=>s.id.startsWith('settlement:')).length===0,'before the encounters there is no community and no door');
+  check(mataPlants().trees.some(t=>inside('aldeia',t))&&mataPlants().trees.some(t=>inside('farroupilha',t))&&!settlementSolid(SETTLEMENT_PROPS[0].x,SETTLEMENT_PROPS[0].y-40),'before the encounters both places are closed forest');
   campFolkMeet({biome:'mata'},campFolk(6));
   check(G.mata.folks.jasy===G.day&&settlementResidents().length===1,'actual first encounter unlocks a single resident');
+  {const ids=M.spots().filter(s=>s.id.startsWith('settlement:')).map(s=>s.id);check(ids.length===3&&ids.includes('settlement:aldeia')&&!ids.includes('settlement:farroupilha'),'meeting Jasy opens only the indigenous village (community and two doors)');}
+  check(!mataPlants().trees.some(t=>inside('aldeia',t))&&mataPlants().trees.some(t=>inside('farroupilha',t)),'the village clearing opens while the farrapo camp is still forest');
   let foundHomeNotice=false;
   for(let n=0;n<45&&modal==='talk';n++){foundHomeNotice||=$('dialogContent').textContent.includes('Aldeia do Pinhal');talkNext();}
   check(foundHomeNotice,'encounter tells player where the new friend now lives');
@@ -27,6 +31,7 @@
   closeDialog(true);talkState=null;skipWorldTalk();
   for(const f of CAMP_FOLK_LIST)G.mata.folks[f.id]=1;
   check(settlementResidents().length===6&&new Set(settlementResidents().map(p=>p.id)).size===6,'old encounter flags unlock six unique residents');
+  check(M.spots().filter(s=>s.id.startsWith('settlement:')).length===6&&!mataPlants().trees.some(t=>inside('farroupilha',t)),'with farrapos met, the camp and its doors appear');
   for(const f of CAMP_FOLK_LIST){
     const p=settlementResidents().find(p=>p.id===f.id),r=p.route,bad=[];
     for(let i=0;i<r.length;i++){

@@ -19,7 +19,7 @@ function mataAberta() { return !!missionState('fantasma') || !!G.mataSeen || !!G
 // ---------- Capítulo 2: o fantasma de camisa vermelha ----------
 MISSIONS.push({ id: 'fantasma', chapter: 2, title: 'O fantasma de camisa vermelha', giver: 'olmiro', where: 'Mata de Araucárias, no fim da estrada da Serra',
   // Começa com o Olmiro, de noite, na rua da Fronteira (não com a conversa de capítulo do Valter).
-  direct: () => olmiroFantasma(), when: () => olmiroReady(), waitText: () => 'de noite, na rua da Fronteira: o Olmiro, o último tropeiro, passa a cavalo',
+  direct: () => olmiroFantasma(), when: () => olmiroReady(), waitText: () => 'de noite: feche a bodega e saia na rua da Fronteira, que o Olmiro, o último tropeiro, passa a cavalo',
   start: () => unlockRegion('serra'),
   goal: () => 'Siga a estrada da Serra até o fim e entre na Mata de Araucárias',
   done: () => !!G.mata?.metGaribaldi, reward: { cash: 60, xp: 40, rep: 1, unlock: 'Mata de Araucárias e o refúgio do Garibaldi' }, outroBy: 'garibaldi',

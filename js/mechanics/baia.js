@@ -20,9 +20,9 @@ const BAIA_CHAPTER = 4;
 function baiaOngoing() { return baiaCalling() || missionActive('baia'); }
 function baiaGoal() {
   const s = baiaStage();
-  if (s === 'trail') return 'Tem pelo da Cadela Baia na boca da gruta da Serra: desça e procure lá dentro';
+  if (s === 'trail') return 'Tem pelo da Cadela Baia na boca da gruta da Serra: entre e desça a escada até o segundo andar';
   if (s === 'return') return 'Leve a Cadela Baia de volta pro Mano Lima, na casa dele (Fronteira)';
-  return 'Procure a Cadela Baia pelo mapa: ela gosta de andar pela Fronteira e pela estrada da Serra';
+  return 'Suba a estrada da Serra até os paredões, perto da gruta (siga a seta): procure o rastro da Cadela Baia por ali';
 }
 const BAIA_CALL_WHERE = 'casa dele, na Fronteira (de luz acesa: pode ir de noite)';
 MISSIONS.push({ id: 'baia', chapter: BAIA_CHAPTER, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
@@ -58,7 +58,7 @@ function baiaCall() {
 function baiaOffer() {
   const i = PEOPLE.findIndex(p => p.id === 'manolima'), m = baiaMission();
   const lines = [['manolima', lateNight() ? 'Chegou, vivente! Deixei a luz acesa te esperando. Senta aí que o mate tá pronto.' : 'Chegou, vivente. Senta aí que o mate tá pronto.'], ['manolima', 'A Cadela Baia some às vezes, mas sempre volta antes de escurecer. Dessa vez, nada…'],
-    ['manolima', 'Ela gosta de andar pela Fronteira e pela estrada da Serra, farejando bicho. Procura pelo mapa, olha nos cantos: de noite mesmo, que eu não prego o olho enquanto ela não voltar. Se achar, me traz ela de volta?']];
+    ['manolima', 'Ela gosta de farejar bicho pela estrada da Serra. Um tropeiro viu um vulto baio subindo pros paredões, perto de uma gruta que ninguém mais usa.'], ['manolima', 'Vai lá olhar, de noite mesmo, que eu não prego o olho enquanto ela não voltar. Se achar, me traz ela de volta?']];
   if (baiaChapter()) {
     talk([...lines, ['sadi', 'Pode deixar, Mano. Eu acho a Baia.'], ['dica', '<b>📖 Capítulo ' + BAIA_CHAPTER + ' · ' + m.title + '</b><br>' + baiaGoal() + '<br><i>Onde: ' + m.where + '</i><br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo ' + BAIA_CHAPTER]], () => baiaAccept(), 'Bora procurar!');
     return;

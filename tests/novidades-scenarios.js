@@ -631,6 +631,21 @@
     check(['morcego','goteiraEco','pedrasLonge','rochaRange'].every(k=>gruta.includes(k))&&!gruta.includes('coruja'),'na gruta: morcego, goteira com eco, pedra rolando e a rocha rangendo');
     check(['coruja','urutau','uivo','galho','folhas','sussurro','grilo'].every(k=>heard.includes(k)),'na mata adentro: coruja, urutau, uivo, galho, folhas, sussurro e grilo');}
    caveLeave();worldOut=null;G.phase='prep';}
+  // ---------- começo do jogo: textos do prólogo, quadro dos capítulos e a seta da história até o capítulo 4 ----------
+  {const keepM=JSON.stringify(G.missions),keepB=JSON.stringify(G.baiaArc||null),keepT=G.tutorial.complete,keepP=G.phase,keepG=mataState().metGaribaldi;
+   goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);check(/seta/.test(PROLOGUE_STEPS[0].text())&&/Volte para a/.test(PROLOGUE_STEPS.find(s=>s.id==='pao').text()),'na rua, o passo do prólogo manda seguir a seta');
+   const done=ids=>Object.fromEntries(ids.map(id=>[id,{status:'done',day:1}])),near=(p,q)=>p&&q&&Math.hypot(p.x-q.x,p.y-q.y)<5;
+   G.tutorial.complete=false;updateQuestTracker();check($('questTracker').classList.contains('hidden'),'no primeiro dia, sem quadro de capítulo por cima do tutorial');G.tutorial.complete=keepT;
+   G.missions={...done(['trago']),fantasma:{status:'active',day:1}};mataState().metGaribaldi=0;check(worldGuidePoint()?.x>=VILA.W-100,'capítulo 2: a seta leva pra estrada da Serra');
+   switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);check(worldGuidePoint()?.x>=SERRA.W-100,'na Serra, a seta vai até o fim da estrada, na mata');mataState().metGaribaldi=keepG;
+   switchMap({map:'vila',x:1600,y:900});closeDialog(true);G.missions={...done(['trago','fantasma']),abertura:{status:'active',day:1,from:1}};G.phase='prep';check(near(worldGuidePoint(),guideSpot('door')),'capítulo 3: de manhã, a seta mostra a porta da bodega');
+   G.missions={...done(['trago','fantasma','abertura']),baia:{status:'calling',day:1}};check(near(worldGuidePoint(),guideSpot('house:manolima')),'capítulo 4: a seta leva na casa do Mano Lima');
+   G.missions.baia.status='active';G.baiaArc={stage:'search'};switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);check(near(worldGuidePoint(),guideSpot('caverna'))&&/gruta/.test(baiaGoal()),'procurando a Baia: a seta leva na gruta da Serra');
+   G.missions=JSON.parse(keepM);G.baiaArc=JSON.parse(keepB)||undefined;G.phase=keepP;goInside();closeDialog(true);check(/Saia pela/.test(PROLOGUE_STEPS[0].text()),'dentro da bodega, o passo manda sair pela porta');}
+  // ---------- o primeiro costelão só abre depois da primeira laçada ----------
+  {const keep=[G.costelaoTaught,G.lassoTaught];G.costelaoTaught=false;G.lassoTaught=false;check(!costelaoMeatReady(),'primeiro costelão: sem laçar o boi, não abre');
+   costelaoNoMeat();check(modal==='costelaoMeat'&&/lace ele/.test($('dialogContent').textContent)&&!!$('dialogContent').querySelector('[data-act="lassoStart"]')&&!$('dialogContent').querySelector('[data-act="costelaoSkip"]'),'o caixa manda laçar o boi do pai antes, sem pular');closeDialog(true);
+   G.lassoTaught=true;check(costelaoMeatReady(),'depois da primeira laçada, o primeiro costelão abre');[G.costelaoTaught,G.lassoTaught]=keep;}
   // ---------- poderes: como se ganha cada um, e o que cada um faz na briga ----------
   {G.poderes={has:{}};const lagWon=lagunaState().won;lagunaState().won=0;G.cave={facao:true,floor:3,deepest:3,hp:100,vo:true,up:{}};G.phase='prep';worldOut=null;goOutside();check(!poderList().length,'começa sem poder');
    worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});check(!poderHas('benzedura'),'sem tombo, o padre só proseia');closeDialog(true);skipWorldTalk?.();poderState().caiu=1;worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});talkAll();check(poderHas('benzedura'),'depois de um tombo, o Padre Romio benze o Sadi');closeDialog(true);

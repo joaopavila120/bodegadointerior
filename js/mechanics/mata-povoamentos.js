@@ -37,9 +37,21 @@ const settlementArtReady = Promise.all([...Object.keys(SETTLEMENT_RECTS),...SETT
 }))).then(ok=>{mataTiles.clear();return ok.every(Boolean);});
 
 function settlementHome(id) { return Object.values(FOREST_SETTLEMENTS).find(s=>s.members.includes(id)); }
+// Cada povoado só existe depois que o Sadi conhece alguém dele num fogo da expedição. Antes, o lugar é mato fechado:
+// a clareira sai da lista, as árvores nascem por cima e não tem casa, pátio nem porta.
+function settlementOpen(id) { return FOREST_SETTLEMENTS[id].members.some(w=>G.mata?.folks?.[w]); }
+function settlementGroupOpen(p) { return settlementOpen(p.group); }
+const SETTLEMENT_CLEARINGS = Object.fromEntries(Object.keys(FOREST_SETTLEMENTS).map(id=>[id,MATA.clearings.find(c=>c.id===id)]));
+let settlementLayout = null;
+function settlementSync() {
+  const key = Object.keys(FOREST_SETTLEMENTS).map(id=>settlementOpen(id)?1:0).join('');
+  if (key === settlementLayout) return; settlementLayout = key;
+  for (const [id,c] of Object.entries(SETTLEMENT_CLEARINGS)) { const i = MATA.clearings.indexOf(c); if (settlementOpen(id) && i < 0) MATA.clearings.push(c); else if (!settlementOpen(id) && i >= 0) MATA.clearings.splice(i, 1); }
+  mataFlora = null; for (const t of mataTiles.values()) t.width = t.height = 0; mataTiles.clear();
+}
 function settlementDoor(p) { return {x:p.x,y:p.y+38}; }
 function settlementSolid(x,y) {
-  return SETTLEMENT_PROPS.some(p=>x>p.x-p.w*.39-12&&x<p.x+p.w*.39+12&&y>p.y-p.depth&&y<p.y-6);
+  return SETTLEMENT_PROPS.some(p=>x>p.x-p.w*.39-12&&x<p.x+p.w*.39+12&&y>p.y-p.depth&&y<p.y-6&&settlementGroupOpen(p));
 }
 function settlementDrawProp(p) {
   const r=SETTLEMENT_RECTS[p.art][p.frame],h=p.w*r[3]/r[2];
@@ -77,12 +89,12 @@ const SETTLEMENT_PATHS = [
 ];
 let settlementPaths=null;
 function settlementGround(view) {
-  settlementPaths??=SETTLEMENT_PATHS.map(pts=>{const path=new Path2D();pts.forEach((p,i)=>i?path.lineTo(...p):path.moveTo(...p));return path;});
+  settlementPaths??=SETTLEMENT_PATHS.map(pts=>{const path=new Path2D();pts.forEach((p,i)=>i?path.lineTo(...p):path.moveTo(...p));return {path,group:pts[0][0]<2000?'aldeia':'farroupilha'};});
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   // Soft worn-earth edges instead of rectangular slabs under the buildings.
   for(const [width,alpha] of [[65,.035],[53,.06],[42,.1],[28,.15]]){
     ctx.strokeStyle='#ac8150';ctx.globalAlpha=alpha;ctx.lineWidth=width;
-    for(const p of settlementPaths)ctx.stroke(p);
+    for(const p of settlementPaths)if(settlementOpen(p.group))ctx.stroke(p.path);
   }
   ctx.restore();
 }
@@ -183,15 +195,17 @@ for(const room of SETTLEMENT_ROOMS){
   const map=WORLD_MAPS.mata,walk=map.canWalk,spots=map.spots,draw=map.draw,paint=paintMataTerrain,tick=outsideTick;
   map.canWalk=function(x,y){return walk.call(this,x,y)&&!settlementSolid(x,y);};
   map.spots=function(){return [...spots.call(this),
-    ...SETTLEMENT_PROPS.filter(p=>p.room).map(p=>({id:'settlement:'+p.id,...settlementDoor(p),radius:85,label:p.label,act:()=>enterInterior(p.room)})),
-    ...Object.entries(FOREST_SETTLEMENTS).map(([id,s])=>({id:'settlement:'+id,x:s.x,y:s.y,radius:65,label:s.name,act:()=>settlementInfo(id)})),
+    ...SETTLEMENT_PROPS.filter(p=>p.room&&settlementGroupOpen(p)).map(p=>({id:'settlement:'+p.id,...settlementDoor(p),radius:85,label:p.label,act:()=>enterInterior(p.room)})),
+    ...Object.entries(FOREST_SETTLEMENTS).filter(([id])=>settlementOpen(id)).map(([id,s])=>({id:'settlement:'+id,x:s.x,y:s.y,radius:65,label:s.name,act:()=>settlementInfo(id)})),
     ...settlementResidents().map(p=>({id:'resident:'+p.id,x:p.x,y:p.y,radius:110,label:'Prosear com '+CAMP_FOLK_LIST.find(f=>f.id===p.id).name,act:()=>{p.walk=false;p.wait=4;campFolkTalk(CAMP_FOLK_LIST.find(f=>f.id===p.id));}}))
   ];};
   map.draw=function(view,seen,layers){
     draw.call(this,view,seen,layers);
-    for(const p of SETTLEMENT_PROPS)if(seen(p.x,p.y,550))layers.push({y:p.y-6,draw:()=>settlementDrawProp(p)});
+    for(const p of SETTLEMENT_PROPS)if(settlementGroupOpen(p)&&seen(p.x,p.y,550))layers.push({y:p.y-6,draw:()=>settlementDrawProp(p)});
     for(const p of settlementResidents())if(seen(p.x,p.y,180))layers.push({y:p.y,draw:()=>drawCampFolk(p.id,p.x,p.y,1,p.dx,p.walk,p.dy)});
   };
   paintMataTerrain=function(view){paint(view);settlementGround(view);};
   outsideTick=function(dt){tick(dt);settlementPeopleTick(dt);};
+  // As árvores e o chão do pinheiral seguem os povoados abertos neste save.
+  const plants=mataPlants;mataPlants=function(){settlementSync();return plants();};
 }

@@ -573,7 +573,8 @@ function trackerLines() {
 }
 function updateQuestTracker() {
   const el = $('questTracker'); if (!el) return;
-  const show = started && G.missions && G.showTracker !== false && !prologueActive() && !G.lasso && !G.bocce && !G.penalties && !scene && !G.atCancha;
+  // No primeiro dia (prólogo e tutorial da bodega) o quadro do passo a passo basta: os capítulos aparecem depois.
+  const show = started && G.missions && G.showTracker !== false && !prologueActive() && !tutorialActive() && G.tutorial?.complete !== false && !G.lasso && !G.bocce && !G.penalties && !scene && !G.atCancha;
   const lines = show ? trackerLines() : []; el.classList.toggle('hidden', !lines.length);
   if (lines.length) setHTML(el, lines.map(l => `<div class="qt-line${l.kind ? ' ' + l.kind : ''}"><b>${l.icon || (l.kind === 'side' ? '◇' : '◆')} ${l.title}</b><span>${l.goal}</span></div>`).join(''));
 }

@@ -178,9 +178,11 @@ function butcherBoi(n = 1) {
 // A conversa do Valter (e de quem mais estiver junto) fica em missions.js: talk / valterTalk.
 
 // ---------- Prólogo: a roça do vô ----------
+// O texto de cada passo fala de onde o Sadi está: dentro da bodega manda sair pela porta; na rua, segue a seta.
+const naRua = () => !!worldOut, praBodega = () => naRua() ? 'Volte para a <b>bodega</b> (a seta amarela mostra a porta). ' : '';
 const PROLOGUE_STEPS = [
   { id: 'sementes', title: 'Sementes no Armazém Querência', places: ['agro'], target: { map: 'agro', spot: 'item:caixa' },
-    text: () => 'Saia pela <b>porta</b> da bodega e desça a estrada até o <b>Armazém Querência</b>. No <b>caixa</b>, compre sementes de <b>alface</b> e de <b>trigo</b>.',
+    text: () => (naRua() ? 'Desça a estrada até o <b>Armazém Querência</b>, seguindo a seta amarela.' : 'Saia pela <b>porta</b> da bodega (embaixo, no meio) e desça a estrada até o <b>Armazém Querência</b>.') + ' Lá dentro, no <b>caixa</b>, compre sementes de <b>alface</b> e de <b>trigo</b>.',
     done: () => hortaState().seeds.alface > 0 && hortaState().seeds.trigo > 0,
     after: ['Isso, vivente! Alface pro xis e trigo pro pão.', 'A horta fica colada na bodega. E olha: o pé de erva-mate que o teu vô plantou tá carregado. Colhe primeiro, que bodega sem erva não é bodega.'] },
   { id: 'erva', title: 'Colha a erva-mate do vô', places: ['horta'], target: { map: 'horta', tree: 0 },
@@ -201,7 +203,7 @@ const PROLOGUE_STEPS = [
     done: () => !hortaState().tiles.some(cellReady) && bagQty('trigo') >= FORNO.trigo,
     after: ['A alface lavada vira salada pro xis: ela vai sozinha pra despensa quando tu entra na bodega.', 'Já o trigo vira pão: na cozinha tem o forno a lenha do teu vô.'] },
   { id: 'pao', title: 'Pão de xis no forno a lenha', places: [], target: { kitchen: 'forno' },
-    text: () => 'Volte para a <b>bodega</b>. Na cozinha, o <b>forno a lenha</b> transforma ' + FORNO.trigo + ' trigo em ' + FORNO.paes + ' pães de xis: aperte <span class="keycap">E</span> nele e depois em <b>Assar</b>.',
+    text: () => praBodega() + 'Na cozinha, o <b>forno a lenha</b> transforma ' + FORNO.trigo + ' trigo em ' + FORNO.paes + ' pães de xis: aperte <span class="keycap">E</span> nele e depois em <b>Assar</b>.',
     done: () => prologueFlagSet('pao'),
     after: [['sadi', 'Pão de xis feito em casa! O cheiro tomou conta do galpão.'], 'É assim que se faz, guri. Agora a carne: o boi que eu te dei tá no campo, do outro lado da horta.', 'Vai na cerca do boi e laça. Boi laçado vira manta pro costelão de domingo e hambúrguer pro xis.'] },
   { id: 'laco', title: 'Lace o boi', places: ['curral'], target: { map: 'curral', spot: 'cerca' },
@@ -214,15 +216,15 @@ const PROLOGUE_STEPS = [
     done: () => ['racao', 'ovos', 'ovinhos', 'leite'].every(prologueFlagSet),
     after: ['A Mimosa encheu o balde! Bicho bem tratado retribui.', 'Leite assim não se vende: no tacho da cozinha ele vira queijo. É só mexer até coalhar.', 'Queijo em fatia vai no xis: pão, carne, ovo, queijo e salada, tudo da tua roça.'] },
   { id: 'queijo', title: 'Queijo no tacho', places: [], target: { kitchen: 'tacho' },
-    text: () => 'Volte para a <b>bodega</b>. No <b>tacho</b>, na cozinha, ' + TACHO.leite + ' L de leite viram ' + TACHO.fatias + ' fatias de queijo para o xis.',
+    text: () => praBodega() + 'Na cozinha, aperte <span class="keycap">E</span> no <b>tacho</b>: ' + TACHO.leite + ' L de leite viram ' + TACHO.fatias + ' fatias de queijo para o xis.',
     done: () => prologueFlagSet('queijo'),
     after: ['Pão, carne, ovo, queijo e salada: o xis tá completo!', 'O que não dá na roça tu compra no Armazém Geral: cerveja, refri, cachaça, cigarro e amendoim.', 'E leva vidros: os ovinhos das codornas viram conserva na mesa de compota da cozinha.'] },
   { id: 'compras', title: 'Compras no Armazém Geral', places: ['atacado'], target: { map: 'atacado', spot: 'item:caixa' },
-    text: () => 'Bebida e cigarro não dão na roça. No <b>Armazém Geral</b>, no caixa, compre ' + [['cerveja', 'cerveja'], ['refri', 'refrigerante'], ['cigarro', 'cigarro']].map(([k, t]) => (G.stock[k] + bagQty(k) > 0 ? '✔ ' : '') + '<b>' + t + '</b>').join(', ') + ' e ' + (bagQty('vidro') > 0 ? '✔ ' : '') + '<b>vidros de conserva</b>.',
+    text: () => 'Bebida e cigarro não dão na roça. O <b>Armazém Geral</b> fica descendo a estrada, à esquerda do Armazém Querência' + (naRua() ? ' (siga a seta)' : ': saia pela porta da bodega') + '. No caixa, compre ' + [['cerveja', 'cerveja'], ['refri', 'refrigerante'], ['cigarro', 'cigarro']].map(([k, t]) => (G.stock[k] + bagQty(k) > 0 ? '✔ ' : '') + '<b>' + t + '</b>').join(', ') + ' e ' + (bagQty('vidro') > 0 ? '✔ ' : '') + '<b>vidros de conserva</b>.',
     done: () => ['cerveja', 'refri', 'cigarro'].every(k => G.stock[k] + bagQty(k) > 0) && (bagQty('vidro') > 0 || prologueFlagSet('compota')),
     after: ['Prateleira quase cheia! Falta a conserva de codorna, que freguês de balcão adora.', 'Na cozinha da bodega tem a mesa de compota: seis ovinhos e um vidro viram três potes.'] },
   { id: 'compota', title: 'Conserva na mesa de compota', places: [], target: { kitchen: 'conservas' },
-    text: () => 'Volte para a <b>bodega</b>. Na <b>mesa de compota</b> da cozinha, faça a conserva de ovos de codorna: 6 ovinhos e 1 vidro viram 3 potes.',
+    text: () => praBodega() + 'Na <b>mesa de compota</b> da cozinha, aperte <span class="keycap">E</span> e faça a conserva de ovos de codorna: 6 ovinhos e 1 vidro viram 3 potes.',
     done: () => prologueFlagSet('compota'),
     after: ['Agora sim: prateleira cheia, vivente!', 'Dá uma limpada nas mesas e abre a bodega no caixa, ali no balcão de atendimento.', 'E amanhã cedo, antes de abrir, cuida da horta e do curral: o que tu planta e cria vira o que tu vende. Boa sorte, guri!'], end: true }
 ];
@@ -316,8 +318,12 @@ function worldGuidePoint() {
   if (prologueActive()) goal = prologueStep().target;
   else if (waiting) goal = { map: 'cancha', spot: 'waiting' };
   else if (tutorialActive() && G.phase === 'prep') goal = { kitchen: true };
-  // Fora dos tutoriais não tem seta: só a primeira missão (o trago, que ensina a comprar na Ferragem) ainda é guiada.
-  else { const ch = activeChapter(); if (ch?.id === 'trago' && ch.guide && !upgradeOwned('trago')) return routeGuide(ch.guide); }
+  // Depois dos tutoriais, a seta segue a história até o capítulo 4 (chapterGuide); daí em diante, o jogador anda sozinho.
+  else {
+    const g = chapterGuide(); if (!g) return null;
+    if (g.cave && inCave()) { const run = caveFloorRun(); if (run.floor < BAIA_FLOOR) return run.ladder?.shown ? { x: run.ladder.x, y: run.ladder.y - 70 } : null; const s = run.floor === BAIA_FLOOR && baiaCaveSpot(run); return s ? { x: s.x, y: s.y - 70 } : null; }
+    return routeGuide(g);
+  }
   if (!goal) return null;
   if (goal.kitchen) return map === 'vila' ? guideSpot('door') : null;
   if (map === goal.map) {
@@ -330,11 +336,22 @@ function worldGuidePoint() {
   }
   return map === 'vila' && WORLD_ENTRANCES[goal.map] ? guideSpot(WORLD_ENTRANCES[goal.map]) : null;
 }
+// A seta da história, do capítulo 1 ao 4: a Ferragem (trago), o fim da estrada da Serra (mata do Garibaldi), a porta da
+// bodega de manhã (três noites), a casa do Mano Lima e a gruta da Serra (lá dentro, a escada e a Baia).
+function chapterGuide() {
+  if (typeof baiaCalling === 'function' && baiaCalling()) return { region: 'vila', spot: 'house:manolima' };
+  const ch = activeChapter(); if (!ch) return null;
+  if (ch.id === 'trago') return upgradeOwned('trago') ? null : ch.guide;
+  if (ch.id === 'fantasma') return G.mata?.metGaribaldi ? null : { region: 'serra', point: () => ({ x: SERRA.W - 90, y: SERRA.roadY + 45 }) };
+  if (ch.id === 'abertura') return G.phase === 'prep' ? { region: 'vila', spot: 'door' } : null;
+  if (ch.id === 'baia') { const s = baiaStage(); return s === 'return' ? { region: 'vila', spot: 'house:manolima' } : ['search', 'trail'].includes(s) ? { region: 'serra', spot: 'caverna', cave: true } : null; }
+  return null;
+}
 // Caminho até o objetivo do capítulo: dentro do lugar, o ponto exato; na região, a porta; noutra região, a estrada.
 function routeGuide(g) {
   const map = worldOut.map;
   if (g.inside && map === g.inside) return g.insideSpot ? guideSpot(g.insideSpot) : null;
-  if (map === g.region) return guideSpot(g.spot);
+  if (map === g.region) { if (g.point) { const p = g.point(); return { x: p.x, y: p.y - 70 }; } return guideSpot(g.spot); }
   const exits = { vila: { serra: [VILA.W - 90, VILA.roadY + 45], sc: [VILA.W - 90, VILA.roadY + 45] }, serra: { vila: [80, SERRA.roadY + 45], sc: [SERRA.roadX + 40, 150] }, sc: { vila: [SC.roadX + 40, SC.H - 90], serra: [SC.roadX + 40, SC.H - 90] } };
   const e = exits[map]?.[g.region]; return e ? { x: e[0], y: e[1] - 70 } : null;
 }

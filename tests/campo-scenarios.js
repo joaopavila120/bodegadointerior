@@ -62,7 +62,8 @@
   // clientes do campo
   check(['costela','maionese','refri'].includes(campoOrder())&&!spawnGroup(),'no campo só chegam fregueses ao balcão: costela, maionese ou refri');
   // tutorial do primeiro costelão
-  reset();G.day=3;G.event={id:'costelao',seen:true,fired:{}};G.phase='prep';G.stock.costela_crua=0;resetCampoDay();openDay();
+  reset();G.day=3;G.event={id:'costelao',seen:true,fired:{}};G.phase='prep';G.stock.costela_crua=0;resetCampoDay();G.lassoTaught=false;openDay();
+  check(modal==='costelaoMeat'&&G.phase==='prep','primeiro costelão: sem a primeira laçada, o caixa manda laçar o boi');closeDialog(true);G.lassoTaught=true;openDay();
   check(modal==='costelao'&&costelaoTutorialActive()&&G.stock.costela_crua>=2,'primeiro costelão abre com tutorial e mantas de treino');closeDialog(true);
   simulate(1);check(!G.shop.length,'no tutorial ninguém chega antes da hora');check(modal==='costelaoStep'&&$('dialogTitle').textContent.includes('Rache a lenha'),'a primeira etapa do costelão para o jogo e mostra a orientação');closeDialog(true);
   check(costelaoStep().id==='rachar'&&!fireLit()&&campoState().fuel===0,'o costelão começa com o fogo apagado: rachar lenha');

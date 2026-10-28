@@ -12,6 +12,8 @@ function nextBanner(){
  const host=$('banner'),b=bannerQueue.shift();
  if(!host||!b){bannerTimer=null;host?.classList.add('hidden');return;}
  host.className='banner banner-'+b.kind;host.innerHTML=`<b>${escapeHTML(b.title)}</b>${b.subtitle?'<small>'+escapeHTML(b.subtitle)+'</small>':''}`;
+ // Com o quadro do passo a passo no alto, o aviso desce pra baixo dele (antes ficava escondido atrás).
+ const hint=$('tutorialHint'),hr=hint?.textContent.trim()&&hint.offsetParent?hint.getBoundingClientRect():null,pr=host.parentElement?.getBoundingClientRect();host.style.top=hr&&pr?Math.round(hr.bottom-pr.top+10)+'px':'';
  bannerTimer=setTimeout(()=>{host.classList.add('hidden');bannerTimer=setTimeout(nextBanner,350);},3600);
 }
 

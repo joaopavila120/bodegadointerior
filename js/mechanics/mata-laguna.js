@@ -246,7 +246,7 @@ function mariathTick(b, dt, N, p) {
     if (b.fogo <= 0) { b.state = 'fogo'; b.t = .9; b.fogo = angry ? 8 : 11; sceneShout('Fogo!', b.x, b.y - 190, '#ffb090', 22); AudioEngine.caveVoice?.([300, 420], .4, { formant: 900, vol: .05 }); const ys = [p.y], pool = [500, 590, 680, 770, 820].filter(y => Math.abs(y - p.y) > 110); while (ys.length < 3 && pool.length) ys.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); navioFx.lanes = ys.map(y => ({ y, t: 1.4 })); return; }
     if (b.board <= 0 && N.beasts.filter(x => x.minion && x.hp > 0).length < 2) { b.state = 'abordagem'; b.t = .9; b.board = 17; sceneShout('Abordagem!', b.x, b.y - 190, '#ffb090', 20); return; }
     if (angry && b.fire <= 0) { b.state = 'incendio'; b.t = .8; b.fire = 10; sceneShout('Bala incendiária!', b.x, b.y - 190, '#ffb090', 18); return; }
-    b.state = 'windup'; b.t = angry ? .45 : .6; b.vx = dxp / d; b.vy = dyp / d; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.swoosh?.(.03);
+    b.state = 'windup'; b.t = b.t0 = angry ? .45 : .6; b.vx = dxp / d; b.vy = dyp / d; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.swoosh?.(.03);
   } else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'lunge'; b.t = .32; AudioEngine.swoosh?.(.09); } }
   else if (b.state === 'lunge') {
     b.frame += dt * 10;
@@ -411,10 +411,10 @@ function drawMarinheiro(b) {
   mataHpBar(b, 'Marinheiro', 175);
 }
 function drawNavioWarnings(N) {
-  for (const l of navioFx.lanes) { if (l.boom) { ctx.fillStyle = `rgba(255,200,120,${l.boom})`; ctx.fillRect(220, l.y - 46, 1760, 92); continue; } const k = 1 - Math.max(0, l.t) / 1.4; ctx.fillStyle = `rgba(255,60,30,${.12 + .22 * k})`; ctx.fillRect(220, l.y - 46, 1760, 92); ctx.strokeStyle = `rgba(255,90,50,${.5 + .4 * k})`; ctx.lineWidth = 2; ctx.strokeRect(220, l.y - 46, 1760, 92); }
+  for (const l of navioFx.lanes) teleBand(220, l.y, 1760, 92, l.boom ? 1 : teleK(l.t, 1.4), l.boom ? '255,220,160' : '255,70,40', l.boom ? Math.min(1, l.boom * 2) : 1);
   const b = navioBoss(N); if (!b) return;
-  if (b.state === 'windup') { ctx.strokeStyle = 'rgba(140,255,200,.9)'; ctx.lineWidth = 4; ctx.setLineDash([12, 8]); ctx.beginPath(); ctx.moveTo(b.x, b.y - 30); ctx.lineTo(b.x + b.vx * 300, b.y - 30 + b.vy * 300); ctx.stroke(); ctx.setLineDash([]); }
-  if (b.state === 'cutwind') { const k = 1 - Math.max(0, b.t) / .42, a = Math.atan2(b.vy, b.vx); ctx.fillStyle = `rgba(255,70,30,${.15 + .25 * k})`; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 175, a - 1.2, a + 1.2); ctx.closePath(); ctx.fill(); }
+  if (b.state === 'windup') teleLane(b.x, b.y, Math.atan2(b.vy, b.vx), 300, 54, teleK(b.t, b.t0 || .6), '140,255,200');
+  if (b.state === 'cutwind') teleCone(b.x, b.y, Math.atan2(b.vy, b.vx), 175, 1.2, teleK(b.t, .42));
 }
 function navioTop() {
   const N = mataNight; if (!N || scene) return;

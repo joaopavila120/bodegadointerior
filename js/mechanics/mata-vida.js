@@ -255,7 +255,7 @@ function mataNoticeMul() { return typeof mataFolk === 'function' && mataFolk('ku
 function mataOncaHidden(b) { return b.kind === 'onca' && Math.hypot(worldOut.x - b.x, worldOut.y - b.y) > 260 && b.state !== 'lunge'; }
 function drawMataNightLayers(layers, seen) {
   const N = mataNight; if (!N) return;
-  for (const b of N.beasts) if (b.hp > 0 && seen(b.x, b.y, 200)) layers.push({ y: b.y, draw: () => { ctx.save(); if (mataOncaHidden(b)) ctx.globalAlpha = .18; const shake = b.state === 'windup' ? Math.sin(frameClock * 60) * 3 : 0; b.x += shake; try { drawCaveBeast(b); } finally { b.x -= shake; } ctx.restore(); } });
+  for (const b of N.beasts) if (b.hp > 0 && seen(b.x, b.y, 200)) layers.push({ y: b.y, draw: () => { ctx.save(); if (mataOncaHidden(b)) ctx.globalAlpha = .18; const shake = b.state === 'windup' ? windupLean(b, teleK(b.t, .45), 8, 1.5) : 0; b.x += shake; try { drawCaveBeast(b); } finally { b.x -= shake; } ctx.restore(); } });
   for (const dr of N.drops) layers.push({ y: dr.y - 30, draw: () => { const bob = Math.sin(frameClock * 4 + dr.x) * 3; ellipse(dr.x, dr.y - 8 + bob, 9, 9, '#e8c040'); ellipse(dr.x, dr.y - 8 + bob, 5, 5, '#c89a20'); } });
   if (N.swing) layers.push({ y: worldOut.y + 1, draw: () => { const s = N.swing, p = worldOut, k = 1 - s.t / .2, a0 = s.ang - 1.2 + k * 2.4; ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(${caveSwingColor()},${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(0, 0, 78, s.ang - 1.2, a0); ctx.stroke(); ctx.restore(); } });
 }

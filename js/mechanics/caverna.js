@@ -428,7 +428,7 @@ function drawCaveRock(r) {
 }
 function drawCaveBeast(b) {
   ctx.save(); if (b.hurt > 0) ctx.filter = 'brightness(2.4)';
-  const shake = b.state === 'windup' ? Math.sin(frameClock * 60) * 3 : 0;
+  const shake = b.state === 'windup' ? windupLean(b, teleK(b.t, b.kind === 'mula' ? .45 : .6), 8, 1.5) : 0;
   if (b.kind === 'javali') drawJavali(b.x + shake, b.y, b.dx, Math.floor(b.frame) % 2, 1.2);
   else if (b.kind === 'lobisomem') drawLobisomem(b.x, b.y, b.dx, .8);
   else { ctx.translate(b.x + shake, b.y); ctx.scale(.8, .8); if (b.kind === 'sanguanel') drawSanguanel(0, 0, b.dx); else if (b.kind === 'boitata') drawBoitata(0, 0); else drawMula(0, 0, b.dx); }

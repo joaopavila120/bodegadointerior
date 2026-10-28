@@ -53,12 +53,12 @@ function cachacoTick(b, dt, T, N, p) {
     if (d < 190) { b.state = 'presa'; b.t = .5; b.vx = (p.x - b.x) / d; b.vy = (p.y - b.y) / d; AudioEngine.caveSnort?.(); return; }
     if (b.summon <= 0 && !N.beasts.some(x => x.minion && x.hp > 0)) { b.state = 'ronco'; b.t = 1; b.summon = angry ? 11 : 15; AudioEngine.caveGrowl?.(.8, .1); return; }
     if (Math.random() < .3) { b.state = 'fuca'; b.t = .9; return; }
-    b.state = 'windup'; b.t = angry ? .5 : .75; b.vx = (p.x - b.x) / d; b.vy = (p.y - b.y) / d; b.dx = b.vx < 0 ? -1 : 1; b.chain = angry ? 1 : 0; AudioEngine.caveSnort?.();
+    b.state = 'windup'; b.t = b.t0 = angry ? .5 : .75; b.vx = (p.x - b.x) / d; b.vy = (p.y - b.y) / d; b.dx = b.vx < 0 ? -1 : 1; b.chain = angry ? 1 : 0; AudioEngine.caveSnort?.();
   } else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'charge'; b.t = 1.1; for (let k = 0; k < 3; k++) setTimeout(() => AudioEngine.thud?.(), k * 140); } }
   else if (b.state === 'charge') {
     b.frame += dt * 8;
     if (!mataStep(b, b.vx * 560, b.vy * 560, dt)) { b.state = 'dazed'; b.t = 2.4; effect('Bateu no tronco!', b.x, b.y - 190, '#ffe28a', 18); AudioEngine.caveCrumble?.(); fxStars(b.x, b.y - 140, 6); fxPuffs(b.x, b.y - 40, 10, 120, '#6a5232'); }
-    else if (b.t <= 0) { if (b.chain > 0) { b.chain--; b.state = 'windup'; b.t = .4; const k = Math.hypot(p.x - b.x, p.y - b.y) || 1; b.vx = (p.x - b.x) / k; b.vy = (p.y - b.y) / k; b.dx = b.vx < 0 ? -1 : 1; } else { b.state = 'idle'; b.t = 1.1; } }
+    else if (b.t <= 0) { if (b.chain > 0) { b.chain--; b.state = 'windup'; b.t = b.t0 = .4; const k = Math.hypot(p.x - b.x, p.y - b.y) || 1; b.vx = (p.x - b.x) / k; b.vy = (p.y - b.y) / k; b.dx = b.vx < 0 ? -1 : 1; } else { b.state = 'idle'; b.t = 1.1; } }
     if (Math.hypot(p.x - b.x, p.y - b.y) < B.r + 34) { mataHurt(B.dmg, b); b.attack = .3; }
   } else if (b.state === 'presa') {
     if (b.t <= 0) { b.state = 'idle'; b.t = 1; AudioEngine.swoosh?.(.08); const dx = p.x - b.x, dy = p.y - b.y; if (Math.hypot(dx, dy) < 190 && dx * b.vx + dy * b.vy > 0) { mataHurt(18, b); const k = Math.hypot(dx, dy) || 1; mataStep(worldOut, dx / k * 90, dy / k * 90, 1); } }
@@ -84,7 +84,7 @@ function papoTick(b, dt, T, N, p) {
     if (d < 170) { b.state = 'tailwind'; b.t = .55; AudioEngine.hiss?.(.5, .06, 900); return; }
     if (angry && b.chiado <= 0) { b.state = 'chiado'; b.t = .7; b.chiado = 9; AudioEngine.hiss?.(.8, .08, 700); return; }
     if (Math.random() < .3) { b.state = 'dig'; b.t = .6; AudioEngine.noise?.(.5, .06, 500); return; }
-    b.state = 'windup'; b.t = angry ? .4 : .5; b.vx = dxp / d; b.vy = dyp / d; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.hiss?.(.3, .05, 2000);
+    b.state = 'windup'; b.t = b.t0 = angry ? .4 : .5; b.vx = dxp / d; b.vy = dyp / d; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.hiss?.(.3, .05, 2000);
   } else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'lunge'; b.t = .38; } }
   else if (b.state === 'lunge') {
     b.frame += dt * 18;
@@ -132,7 +132,7 @@ function mataTintFrame(index, height, color) {
   return { ...f, image: c };
 }
 function drawCachaco(b) {
-  const tired = b.state === 'dazed', step = b.state === 'charge' || b.attack > 0 ? 3 : tired || b.state === 'fuca' ? 1 : Math.floor(b.frame) % 3, f = mataTintFrame(step, 170, '#9a8c7c'), shake = b.state === 'windup' || b.state === 'presa' ? Math.sin(frameClock * 60) * 3 : 0;
+  const tired = b.state === 'dazed', step = b.state === 'charge' || b.attack > 0 ? 3 : tired || b.state === 'fuca' ? 1 : Math.floor(b.frame) % 3, f = mataTintFrame(step, 170, '#9a8c7c'), shake = b.state === 'windup' ? windupLean(b, teleK(b.t, b.t0 || .75), 12) : b.state === 'presa' ? windupLean(b, teleK(b.t, .5), 6) : 0;
   ellipse(b.x, b.y + 2, 74, 17, 'rgba(10,14,8,.45)');
   ctx.save(); ctx.translate(b.x + shake, b.y + (b.state === 'fuca' ? 6 : 0)); if (b.dx < 0) ctx.scale(-1, 1);
   if (f) {
@@ -154,11 +154,11 @@ function drawPapo(b) {
 }
 function drawBossWarnings(N) {
   const b = trechoBoss(N); if (!b) return;
-  if (b.kind === 'cachaco' && b.state === 'windup') { const k = 1 - Math.max(0, b.t) / .75; ctx.save(); ctx.translate(b.x, b.y - 10); ctx.rotate(Math.atan2(b.vy, b.vx)); ctx.fillStyle = `rgba(255,60,30,${.12 + .2 * k})`; ctx.fillRect(0, -60, 680, 120); ctx.strokeStyle = `rgba(255,90,50,${.5 + .4 * k})`; ctx.lineWidth = 2; ctx.strokeRect(0, -60, 680, 120); ctx.restore(); }
-  if (b.kind === 'cachaco' && b.state === 'presa') { const k = 1 - Math.max(0, b.t) / .5, a = Math.atan2(b.vy, b.vx); ctx.fillStyle = `rgba(255,70,30,${.15 + .25 * k})`; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 190, a - 1.2, a + 1.2); ctx.closePath(); ctx.fill(); }
-  if (b.kind === 'papo' && b.state === 'windup') { ctx.strokeStyle = 'rgba(255,120,40,.85)'; ctx.lineWidth = 4; ctx.setLineDash([12, 8]); ctx.beginPath(); ctx.moveTo(b.x, b.y - 20); ctx.lineTo(b.x + b.vx * 260, b.y - 20 + b.vy * 260); ctx.stroke(); ctx.setLineDash([]); }
-  if (b.kind === 'papo' && b.state === 'tailwind') { const k = 1 - Math.max(0, b.t) / .55; ellipse(b.x, b.y, 210 * k, 210 * k * .5, `rgba(255,190,40,${.12 + .2 * k})`); ctx.strokeStyle = 'rgba(255,200,60,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.x, b.y, 210, 105, 0, 0, Math.PI * 2); ctx.stroke(); }
-  if (b.kind === 'papo' && b.state === 'emergewarn') { const k = 1 - Math.max(0, b.t) / .8; ellipse(b.tx, b.ty, 95, 40, `rgba(230,50,36,${.2 + .3 * k})`); ctx.strokeStyle = 'rgba(255,70,40,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.tx, b.ty, 95, 40, 0, 0, Math.PI * 2); ctx.stroke(); }
+  if (b.kind === 'cachaco' && b.state === 'windup') teleLane(b.x, b.y - 10, Math.atan2(b.vy, b.vx), 680, 120, teleK(b.t, b.t0 || .75));
+  if (b.kind === 'cachaco' && b.state === 'presa') teleCone(b.x, b.y, Math.atan2(b.vy, b.vx), 190, 1.2, teleK(b.t, .5));
+  if (b.kind === 'papo' && b.state === 'windup') teleLane(b.x, b.y, Math.atan2(b.vy, b.vx), 260, 56, teleK(b.t, b.t0 || .5), '255,140,40');
+  if (b.kind === 'papo' && b.state === 'tailwind') teleArea(b.x, b.y, 210, 105, teleK(b.t, .55), '255,190,50');
+  if (b.kind === 'papo' && b.state === 'emergewarn') teleArea(b.tx, b.ty, 95, 40, teleK(b.t, .8));
   if (N.wave) { ctx.strokeStyle = 'rgba(255,230,120,.8)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(N.wave.x, N.wave.y + 20, N.wave.r, N.wave.r * .8, 0, 0, Math.PI * 2); ctx.stroke(); }
 }
 function drawBossHUD(N) {

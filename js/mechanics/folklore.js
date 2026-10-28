@@ -161,7 +161,7 @@ function folkResult(id, win) {
     if (id === 'boitata') G.boitataBless = G.day + 1;
   } else if (id === 'sanguanel') { const lost = Math.min(10, Math.max(0, Math.floor(G.cash))); if (lost) spendCash(lost); }
   grantReward(rw); save(); refreshHUD();
-  talk([['card', (win ? FOLK_WIN : FOLK_LOSE)[id] + (win && st[id].wins === 1 ? '<br><br><i>A lembrança vai para a estante da bodega.</i>' : ''), FOLK[id].name], ['reward', rw, FOLK[id].name]], null, 'Seguir');
+  talk([['card', (win ? FOLK_WIN : FOLK_LOSE)[id] + (win && st[id].wins === 1 ? '<br><br><i>A lembrança vai para a estante da tua casa.</i>' : ''), FOLK[id].name], ['reward', rw, FOLK[id].name]], null, 'Seguir');
 }
 
 // ---------- Ligações ----------

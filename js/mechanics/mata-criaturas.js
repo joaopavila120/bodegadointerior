@@ -147,10 +147,9 @@ function drawJararaca(b, cascavel = false) {
 // Por cima do escuro: o alvo do bote e a faixa do estouro das queixadas.
 function drawMataWarnings() {
   const N = mataNight; if (!N || !mataCombatOn() || scene) return;
-  for (const b of N.beasts) if (b.hp > 0 && (b.kind === 'jararaca' || b.kind === 'cascavel') && b.state === 'warn') { const k = .5 + .5 * Math.sin(frameClock * 18); ellipse(b.tx, b.ty, 46, 18, `rgba(230,50,36,${.2 + .15 * k})`); ctx.strokeStyle = `rgba(255,70,40,${.7 + .3 * k})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.tx, b.ty, 46, 18, 0, 0, Math.PI * 2); ctx.stroke(); }
+  for (const b of N.beasts) if (b.hp > 0 && (b.kind === 'jararaca' || b.kind === 'cascavel') && b.state === 'warn') teleArea(b.tx, b.ty, 46, 18, teleK(b.t, .75));
   for (const h of N.herds || []) if (h.state === 'gather') {
-    const k = 1 - Math.max(0, h.t) / .75; ctx.save(); ctx.translate(h.cx, h.cy - 10); ctx.rotate(Math.atan2(h.vy, h.vx));
-    ctx.fillStyle = `rgba(255,60,30,${.1 + .18 * k})`; ctx.fillRect(0, -70, 640, 140); ctx.strokeStyle = `rgba(255,90,50,${.5 + .4 * k})`; ctx.lineWidth = 2; ctx.strokeRect(0, -70, 640, 140); ctx.restore();
+    teleLane(h.cx, h.cy - 10, Math.atan2(h.vy, h.vx), 640, 140, teleK(h.t, .75));
   }
 }
 

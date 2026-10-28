@@ -205,12 +205,12 @@ function drawMataShots(N) {
 // Os avisos no chão: o enrolar da coral, a rabada do teiú e o eriçar do ouriço.
 function drawMataBichoWarnings(N) {
   for (const b of N.beasts) {
-    if (b.hp <= 0) continue; const k = .5 + .5 * Math.sin(frameClock * 18);
-    if (b.kind === 'coral' && b.state === 'coil') { ellipse(b.tx, b.ty, 40, 16, `rgba(230,50,36,${.2 + .15 * k})`); ctx.strokeStyle = `rgba(255,70,40,${.7 + .3 * k})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.tx, b.ty, 40, 16, 0, 0, Math.PI * 2); ctx.stroke(); }
-    if (b.kind === 'teiu' && b.state === 'tailwind') { const t = 1 - Math.max(0, b.t) / .5; ellipse(b.x, b.y, MATA_BICHO.teiuRabo * t, MATA_BICHO.teiuRabo * t / 1.2 * .6, `rgba(255,190,40,${.12 + .18 * t})`); ctx.strokeStyle = 'rgba(255,200,60,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.x, b.y, MATA_BICHO.teiuRabo, MATA_BICHO.teiuRabo / 1.2 * .6, 0, 0, Math.PI * 2); ctx.stroke(); }
-    if (b.kind === 'teiu' && b.state === 'windup') { ctx.strokeStyle = 'rgba(255,120,40,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(b.x, b.y - 14); ctx.lineTo(b.x + b.vx * 130, b.y - 14 + b.vy * 130); ctx.stroke(); }
-    if (b.kind === 'ourico' && b.state === 'bristle') { const t = 1 - Math.max(0, b.t) / .7; ctx.strokeStyle = `rgba(255,220,120,${.4 + .5 * t})`; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.ellipse(b.x, b.y - 10, 90 + t * 60, (90 + t * 60) * .55, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
-    if (b.kind === 'corposeco' && b.state === 'reach') { ellipse(b.x + b.dx * 40, b.y, 50, 20, `rgba(150,230,120,${.15 + .15 * k})`); }
+    if (b.hp <= 0) continue;
+    if (b.kind === 'coral' && b.state === 'coil') teleArea(b.tx, b.ty, 40, 16, teleK(b.t, .45));
+    if (b.kind === 'teiu' && b.state === 'tailwind') teleArea(b.x, b.y, MATA_BICHO.teiuRabo, MATA_BICHO.teiuRabo / 1.2 * .6, teleK(b.t, .5), '255,190,50');
+    if (b.kind === 'teiu' && b.state === 'windup') teleLane(b.x, b.y, Math.atan2(b.vy, b.vx), 130, 30, teleK(b.t, .35), '255,140,40');
+    if (b.kind === 'ourico' && b.state === 'bristle') teleArea(b.x, b.y - 10, 150, 82, teleK(b.t, .7), '255,220,120');
+    if (b.kind === 'corposeco' && b.state === 'reach') teleArea(b.x + b.dx * 40, b.y, 50, 20, teleK(b.t, .6), '150,230,120');
   }
 }
 

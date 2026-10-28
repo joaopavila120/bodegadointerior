@@ -111,7 +111,7 @@ function diaboTick(b, dt, run, p) {
     if (b.t <= 0) {
       const minions = run.beasts.filter(x => x !== b && x.hp > 0).length;
       if (b.summon <= 0 && minions < 2) { b.summon = 18; diaboSummon(run, b, phase); b.t = 1.2; }
-      else if (Math.random() < .6) { b.state = 'windup'; b.t = phase === 1 ? .75 : .55; b.vx = dxp / dist; b.vy = dyp / dist; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.caveGrowl(.4, .09); }
+      else if (Math.random() < .6) { b.state = 'windup'; b.t = b.t0 = phase === 1 ? .75 : .55; b.vx = dxp / dist; b.vy = dyp / dist; b.dx = b.vx < 0 ? -1 : 1; AudioEngine.caveGrowl(.4, .09); }
       else { diaboRain(run, p, phase); b.t = 2.2; }
     }
   } else if (b.state === 'windup') { if (b.t <= 0) { b.state = 'charge'; b.t = 1.1; b.trail = 0; AudioEngine.caveFireball(); } }
@@ -206,7 +206,7 @@ function drawDiaboSprite(x, y, dx, step, o = {}) {
 function diaboHidden(b) { const run = caveFloorRun(); return diaboPhase(b) >= 2 && !run.torch && Math.hypot(worldOut.x - b.x, worldOut.y - b.y) > 170; }
 function drawDiabo(b) {
   if (scene || diaboHidden(b)) return;
-  const shake = b.state === 'windup' || b.state === 'stomp' ? Math.sin(frameClock * 60) * 4 : 0;
+  const shake = b.state === 'windup' ? windupLean(b, teleK(b.t, b.t0 || .75), 14, 2.5) : b.state === 'stomp' ? windupLean(b, teleK(b.t, .6), 0, 3) : 0;
   const step = b.state === 'charge' || b.state === 'stomp' || b.attack > 0 ? 3 : b.state === 'dazed' || b.stun > 0 ? 1 : Math.floor(b.frame) % 3;
   drawDiaboSprite(b.x + shake, b.y, b.dx, step, { hurt: b.hurt > 0 });
   if (b.stun > 0 || b.state === 'dazed') { const h = diaboHead(b); for (let k = 0; k < 3; k++) { const a = frameClock * 6 + k * 2.1; txt('✦', h.x + Math.cos(a) * 34, h.y - 50 + Math.sin(a) * 8, 15, '#ffd75e'); } }
@@ -240,10 +240,10 @@ function drawSalamancaHazards(run) {
   const b = salamancaBoss(run);
   if (b) {
     drawDiaboEyes(b);
-    if (b.state === 'windup') { const k = 1 - Math.max(0, b.t) / .75; ctx.save(); ctx.translate(b.x, b.y - 10); ctx.rotate(Math.atan2(b.vy, b.vx)); ctx.fillStyle = `rgba(255,60,30,${.12 + .2 * k})`; ctx.fillRect(0, -34, 520, 68); ctx.strokeStyle = `rgba(255,90,50,${.5 + .4 * k})`; ctx.lineWidth = 2; ctx.strokeRect(0, -34, 520, 68); ctx.restore(); }
-    if (b.state === 'stomp') { const k = 1 - Math.max(0, b.t) / .6; ellipse(b.x, b.y, DIABO.stompR * k, DIABO.stompR * .45 * k, `rgba(255,70,30,${.25 + .2 * k})`); ctx.strokeStyle = 'rgba(255,90,50,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(b.x, b.y, DIABO.stompR, DIABO.stompR * .45, 0, 0, Math.PI * 2); ctx.stroke(); }
+    if (b.state === 'windup') teleLane(b.x, b.y - 10, Math.atan2(b.vy, b.vx), 520, 68, teleK(b.t, b.t0 || .75), '255,80,30');
+    if (b.state === 'stomp') teleArea(b.x, b.y, DIABO.stompR, DIABO.stompR * .45, teleK(b.t, .6), '255,80,30');
   }
-  for (const s of run.brasas) { const pulse = .5 + .5 * Math.sin(frameClock * 18); ellipse(s.x, s.y, 46, 18, `rgba(230,50,36,${.2 + .15 * pulse})`); ctx.strokeStyle = `rgba(255,70,40,${.7 + .3 * pulse})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(s.x, s.y, 46, 18, 0, 0, Math.PI * 2); ctx.stroke(); }
+  for (const s of run.brasas) teleArea(s.x, s.y, 46, 18, teleK(s.t, 1.1), '255,80,30');
   const r = run.rope;
   if (r && r.t > 0) { const p = worldOut, n = r.target ? diaboNeck(r.target) : r, tx = r.snap ? (p.x + n.x) / 2 : n.x, ty = r.snap ? (p.y - 70 + n.y) / 2 : n.y; ctx.strokeStyle = '#c8a060'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(p.x + 12, p.y - 70); ctx.quadraticCurveTo((p.x + tx) / 2, Math.min(p.y, ty) - 60, tx, ty); ctx.stroke(); }
 }

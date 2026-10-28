@@ -149,7 +149,7 @@ function drawMataWarnings() {
   const N = mataNight; if (!N || !mataCombatOn() || scene) return;
   for (const b of N.beasts) if (b.hp > 0 && (b.kind === 'jararaca' || b.kind === 'cascavel') && b.state === 'warn') teleArea(b.tx, b.ty, 46, 18, teleK(b.t, .75));
   for (const h of N.herds || []) if (h.state === 'gather') {
-    teleLane(h.cx, h.cy - 10, Math.atan2(h.vy, h.vx), 640, 140, teleK(h.t, .75));
+    teleLane(h.cx, h.cy - 10, Math.atan2(h.vy, h.vx), 640, 140, teleK(h.t, .75), '255,90,50', .5);
   }
 }
 

@@ -20,7 +20,7 @@
       personDraw(0,550,700,moving,true,dx,false,0,dy);
       check(s.sheet===(moving?(count?'tray':'walk'):'idle'),'Pose completa: '+moving+'/'+dx+','+dy+'/'+count);
       check(JSON.stringify(G)===state&&ctx.getTransform().toString()===matrix,'Desenho preserva estado e canvas');
-      if(count){const carry=playerCarryPose(550,700);check(carry.spriteTray&&carry.back===(moving&&dy===-1),'Camada correta da bandeja, frontal em repouso');
+      if(count){const carry=playerCarryPose(550,700);check(carry.spriteTray&&carry.back===(dy===-1),'Camada correta da bandeja, virada pra onde andava também em repouso');
         const item=playerItemAnchor(0);check(Number.isFinite(item.x+item.y)&&Math.abs(item.x-550)<75&&item.y<680&&item.y>600,'Produto acompanha a bandeja');}
     }
     characterFrame=oldFrame;carryArm=oldArm;

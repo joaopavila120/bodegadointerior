@@ -21,9 +21,10 @@ function teleTexture(kind, rgb) {
 // Quanto do aviso já passou (0 a 1), pelo tempo que falta e o tempo total do aviso.
 function teleK(t, total) { return clamp(1 - Math.max(0, t) / total, 0, 1); }
 function teleLight(rgb) { return 'rgb(' + rgb.split(',').map(v => (+v + 510) / 3 | 0).join(',') + ')'; }
-// Investida: faixa com ponta de flecha; a carga enche da fera até a ponta e as setas correm pra frente.
-function teleLane(x, y, ang, len, w, k, rgb = '255,70,40') {
-  const c = teleTexture('lane', rgb), show = Math.min(1, k * 5), s = Math.min(w * .22, 24);
+// Investida: faixa com ponta de flecha; a carga enche da fera até a ponta e as setas correm pra frente. fade < 1 deixa
+// tudo mais apagado (a manada de queixadas, que é larga e vem toda junta).
+function teleLane(x, y, ang, len, w, k, rgb = '255,70,40', fade = 1) {
+  const c = teleTexture('lane', rgb), show = Math.min(1, k * 5) * fade, s = Math.min(w * .22, 24);
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   ctx.globalAlpha = show * (.45 + .3 * k); ctx.drawImage(c, 0, -w / 2, len, w);
   if (k > .02) { ctx.globalAlpha = show * .6; ctx.drawImage(c, 0, 0, c.width * k, c.height, 0, -w / 2, len * k, w); }

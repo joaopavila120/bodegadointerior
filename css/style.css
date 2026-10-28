@@ -373,6 +373,11 @@ body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .ban
 #hudLayer .cave-dash:disabled{opacity:.65;cursor:default}
 #hudLayer .cave-lasso{bottom:156px;border-color:#e0a050}
 body.intro-playing #hudLayer .sling-button{display:none}
+#hudLayer .ranged-box{position:absolute;right:14px;bottom:104px;display:flex;gap:6px;align-items:center}
+#hudLayer .ranged-box.in-cave{bottom:208px}
+#hudLayer .ranged-box .sling-button{position:static;border-color:#c8a86a}
+#hudLayer .ranged-box .ranged-swap{padding:9px 12px}
+#hudLayer .ranged-box.hidden,#hudLayer .ranged-box .hidden,body.intro-playing #hudLayer .ranged-box{display:none}
 #hudLayer .cave-lasso:disabled{opacity:.65;cursor:default}
 .diabo-portrait{display:contents}.diabo-portrait>*{filter:sepia(1) saturate(6) hue-rotate(-28deg) brightness(.9)}
 .forja-encanto{display:contents}.forja-encanto>*{filter:drop-shadow(0 0 6px #a070ff) drop-shadow(0 0 2px #e0c8ff)}

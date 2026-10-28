@@ -4,7 +4,7 @@
 
 const HERO_SLIDES = ['hero-bodega', 'mata', 'lenda-mula', 'navio', 'mundo-serra'];
 const SHOWCASE = [
-  { img: ['lenda-boitata', 'caverna-diabo'], size: 'big', tag: 'Chefões', title: 'As lendas viram chefões', text: 'Boitatá, Lobisomem, Mula sem Cabeça, Teiniaguá, Anhangá e Sanguanel na clareira e, no fundo da caverna, o Anhangá-Pitã, o Diabo Vermelho da Salamanca do Jarau: cada um é uma luta própria, de facão na mão.' },
+  { img: 'caverna-diabo', size: 'big', tag: 'Chefões', title: 'As lendas viram chefões', text: 'Boitatá, Lobisomem, Mula sem Cabeça, Teiniaguá, Anhangá e Sanguanel na clareira e, no fundo da caverna, o Anhangá-Pitã, o Diabo Vermelho da Salamanca do Jarau: cada um é uma luta própria, de facão na mão.' },
   { img: 'mata', size: 'wide', tag: 'Aventura', title: 'A Mata de Araucárias', text: 'Do refúgio do Garibaldi, desça pinheiral, encosta e restinga até a barra de Laguna, com acampamentos, baús e bichos cada vez mais brabos.' },
   { img: 'navio', title: 'Abordagem ao navio imperial', text: 'Embarque no Seival com Garibaldi e Anita e enfrente o fantasma do capitão Mariath no convés.' },
   { img: 'caverna', title: 'A caverna da Serra', text: 'Andares no escuro, bichos brabos e a ferraria de São Dunstano pra afiar o facão.' },

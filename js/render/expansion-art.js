@@ -73,14 +73,15 @@ function secondaryPose(sprite, x, y, walking, dx, dy) {
   }
   return expansionSprite(pose.key, pose.start + direction * pose.steps + step, x, y, 124, direction === 1 && dx < 0, pose.height);
 }
-function mountedPose(key, x, y, dx, dy, moving) {
-  const direction = moving ? walkDirection(dx, dy) : 0, phase = moving ? Math.floor(frameClock * 7) % 4 : 1;
+// Parado, o cavaleiro fica de frente; o Sadi (keep) fica virado pra onde andava.
+function mountedPose(key, x, y, dx, dy, moving, keep = false) {
+  const direction = moving || keep ? walkDirection(dx, dy) : 0, phase = moving ? Math.floor(frameClock * 7) % 4 : 1;
   ellipse(x, y, direction === 1 ? 60 : 29, 12, '#271c1755');
   return expansionSprite(key, direction * 4 + phase, x, y, 195, direction === 1 && dx < 0, expansionRowHeight(key, 0, 12));
 }
 function drawExpansionPerson(sprite, x, y, walking, chef, dx, seated, mood, dy) {
   if (seated) return false;
-  if (chef && typeof playerMounted === 'function' && playerMounted()) return mountedPose('sadi-mounted-v1', x, y, dx, dy, walking);
+  if (chef && typeof playerMounted === 'function' && playerMounted()) return mountedPose('sadi-mounted-v1', x, y, dx, dy, walking, true);
   if (chef && inCave() && (sprite === 0 || walkCharacterId(sprite) === 'sadi')) {
     const run = caveFloorRun(), direction = walkDirection(dx, dy);
     if (run.hurt > 0 || run.swing) {

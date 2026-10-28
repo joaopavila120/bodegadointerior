@@ -10,7 +10,8 @@ function sadiPosesReady(){return ['walk','tray','idle'].every(k=>SADI_POSE_ART[k
 function sadiPoseSpec(x,y,forceCarry=null,facing=null){
   if(!sadiPosesReady())return null;
   const p=worldOut||G.player,pose=playerWalkPose(x,y),moving=pose.stride>.15;
-  const carrying=forceCarry??playerCarrying(),dir=facing||p,direction=moving?walkDirection(dir.dx,dir.dy):0;
+  // Parado, fica virado pra onde andava (de lado, de costas ou de frente); nas cenas, de frente pra câmera.
+  const carrying=forceCarry??playerCarrying(),dir=facing||p,direction=moving||!scene?walkDirection(dir.dx,dir.dy):0;
   const sheet=moving?(carrying?'tray':'walk'):'idle';
   const index=moving?walkPoseFrame('sadi',direction,pose.sidePhase):direction+(carrying?3:0);
   const crop=SADI_POSE_CROPS[sheet][index],height=(worldOut&&!worldMap().indoor?124:130)*sadiScale();

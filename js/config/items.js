@@ -26,7 +26,7 @@ const UPGRADES=[
  {id:'mateLendario',level:5,name:'Mate Lendário',cost:800,rep:80,requires:'mateTopetudo',desc:'Impulso de +85% durante 35 segundos.'},
  {id:'cigarro_py',level:3,name:'Cigarro do Paraguai',cost:240,rep:67,desc:'Melhora os maços da prateleira: cada venda passa de R$ 12 para R$ 18.'},
  {id:'table4',level:4,name:'Quarta mesa',cost:480,rep:74,desc:'Mais quatro lugares para o restaurante. Participa do carteado durante campeonatos.'},
- {id:'bodoque',name:'Bodoque',cost:80,rep:0,desc:'Forquilha de goiabeira com borracha de câmara. No campo, segure F (ou o botão) e solte quando o círculo sobre o quero-quero ficar verde: ele leva um susto e vai embora.'},
+ {id:'bodoque',name:'Bodoque',cost:80,rep:0,desc:'Forquilha de goiabeira com borracha de câmara. No campo, segure F (ou o botão) e solte quando o círculo sobre o quero-quero ficar verde: ele leva um susto e vai embora. Na mata e na caverna, R atira pedra nos bichos (de longe, mas fraquinha).'},
  {id:'placaFiado',name:'Placa “Fiado só amanhã”',cost:110,rep:0,desc:'Pendurada ao lado do balcão: bem menos fregueses pedem fiado (de 18% para 4%). Quem já tem conta continua pagando normalmente.'},
  {id:'tray',name:'Bandeja de dois lugares',cost:140,rep:60,desc:'Carregue dois itens. Selecione o espaço com 1 e 2.'},
  {id:'pepino',goods:'pepino',shop:'conserva',name:'Conserva de pepino',cost:45,rep:62,desc:'Libera a venda e inclui 4 potes para começar.'},

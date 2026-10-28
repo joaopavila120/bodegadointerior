@@ -625,7 +625,30 @@
    rangedSwap();check(rangedWeapon()==='bodoque','X troca pro bodoque');const before=b.hp;shot();check(before-b.hp>0&&before-b.hp<hit38&&rangedBalas()===0,'a pedrada do bodoque fere menos que o 38 e não gasta bala');
    worldOut.dx=-1;const hp=b.hp;shot();check(b.hp===hp,'atirando pro outro lado, não acerta');worldOut.dx=1;
    {const rnd=Math.random;Math.random=()=>.05;const loot=caveChestLoot({cash:1});Math.random=rnd;check(loot.balas>0&&rangedBalas()===loot.balas&&caveLootTiles(loot).some(t=>/balas/.test(t[2])),'baú com bala de 38');}
-   {const n=rangedBalas(),rnd=Math.random;Math.random=()=>.01;b.hp=1;shot();Math.random=rnd;const d=ranged.drops[0];check(b.hp<=0&&d,'bicho derrubado às vezes deixa bala no chão');Object.assign(worldOut,{x:d.x,y:d.y});simulate(1/30);check(rangedBalas()===n+d.q&&!ranged.drops.length,'o Sadi junta a bala do chão');}
+   {const n=rangedBalas(),rnd=Math.random;Math.random=()=>.01;b.hp=1;shot();Math.random=rnd;const d=ranged.drops[0];check(b.hp<=0&&d,'bicho derrubado às vezes deixa bala no chão');check(!sparks.some(e=>/derrubad/.test(e.text||'')),'sem a mensagem de bicho derrubado');Object.assign(worldOut,{x:d.x,y:d.y});simulate(1/30);check(rangedBalas()===n+d.q&&!ranged.drops.length,'o Sadi junta a bala do chão');}
+   {const heard=[],keep={},S=['morcego','goteiraEco','pedrasLonge','rochaRange','grilo','coruja','urutau','uivo','galho','folhas','sussurro'];for(const k of S){keep[k]=AudioEngine[k];AudioEngine[k]=function(){heard.push(k);};}
+    SOMBRIO.clocks={};AudioEngine.ambience(999);const gruta=heard.splice(0);const trecho=inTrecho;inTrecho=()=>true;SOMBRIO.clocks={};AudioEngine.ambience(999);inTrecho=trecho;for(const k of S)AudioEngine[k]=keep[k];
+    check(['morcego','goteiraEco','pedrasLonge','rochaRange'].every(k=>gruta.includes(k))&&!gruta.includes('coruja'),'na gruta: morcego, goteira com eco, pedra rolando e a rocha rangendo');
+    check(['coruja','urutau','uivo','galho','folhas','sussurro','grilo'].every(k=>heard.includes(k)),'na mata adentro: coruja, urutau, uivo, galho, folhas, sussurro e grilo');}
+   caveLeave();worldOut=null;G.phase='prep';}
+  // ---------- poderes: como se ganha cada um, e o que cada um faz na briga ----------
+  {G.poderes={has:{}};const lagWon=lagunaState().won;lagunaState().won=0;G.cave={facao:true,floor:3,deepest:3,hp:100,vo:true,up:{}};G.phase='prep';worldOut=null;goOutside();check(!poderList().length,'começa sem poder');
+   worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});check(!poderHas('benzedura'),'sem tombo, o padre só proseia');closeDialog(true);skipWorldTalk?.();poderState().caiu=1;worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});talkAll();check(poderHas('benzedura'),'depois de um tombo, o Padre Romio benze o Sadi');closeDialog(true);
+   mataState().plant={7:{day:1},8:{day:1}};simulate(1/30);check(!poderHas('gralhas'),'com duas clareiras replantadas, a gralha ainda não vem');
+   mataState().plant[9]={day:1};simulate(1/30);talkAll();check(poderHas('gralhas'),'três clareiras replantadas: a gralha traz o bando');
+   lagunaState().won=lagWon||1;simulate(1/30);talkAll();check(poderHas('grito'),'vencido o navio em Laguna, o Garibaldi ensina o grito farroupilha');
+   campFolkTalk(CAMP_FOLKS[21]);talkAll();const cruz=poderState().cruz;check(cruz&&cruz.n>21&&!poderHas('lunar'),'o Sepé pede a cruz missioneira');
+   {const T={n:cruz.n,clearings:[{id:'coleta1',x:500,y:500,rx:200,ry:150}],trails:[{pts:[[0,0],[100,100]]}]};check(poderCruzSpot(T)&&!poderCruzSpot({...T,n:cruz.n+1}),'a cruz fica no trecho que ele disse');}
+   poderCruzPega();talkAll();campFolkTalk(CAMP_FOLKS[21]);talkAll();check(poderHas('lunar'),'com a cruz de volta, o Sepé ensina o lunar');
+   switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(3);closeDialog(true);
+   const run=caveFloorRun(),b=run.beasts[0];for(const o of run.beasts.slice(1))o.hp=0;b.hp=b.max=999;b.state='rest';b.t=99;b.cool=99;
+   const aim=[200,160,120].map(d=>({x:b.x-d,y:b.y})).find(q=>caveFree(q.x,q.y,26));Object.assign(worldOut,aim,{dx:1,dy:0});
+   const use=id=>{poderState().pick=id;poder.cd={};poderUse();},hold=()=>{b.state='rest';b.t=99;};
+   use('lunar');check(b.lunar>0&&poder.cd.lunar>0,'lunar do Sepé: o bicho fica tonto');{const bx=b.x,by=b.y;b.state='chase';b.t=0;for(let i=0;i<10;i++)simulate(1/30);check(b.x===bx&&b.y===by,'tonto, o bicho não se mexe');}b.lunar=0;hold();
+   use('benzedura');{const hp=caveState().hp;run.inv=0;caveHurt(20,b);check(caveState().hp===hp&&!poder.escudo,'benzedura: o escudo segura um golpe inteiro');run.inv=0;caveHurt(5,b);check(caveState().hp<hp,'o golpe seguinte já pega');caveState().hp=100;run.inv=0;}
+   {const h=b.hp;use('grito');check(!!poder.ally,'grito farroupilha: o fantasma do Garibaldi aparece');for(let i=0;i<90;i++){simulate(1/30);hold();}check(b.hp<h,'o Garibaldi peleia junto');}
+   {const h=b.hp;use('gralhas');check(poder.gralhas.length===5,'o bando de gralhas chega');for(let i=0;i<150;i++){simulate(1/30);hold();}check(b.hp<h,'as gralhas bicam o bicho');}
+   {poderState().pick='lunar';poder.cd={lunar:5};b.lunar=0;poderUse();check(!(b.lunar>0)&&poder.cd.lunar===5,'poder usado espera a volta');}
    caveLeave();worldOut=null;G.phase='prep';}
   {goOutside();G.up.bodoque=false;delete G.mataSeen;garibaldiIntro();check(G.up.bodoque&&/bodoque/.test($('dialogContent').textContent+(talkState?.lines||[]).map(l=>l[1]).join(' ')),'o Garibaldi dá o bodoque e explica como usar');closeDialog(true);goInside();}
   {goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);keys.clear();const dir=(dx,dy)=>{Object.assign(worldOut,{dx,dy,walk:false});return sadiPoseSpec(worldOut.x,worldOut.y)?.direction;};

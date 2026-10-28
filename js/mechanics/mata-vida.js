@@ -223,7 +223,7 @@ function mataBeastTick(b, dt, p) {
 }
 function mataKill(b) {
   // Bicho da mata não deixa dinheiro.
-  const B = CAVE_BEASTS[b.kind]; fxPuffs(b.x, b.y - 30, 12, 140, b.kind === 'onca' ? '#8a6a40' : '#5a4a3a'); effect(B.name + ' derrubado!', b.x, b.y - 110, '#d8ffac', 18);
+  fxPuffs(b.x, b.y - 30, 12, 140, b.kind === 'onca' ? '#8a6a40' : '#5a4a3a');
   AudioEngine.caveCry?.(b.kind, true); G.stats.mataKills = (G.stats.mataKills || 0) + 1; gainXP?.(b.kind === 'onca' ? 6 : 3);
 }
 function mataAttack() {

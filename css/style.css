@@ -375,6 +375,9 @@ body.intro-playing .hud,body.intro-playing .game-sidebar,body.intro-playing .ban
 body.intro-playing #hudLayer .sling-button{display:none}
 #hudLayer .ranged-box{position:absolute;right:14px;bottom:104px;display:flex;gap:6px;align-items:center}
 #hudLayer .ranged-box.in-cave{bottom:208px}
+#hudLayer .ranged-box.poder-box{bottom:156px}
+#hudLayer .ranged-box.poder-box.in-cave{bottom:260px}
+#hudLayer .poder-box .cooling{opacity:.7}
 #hudLayer .ranged-box .sling-button{position:static;border-color:#c8a86a}
 #hudLayer .ranged-box .ranged-swap{padding:9px 12px}
 #hudLayer .ranged-box.hidden,#hudLayer .ranged-box .hidden,body.intro-playing #hudLayer .ranged-box{display:none}

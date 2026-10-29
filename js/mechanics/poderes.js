@@ -215,6 +215,12 @@ function updatePoderButton() {
     const k = e.key.toLowerCase(); if (k !== 'v' && k !== 'g') return; e.preventDefault(); e.stopImmediatePropagation(); if (k === 'v') poderUse(); else poderSwap();
   }, true);
   document.addEventListener('DOMContentLoaded', () => { $('hudLayer')?.insertAdjacentHTML('beforeend', '<div id="poderBox" class="ranged-box poder-box hidden"><button id="poderSwap" class="sling-button ranged-swap hidden" type="button" data-act="poderSwap" aria-label="Trocar poder">⇄</button><button id="poderButton" class="sling-button" type="button" data-act="poderUse"></button></div>'); });
+  // Os botões da peleia (facão, esquiva, laço, arma de longe e poder) ficam numa pilha só, no canto de baixo: um em cima
+  // do outro com folga, seja qual for a altura de cada um (antes cada um tinha uma altura fixa e eles se encavalavam).
+  document.addEventListener('DOMContentLoaded', () => {
+    const hud = $('hudLayer'); if (!hud) return; const stack = document.createElement('div'); stack.id = 'combatStack'; stack.className = 'combat-stack'; hud.appendChild(stack);
+    for (const id of ['mataAttackButton', 'caveAttackButton', 'caveDashButton', 'caveLassoButton', 'rangedBox', 'poderBox']) { const el = $(id); if (el) stack.appendChild(el); }
+  });
   const act = action; action = function (name, id) { if (name === 'poderUse') { poderUse(); return; } if (name === 'poderSwap') { poderSwap(); return; } return act(name, id); };
   // Fala da gralha fora das cenas: com o retrato dela.
   const box = showRpgBox; showRpgBox = function (prefix, line) { if (line && line.name === 'gralha' && !line.portrait) line = { ...line, portrait: gralhaPortrait(), name: 'Gralha-azul' }; return box(prefix, line); };

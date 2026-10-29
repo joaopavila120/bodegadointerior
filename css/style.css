@@ -381,6 +381,10 @@ body.intro-playing #hudLayer .sling-button{display:none}
 #hudLayer .ranged-box .sling-button{position:static;border-color:#c8a86a}
 #hudLayer .ranged-box .ranged-swap{padding:9px 12px}
 #hudLayer .ranged-box.hidden,#hudLayer .ranged-box .hidden,body.intro-playing #hudLayer .ranged-box{display:none}
+#hudLayer .combat-stack{position:absolute;right:14px;bottom:52px;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:8px;pointer-events:none}
+#hudLayer .combat-stack>*{position:static;pointer-events:auto}
+#hudLayer .combat-stack>.hidden{display:none}
+@media(max-width:750px){#hudLayer .combat-stack{bottom:130px}}
 #hudLayer .cave-lasso:disabled{opacity:.65;cursor:default}
 .diabo-portrait{display:contents}.diabo-portrait>*{filter:sepia(1) saturate(6) hue-rotate(-28deg) brightness(.9)}
 .forja-encanto{display:contents}.forja-encanto>*{filter:drop-shadow(0 0 6px #a070ff) drop-shadow(0 0 2px #e0c8ff)}

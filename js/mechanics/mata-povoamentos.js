@@ -133,20 +133,33 @@ function settlementResidents() {
   }
   return settlementPeople;
 }
+// Pra onde o morador olha: o lado só vira pra cima/baixo (e vice-versa) quando a picada muda de rumo de verdade.
+// Antes a pose trocava a cada pontinho da trilha e ficava piscando.
+function settlementFace(p,dx,dy) {
+  const ax=Math.abs(dx),ay=Math.abs(dy),side=Math.abs(p.dx)>Math.abs(p.dy);
+  if(side?ay>ax*1.4:ax>ay*1.4){p.dx=side?0:Math.sign(dx);p.dy=side?Math.sign(dy):0;}
+  else if(side&&ax>.5)p.dx=Math.sign(dx);
+  else if(!side&&ay>.5)p.dy=Math.sign(dy);
+}
 function settlementPeopleTick(dt) {
   if(worldOut?.map!=='mata')return;
   for(const p of settlementResidents()){
-    p.walk=false;
-    if(paused||modal||scene||worldTalkOpen()||Math.hypot(p.x-worldOut.x,p.y-worldOut.y)<135)continue;
-    if(p.wait>0){p.wait=Math.max(0,p.wait-dt);continue;}
-    const q=p.route[p.target],dx=q[0]-p.x,dy=q[1]-p.y,d=Math.hypot(dx,dy),step=Math.min(d,dt*(p.id==='jasy'?75:66));
-    if(d<1){
-      p.target+=p.dir;
-      if(p.target>=p.route.length||p.target<0){p.dir*=-1;p.target+=p.dir*2;p.wait=4+(p.id.length%4);}
-      continue;
+    if(paused||modal||scene||worldTalkOpen()||Math.hypot(p.x-worldOut.x,p.y-worldOut.y)<135){p.walk=false;continue;}
+    if(p.wait>0){p.wait=Math.max(0,p.wait-dt);p.walk=false;continue;}
+    // O passo do quadro passa de um ponto da trilha pro próximo sem parar (nada de um quadro "parado" em cada ponto).
+    let step=dt*(p.id==='jasy'?75:66),moved=false;
+    for(let n=0;n<8&&step>0;n++){
+      const q=p.route[p.target],dx=q[0]-p.x,dy=q[1]-p.y,d=Math.hypot(dx,dy);
+      if(d<=step){
+        if(d>0){settlementFace(p,dx,dy);p.x=q[0];p.y=q[1];moved=true;}step-=d;p.target+=p.dir;
+        if(p.target>=p.route.length||p.target<0){p.dir*=-1;p.target+=p.dir*2;p.wait=4+(p.id.length%4);break;}
+        continue;
+      }
+      const x=p.x+dx/d*step,y=p.y+dy/d*step;
+      if(WORLD_MAPS.mata.canWalk(x,y)){p.x=x;p.y=y;settlementFace(p,dx,dy);moved=true;}else p.target=Math.max(0,Math.min(p.route.length-1,p.target+p.dir));
+      break;
     }
-    const x=p.x+dx/d*step,y=p.y+dy/d*step;
-    if(WORLD_MAPS.mata.canWalk(x,y)){p.x=x;p.y=y;p.dx=dx/d;p.dy=dy/d;p.walk=true;}
+    p.walk=moved;
   }
 }
 

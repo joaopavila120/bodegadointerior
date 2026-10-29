@@ -631,6 +631,14 @@
     check(['morcego','goteiraEco','pedrasLonge','rochaRange'].every(k=>gruta.includes(k))&&!gruta.includes('coruja'),'na gruta: morcego, goteira com eco, pedra rolando e a rocha rangendo');
     check(['coruja','urutau','uivo','galho','folhas','sussurro','grilo'].every(k=>heard.includes(k)),'na mata adentro: coruja, urutau, uivo, galho, folhas, sussurro e grilo');}
    caveLeave();worldOut=null;G.phase='prep';}
+  // ---------- andar sem piscar: a Baia atrás do Mano Lima, o cusco atrás do Sadi e os moradores da mata ----------
+  {const keepW=baiaWalker,w={person:manolimaIndex(),x:600,y:900,dx:1,dy:0,walk:true};baiaWalker=()=>w;baia.with=null;let flips=0,toggles=0,last=null;
+   for(let i=0;i<600;i++){const a=i/60*.8;w.x+=Math.cos(a);w.y+=Math.sin(a*1.7);w.dx=Math.cos(a);baiaTick(1/60);if(last&&i>30){if(Math.sign(baia.dx)!==Math.sign(last.dx))flips++;if(baia.walk!==last.walk)toggles++;}last={dx:baia.dx,walk:baia.walk};}
+   baiaWalker=keepW;baia.with=null;check(toggles<=2&&flips<=4,'a Baia segue o Mano Lima sem piscar entre andar e parar ('+toggles+' trocas, '+flips+' viradas)');}
+  {const keepF=JSON.stringify(mataState().folks),keepWO=worldOut;for(const f of CAMP_FOLK_LIST)mataState().folks[f.id]??=1;worldOut={map:'mata',x:100,y:985,dx:1,dy:0};
+   const ppl=settlementResidents();let stutter=0,turns=0;
+   for(let i=0;i<1200;i++){const before=ppl.map(p=>[p.walk,walkDirection(p.dx,p.dy)]);settlementPeopleTick(1/60);ppl.forEach((p,k)=>{if(before[k][0]&&!p.walk&&!(p.wait>0))stutter++;if(before[k][1]!==walkDirection(p.dx,p.dy))turns++;});}
+   mataState().folks=JSON.parse(keepF);worldOut=keepWO;check(ppl.length===6&&stutter===0&&turns<ppl.length*14,'os moradores da mata andam sem parar a cada ponto da trilha nem virar à toa ('+turns+' viradas em 20 s)');}
   // ---------- começo do jogo: textos do prólogo, quadro dos capítulos e a seta da história até o capítulo 4 ----------
   {const keepM=JSON.stringify(G.missions),keepB=JSON.stringify(G.baiaArc||null),keepT=G.tutorial.complete,keepP=G.phase,keepG=mataState().metGaribaldi;
    goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);check(/seta/.test(PROLOGUE_STEPS[0].text())&&/Volte para a/.test(PROLOGUE_STEPS.find(s=>s.id==='pao').text()),'na rua, o passo do prólogo manda seguir a seta');
@@ -664,6 +672,8 @@
    {const h=b.hp;use('grito');check(!!poder.ally,'grito farroupilha: o fantasma do Garibaldi aparece');for(let i=0;i<90;i++){simulate(1/30);hold();}check(b.hp<h,'o Garibaldi peleia junto');}
    {const h=b.hp;use('gralhas');check(poder.gralhas.length===5,'o bando de gralhas chega');for(let i=0;i<150;i++){simulate(1/30);hold();}check(b.hp<h,'as gralhas bicam o bicho');}
    {poderState().pick='lunar';poder.cd={lunar:5};b.lunar=0;poderUse();check(!(b.lunar>0)&&poder.cd.lunar===5,'poder usado espera a volta');}
+   {updateRangedButton();updatePoderButton();const r=['caveAttackButton','caveDashButton','rangedBox','poderBox'].map(id=>$(id)).filter(e=>e&&!e.classList.contains('hidden')).map(e=>e.getBoundingClientRect());
+    check($('poderBox').parentElement.id==='combatStack'&&r.length>=3&&r.every((a,i)=>r.every((c,j)=>i===j||a.bottom<=c.top||c.bottom<=a.top||a.right<=c.left||c.right<=a.left)),'facão, arma de longe e poder ficam empilhados sem se encavalar');}
    caveLeave();worldOut=null;G.phase='prep';}
   {goOutside();G.up.bodoque=false;delete G.mataSeen;garibaldiIntro();check(G.up.bodoque&&/bodoque/.test($('dialogContent').textContent+(talkState?.lines||[]).map(l=>l[1]).join(' ')),'o Garibaldi dá o bodoque e explica como usar');closeDialog(true);goInside();}
   {goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);keys.clear();const dir=(dx,dy)=>{Object.assign(worldOut,{dx,dy,walk:false});return sadiPoseSpec(worldOut.x,worldOut.y)?.direction;};

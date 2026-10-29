@@ -87,14 +87,18 @@ function drawCasinha() {
 // ---------- Seguir o Sadi ----------
 function cuscoTick(dt) {
   if (!cuscoOut()) { cusco.map = null; return; }
-  const p = worldOut, back = { x: p.x - (p.dx || 1) * 64, y: p.y + 14 };
+  // O lado de trás do Sadi só troca quando ele vira de verdade (não a cada passo na diagonal).
+  const p = worldOut; if (Math.abs(p.dx || 0) > .4) cusco.side = p.dx < 0 ? -1 : 1;
+  const back = { x: p.x - (cusco.side || 1) * 64, y: p.y + 14 };
   // Trocou de mapa ou ficou muito longe: aparece do lado do Sadi.
   if (cusco.map !== p.map || Math.hypot(cusco.x - p.x, cusco.y - p.y) > 700) Object.assign(cusco, { x: back.x, y: back.y, map: p.map, stuck: 0 });
-  const d = Math.hypot(back.x - cusco.x, back.y - cusco.y), speed = BASE_SPEED * 1.5 * (1 + movementBonus()) * (d > 160 ? 1.25 : 1);
-  cusco.walk = d > 18;
+  // Velocidade que cresce com a distância e liga/desliga com folga: ele vai no passo do Sadi em vez de parar e arrancar
+  // a cada instante (o que fazia a pose trocar entre andar e parar sem parar).
+  const d = Math.hypot(back.x - cusco.x, back.y - cusco.y), speed = Math.min(BASE_SPEED * 1.5 * (1 + movementBonus()) * (d > 160 ? 1.25 : 1), d * 5);
+  cusco.walk = cusco.walk ? speed > 15 : d > 26;
   if (cusco.walk) {
     const k = Math.min(d, speed * dt), nx = cusco.x + (back.x - cusco.x) / d * k, ny = cusco.y + (back.y - cusco.y) / d * k;
-    if (Math.abs(back.x - cusco.x) > 4) cusco.dx = back.x < cusco.x ? -1 : 1;
+    if (Math.abs(back.x - cusco.x) > d * .35) cusco.dx = back.x < cusco.x ? -1 : 1;
     const before = { x: cusco.x, y: cusco.y };
     if (worldCanWalk(nx, cusco.y)) cusco.x = nx; if (worldCanWalk(cusco.x, ny)) cusco.y = ny;
     // Preso atrás de uma parede: depois de um instante, pula pro lado do Sadi.
@@ -172,10 +176,14 @@ function manolimaOut() { const i = manolimaIndex(); return i >= 0 && walkingToda
 function baiaAtHome() { return manolimaIndex() >= 0 && !baiaAway() && !(baiaWalksToday() && manolimaOut()); }
 function baiaTick(dt) {
   const w = baiaWalker(); if (!w) { baia.with = null; return; }
-  const to = { x: w.x - (w.dx || 1) * 56, y: w.y + 12 }, d = Math.hypot(to.x - baia.x, to.y - baia.y);
-  if (baia.with !== w || d > 320) { Object.assign(baia, { x: to.x, y: to.y, with: w }); return; }
-  baia.walk = d > 14; if (!baia.walk) { baia.dx = w.dx || baia.dx; return; }
-  const k = Math.min(d, 210 * dt); if (Math.abs(to.x - baia.x) > 3) baia.dx = to.x < baia.x ? -1 : 1; baia.x += (to.x - baia.x) / d * k; baia.y += (to.y - baia.y) / d * k;
+  // Atrás do Mano Lima, do lado de onde ele vem; o lado só troca quando ele vira de verdade.
+  if (Math.abs(w.dx || 0) > .4) baia.side = w.dx < 0 ? -1 : 1;
+  const side = baia.side || 1, to = { x: w.x - side * 56, y: w.y + 12 }, d = Math.hypot(to.x - baia.x, to.y - baia.y);
+  if (baia.with !== w || d > 320) { Object.assign(baia, { x: to.x, y: to.y, with: w, walk: false, dx: side }); return; }
+  // No passo dele: velocidade que cresce com a distância e liga/desliga com folga, sem ficar trocando de pose.
+  const speed = Math.min(230, d * 4); baia.walk = baia.walk ? speed > 12 : d > 24;
+  if (!baia.walk) { if (!w.walk) baia.dx = side; return; }
+  const k = Math.min(d, speed * dt), vx = (to.x - baia.x) / d; if (Math.abs(vx) > .35) baia.dx = vx < 0 ? -1 : 1; baia.x += vx * k; baia.y += (to.y - baia.y) / d * k;
 }
 function baiaLayers(M, seen, layers) { const w = baiaWalker(); if (w && baia.with === w && seen(baia.x, baia.y)) layers.push({ y: baia.y, draw: () => drawCusco(baia.x, baia.y, baia.dx, baia.walk, false, false, BAIA.colors) }); }
 function baiaPet() {

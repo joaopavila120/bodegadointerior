@@ -127,8 +127,8 @@ const AudioEngine={ctx:null,master:null,on:true,music:true,tracks:null,stepClock
   const fuel=campo&&!G.lasso&&campoState().lit?(campoState().fuel??0)/100:0,fire=fuel>0?this.near(525,510,900):0;
   this.loop('fire',fuel>0?(.05+.09*fuel)*fire:0,{buffer:'brown',type:'lowpass',freq:420});
   this.fireClock-=dt;if(fuel>0&&this.fireClock<=0){this.fireClock=(Math.random()*.22+.03)/(.4+fuel);const big=Math.random()<.12;this.pop(big?1100+Math.random()*600:1800+Math.random()*3200,(big?.12:.04+Math.random()*.06)*fire,big?.06:.018);}
-  // Bois mugindo no campo e na laçada.
-  this.mooClock-=dt;if(campo&&this.mooClock<=0){this.mooClock=G.lasso?2.5+Math.random()*3.5:7+Math.random()*9;this.moo(G.lasso?.06+Math.random()*.04:.025+Math.random()*.03,.82+Math.random()*.36);}
+  // Bois mugindo no campo e na laçada (lá fora no mapa e na caçada de javali, não).
+  this.mooClock-=dt;if(campo&&!worldOut&&G.lasso?.mode!=='javali'&&this.mooClock<=0){this.mooClock=G.lasso?2.5+Math.random()*3.5:7+Math.random()*9;this.moo(G.lasso?.06+Math.random()*.04:.025+Math.random()*.03,.82+Math.random()*.36);}
   this.bus=null;
  },
  update(dt){this.syncMusic();const quiet=G.penalties||G.bocce||!this.on||!started||paused||modal||document.hidden;if(this.ctx){if(quiet)this.silence();else this.ambience(dt);}if(G.penalties||G.bocce)return;if(!this.on||!started||paused||modal||document.hidden)return;this.stepClock+=dt;this.hissClock+=dt;if(G.player.walk&&this.stepClock>(G.boost>0?.14:.19)){this.stepClock=0;this.note(G.boost>0?125:95,.04,'triangle',.025);if(G.boost>0)G.visual.push({x:G.player.x,y:G.player.y,dx:0,dy:5,life:.4,total:.4,type:'leaf'});}if(this.hissClock>.6){this.hissClock=0;if(G.event.id==='chuva'&&G.phase==='open'){this.bus=this.ambientBus;this.noise(.5,.025,1900);this.bus=null;}}}

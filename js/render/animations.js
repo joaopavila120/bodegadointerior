@@ -12,12 +12,16 @@ let playerAnimation = null;
 function playerAnimationState() {
   // Na laçada o Sadi anda no campo (G.player), mesmo com o mapa do curral aberto por baixo.
   const lasso = !!G?.lasso, actor = lasso ? G.player : worldOut || G.player, place = lasso ? 'laco' : worldOut ? worldOut.map : G.room;
-  if (!playerAnimation || playerAnimation.game !== G || playerAnimation.actor !== actor || playerAnimation.place !== place || playerAnimation.day !== G.day || frameClock < playerAnimation.clock) {
-    playerAnimation = { game: G, actor, place, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, sidePhase: 0, stride: 0, transfers: [] };
+  // Nas cenas o Sadi é refeito a cada quadro (o G.player do galpão, o worldOut da câmera no mapa): o passo segue a cena
+  // inteira, senão zerava sempre e ele deslizava em vez de caminhar.
+  const owner = scene || actor, where = scene ? 'cena' : place;
+  if (!playerAnimation || playerAnimation.game !== G || playerAnimation.actor !== owner || playerAnimation.place !== where || playerAnimation.day !== G.day || frameClock < playerAnimation.clock) {
+    playerAnimation = { game: G, actor: owner, place: where, day: G.day, clock: frameClock, x: actor.x, y: actor.y, phase: 0, sidePhase: 0, stride: 0, transfers: [] };
   }
   const a = playerAnimation;
-  // Entrar em outra sala/teletransportar não produz um passo enorme ou itens voadores.
-  if (Math.hypot(actor.x - a.x, actor.y - a.y) > 100) {
+  // Entrar em outra sala/teletransportar não produz um passo enorme ou itens voadores. Nas cenas no mapa o worldOut é
+  // o ponto da câmera, não o Sadi (e um pulo grande já não conta como passo em playerWalkPose).
+  if (!scene && Math.hypot(actor.x - a.x, actor.y - a.y) > 100) {
     a.x = actor.x; a.y = actor.y; a.stride = 0; a.sidePhase = 0; a.transfers.length = 0;
   }
   for (let i = a.transfers.length - 1; i >= 0; i--) if (frameClock - a.transfers[i].start >= a.transfers[i].duration) a.transfers.splice(i, 1);

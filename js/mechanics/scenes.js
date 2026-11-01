@@ -158,7 +158,7 @@ function sceneTick(dt) {
 // ---------- Desenho ----------
 function drawSceneActors(list = []) {
   const s = scene;
-  for (const [id, a] of Object.entries(s.actors)) list.push({ y: a.y, draw: () => id === 'sadi' ? personDraw(avatarSprite(), a.x, a.y, a.walk, true, a.dx) : personDraw(PEOPLE[PEOPLE.findIndex(p => p.id === id)].sprite, a.x, a.y, a.walk, false, a.dx) });
+  for (const [id, a] of Object.entries(s.actors)) list.push({ y: a.y, draw: () => id === 'sadi' ? personDraw(avatarSprite(), a.x, a.y, a.walk, true, a.dx, false, 0, a.dy || 0) : personDraw(PEOPLE[PEOPLE.findIndex(p => p.id === id)].sprite, a.x, a.y, a.walk, false, a.dx) });
   list.sort((a, b) => a.y - b.y).forEach(l => l.draw());
 }
 // Galpão abandonado: chão vazio, poeira no ar, luz pela janela, teias e a caixa velha.

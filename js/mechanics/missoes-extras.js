@@ -12,6 +12,7 @@
 const SINO_NEEDS = { cobre: 6, ferro: 4 };
 function sinoForged() { return !!G.missions?.sino?.forged; }
 function sinoBells(delay = 0) {
+  if (AudioEngine.som?.('sino', .32, 1, delay)) return;
   for (let k = 0; k < 3; k++) { const f = [523, 659, 523][k], t = delay + k * .9; AudioEngine.note(f, 1.5, 'sine', .06, t); AudioEngine.note(f * 2.01, 1.1, 'sine', .025, t); AudioEngine.note(f * 2.98, .7, 'sine', .012, t); }
 }
 // Capítulo 7 (no lugar do antigo queijo pra nona).

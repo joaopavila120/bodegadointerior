@@ -135,7 +135,7 @@ function startHunt(i) {
   const boar = { id: 0, x: 980, y: 640, dx: -1, dy: 0, state: 'free', mode: 'roam', t: 1.6, speed: 40, rope: 0, javali: true };
   G.lasso = { mode: 'javali', boarIndex: i, bois: [boar], caught: 0, need: 1, charge: 0, charging: false, throw: null, saved: { ...G.player }, fx: 1, fy: 0, time: 0, queros: [], hits: 0 };
   G.player = { x: 260, y: 700, dx: 1, dy: 0, walk: false };
-  $('lassoUI').classList.remove('hidden'); updateLassoUI(); AudioEngine.moo(.08, .55);
+  $('lassoUI').classList.remove('hidden'); updateLassoUI(); AudioEngine.caveCry('javali');
   if (!G.taught?.javali) { G.taught ??= {}; G.taught.javali = true; showBanner('Caçada de javali', 'Segure Q e solte com o círculo sobre o javali (' + JAVALI_HITS + ' laços). Alvo vermelho no chão: ele vai investir, saia ou aperte Espaço.', 'info'); }
   save();
 }
@@ -152,7 +152,7 @@ function boarTick(L, b, dt) {
   if (b.mode === 'rest') { if (b.t <= 0) { b.mode = 'roam'; b.t = .8 + Math.random() * 1.2; } return; }
   b.x = clamp(b.x + b.dx * b.speed * dt, 80, 1320); b.y = clamp(b.y + (b.dy || 0) * b.speed * dt, 470, 860);
   if (b.t <= 0) {
-    if (Math.hypot(p.x - b.x, p.y - b.y) < 560) { b.mode = 'warn'; b.t = .85; b.tx = clamp(p.x, 70, 1330); b.ty = clamp(p.y, 460, 870); AudioEngine.moo(.07, .5); }
+    if (Math.hypot(p.x - b.x, p.y - b.y) < 560) { b.mode = 'warn'; b.t = .85; b.tx = clamp(p.x, 70, 1330); b.ty = clamp(p.y, 460, 870); AudioEngine.caveCry('javali'); }
     else { const a = Math.random() * Math.PI * 2; b.dx = Math.cos(a); b.dy = Math.sin(a) * .5; b.speed = 60; b.t = 1 + Math.random() * 1.5; }
   }
 }
@@ -179,7 +179,7 @@ function finishHunt(L) {
 // Laço certeiro no javali: com três, ele está laçado e abatido; antes disso, fica brabo e investe.
 function javaliRoped(L, b) {
   if (b.rope >= JAVALI_HITS) { b.state = 'down'; b.mode = 'down'; L.caught++; AudioEngine.heart(); burst(b.x, b.y - 30, 'leaf'); effect('Javali laçado e abatido!', b.x, b.y - 90, '#e1ff9e'); }
-  else { b.mode = 'warn'; b.t = .55; b.tx = clamp(G.player.x, 70, 1330); b.ty = clamp(G.player.y, 460, 870); AudioEngine.moo(.07, .5); effect('Laço ' + b.rope + '/' + JAVALI_HITS + ' · o javali ficou brabo!', b.x, b.y - 100, '#ffe9a8'); }
+  else { b.mode = 'warn'; b.t = .55; b.tx = clamp(G.player.x, 70, 1330); b.ty = clamp(G.player.y, 460, 870); AudioEngine.caveCry('javali'); effect('Laço ' + b.rope + '/' + JAVALI_HITS + ' · o javali ficou brabo!', b.x, b.y - 100, '#ffe9a8'); }
 }
 // Caçada de noite: o campo escurece e o lampião dos cuiudos ilumina em volta do Sadi.
 function huntBackdrop() {

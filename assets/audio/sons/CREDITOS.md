@@ -25,6 +25,9 @@ Cortados, em mono, normalizados e (os laços) emendados com cruzamento. Depois d
 | laco-mata | #0100 Forest |
 | laco-noite | #1880 Campaign at Night #4 |
 | laco-fogo | #0031 Fireplace #2 |
+| laco-trem | #3016 Steam locomotive #1 |
+| apito | #3011 Hiss of steam train #3 (o apito) |
+| sino | #0135 Church Bell |
 
 ## Wikimedia Commons
 

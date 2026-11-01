@@ -10,6 +10,8 @@
 function drawRail(x0, x1, y) { for (let x = x0; x < x1; x += 22) rect(x, y - 6, 12, 26, '#6a4a2a', 1); rect(x0, y, x1 - x0, 4, '#8a8a90'); rect(x0, y + 12, x1 - x0, 4, '#8a8a90'); }
 // Maria Fumaça: passa de tempos em tempos pelo trilho, soltando fumaça.
 function trainX(x0, x1, speed, phase) { const margin = 1800, span = x1 - x0 + margin * 2; return x0 - margin + ((frameClock * speed + phase) % span); }
+// A frente da locomotiva no trilho da Serra (os vagões vêm atrás, até uns 600 px).
+function serraTrainX() { return trainX(0, SERRA.W, 120, 900); }
 function drawTrain(x, y) {
   const p = worldOut; ctx.save(); if (p && p.x > x - 600 && p.x < x + 30 && p.y < y + 10 && p.y > y - 130) ctx.globalAlpha = .42;
   for (let k = 0; k < 2; k++) { const cx = x - 210 - k * 190; rect(cx, y - 70, 170, 62, k ? '#7a2a1a' : '#8a3a24', 4, '#3a1a10'); for (let w = 0; w < 4; w++) windowPane(cx + 14 + w * 38, y - 60, 26, 22, '#3a1a10'); for (const wx of [cx + 30, cx + 140]) ellipse(wx, y - 4, 13, 13, '#2a2a2a'); }
@@ -201,7 +203,7 @@ WORLD_MAPS.serra = regionMap({
     add(S.salao, () => drawSalao(S.salao));
     add(S.vinicola, () => { if(worldBuilding(14,S.vinicola)) return; drawStoneHouse(S.vinicola, null); rect(S.vinicola.x + 30, S.vinicola.y + 72, S.vinicola.w - 60, 26, '#f4ecd8', 3, '#5a3a20'); txt('VINÍCOLA DA FAMÍLIA · VINHO COLONIAL', S.vinicola.x + S.vinicola.w / 2, S.vinicola.y + 85, 12, '#6a1a2a', 'center', 'Georgia'); wineBarrels(S.vinicola.x - 150, S.vinicola.y + S.vinicola.h - 20); });
     add(S.galeteria, () => { if(worldBuilding(15,S.galeteria)) return; drawStoneHouse(S.galeteria, null); rect(S.galeteria.x + 20, S.galeteria.y + 70, S.galeteria.w - 40, 26, '#f4ecd8', 3, '#5a3a20'); txt('GALETERIA · GALETO E POLENTA', S.galeteria.x + S.galeteria.w / 2, S.galeteria.y + 83, 12, '#6a1a2a', 'center', 'Georgia'); pennants(S.galeteria.x + 10, S.galeteria.x + S.galeteria.w - 10, S.galeteria.y + 50, ['#2a8a3a', '#f4f4f4', '#d42a2a']); });
-    layers.push({ y: S.rail + 20, draw: () => drawTrain(trainX(0, S.W, 120, 900), S.rail + 10) });
+    layers.push({ y: S.rail + 20, draw: () => drawTrain(serraTrainX(), S.rail + 10) });
     layers.push({ y: 240, draw: () => { signBoard(cx + 170, 150, 200, 'SANTA CATARINA ↑', 13); } });
   }
 });

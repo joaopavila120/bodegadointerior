@@ -24,7 +24,7 @@ Object.assign(AudioEngine, {
   galho(vol = .1) { this.pop(900 + Math.random() * 500, vol, .05); this.noise(.12, vol * .6, 1100); this.note(150, .06, 'triangle', vol * .4); },
   folhas(vol = .035) { for (let i = 0; i < 4; i++) setTimeout(() => { this.bus = this.ambientBus; this.noise(.09, vol * (.6 + Math.random() * .5), 2600 + Math.random() * 1400); this.bus = null; }, i * (140 + Math.random() * 90)); },
   sussurro(vol = .03) { this.caveVoice([180, 210, 160], 1.4, { type: 'sawtooth', formant: 2400, q: 6, vol: vol * .5, vib: 30, rate: 11 }); this.noise(1.2, vol, 2800); },
-  grilo(vol = .005) { for (let i = 0; i < 3; i++) this.note(4300 + Math.random() * 300, .03, 'triangle', vol, i * .07); },
+  grilo(vol = .003) { for (let i = 0; i < 3; i++) this.note(4300 + Math.random() * 300, .03, 'triangle', vol, i * .07); },
   morcego(vol = .02) { for (let i = 0; i < 5; i++) this.note(6200 + Math.random() * 1600, .025, 'sine', vol, i * .06 + Math.random() * .03); this.noise(.3, vol * 1.5, 1800); },
   pedrasLonge(vol = .06) { this.echo((k, d) => { this.note(70, .2, 'triangle', vol * k, d); setTimeout(() => { this.bus = this.ambientBus; this.noise(.3, vol * .9 * k, 500); this.bus = null; }, d * 1000); }, 2, .28, .4); for (let i = 0; i < 4; i++) this.pop(1000 + Math.random() * 1500, vol * .5, .03); },
   rochaRange(vol = .05) { this.caveVoice([62, 48, 44], 1.6, { type: 'sawtooth', formant: 160, q: 2, vol, vib: 3, rate: 9 }); },

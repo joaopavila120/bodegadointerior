@@ -1,13 +1,13 @@
 // Sons gravados (assets/audio/sons, créditos em CREDITOS.md): o tiro, os bichos, o baú abrindo, o campo
-// de dia, a noite de grilos e sapos, o fogo e a caverna. Cada um entra por cima do som sintetizado; enquanto o arquivo
-// não chegou (ou se falhar), o sintetizado toca como antes.
+// de dia, a noite de grilos e sapos, o fogo, a caverna, a Maria Fumaça (e o apito) e o sino da igreja da Serra.
+// Cada um entra por cima do som sintetizado; enquanto o arquivo não chegou (ou se falhar), o sintetizado toca como antes.
 //   · Os dados vêm de sons.js (base64), carregado depois do primeiro clique: assim funciona também em file://.
 //   · Cada som só é decodificado na primeira vez que toca (os laços são os maiores).
 //   · Os laços de ambiente sobem e descem devagar conforme o lugar e a hora, baixinhos e sem agudo.
 'use strict';
 
 // Duração de cada laço (laco-campo.mp3…; o arquivo tem 0,2 s antes e 0,3 s depois: o laço toca de 0,25 s até 0,25 s + duração).
-const SONS_LACOS = { caverna: 32, campo: 32, mata: 30, noite: 30, fogo: 20 };
+const SONS_LACOS = { caverna: 32, campo: 32, mata: 30, noite: 30, fogo: 20, trem: 24 };
 // Os laços sintetizados que o gravado substitui.
 const SONS_TROCA = { grutaRonco: 'caverna', grutaVento: 'caverna', fire: 'fogo' };
 // Mapas de céu aberto (os outros são casas, salões, a caverna e o navio).
@@ -72,7 +72,7 @@ Object.assign(AudioEngine, {
   over('silence', function (old) { old.call(this); for (const l of Object.values(this.sonsLacos)) l.g.gain.setTargetAtTime(0, this.ctx.currentTime, .08); });
   // Com o gravado pronto, o laço sintetizado equivalente fica calado.
   over('loop', function (old, name, level, setup) { return old.call(this, name, SONS_TROCA[name] && this.somPronto('laco-' + SONS_TROCA[name]) ? 0 : level, setup); });
-  over('moo', function (old, volume = .07, pitch = 1) { if (!this.somDe('boi', 3, volume * 5, pitch)) old.call(this, volume, pitch); });
+  over('moo', function (old, volume = .07, pitch = 1) { if (!this.somDe('boi', 3, volume * 3, pitch)) old.call(this, volume, pitch); });
   over('neigh', function (old, v = .06) { if (!this.somDe('relincho', 2, v * 6, .95 + Math.random() * .1)) old.call(this, v); });
   over('coruja', function (old, vol = .03) { if (!this.som('coruja', vol * 6, .95 + Math.random() * .1)) old.call(this, vol); });
   over('uivo', function (old, vol = .022) { if (!this.som('uivo', vol * 7, .9 + Math.random() * .1)) old.call(this, vol); });
@@ -80,7 +80,7 @@ Object.assign(AudioEngine, {
   // Com o laço da noite tocando, os grilos já estão nele.
   over('grilo', function (old, vol) { if (!this.somPronto('laco-noite')) old.call(this, vol); });
   // O baú: a tampa rangendo e as moedas lá dentro.
-  over('caveChestOpen', function (old) { if (!this.som('bau', .42)) old.call(this); });
+  over('caveChestOpen', function (old) { if (!this.som('bau', .24)) old.call(this); });
   // O facão na carne (o tiro, a pedrada, a lança e os poderes acertando ficam com o baque de antes) e o Sadi apanhando.
   over('caveFlesh', function (old, arma) { if (arma !== 'facao' || !this.som('facao', .4, .9 + Math.random() * .2)) { old.call(this); return; } this.note(105 + Math.random() * 25, .08, 'triangle', .09); });
   over('caveOuch', function (old) { if (!this.som('soco', .55, .9 + Math.random() * .15)) { old.call(this); return; } this.ouch(); this.note(70, .18, 'triangle', .08); });
@@ -101,6 +101,11 @@ Object.assign(AudioEngine, {
 }
 
 // ---------- O ambiente gravado ----------
+// A Maria Fumaça na Serra: bem baixinho, e só quando passa perto (a distância conta até o último vagão).
+function sonsTrem(p) {
+  const x = serraTrainX(), y = SERRA.rail + 10, d = Math.hypot(p.x - Math.max(x - 600, Math.min(x, p.x)), p.y - y);
+  return d < 1500 ? .08 * Math.pow(1 - d / 1500, 1.5) : 0;
+}
 {
   const amb = AudioEngine.ambience;
   AudioEngine.ambience = function (dt) {
@@ -113,9 +118,25 @@ Object.assign(AudioEngine, {
     if (this.griloClock <= 0) { this.griloCanta = !this.griloCanta; this.griloClock = this.griloCanta ? 2.5 + Math.random() * 3 : 3 + Math.random() * 5; }
     this.somLaco('campo', (fora && !noite && !mato) || (campo && !G.lasso) ? .22 : 0);
     this.somLaco('mata', fora && !noite && mato ? .1 : 0, { abafa: 3500 });
-    this.somLaco('noite', noite ? (mato ? .06 : .045) * (this.griloCanta ? 1 : .15) : 0, { tau: .45, abafa: 3800 });
+    this.somLaco('noite', noite ? (mato ? .03 : .022) * (this.griloCanta ? 1 : .15) : 0, { tau: .45, abafa: 3000 });
     this.somLaco('caverna', gruta ? .32 : 0, { abafa: 2200 });
     this.somLaco('fogo', fuel > 0 ? (.18 + .3 * fuel) * this.near(525, 510, 900) : 0, { abafa: 5000 });
+    this.somLaco('trem', fora && p.map === 'serra' ? sonsTrem(p) : 0, { abafa: 1800 });
+    // O apito, de vez em quando, logo que a Maria Fumaça sai da estação (o apito se ouve de longe, mas baixinho).
+    const tx = serraTrainX();
+    if (fora && p.map === 'serra' && this.tremAntes < 500 && tx >= 500 && Math.random() < .6) {
+      const d = Math.hypot(p.x - tx, p.y - SERRA.rail); this.bus = this.ambientBus; this.som('apito', .13 * Math.max(.3, 1 - d / 3000), .97 + Math.random() * .06); this.bus = null;
+    }
+    this.tremAntes = tx;
+    // O sino da igreja da Serra bate de dia, de tempos em tempos; mais perto da igreja, mais alto (calado enquanto está
+    // rachado, na missão do sino).
+    if (fora && p.map === 'serra' && !noite) {
+      this.sinoClock = (this.sinoClock ?? 20 + Math.random() * 30) - dt;
+      if (this.sinoClock <= 0 && !missionActive('sino')) {
+        const ig = SERRA.igreja, d = Math.hypot(p.x - ig.x - ig.w / 2, p.y - ig.y - ig.h / 2);
+        this.sinoClock = 100 + Math.random() * 80; this.bus = this.ambientBus; this.som('sino', .22 * Math.max(.3, 1 - d / 3200)); this.bus = null;
+      }
+    }
     // De manhã, antes de abrir a bodega, um galo canta longe.
     this.galoClock = (this.galoClock ?? 5) - dt;
     if (fora && !mato && G.phase === 'prep' && this.galoClock <= 0) { this.galoClock = 25 + Math.random() * 40; this.bus = this.ambientBus; this.som('galo', .11, .95 + Math.random() * .1); this.bus = null; }

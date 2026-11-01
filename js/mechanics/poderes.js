@@ -81,8 +81,13 @@ function poderTick(dt) {
   const targets = rangedTargets(), p = worldOut, near = (x, y, max = 1e9) => { let best = null, bd = max; for (const b of targets) { const d = Math.hypot(b.x - x, b.y - y); if (d < bd) { bd = d; best = b; } } return [best, bd]; };
   const a = poder.ally;
   if (a) {
-    a.t -= dt; a.hit -= dt; a.swing = Math.max(0, a.swing - dt);
-    const [b, d] = near(a.x, a.y, 900), go = (x, y, sp) => { const k = Math.hypot(x - a.x, y - a.y); if (k > 4) { a.x += (x - a.x) / k * Math.min(k, sp * dt); a.y += (y - a.y) / k * Math.min(k, sp * dt); } };
+    a.t -= dt; a.hit -= dt; a.swing = Math.max(0, a.swing - dt); a.walk = false;
+    // Ele caminha até o ponto (com o passo e virado pra onde vai), em vez de deslizar.
+    const [b, d] = near(a.x, a.y, 900), go = (x, y, sp) => {
+      const mx = x - a.x, my = y - a.y, k = Math.hypot(mx, my); if (k <= 4) return;
+      a.x += mx / k * Math.min(k, sp * dt); a.y += my / k * Math.min(k, sp * dt); a.walk = true;
+      if (Math.abs(mx) > 2) a.dx = mx < 0 ? -1 : 1; a.dy = Math.abs(my) > Math.abs(mx) ? Math.sign(my) : 0;
+    };
     if (b && a.t > .4) { a.dx = b.x < a.x ? -1 : 1; if (d > 80) go(b.x - a.dx * 60, b.y, 320); if (d < 130 && a.hit <= 0) { a.hit = .75; a.swing = .25; AudioEngine.swoosh?.(.06); poderHit(b, .9); } }
     else go(p.x - (p.dx < 0 ? -1 : 1) * 90, p.y + 6, 260);
     if (a.t <= 0) { poder.ally = null; fxPuffs(a.x, a.y - 60, 10, 90, '#c8dcf0'); }
@@ -148,7 +153,7 @@ function drawPoderWorld() {
   for (const b of rangedTargets()) if (b.lunar > 0) for (let k = 0; k < 3; k++) { const a = frameClock * 6 + k * 2.1; txt('✦', b.x + Math.cos(a) * 34, b.y - (b.boss || b.lenda ? 190 : 110) + Math.sin(a) * 8, 15, '#fff2b0', 'center'); }
   const a = poder.ally;
   if (a) {
-    const alpha = clamp(Math.min((10 - a.t) / .5, a.t / .6), 0, 1); drawGaribaldi(a.x, a.y, alpha, a.dx);
+    const alpha = clamp(Math.min((10 - a.t) / .5, a.t / .6), 0, 1); drawGaribaldi(a.x, a.y, alpha, a.dx, a.walk, a.dy || 0);
     if (a.swing > 0) { const k = 1 - a.swing / .25; ctx.save(); ctx.strokeStyle = `rgba(220,236,255,${.8 * (1 - k)})`; ctx.lineWidth = 6; ctx.lineCap = 'round'; const ang = a.dx > 0 ? 0 : Math.PI; ctx.beginPath(); ctx.arc(a.x, a.y - 70, 78, ang - 1.2, ang - 1.2 + k * 2.4); ctx.stroke(); ctx.restore(); } // o sabre
   }
   for (const g of poder.gralhas) drawGralha(g.x, g.y, g.dx, true, 1.3);

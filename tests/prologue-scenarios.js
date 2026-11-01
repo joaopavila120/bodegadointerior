@@ -94,7 +94,7 @@
   G.valterQueue=[];
   // o desafiante de bocha espera na cancha
   G.phase='closed';worldOut=null;const lauro=PEOPLE.findIndex(p=>p.id==='lauro');
-  sportState().challenge={person:lauro,wager:0,tutorial:true,type:'bocha'};showSportChallenge();check($('dialogContent').textContent.includes('Ir com o Lauro até a cancha'),'o convite do Lauro chama para a cancha');
+  sportState().challenge={person:lauro,wager:0,tutorial:true,type:'bocha'};showSportChallenge();check($('talkChoices').textContent.includes('Ir com o Lauro até a cancha'),'o convite do Lauro chama para a cancha');
   action('sportAccept');check(sportState().waiting?.person===lauro&&!G.bocce,'aceitando, o Lauro vai esperar na cancha');
   const d2=G.day;nextDay('automatic');check(G.day===d2&&G.phase==='closed','o dia não vira com o Lauro esperando');
   refreshHUD();check($('tutorialHint').textContent.includes('te espera na cancha'),'o quadro avisa que o Lauro espera na cancha');

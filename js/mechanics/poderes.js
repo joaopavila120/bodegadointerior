@@ -6,8 +6,8 @@
 //     Levando a cruz de volta, ele ensina a acender o lunar: um clarão que deixa tontos todos os bichos em volta.
 //   · Bando de gralhas-azuis: replantar três clareiras de tocos. A gralha viu tudo e traz o bando, que bica o bicho
 //     mais perto; de vez em quando cai um pinhão, que cura.
-//   · Benzedura: depois do primeiro tombo feio (desmaiar na mata ou na gruta), o Padre Romio (na capela da Serra ou na
-//     estrada) vê o quebranto, benze o Sadi e ensina a reza: um escudo que aguenta um golpe.
+//   · Benzedura: vencida a Mula sem Cabeça (capítulo do Padre Romio), o padre ensina a reza da nona dele: um escudo que
+//     aguenta um golpe (lenda-mula.js).
 'use strict';
 
 const PODERES = {
@@ -20,7 +20,7 @@ const PODER_DICAS = {
   grito: 'os farrapos não esquecem quem vence o navio do Império em Laguna',
   lunar: 'o Sepé Tiaraju anda procurando uma cruz que se perdeu na mata',
   gralhas: 'a gralha-azul paga quem replanta três clareiras de tocos',
-  benzedura: 'o Padre Romio, da capela da Serra, benze quem leva tombo feio'
+  benzedura: 'o Padre Romio ensina uma reza a quem livrar a Doralice do encanto da mula'
 };
 let poder = { cd: {}, ally: null, flash: null, gralhas: [], drops: [], escudo: false };
 function poderState() { G.poderes ??= { has: {} }; G.poderes.has ??= {}; return G.poderes; }
@@ -116,14 +116,12 @@ const PODER_FALAS = {
   grito: [['garibaldi', 'Gaúcho, tu peleou em Laguna que nem farrapo velho. Toma o meu lenço vermelho.'], ['garibaldi', 'Quando a coisa apertar, na mata ou na gruta, grita "Avante, farrapos!". De onde eu estiver, eu venho de sabre na mão.'], ['sadi', 'Avante, farrapos!']],
   gralhas: [['gralha', 'Crá-crá! Tu é o vivente que anda replantando os tocos? Três clareiras! Até eu, que planto pinhão desde que o mundo é mundo, fiquei com inveja.'], ['gralha', 'O bando todo viu. Daqui pra frente, na mata ou na gruta, assobia que a gente vem: bico pro bicho e pinhão pra ti.'], ['sadi', 'Bah, um bando de gralha de guarda-costas!']],
   lunar: [['sepe', 'A cruz dos Sete Povos… Aguyjevete, caminhante. É assim que a gente diz obrigado.'], ['sepe', 'Agora presta atenção: o lunar não é da testa, é do coração de quem não se entrega. Fecha os olhos e deixa ele acender.'], ['sepe', 'Quando os bichos te cercarem, acende o lunar: o clarão deixa todos tontos.']],
-  benzedura: [['padre_romio', 'Sadi, meu filho! Que cara de quem viu assombração. Me contaram que tu caiu desmaiado no mato.'], ['sadi', 'Caí, padre. Bicho brabo, escuro… fiquei com o corpo mole até hoje.'], ['padre_romio', 'Isso é quebranto. Abaixa a cabeça: um raminho de arruda, água benta e a reza que a minha nona me ensinou lá na colônia.'], ['padre_romio', 'Pronto, benzido. E leva a reza contigo: quando a coisa ficar feia, reza baixinho, que ela te segura uma pancada.']]
+  benzedura: [['padre_romio', 'E leva mais isto, meu filho. Quem encara a Mula sem Cabeça de frente merece a reza que a minha nona me ensinou lá na colônia.'], ['padre_romio', 'Um raminho de arruda, água benta e as palavras certas. Pronto, benzido: quando a coisa ficar feia, reza baixinho, que ela te segura uma pancada.']]
 };
 function poderUnlockTick() {
   const st = poderState();
   if (!st.has.grito && typeof lagunaState === 'function' && lagunaState().won) { poderGanha('grito', PODER_FALAS.grito); return; }
   if (!st.has.gralhas && Object.keys(mataState().plant || {}).length >= 3) { poderGanha('gralhas', PODER_FALAS.gralhas); return; }
-  // Depois do primeiro tombo, já de volta no mundo aberto, o boato da benzedura.
-  if (st.caiu && !st.has.benzedura && !st.padreDica && ENV_MAIN_MAPS.has(worldOut?.map)) { st.padreDica = true; floatNote('Dizem que o Padre Romio, da capela da Serra, benze quem leva tombo feio…'); }
 }
 // A cruz missioneira: fica numa clareira do trecho que o Sepé disse (o lugar segue o desenho do trecho no dia).
 function poderCruzSpot(T) {
@@ -193,8 +191,6 @@ function updatePoderButton() {
   // Desmaio (na mata, na gruta ou na clareira das lendas): conta o tombo, pro Padre Romio.
   const mataF = mataFaint; mataFaint = function () { poderState().caiu = (poderState().caiu || 0) + 1; return mataF(); };
   const caveF = caveFaint; caveFaint = function () { poderState().caiu = (poderState().caiu || 0) + 1; return caveF(); };
-  // Prosa com o Padre Romio (na capela ou na estrada da Serra) depois de um tombo: a benzedura.
-  const prosa = worldTalk; worldTalk = function (w) { if (w?.person === PADRE_ROMIO && poderState().caiu && !poderHas('benzedura')) { poderGanha('benzedura', PODER_FALAS.benzedura); return; } return prosa(w); };
   // O Sepé e a cruz missioneira.
   const folkTalk = campFolkTalk; campFolkTalk = function (f) {
     if (f.id !== 'sepe' || poderHas('lunar')) return folkTalk(f);

@@ -236,7 +236,7 @@ function mataAttack() {
     const a = Math.atan2((b.y - 20) - (p.y - 30), b.x - p.x); if (Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) > 1.25 && d > 40) continue;
     const dmg = caveDmg(); b.hp -= dmg; b.hurt = .18; const k = Math.hypot(b.x - p.x, b.y - p.y) || 1; mataStep(b, (b.x - p.x) / k * 45, (b.y - p.y) / k * 45, 1);
     if (b.state === 'lunge' || b.state === 'windup') { b.state = 'rest'; b.t = .6; }
-    if (!flesh) { AudioEngine.caveFlesh?.(); AudioEngine.caveCry?.(b.kind, b.hp <= 0); } flesh = true; fxStars(b.x, b.y - 50, 3);
+    if (!flesh) { AudioEngine.caveFlesh?.('facao'); AudioEngine.caveCry?.(b.kind, b.hp <= 0); } flesh = true; fxStars(b.x, b.y - 50, 3);
     effect('−' + dmg, b.x + (Math.random() - .5) * 20, b.y - 80, '#ffd2a0', 21); if (b.hp <= 0) mataKill(b);
   }
 }

@@ -88,7 +88,7 @@ function shootFire() {
   if (s.reload > 0) return;
   if (s.shells <= 0) { shootReload(); return; }
   s.shells--; s.shots++; s.flash = 1; s.recoil = 1;
-  AudioEngine.noise?.(.26, .32, 520); AudioEngine.note?.(62, .2, 'sawtooth', .07);
+  AudioEngine.gunshot(1.15, .78);
   const { x, y } = s.aim; let hit = null;
   if (s.runner && s.runner.dead == null && shootHitBoar(s.runner.x, s.runner.y, .75, x, y)) hit = { runner: true };
   // Das fileiras da frente para as do fundo: quem está na frente leva o tiro.
@@ -96,12 +96,12 @@ function shootFire() {
   if (!hit) { s.misses++; s.fx.push({ x, y, text: 'Errou', color: '#d9c79f', life: .6 }); }
   else if (hit.runner) { s.runner.dead = .8; s.kills += 2; s.hits++; s.fx.push({ x, y: y - 30, text: '+2 corredor!', color: '#ffe27a', life: 1 }); shootSqueal(); }
   else if (hit.kind === 'peao') { s.friendly++; s.kills = Math.max(0, s.kills - 2); hit.state = 'sinking'; s.fx.push({ x, y: y - 30, text: '−2 · Ô, sou eu, tchê!', color: '#ff9a8a', life: 1.4 }); AudioEngine.bad(); }
-  else { s.hits++; hit.hp--; if (hit.hp > 0) { s.fx.push({ x, y: y - 30, text: 'Cachaço brabo!', color: '#ffd0a0', life: .8 }); hit.t = Math.max(hit.t, .6); AudioEngine.moo?.(.06, .45); }
+  else { s.hits++; hit.hp--; if (hit.hp > 0) { s.fx.push({ x, y: y - 30, text: 'Cachaço brabo!', color: '#ffd0a0', life: .8 }); hit.t = Math.max(hit.t, .6); AudioEngine.caveCry?.('javali'); }
     else { const pts = hit.kind === 'cachaco' ? 2 : 1; s.kills += pts; hit.state = 'dead'; hit.t = 0; s.fx.push({ x, y: y - 30, text: '+' + pts, color: '#d8ffac', life: .9 }); shootSqueal(); } }
   if (s.shells <= 0) shootReload();
 }
 function shootReload() { const s = shoot; if (!s || s.reload > 0 || s.shells >= SHOOT.shells) return; s.reload = SHOOT.reload; AudioEngine.tick(); }
-function shootSqueal() { AudioEngine.note?.(900, .08, 'square', .03); AudioEngine.note?.(640, .12, 'square', .03, .07); }
+function shootSqueal() { if (AudioEngine.somDe?.('porco', 3, .45, 1.15)) return; AudioEngine.note?.(900, .08, 'square', .03); AudioEngine.note?.(640, .12, 'square', .03, .07); }
 // Onde está o corpo do javali (e quanto aparece acima da moita).
 function shootPose(o) { const c = o.c, js = c.s * (o.kind === 'cachaco' ? 2.05 : 1.6), line = c.y - (SHOOT_TOP[c.kind] - 18) * c.s; return { js, x: c.x, y: line + 14 * c.s + (1 - o.rise) * 54 * js, base: line + 2 }; }
 function shootHitBoar(bx, by, js, x, y) { return ((x - bx - 6 * js) / (44 * js)) ** 2 + ((y - by + 26 * js) / (24 * js)) ** 2 <= 1; }

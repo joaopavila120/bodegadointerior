@@ -57,7 +57,11 @@ function prepareAfterHours(){
 function showSportChallenge(){
  const challenge=sportState().challenge;if(!challenge)return false;
  const truco=challenge.type==='truco';
- openDialog(challenge.tutorial?(truco?'Mano Lima te ensina a jogar truco':'Lauro Bolador te ensina a jogar bocha'):'Desafio depois do expediente',`<div class="rpg-speaker">${portraitHTML(challenge.person,88)}<div><p><b>${sportName(challenge.person)}</b> apareceu na bodega!</p><p>${challenge.tutorial?(truco?'“Puxa uma cadeira, vivente! Índio véio te ensina as cartas, o truco e a hora de correr.” Partida de treino, sem aposta.':'“Bora pra cancha, rapaz! O Lauro Bolador te ensina a mirar, a dosar a força e a contar os pontos.” Treino gratuito e guiado.'):'“Vamos tirar uma bocha valendo '+money(challenge.wager)+' por lado?” Vitória devolve o dobro; derrota perde a entrada. Recusar custa 3 pontos de amizade.'}</p></div></div><div class="actions"><button class="primary" data-act="sportAccept" ${hasCash(challenge.wager)?'':'disabled'}>${challenge.tutorial?(truco?'Aprender truco com o Mano':worldOut?.map==='cancha'?'Aprender com o Lauro':'Ir com o Lauro até a cancha'):'Aceitar · '+money(challenge.wager)+(truco||worldOut?.map==='cancha'?'':' · na cancha')}</button><button data-act="sportDecline">${challenge.tutorial?'Aprender depois':'Recusar · −3 amizade'}</button></div>`,'sportChallenge');return true;
+ // Na caixa azul: quem chegou convida e as respostas aparecem embaixo (Esc recusa).
+ const who=PEOPLE[challenge.person].id,title=challenge.tutorial?(truco?'Mano Lima te ensina a jogar truco':'Lauro Bolador te ensina a jogar bocha'):'Desafio depois do expediente';
+ const text=challenge.tutorial?(truco?'Puxa uma cadeira, vivente! Índio véio te ensina as cartas, o truco e a hora de correr. Partida de treino, sem aposta.':'Bora pra cancha, rapaz! O Lauro Bolador te ensina a mirar, a dosar a força e a contar os pontos. Treino gratuito e guiado.'):'Vamos tirar uma bocha valendo '+money(challenge.wager)+' por lado? Vitória devolve o dobro; derrota perde a entrada.';
+ const yes=challenge.tutorial?(truco?'Aprender truco com o Mano':worldOut?.map==='cancha'?'Aprender com o Lauro':'Ir com o Lauro até a cancha'):'Aceitar · '+money(challenge.wager)+(truco||worldOut?.map==='cancha'?'':' · na cancha');
+ talkChoose([[who,text,title]],[[yes,'sportAccept',null,!hasCash(challenge.wager)],[challenge.tutorial?'Aprender depois':'Recusar · −3 amizade','sportDecline']],1);return true;
 }
 function answerSportChallenge(accept){
  const s=sportState(),c=s.challenge;if(!c)return;

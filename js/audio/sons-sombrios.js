@@ -22,9 +22,9 @@ Object.assign(AudioEngine, {
   urutau(vol = .028) { [880, 760, 640, 560, 500].forEach((f, i) => this.caveVoice([f * 1.04, f, f * .92], .62, { type: 'sine', formant: 800, q: .6, vol: vol * (1 - i * .12), vib: 9, rate: 5, delay: i * .78 })); },
   uivo(vol = .022) { this.caveVoice([260, 470, 520, 500, 360], 2.6, { type: 'sine', formant: 650, q: .7, vol, vib: 8, rate: 4.5 }); },
   galho(vol = .1) { this.pop(900 + Math.random() * 500, vol, .05); this.noise(.12, vol * .6, 1100); this.note(150, .06, 'triangle', vol * .4); },
-  folhas(vol = .05) { for (let i = 0; i < 4; i++) setTimeout(() => { this.bus = this.ambientBus; this.noise(.09, vol * (.6 + Math.random() * .5), 2600 + Math.random() * 1400); this.bus = null; }, i * (140 + Math.random() * 90)); },
+  folhas(vol = .035) { for (let i = 0; i < 4; i++) setTimeout(() => { this.bus = this.ambientBus; this.noise(.09, vol * (.6 + Math.random() * .5), 2600 + Math.random() * 1400); this.bus = null; }, i * (140 + Math.random() * 90)); },
   sussurro(vol = .03) { this.caveVoice([180, 210, 160], 1.4, { type: 'sawtooth', formant: 2400, q: 6, vol: vol * .5, vib: 30, rate: 11 }); this.noise(1.2, vol, 2800); },
-  grilo(vol = .01) { for (let i = 0; i < 3; i++) this.note(4300 + Math.random() * 300, .03, 'triangle', vol, i * .07); },
+  grilo(vol = .005) { for (let i = 0; i < 3; i++) this.note(4300 + Math.random() * 300, .03, 'triangle', vol, i * .07); },
   morcego(vol = .02) { for (let i = 0; i < 5; i++) this.note(6200 + Math.random() * 1600, .025, 'sine', vol, i * .06 + Math.random() * .03); this.noise(.3, vol * 1.5, 1800); },
   pedrasLonge(vol = .06) { this.echo((k, d) => { this.note(70, .2, 'triangle', vol * k, d); setTimeout(() => { this.bus = this.ambientBus; this.noise(.3, vol * .9 * k, 500); this.bus = null; }, d * 1000); }, 2, .28, .4); for (let i = 0; i < 4; i++) this.pop(1000 + Math.random() * 1500, vol * .5, .03); },
   rochaRange(vol = .05) { this.caveVoice([62, 48, 44], 1.6, { type: 'sawtooth', formant: 160, q: 2, vol, vib: 3, rate: 9 }); },
@@ -43,11 +43,11 @@ Object.assign(AudioEngine, {
     const moan = this.loop('grutaVento', gruta ? .012 + .012 * Math.max(0, Math.sin(t * .17)) : 0, { type: 'bandpass', freq: 260, q: 4 });
     if (moan && gruta) moan.filter.frequency.setTargetAtTime(220 + 120 * Math.sin(t * .21), this.ctx.currentTime, .4);
     if (mata) {
-      if (sombrioDue('grilo', dt, .6, 2.2)) this.grilo();
+      if (sombrioDue('grilo', dt, 2.5, 6)) this.grilo();
       if (sombrioDue('coruja', dt, 14, 30)) this.coruja();
       if (sombrioDue('urutau', dt, 40, 80)) this.urutau();
       if (sombrioDue('uivo', dt, 45, 90)) this.uivo();
-      if (sombrioDue('galho', dt, 10, 24)) this.galho(.05 + Math.random() * .06);
+      if (sombrioDue('galho', dt, 10, 24)) this.galho(.03 + Math.random() * .04);
       if (sombrioDue('folhas', dt, 16, 34)) this.folhas();
       if (sombrioDue('sussurro', dt, 60, 120)) this.sussurro();
     }

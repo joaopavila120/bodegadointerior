@@ -288,7 +288,7 @@ function caveAttack() {
     const dmg = caveHitDmg(b); b.hp -= dmg; b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
     if (b.state === 'charge' || b.state === 'lunge') b.state = 'rest', b.t = .5;
     // Acertou: baque, o grito do bicho, faísca do facão e uma travadinha na tela (só um grito por golpe).
-    if (!flesh) { AudioEngine.caveFlesh(); AudioEngine.caveCry(b.kind, b.hp <= 0); }
+    if (!flesh) { AudioEngine.caveFlesh('facao'); AudioEngine.caveCry(b.kind, b.hp <= 0); }
     flesh = true; run.freeze = .06; fxStars(b.x, b.y - 50, 3);
     effect('−' + dmg, b.x + (Math.random() - .5) * 20, b.y - 80, dmg > caveDmg() ? '#a8e0ff' : '#ffd2a0', dmg > caveDmg() ? 25 : 21); if (b.hp <= 0) caveKill(b);
   }

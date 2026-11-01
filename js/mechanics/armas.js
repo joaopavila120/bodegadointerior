@@ -49,7 +49,7 @@ function rangedFire() {
   const ang = best ? Math.atan2(best.y - oy, best.x - ox) : face;
   ranged.shots.push({ id, x: ox + Math.cos(ang) * 30, y: oy + Math.sin(ang) * 30, vx: Math.cos(ang) * W.speed, vy: Math.sin(ang) * W.speed, left: W.range });
   ranged.cd = W.cd; ranged.hold = .4; ranged.ang = ang;
-  if (id === 'revolver38') { G.drum38 = rangedDrum() - 1; ranged.flash = .07; AudioEngine.noise?.(.2, .3, 700); AudioEngine.note?.(64, .16, 'sawtooth', .06); if (G.drum38 <= 0 && rangedBalas() > 0) rangedReload(); }
+  if (id === 'revolver38') { G.drum38 = rangedDrum() - 1; ranged.flash = .07; AudioEngine.gunshot(); if (G.drum38 <= 0 && rangedBalas() > 0) rangedReload(); }
   else AudioEngine.swoosh?.(.06);
   updateRangedButton();
 }

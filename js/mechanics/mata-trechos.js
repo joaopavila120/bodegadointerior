@@ -592,11 +592,11 @@ function mataBeltRefresh() {
   // As botas de garrão da ferraria valem na mata também; no trecho o Sadi anda a pé.
   const move = movementBonus; movementBonus = function () { let b = move(); if (mataHere() && caveUp('botas')) b += .15; return b; };
   const mounted = playerMounted; playerMounted = function () { return inTrecho() ? false : mounted(); };
-  // Cobras: a cascavel usa o mesmo bote da jararaca, mas avisa com o chocalho. Perto do fogo, os bichos não chegam.
+  // Cobras: a cascavel usa o mesmo bote da jararaca. Perto do fogo, os bichos não chegam.
   const beast = mataBeastTick; mataBeastTick = function (b, dt, p) {
     if (b.stun > 0) { b.stun -= dt; b.hurt = Math.max(0, b.hurt - dt); return; }
     if (inTrecho() && !b.boss && trechoCampSafe()) { const T = trechoLayout(), c = T.camp, d = Math.hypot(b.x - c.x, b.y - c.y) || 1; b.hurt = Math.max(0, b.hurt - dt); if (!['jararaca', 'cascavel', 'corposeco'].includes(b.kind) && d < c.rx * 1.8) { b.state = b.kind === 'onca' ? 'stalk' : 'roam'; b.dx = b.x < c.x ? -1 : 1; mataStep(b, (b.x - c.x) / d * 120, (b.y - c.y) / d * 120, dt); } return; }
-    if (b.kind === 'cascavel') { if (b.state === 'hide' && Math.hypot(p.x - b.x, p.y - b.y) < 260 && (b.rattle = (b.rattle || 0) - dt) <= 0) { b.rattle = .9; for (let k = 0; k < 5; k++) AudioEngine.noise?.(.03, .03, 5200, k * .05); } mataJararacaTick(b, dt, p); return; }
+    if (b.kind === 'cascavel') { mataJararacaTick(b, dt, p); return; }
     if ((b.kind === 'onca' || b.kind === 'corposeco') && mataBuffs.fumo > 0) { const d = Math.hypot(p.x - b.x, p.y - b.y) || 1; b.state = b.kind === 'onca' ? 'retreat' : 'walk'; b.t = .5; b.dx = p.x < b.x ? 1 : -1; mataStep(b, (b.x - p.x) / d * 160, (b.y - p.y) / d * 160, dt); return; }
     return beast(b, dt, p);
   };
@@ -607,8 +607,8 @@ function mataBeltRefresh() {
     // Pouca vida: o coração bate forte, como na caverna.
     if (mataCombatOn() && mataNight && !mataNight.faint && caveState().hp <= caveMaxHp() * .3) { mataBuffs.beat = (mataBuffs.beat ?? 0) - dt; if (mataBuffs.beat <= 0) { mataBuffs.beat = .85; AudioEngine.caveHeartbeat?.(); } }
     if (mataBuffs.regen > 0) { mataBuffs.regen -= dt; const st = caveState(); st.hp = Math.min(caveMaxHp(), st.hp + dt * 2); }
-    // Veneno de cobra-coral: tira vida devagar até passar (o chá de marcela corta).
-    if (mataBuffs.veneno > 0 && mataNight && !mataNight.faint) { mataBuffs.veneno -= dt; if ((mataBuffs.venenoTick -= dt) <= 0) { mataBuffs.venenoTick = 1; const st = caveState(); st.hp = Math.max(1, st.hp - 2); effect('−2 veneno', worldOut.x + 30, worldOut.y - 120, '#b8f070', 14); } }
+    // Veneno de cobra: tira vida devagar até passar (o chá de marcela corta).
+    if (mataBuffs.veneno > 0 && mataNight && !mataNight.faint) { mataBuffs.veneno -= dt; if ((mataBuffs.venenoTick -= dt) <= 0) { mataBuffs.venenoTick = 1; const st = caveState(); st.hp = Math.max(1, st.hp - MATA_BICHO.venenoDano); effect('−' + MATA_BICHO.venenoDano + ' veneno', worldOut.x + 30, worldOut.y - 120, '#b8f070', 14); } }
     // Com o cusco véio junto, ele late e segura o bicho mais perto.
     if (mataNight && cuscoOut?.() && (mataBuffs.apito -= dt) <= 0) {
       mataBuffs.apito = 7; const b = mataNight.beasts.filter(x => x.hp > 0 && !x.boss && Math.hypot(x.x - worldOut.x, x.y - worldOut.y) < 300).sort((a, c) => Math.hypot(a.x - worldOut.x, a.y - worldOut.y) - Math.hypot(c.x - worldOut.x, c.y - worldOut.y))[0];

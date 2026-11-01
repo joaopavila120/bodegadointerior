@@ -22,7 +22,7 @@ function baiaGoal() {
   const s = baiaStage();
   if (s === 'trail') return 'Tem pelo da Cadela Baia na boca da gruta da Serra: entre e desça a escada até o segundo andar';
   if (s === 'return') return 'Leve a Cadela Baia de volta pro Mano Lima, na casa dele (Fronteira)';
-  return 'Suba a estrada da Serra até os paredões, perto da gruta (siga a seta): procure o rastro da Cadela Baia por ali';
+  return 'Suba a estrada da Serra até os paredões, perto da gruta: procure o rastro da Cadela Baia por ali';
 }
 const BAIA_CALL_WHERE = 'casa dele, na Fronteira (de luz acesa: pode ir de noite)';
 MISSIONS.push({ id: 'baia', chapter: BAIA_CHAPTER, title: 'A Cadela Baia sumiu', giver: 'manolima', needs: 'manolima', mainArc: true, after: 'abertura',
@@ -56,14 +56,14 @@ function baiaCall() {
 }
 // ---------- 2. Na casa do Mano Lima: o capítulo começa ----------
 function baiaOffer() {
-  const i = PEOPLE.findIndex(p => p.id === 'manolima'), m = baiaMission();
+  const m = baiaMission();
   const lines = [['manolima', lateNight() ? 'Chegou, vivente! Deixei a luz acesa te esperando. Senta aí que o mate tá pronto.' : 'Chegou, vivente. Senta aí que o mate tá pronto.'], ['manolima', 'A Cadela Baia some às vezes, mas sempre volta antes de escurecer. Dessa vez, nada…'],
     ['manolima', 'Ela gosta de farejar bicho pela estrada da Serra. Um tropeiro viu um vulto baio subindo pros paredões, perto de uma gruta que ninguém mais usa.'], ['manolima', 'Vai lá olhar, de noite mesmo, que eu não prego o olho enquanto ela não voltar. Se achar, me traz ela de volta?']];
   if (baiaChapter()) {
     talk([...lines, ['sadi', 'Pode deixar, Mano. Eu acho a Baia.'], ['dica', '<b>📖 Capítulo ' + BAIA_CHAPTER + ' · ' + m.title + '</b><br>' + baiaGoal() + '<br><i>Onde: ' + m.where + '</i><br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo ' + BAIA_CHAPTER]], () => baiaAccept(), 'Bora procurar!');
     return;
   }
-  talk(lines, () => openDialog('A Cadela Baia sumiu', `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>Mano Lima</b></p><p>Procurar a Cadela Baia pelo mapa e levar ela de volta pra casa dele.</p></div></div><h3>Recompensa</h3>${rewardHTML(m.reward)}<div class="actions"><button class="primary" data-act="baiaAccept">Aceitar: procurar a Cadela Baia</button><button data-act="close">Agora não</button></div>`, 'baiaOffer'), 'Continuar');
+  talkChoose(lines, [['Pode deixar, eu acho a Baia (recompensa: ' + rewardPlain(m.reward) + ')', 'baiaAccept'], ['Agora não dá, Mano']], 1);
 }
 function baiaAccept() {
   if (!baiaCalling()) return; closeDialog(true); baiaArc().stage = 'search'; startMission(baiaMission());
@@ -95,7 +95,8 @@ function baiaFound() {
   const withCusco = !cuscoAdopted();
   talk([['card', '<b>🐕 A Cadela Baia!</b><br>Encolhida atrás de uma pedra, tremendo de frio: a Cadela Baia, de pelo baio.' + (withCusco ? '<br><br>E do lado dela, sem largar um minuto, um cusco véio caramelo, magrinho, de orelha caída.' : ''), 'Caverna da Serra · andar ' + BAIA_FLOOR],
     ['sadi', 'Baia! O Mano Lima tá louco atrás de ti, guria.'], ...(withCusco ? [['sadi', 'E tu, cusco véio? Ficou cuidando dela aqui embaixo, é?']] : [])],
-  () => withCusco ? openDialog('Um cusco véio', '<div class="rpg-speaker"><span class="portrait portrait-phone" style="width:88px;height:88px">🐕</span><div><p>O cusco véio te olha, abana o rabo devagar e encosta o focinho na tua mão. Não tem coleira, não tem dono.</p><p>Leva ele contigo?</p></div></div><div class="actions"><button class="primary" data-act="baiaCusco" data-id="sim">Adotar o cusco véio</button><button data-act="baiaCusco" data-id="nao">Deixar ele seguir o caminho dele</button></div>', 'baiaCusco') : baiaTake(), 'Continuar');
+  () => withCusco ? talkChoose([[{ name: 'Cusco véio', portrait: '<span class="portrait portrait-phone" style="width:104px;height:104px">🐕</span>' }, 'O cusco véio te olha, abana o rabo devagar e encosta o focinho na tua mão. Não tem coleira, não tem dono. Leva ele contigo?', 'Um cusco véio']],
+    [['Adotar o cusco véio', 'baiaCusco', 'sim'], ['Deixar ele seguir o caminho dele', 'baiaCusco', 'nao']]) : baiaTake(), 'Continuar');
 }
 function baiaCuscoChoice(yes) {
   closeDialog(true);

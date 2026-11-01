@@ -32,7 +32,8 @@ function grantReward(rw = {}) {
 function farmXP(n, text) { gainXP(n); if (worldOut) worldSay((text ? text + ' · ' : '') + '+' + n + ' XP'); else effect('+' + n + ' XP', G.player.x, G.player.y - 125, '#d8ffac'); }
 
 // ---------- Conversas com vários personagens (missões, pedidos e dicas) ----------
-// Linhas: texto (Valter), [id, texto], ['sadi', texto], ['dica', texto] ou ['reward', recompensa, título].
+// Linhas: texto (Valter), [id, texto], ['sadi', texto], ['dica', texto] ou ['reward', recompensa, título]. Quem fala
+// também pode ser { name, portrait } (a Teiniaguá, o cusco).
 let talkState = null;
 function talk(lines, then, ok) { talkState = { lines: lines.map(l => typeof l === 'string' ? ['valter', l] : l), i: 0, then, ok }; showTalkLine(); }
 function showTalkLine() {
@@ -41,19 +42,59 @@ function showTalkLine() {
   if (who === 'reward') { openDialog(extra || 'Recompensa recebida', `<div class="reward-card"><p>Você recebeu:</p>${rewardHTML(text)}</div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk'); return; }
   if (who === 'dica') { openDialog(extra || 'Primeira vez', `<div class="rpg-speaker"><span class="portrait portrait-phone" style="width:88px;height:88px">💡</span><div><p><b>Primeira vez</b></p><p>${text}</p></div></div><div class="actions"><button class="primary" data-act="talkNext">${button}</button></div>`, 'talk'); return; }
   // Fala de personagem: a mesma caixa azul estilo RPG das cenas e das conversas na rua, com o mundo aparecendo atrás.
-  const i = PEOPLE.findIndex(p => p.id === who), name = who === 'sadi' ? avatarName() : PEOPLE[i]?.name || who;
-  const portrait = who === 'sadi' ? portraitFromSprite(avatarSprite(), 104) : undefined;
+  const custom = typeof who === 'object' ? who : null, i = custom ? -1 : PEOPLE.findIndex(p => p.id === who);
+  const name = custom ? custom.name : who === 'sadi' ? avatarName() : PEOPLE[i]?.name || who;
+  const portrait = custom ? custom.portrait : who === 'sadi' ? portraitFromSprite(avatarSprite(), 104) : undefined;
   modal = 'talk'; keys.clear(); pointerHold = false; $('overlay').classList.add('hidden'); showRpgBox('worldTalk', null);
   // A janela (escondida) guarda a mesma fala: título e texto continuam consultáveis como antes.
   $('dialogTitle').textContent = extra || name; $('dialogContent').innerHTML = `<div class="rpg-speaker"><div><p><b>${name}</b></p><p>${text}</p></div></div>`;
   showRpgBox('talk', { person: i, portrait, name, reply: String(text).replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '') });
-  $('talkAction').textContent = last ? 'E · ' + button : '';
+  const ask = last && s.choices;
+  $('talkUI').classList.toggle('asking', !!ask); talkChoicesHTML();
+  $('talkAction').textContent = last && !ask ? 'E · ' + button : '';
 }
-function talkEnd() { showRpgBox('talk', null); }
-function talkNext() { const s = talkState; if (!s) return; if (++s.i < s.lines.length) { showTalkLine(); return; } talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
-function talkSkip() { const s = talkState; if (!s) return; talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
-// E, Espaço, Enter ou clique: completa a fala que está sendo digitada; com ela inteira, passa para a próxima.
-function talkKey() { if (!$('talkUI').classList.contains('hidden') && rpgTyping('talk')) { finishRpgTyping('talk'); return; } talkNext(); }
+function talkEnd() { $('talkUI').classList.remove('asking'); $('talkChoices').innerHTML = ''; showRpgBox('talk', null); }
+function talkNext() { const s = talkState; if (!s) return; if (s.choices && s.i === s.lines.length - 1) return; if (++s.i < s.lines.length) { showTalkLine(); return; } talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
+// Esc: numa escolha, só fecha se tiver uma resposta de recusar (`cancel`); sem ela, tem que escolher.
+function talkSkip() { const s = talkState; if (!s) return; if (s.choices) { if (s.cancel != null) talkPick(s.cancel); return; } talkState = null; talkEnd(); closeDialog(true); s.then?.(); }
+// E, Espaço, Enter ou clique: completa a fala que está sendo digitada; com ela inteira, passa para a próxima (ou, na
+// escolha, confirma a resposta marcada).
+function talkKey() {
+  if (!$('talkUI').classList.contains('hidden') && rpgTyping('talk')) { finishRpgTyping('talk'); return; }
+  const s = talkState; if (s?.choices && s.i === s.lines.length - 1) { talkPick(s.pick); return; } talkNext();
+}
+// Clique no fundo da caixa: na escolha, só completa a fala (a resposta se escolhe clicando nela).
+function talkAdvance() { const s = talkState; if (s?.choices && s.i === s.lines.length - 1 && !rpgTyping('talk')) return; talkKey(); }
+
+// ---------- Escolha na caixa azul ----------
+// A conversa segue como sempre e, na última fala, as respostas aparecem embaixo, na mesma caixa. Clique, 1/2/3… ou W/S
+// e E. `options`: [texto, ação, id, travada]; a ação é uma das ações do jogo (data-act, com o id) ou uma função.
+// `cancel`: o número da resposta que o Esc escolhe (recusar, "agora não").
+function talkChoose(lines, options, cancel = null) {
+  talkState = { lines: lines.map(l => typeof l === 'string' ? ['valter', l] : l), i: 0, choices: options, pick: Math.max(0, options.findIndex(o => !o[3])), cancel };
+  showTalkLine();
+}
+function talkChoicesHTML() {
+  const s = talkState, ask = s?.choices && s.i === s.lines.length - 1 ? s.choices : [];
+  $('talkChoices').innerHTML = ask.map(([label, , , off], k) => `<button class="rpg-choice${k === s.pick ? ' on' : ''}" data-act="talkPick" data-id="${k}" data-n="${k + 1}"${off ? ' disabled' : ''}>${label}</button>`).join('');
+}
+function talkPick(k) {
+  const s = talkState, o = s?.choices?.[Number(k)]; if (!o || o[3]) return;
+  talkState = null; talkEnd(); closeDialog(true); AudioEngine.blip();
+  if (typeof o[1] === 'function') o[1](); else if (o[1]) action(o[1], o[2] == null ? undefined : String(o[2]));
+}
+// Teclas da escolha: o número escolhe direto; W/S (ou as setas) andam pela lista.
+function talkChoiceKey(key) {
+  const s = talkState; if (!s?.choices || s.i !== s.lines.length - 1) return false;
+  const n = Number(key); if (n >= 1 && n <= s.choices.length) { finishRpgTyping('talk'); talkPick(n - 1); return true; }
+  const step = ['w', 'ArrowUp'].includes(key) ? -1 : ['s', 'ArrowDown'].includes(key) ? 1 : 0; if (!step) return false;
+  if (rpgTyping('talk')) finishRpgTyping('talk');
+  for (let k = 1; k <= s.choices.length; k++) { const j = (s.pick + step * k + s.choices.length * 9) % s.choices.length; if (!s.choices[j][3]) { s.pick = j; break; } }
+  talkChoicesHTML(); return true;
+}
+// O pedido e a recompensa em texto, pra caber na fala.
+function wantPlain(want) { return wantText(want).replace(/<[^>]+>/g, ''); }
+function rewardPlain(rw) { return rewardParts(rw).map(([, t]) => t).join(', '); }
 // A conversa do Valter (prólogo e dicas) usa a mesma janela.
 function valterTalk(lines, then, ok) { talk(lines, then, ok); }
 function valterNext() { talkNext(); }
@@ -410,11 +451,10 @@ function houseResidentTalk(i, x, y) {
 function showQuest(i) {
   const id = PEOPLE[i].id, o = questOffer(id); if (!o) return;
   const lines = o.kind === 'mission' ? [['sadi', 'Vim entregar: ' + o.m.title.toLowerCase() + '.']] : o.q.ask;
-  const speech = lines.map(l => typeof l === 'string' ? `<p>${l}</p>` : l[0] === 'sadi' ? `<p><i>${l[1]}</i></p>` : `<p>${PEOPLE.find(p => p.id === l[0])?.name || l[0]}: ${l[1]}</p>`).join('');
   const ok = canDeliver(o.want), started = o.kind === 'mission' || o.active;
-  openDialog(o.kind === 'mission' ? 'Missão · ' + o.m.title : 'Pedido de ' + PEOPLE[i].name, `<div class="rpg-speaker">${portraitHTML(i, 88)}<div>${speech}</div></div><div class="callout"><b>Pedido</b><br>${wantText(o.want)}</div><h3>Recompensa</h3>${rewardHTML(o.reward)}<div class="actions">${started
-    ? `<button class="primary" data-act="questDeliver" data-id="${i}" ${ok ? '' : 'disabled'}>${ok ? 'Entregar' : 'Ainda falta'}</button><button data-act="close">Depois</button>`
-    : `<button class="primary" data-act="questAccept" data-id="${i}">Aceitar pedido</button><button data-act="close">Agora não</button>`}</div>`, 'quest');
+  // Na caixa azul: a conversa, o pedido com a recompensa na fala de quem pede e as respostas embaixo.
+  talkChoose([...lines.map(l => typeof l === 'string' ? [id, l] : l), [id, 'Pedido: ' + wantPlain(o.want) + '. Recompensa: ' + rewardPlain(o.reward) + '.', o.kind === 'mission' ? 'Missão · ' + o.m.title : 'Pedido de ' + PEOPLE[i].name]],
+    started ? [[ok ? 'Entregar' : 'Ainda falta', 'questDeliver', i, !ok], ['Depois']] : [['Aceitar o pedido', 'questAccept', i], ['Agora não']], 1);
 }
 function questAccept(i) { const s = questState(PEOPLE[i].id); s.active = true; G.questOpen = (G.questOpen || []).filter(o => o.id !== questKey(PEOPLE[i].id)); save(); closeDialog(true); worldSay('Pedido aceito. Ele fica na aba Missões do celular.'); }
 function questDeliver(i) {

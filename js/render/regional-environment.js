@@ -45,11 +45,15 @@ function regionalStreamPath(expand=0) {
 function paintRegionalTerrain(M,view) {
   const {x,y,w,h}=view;
   paintRegionalMeadow(M,view);
+  // As manchas de pasto, as flores e as pedrinhas (fronteira-beleza.js), como na Fronteira.
+  const main=M.id==='serra'||M.id==='sc';
+  if(main&&typeof paintFronteiraMeadow==='function')paintFronteiraMeadow(view,M.id==='serra'?.45:.15);
   const roads=regionalRoads(M).filter(r=>r[0]+r[2]+18>x&&r[0]-18<x+w&&r[1]+r[3]+18>y&&r[1]-18<y+h);
   if(M.id==='serra'||M.id==='sc'){
     // Flores no campo e os caminhos como fitas de terra (na SC, o calçamento colonial só nas ruas).
     paintWorldFlowers(view,(fx,fy)=>M.canWalk(fx,fy)&&M.canWalk(fx,fy+40),M.id==='sc'?.88:.9);
     paintWorldPaths(M,view,{paving:M.id==='sc'});
+    if(typeof paintFronteiraRoads==='function')paintFronteiraRoads(view,M,M.id==='serra');
   }else for(const [expansion,alpha] of [[15,.12],[9,.25],[4,.5],[0,1]])for(const r of roads){
     ctx.save();ctx.clip(frontierRoadPath(r,expansion));ctx.globalAlpha=alpha;frontierTexture(1,x,y,w,h);ctx.restore();
   }

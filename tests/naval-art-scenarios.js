@@ -2,7 +2,7 @@
   const checks=[],check=(ok,msg)=>{if(!ok)throw Error(msg);checks.push(msg);};
   action('new');sceneSkip();closeDialog(true);skipWorldTalk();
   G.prologue.done=true;G.tutorial.complete=true;G.phase='prep';G.day=30;G.valterQueue=[];G.teachQueue=[];
-  G.missions={};for(const m of storyChapters())if(m.chapter<15)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.id !== 'lendaria')G.missions[m.id]={status:'done',day:1};
   G.regions={serra:true,sc:true};G.mount={owned:false};G.mataSeen=1;G.mataGralha=1;
   caveState().facao=true;mataState().metGaribaldi=true;for(const f of CAMP_FOLK_LIST)G.mata.folks[f.id]=1;
   lagunaState().carregado=1;started=true;paused=false;scene=null;phoneOpen=false;talkState=null;

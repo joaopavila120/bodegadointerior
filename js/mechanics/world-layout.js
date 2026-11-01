@@ -12,12 +12,11 @@ placeWorld(VILA.atacado,820,1060,650,430);
 placeWorld(VILA.agro,1820,1040,680,450);placeWorld(VILA.gado,2600,1040,680,450);
 placeWorld(VILA.acougue,1760,1680,680,450);
 placeWorld(VILA.estacao,3340,1020,500,200);
-placeWorld(VILA.pouso,2520,1790,440,310);placeWorld(VILA.missoes,3620,1610,500,410);
+placeWorld(VILA.pouso,2490,1790,440,310);placeWorld(VILA.missoes,3650,1610,500,410);
 placeWorld(VILA.quadro,2070,715,80,30);placeWorld(VILA.marco,1670,2490,40,60);
-for(const [id,x,y,w,h] of [['valter',580,1700,540,300],['manolima',960,2200,560,310],['baitaca',3030,1720,550,300],['guri',1740,2320,550,300],['jayme',3560,2250,550,310]])placeWorld(VILA.houses.find(r=>r.id===id),x,y,w,h);
-placeWorld(VILA.ctg,2460,2250,1000,340);
-VILA.houses.find(r=>r.id==='guri').y=2280;
-VILA.houses.find(r=>r.id==='manolima').y=2250;
+// As casas na mesma escala das lojas: a porta (43% da altura do desenho) fica um pouco mais alta que o Sadi.
+for(const [id,x,y,w,h] of [['valter',560,1690,650,310],['manolima',890,2280,640,310],['baitaca',2975,1710,640,310],['guri',1740,2280,640,310],['jayme',3530,2280,620,310]])placeWorld(VILA.houses.find(r=>r.id===id),x,y,w,h);
+placeWorld(VILA.ctg,2440,2250,1000,340);
 VILA_ROADS.splice(0,VILA_ROADS.length,[VILA.river,800,VILA.W-VILA.river,110],[VILA.roadX,800,80,VILA.border-800],[VILA.river,1510,VILA.W-VILA.river-100,90],[VILA.river,2160,VILA.W-VILA.river-100,70]);
 WORLD_MAPS.vila.walkLines=[[[620,845],[1620,845],[2800,845],[4100,845]],[[1620,845],[1620,1560],[1620,2620]],[[620,1560],[1620,1560],[2750,1560],[4100,1560]],[[620,2195],[1620,2195],[2750,2195],[4100,2195]]];
 Object.assign(SERRA,{W:4000,H:2800,roadX:2060,roadEnd:3900,roadSouth:2680,arroio:2130});

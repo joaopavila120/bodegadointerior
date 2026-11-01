@@ -17,7 +17,7 @@ function worldFootpaths() { return worldDoorPaths(WORLD_MAPS.vila); }
 // Keep landmarks visible, including their front approach and the pier's boat.
 function worldLandmarkClearings(id) {
   const around=r=>({x:r.x-24,y:r.y-40,w:r.w+48,h:r.h+110});
-  if(id==='vila')return [around(VILA.fogo),around(VILA.missoes),{x:226,y:850,w:VILA.river-226+65,h:175}];
+  if(id==='vila')return [around(VILA.fogo),around(VILA.missoes),around(VILA.estacao),{x:226,y:850,w:VILA.river-226+65,h:175}];
   if(id==='serra')return [
     ...[SERRA.italianos,SERRA.alemaes].map(around),
     // These tiny roadside chapels need breathing room beyond their footprint:

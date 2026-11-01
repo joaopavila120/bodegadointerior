@@ -10,7 +10,7 @@
   action('new');sceneSkip();closeDialog(true);
   G.prologue.done=true;G.prologue.step=PROLOGUE_STEPS.length;G.tutorial.day=4;G.calOffset=3;G.day=30;G.tutorial.complete=true;G.phase='prep';G.valterQueue=[];G.teachQueue=[];
   G.taught={manha:true,pesca:true,pedidos:true,missoes:true,javali:true,cavalo:true};G.regions={serra:true,sc:true};G.cash=5000;
-  G.missions={};for(const m of storyChapters())if(m.chapter<15)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.id !== 'lendaria')G.missions[m.id]={status:'done',day:1};
   const talkAll=()=>{let k=0;while(modal==='talk'&&k++<40)talkNext();};
   const skip=()=>{let k=0;while(scene&&k++<80)sceneSkip();};
   const withScenes=f=>{const ns=window.NO_SCENES;window.NO_SCENES=false;try{return f();}finally{window.NO_SCENES=ns;}};
@@ -129,7 +129,7 @@
    for(let i=0;i<120&&!(hasCard('teiniagua')&&hasCard('anhanga'));i++)cardsTick();check(hasCard('teiniagua')&&hasCard('anhanga')&&!!collectibleArt('anhanga'),'e as figurinhas da lenda');goInside();check(lembrancas().includes('carbunculo')&&lembrancas().includes('galhada'),'carbúnculo e galhada na estante da bodega');});
   // ---------- missões dos encontros: sino, corrente, reportagem e rio ----------
   {G.cave={facao:true,floor:1,deepest:12,hp:100,up:{},dunstanTaught:true};caveRun=null;worldOut=null;goOutside();switchMap({map:'igreja',x:600,y:700});closeDialog(true);
-   delete G.missions.sino;startChapter(MISSIONS.find(m=>m.id==='sino'));check(MISSIONS.find(m=>m.id==='sino').chapter===7&&modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'capítulo 7, Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'cobre e ferro pro São Dunstano');
+   delete G.missions.sino;startChapter(MISSIONS.find(m=>m.id==='sino'));check(MISSIONS.find(m=>m.id==='sino').chapter===8&&modal==='talk'&&/sino/.test(JSON.stringify(talkState?.lines||'')),'capítulo 7, Padre Romio: o sino da capela rachou');talkAll();check(missionActive('sino'),'cobre e ferro pro São Dunstano');
    const ab=CAVE_ITEMS.find(i=>i.id==='aguabenta').cost,c0=bagQty('cobre'),f0=bagQty('ferro');bagAdd('cobre',SINO_NEEDS.cobre);bagAdd('ferro',SINO_NEEDS.ferro);
    goOutside();switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();
    check(/forjaSino/.test($('dialogContent').innerHTML),'na ferraria, o santo oferece fundir o sino');action('forjaSino');talkAll();check(sinoForged()&&bagQty('cobre')===c0&&bagQty('ferro')===f0,'sino fundido com cobre e ferro');
@@ -162,7 +162,7 @@
    worldTalk({person:ar,x:1600,y:900});check(modal==='talk','Arami: o caminho do rio');talkAll();check(missionActive('rio')&&bagQty('muda_butia')===1&&bagQty('muda_araucaria')===1,'aceitou: as mudas de butiá e de araucária');
    check(WORLD_MAPS.vila.spots().some(s=>s.id==='rio:arami'),'de noite, o Arami espera na beira do rio');
    for(const p of RIO_PLANTS){worldOut.x=p.x;worldOut.y=p.y;interact();}check(rioPlantedAll()&&!bagQty('muda_butia'),'mudas plantadas na margem');
-   for(const h of RIO_HERBS){worldOut.x=h.x;worldOut.y=h.y;interact();check(modal==='rioErva','erva do mato pra reconhecer: '+h.name);action('rioErva',h.id+':'+h.options.find(o=>o!==h.name));check(!rioState().herbs[h.id],'nome errado não vale: '+h.name);
+   for(const h of RIO_HERBS){worldOut.x=h.x;worldOut.y=h.y;interact();check(talkState?.choices?.some(o=>o[1]==='rioErva'),'erva do mato pra reconhecer: '+h.name);action('rioErva',h.id+':'+h.options.find(o=>o!==h.name));check(!rioState().herbs[h.id],'nome errado não vale: '+h.name);
     worldOut.x=h.x;worldOut.y=h.y;interact();action('rioErva',h.id+':'+h.name);}
    check(rioHerbsAll(),'as três ervas reconhecidas');const l0=douradoLuck();worldOut.x=RIO_ARAMI.x;worldOut.y=RIO_ARAMI.y+20;interact();talkAll();
    check(missionDone('rio')&&l0===1&&douradoLuck()>1,'o Arami ensina a ler o rio: mais chance de dourado');G.phase='prep';G.report=null;goInside();}
@@ -235,7 +235,7 @@
    run.inv=0;const sh=st.hp;b.x=p.x+600;b.state='dazed';b.t=99;run.fires=[];for(let i=0;i<30;i++){run.inv=0;caveTick(.05);}check(run.brasas.length===0&&st.hp<sh,'a brasa que cai em cima do Sadi machuca');st.hp=caveMaxHp();
    b.state='idle';b.t=0;b.summon=0;Math.random=()=>.3;caveTick(.02);check(run.beasts.some(x=>x.minion),'o Diabo chama reforço');for(const m of run.beasts)if(m.minion)m.hp=0;Math.random=randomBefore;
    // metade da vida: a Teiniaguá tenta o Sadi
-   run.freeze=0;b.state='idle';b.t=9;b.hp=Math.floor(b.max*.5)-1;caveTick(.02);check(modal==='salamanca'&&$('dialogContent').querySelectorAll('[data-act="salamancaEscolha"]').length===3,'na metade da vida, a Teiniaguá oferece ouro, poder ou nada');
+   run.freeze=0;b.state='idle';b.t=9;b.hp=Math.floor(b.max*.5)-1;caveTick(.02);check(talkState?.choices?.filter(o=>o[1]==='salamancaEscolha').length===3,'na metade da vida, a Teiniaguá oferece ouro, poder ou nada');
    const hp2=b.hp;st.hp=50;action('salamancaEscolha','nada');check(run.courage&&b.hp===hp2&&st.hp===80&&!modal,'recusou: coragem de gaúcho, o Diabo não se cura');
    b.stun=0;b.state='idle';run.cd=0;run.freeze=0;b.x=p.x+90;b.y=p.y;h=b.hp;caveAttack();check(h-b.hp===Math.round(Math.round(caveDmg()*DIABO.hide)*1.25),'coragem: +25% de dano');
    b.x=p.x+600;b.y=p.y;run.torch=false;let lit=0;{const P=CanvasRenderingContext2D.prototype,di=P.drawImage;P.drawImage=function(...a){lit++;return di.apply(this,a);};try{drawDiabo(b);}finally{P.drawImage=di;}}check(lit===0,'fase escura: de longe, só os olhos do Diabo');
@@ -395,7 +395,7 @@
    const arena=(...beasts)=>{mataNight={day:G.day,key:trechoKey(),trecho:3,beasts,drops:[],herds:[],shots:[],cd:0,inv:0,hurt:0,swing:null};st.hp=caveMaxHp();Object.assign(worldOut,{x:q[0],y:q[1],dx:1,dy:0});mataBuffs.veneno=0;return mataNight;};
    // jararaca: marca o bote e ataca onde o Sadi estava
    const j=B('jararaca',q[0]+100,q[1],{state:'hide'});arena(j);mataJararacaTick(j,.05,worldOut);check(j.state==='warn'&&Math.hypot(j.tx-worldOut.x,j.ty-worldOut.y)<2,'chegou perto: a jararaca marca o bote (alvo vermelho)');
-   for(let i=0;i<25&&j.state!=='rest';i++)mataJararacaTick(j,.05,worldOut);check(st.hp<caveMaxHp(),'ficou parado no alvo: levou o bote');
+   for(let i=0;i<25&&j.state!=='rest';i++)mataJararacaTick(j,.05,worldOut);check(st.hp<caveMaxHp()&&mataBuffs.veneno>0,'ficou parado no alvo: levou o bote e ficou envenenado');mataBuffs.veneno=0;
    st.hp=caveMaxHp();mataNight.inv=0;Object.assign(j,{state:'hide',cool:0});mataJararacaTick(j,.05,worldOut);worldOut.x-=180;for(let i=0;i<25&&j.state!=='rest';i++)mataJararacaTick(j,.05,worldOut);check(st.hp===caveMaxHp(),'saiu do alvo a tempo: a jararaca erra');
    worldOut.x=j.x+400;check((()=>{let a=1;const P=CanvasRenderingContext2D.prototype,st0=P.drawImage;P.drawImage=function(...x){a=Math.min(a,this.globalAlpha);return st0.apply(this,x);};try{j.state='hide';drawJararaca(j);}finally{P.drawImage=st0;}return a<.5;})(),'de longe, a jararaca quase some no chão');
    // queixadas: miram juntas e passam em disparada (no chão aberto do trecho 1)
@@ -631,6 +631,53 @@
     check(['morcego','goteiraEco','pedrasLonge','rochaRange'].every(k=>gruta.includes(k))&&!gruta.includes('coruja'),'na gruta: morcego, goteira com eco, pedra rolando e a rocha rangendo');
     check(['coruja','urutau','uivo','galho','folhas','sussurro','grilo'].every(k=>heard.includes(k)),'na mata adentro: coruja, urutau, uivo, galho, folhas, sussurro e grilo');}
    caveLeave();worldOut=null;G.phase='prep';}
+  // ---------- as lendas na linha principal: Sanguanel, Anhangá, Boitatá, Teiniaguá e o lobisomem do arvoredo, do chamado ao fim ----------
+  withScenes(()=>{G.mataSeen=G.mataSeen||1;G.mataGralha=G.mataGralha||1;mataState().metGaribaldi=mataState().metGaribaldi||1;caveState().facao=true;
+   const winLenda=()=>{for(let k=0;k<5&&!mataNight?.beasts[0];k++)simulate(1/30);const b=mataNight.beasts[0];b.hp=1;b.stun=1;worldOut.x=b.x-60;worldOut.y=b.y;worldOut.dx=1;worldOut.dy=0;mataNight.cd=0;mataAttack();for(let k=0;k<60&&inArena();k++){simulate(1/30);while(scene)sceneSkip();}};
+   check(Object.keys(FOLK).every(id=>!FOLK[id].ok())&&STORY_ORDER.indexOf('boitata')===STORY_ORDER.indexOf('festa')+1&&STORY_ORDER.indexOf('sanguanel')===STORY_ORDER.indexOf('conhecer')+1&&STORY_ORDER.indexOf('lobisomem')===STORY_ORDER.length-2,'o Sanguanel é a primeira missão do Badin e o lobisomem fica perto do fim');
+   for(const id of ['sanguanel','anhanga','boitata','teiniagua','lobisomem']){const d=LENDA_ARCS[id],keepM=JSON.stringify(G.missions),keepDay=G.day,ch=MISSIONS.find(m=>m.id===id).chapter;
+    for(const c of STORY_ORDER.slice(0,STORY_ORDER.indexOf(id)))G.missions[c]={status:'done',day:G.day-1};for(const c of STORY_ORDER.slice(STORY_ORDER.indexOf(id)))delete G.missions[c];
+    if(G.lendaArcs)delete G.lendaArcs[id];G.phase='prep';goOutside();closeDialog(true);
+    for(let i=0;i<12&&!lendaArcStage(id);i++){talkAll();closeDialog(true);simulate(1/30);}
+    check(lendaArcStage(id)==='call'&&missionActive(id)&&activeChapter()?.id===id&&!worldGuidePoint()&&!FOLK[id].ok(),'capítulo '+ch+' · '+d.mission.title+': começa, sem seta (e a lenda não sai mais sorteada)');
+    lendaArcTalk(d.mission.giver);check(talkState?.lines.length>2,'quem chama conta o causo');talkAll();check(lendaArcStage(id)==='clues','e pede os sinais');
+    for(const c of d.clues){switchMap({map:c.map,...lendaArcClueAt(c)});closeDialog(true);skipWorldTalk();const sp=worldMap().spots().find(x=>x.id==='lenda:'+id+':'+c.id);check(!!sp&&!worldGuidePoint(),'sinal no mapa, pra procurar sem seta: '+c.label);sp.act();talkAll();}
+    for(const q of d.ask||[]){check(atHome(q.id)||q.id==='padre_romio'&&romioAtChapel(),'quem sabe do causo espera: '+q.id);lendaArcTalk(q.id);talkAll();}
+    check(lendaArcStage(id)==='wait'&&caveState().facao,'depois dos sinais e das conversas, o encontro');
+    G.phase='closed';if(id==='lobisomem'){while(calendar().weekday===4)G.day++;check(!lendaArcTonight(id),'o lobisomem só sai na sexta');while(calendar().weekday!==4)G.day++;}
+    const meet=()=>{switchMap({map:d.encounter.map,...lendaArcEncounterAt(id)});closeDialog(true);skipWorldTalk();const sp=worldMap().spots().find(x=>x.id==='lenda:'+id);check(!!sp,'de noite, o encontro: '+d.encounter.label);sp.act();skip();
+     if(d.prelude==='adivinhas')for(let n=0;n<3&&modal==='folkQuiz';n++)action('folkAnswer',String(SANGUANEL_RIDDLES[n][2]));
+     if(d.prelude==='provas')for(let n=0;n<3&&G.salamanca;n++)action('salamancaAnswer',String(SALAMANCA_PROVAS[n][2]));
+     skip();check(inArena()&&lendaFight?.id===id,'a luta na clareira: '+FOLK[id].name);};
+    meet();for(let k=0;k<5&&!mataNight?.beasts[0];k++)simulate(1/30);
+    if(d.prelude)check(mataNight.beasts[0].max<Math.round(caveDmg()*LENDA_BOSS[id].hits),'passou na prova: a lenda vem enfraquecida, mas a luta acontece');
+    mataFaint();talkAll();closeDialog(true);check(!inArena()&&lendaArcStage(id)==='wait'&&lendaArc(id).retry,'perdeu: ela segue lá, e dá pra tentar de novo');
+    G.day++;G.phase='closed';meet();winLenda();talkAll();closeDialog(true);check(lendaArcStage(id)==='report','vencida a lenda: volta pra contar');
+    lendaArcTalk(d.report);talkAll();check(missionDone(id),'capítulo '+ch+' concluído: '+d.mission.title);
+    G.missions=JSON.parse(keepM);G.missions[id]={status:'done',day:G.day};G.day=keepDay;goInside();closeDialog(true);}});
+  // ---------- missão da mula: o padre, os sinais, os mais velhos e a luta na quinta (com revanche) ----------
+  withScenes(()=>{const keepDay=G.day,keepPhase=G.phase,pid=id=>PEOPLE.findIndex(p=>p.id===id);
+   const winLenda=()=>{for(let k=0;k<5&&!mataNight?.beasts[0];k++)simulate(1/30);const b=mataNight.beasts[0];b.hp=1;b.stun=1;worldOut.x=b.x-60;worldOut.y=b.y;worldOut.dx=1;worldOut.dy=0;mataNight.cd=0;mataAttack();for(let k=0;k<60&&inArena();k++){simulate(1/30);while(scene)sceneSkip();}};
+   const meet=()=>{const sp=WORLD_MAPS.serra.spots().find(s=>s.id==='mula:igreja');Object.assign(worldOut,{x:sp.x,y:sp.y});sp.act();check(scene?.id==='folk-mula','a cena da mula na frente da igreja');skip();check(inArena()&&lendaFight?.id==='mula','e a luta na clareira das lendas');};
+   const keepM=JSON.stringify(G.missions);G.mulaArc=null;for(const id of STORY_ORDER.slice(STORY_ORDER.indexOf('mula')))delete G.missions[id];G.missions.sino={status:'done',day:G.day-1};G.phase='prep';goOutside();switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);
+   check(!FOLK.mula.ok(),'a mula não sai mais sorteada de noite: agora ela é da missão');
+   for(let i=0;i<12&&!mulaStage();i++){talkAll();closeDialog(true);simulate(1/30);}check(mulaStage()==='call'&&missionActive('mula')&&/igreja da Serra/.test(mulaGoal()),'depois do sino, o padre manda chamar na igreja da Serra');
+   check(romioAtChapel()&&!worldGuidePoint(),'o padre espera na capela (sem seta: o jogador procura)');
+   worldTalk({person:PADRE_ROMIO,x:600,y:470});check(talkState?.lines.some(l=>/Doralice/.test(l[1])),'na igreja, o padre conta o causo da Doralice');talkAll();check(mulaStage()==='clues','e pede os sinais da mula');
+   check(WORLD_MAPS.serra.spots().some(s=>s.id==='mula:capitel')&&WORLD_MAPS.mata.spots().some(s=>s.id==='mula:crina'),'os sinais aparecem no capitel da Serra e no pinheiral');
+   mulaClue('capitel');talkAll();mulaClue('mata');talkAll();check(mulaStage()==='clues'&&/2\/3/.test(mulaGoal()),'dois sinais: falta o da gruta');dunstanTalk();talkAll();check(mulaStage()==='ask','com a ferradura do São Dunstano, três sinais: agora os mais velhos');
+   check(['badin','manolima','valter'].every(id=>atHome(id)),'o Badin, o Mano Lima e o Valter esperam em casa');
+   houseResidentTalk(pid('badin'),600,560);talkAll();worldTalk({person:pid('manolima'),x:worldOut.x,y:worldOut.y});talkAll();houseResidentTalk(pid('valter'),600,560);talkAll();
+   check(mulaStage()==='wait'&&/quinta/i.test(mulaGoal()),'os mais velhos contam: quinta à noite, na frente da igreja da Serra');
+   caveState().facao=true;while(calendar().weekday===3)G.day++;G.phase='closed';check(!WORLD_MAPS.serra.spots().some(s=>s.id==='mula:igreja'),'fora da quinta, nada da mula');
+   while(calendar().weekday!==3)G.day++;check(WORLD_MAPS.serra.spots().some(s=>s.id==='mula:igreja'),'quinta à noite ela aparece na frente da igreja');meet();
+   caveBag().patua=1;caveBag().chimarrao=1;for(let k=0;k<5;k++)simulate(1/30);caveState().hp=caveMaxHp()-50;caveUse('chimarrao');check(caveState().hp===caveMaxHp()-10&&!caveBag().chimarrao,'na clareira, o chimarrão do São Dunstano cura');
+   caveUse('patua');mataNight.inv=0;{const hp=caveState().hp;mataHurt(20,{x:worldOut.x+50,y:worldOut.y});check(caveState().hp===hp&&!caveBuffs().patua,'e o patuá segura o coice da mula');}
+   mataFaint();talkAll();closeDialog(true);check(!inArena()&&mulaStage()==='wait'&&G.mulaArc.retry,'perdeu: a mula segue rondando a igreja');
+   G.day++;G.phase='closed';check(calendar().weekday!==3&&WORLD_MAPS.serra.spots().some(s=>s.id==='mula:igreja'),'dá pra tentar de novo já na noite seguinte');meet();
+   winLenda();check(mulaStage()==='report'&&G.relics?.freio,'vencida: o freio sai e a Doralice volta a ser gente');talkAll();closeDialog(true);
+   G.poderes={has:{}};worldTalk({person:PADRE_ROMIO,x:600,y:470});talkAll();check(missionDone('mula')&&mulaStage()==='done'&&poderHas('benzedura'),'o padre fecha a missão e ensina a benzedura');
+   G.missions=JSON.parse(keepM);G.day=keepDay;G.phase=keepPhase;goInside();closeDialog(true);});
   // ---------- andar sem piscar: a Baia atrás do Mano Lima, o cusco atrás do Sadi e os moradores da mata ----------
   {const keepW=baiaWalker,w={person:manolimaIndex(),x:600,y:900,dx:1,dy:0,walk:true};baiaWalker=()=>w;baia.with=null;let flips=0,toggles=0,last=null;
    for(let i=0;i<600;i++){const a=i/60*.8;w.x+=Math.cos(a);w.y+=Math.sin(a*1.7);w.dx=Math.cos(a);baiaTick(1/60);if(last&&i>30){if(Math.sign(baia.dx)!==Math.sign(last.dx))flips++;if(baia.walk!==last.walk)toggles++;}last={dx:baia.dx,walk:baia.walk};}
@@ -646,27 +693,27 @@
    G.tutorial.complete=false;updateQuestTracker();check($('questTracker').classList.contains('hidden'),'no primeiro dia, sem quadro de capítulo por cima do tutorial');G.tutorial.complete=keepT;
    G.missions={...done(['trago']),fantasma:{status:'active',day:1}};mataState().metGaribaldi=0;check(worldGuidePoint()?.x>=VILA.W-100,'capítulo 2: a seta leva pra estrada da Serra');
    switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);check(worldGuidePoint()?.x>=SERRA.W-100,'na Serra, a seta vai até o fim da estrada, na mata');mataState().metGaribaldi=keepG;
-   switchMap({map:'vila',x:1600,y:900});closeDialog(true);G.missions={...done(['trago','fantasma']),abertura:{status:'active',day:1,from:1}};G.phase='prep';check(near(worldGuidePoint(),guideSpot('door')),'capítulo 3: de manhã, a seta mostra a porta da bodega');
-   G.missions={...done(['trago','fantasma','abertura']),baia:{status:'calling',day:1}};check(near(worldGuidePoint(),guideSpot('house:manolima')),'capítulo 4: a seta leva na casa do Mano Lima');
-   G.missions.baia.status='active';G.baiaArc={stage:'search'};switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);check(near(worldGuidePoint(),guideSpot('caverna'))&&/gruta/.test(baiaGoal()),'procurando a Baia: a seta leva na gruta da Serra');
+   switchMap({map:'vila',x:1600,y:900});closeDialog(true);G.missions={...done(['trago','fantasma']),abertura:{status:'active',day:1,from:1}};G.phase='prep';check(!worldGuidePoint(),'capítulo 3: sem seta, o jogador sabe abrir a bodega');
+   G.missions={...done(['trago','fantasma','abertura']),baia:{status:'calling',day:1}};check(!worldGuidePoint(),'capítulo 4: sem seta pra casa do Mano Lima, o jogador procura');
+   G.missions.baia.status='active';G.baiaArc={stage:'search'};switchMap({map:'serra',x:1600,y:SERRA.roadY+40});closeDialog(true);check(!worldGuidePoint()&&/gruta/.test(baiaGoal()),'procurando a Baia: sem seta, o quadro diz que é perto da gruta da Serra');
    G.missions=JSON.parse(keepM);G.baiaArc=JSON.parse(keepB)||undefined;G.phase=keepP;goInside();closeDialog(true);check(/Saia pela/.test(PROLOGUE_STEPS[0].text()),'dentro da bodega, o passo manda sair pela porta');}
   // ---------- o primeiro costelão só abre depois da primeira laçada ----------
   {const keep=[G.costelaoTaught,G.lassoTaught];G.costelaoTaught=false;G.lassoTaught=false;check(!costelaoMeatReady(),'primeiro costelão: sem laçar o boi, não abre');
    costelaoNoMeat();check(modal==='costelaoMeat'&&/lace ele/.test($('dialogContent').textContent)&&!!$('dialogContent').querySelector('[data-act="lassoStart"]')&&!$('dialogContent').querySelector('[data-act="costelaoSkip"]'),'o caixa manda laçar o boi do pai antes, sem pular');closeDialog(true);
    G.lassoTaught=true;check(costelaoMeatReady(),'depois da primeira laçada, o primeiro costelão abre');[G.costelaoTaught,G.lassoTaught]=keep;}
   // ---------- poderes: como se ganha cada um, e o que cada um faz na briga ----------
-  {G.poderes={has:{}};const lagWon=lagunaState().won;lagunaState().won=0;G.cave={facao:true,floor:3,deepest:3,hp:100,vo:true,up:{}};G.phase='prep';worldOut=null;goOutside();check(!poderList().length,'começa sem poder');
-   worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});check(!poderHas('benzedura'),'sem tombo, o padre só proseia');closeDialog(true);skipWorldTalk?.();poderState().caiu=1;worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});talkAll();check(poderHas('benzedura'),'depois de um tombo, o Padre Romio benze o Sadi');closeDialog(true);
+  {G.poderes={has:{}};G.giftQueue=[];G.challengeVisit=null;closeDialog(true);const lagWon=lagunaState().won;lagunaState().won=0;G.cave={facao:true,floor:3,deepest:3,hp:100,vo:true,up:{}};G.phase='prep';worldOut=null;goOutside();check(!poderList().length,'começa sem poder');
+   poderState().caiu=1;worldTalk({person:PADRE_ROMIO,x:worldOut.x,y:worldOut.y});check(!poderHas('benzedura'),'cair desmaiado não dá a benzedura');closeDialog(true);skipWorldTalk?.();talkState=null;MULA_MISSION.finale();check(talkState?.lines.some(l=>l[0]==='padre_romio'),'vencida a mula, o Padre Romio ensina a reza');talkAll();check(poderHas('benzedura'),'e a benzedura vira poder');closeDialog(true);
    mataState().plant={7:{day:1},8:{day:1}};simulate(1/30);check(!poderHas('gralhas'),'com duas clareiras replantadas, a gralha ainda não vem');
    mataState().plant[9]={day:1};simulate(1/30);talkAll();check(poderHas('gralhas'),'três clareiras replantadas: a gralha traz o bando');
-   lagunaState().won=lagWon||1;simulate(1/30);talkAll();check(poderHas('grito'),'vencido o navio em Laguna, o Garibaldi ensina o grito farroupilha');
+   G.giftQueue=[];G.challengeVisit=null;closeDialog(true);lagunaState().won=lagWon||1;simulate(1/30);talkAll();check(poderHas('grito'),'vencido o navio em Laguna, o Garibaldi ensina o grito farroupilha');
    campFolkTalk(CAMP_FOLKS[21]);talkAll();const cruz=poderState().cruz;check(cruz&&cruz.n>21&&!poderHas('lunar'),'o Sepé pede a cruz missioneira');
    {const T={n:cruz.n,clearings:[{id:'coleta1',x:500,y:500,rx:200,ry:150}],trails:[{pts:[[0,0],[100,100]]}]};check(poderCruzSpot(T)&&!poderCruzSpot({...T,n:cruz.n+1}),'a cruz fica no trecho que ele disse');}
    poderCruzPega();talkAll();campFolkTalk(CAMP_FOLKS[21]);talkAll();check(poderHas('lunar'),'com a cruz de volta, o Sepé ensina o lunar');
    switchMap({map:'serra',x:CAVE.door.x,y:CAVE.door.y+160});closeDialog(true);enterCave(3);closeDialog(true);
    const run=caveFloorRun(),b=run.beasts[0];for(const o of run.beasts.slice(1))o.hp=0;b.hp=b.max=999;b.state='rest';b.t=99;b.cool=99;
    const aim=[200,160,120].map(d=>({x:b.x-d,y:b.y})).find(q=>caveFree(q.x,q.y,26));Object.assign(worldOut,aim,{dx:1,dy:0});
-   const use=id=>{poderState().pick=id;poder.cd={};poderUse();},hold=()=>{b.state='rest';b.t=99;};
+   const use=id=>{G.giftQueue=[];G.challengeVisit=null;closeDialog(true);poderState().pick=id;poder.cd={};poderUse();},hold=()=>{b.state='rest';b.t=99;};
    use('lunar');check(b.lunar>0&&poder.cd.lunar>0,'lunar do Sepé: o bicho fica tonto');{const bx=b.x,by=b.y;b.state='chase';b.t=0;for(let i=0;i<10;i++)simulate(1/30);check(b.x===bx&&b.y===by,'tonto, o bicho não se mexe');}b.lunar=0;hold();
    use('benzedura');{const hp=caveState().hp;run.inv=0;caveHurt(20,b);check(caveState().hp===hp&&!poder.escudo,'benzedura: o escudo segura um golpe inteiro');run.inv=0;caveHurt(5,b);check(caveState().hp<hp,'o golpe seguinte já pega');caveState().hp=100;run.inv=0;}
    {const h=b.hp;use('grito');check(!!poder.ally,'grito farroupilha: o fantasma do Garibaldi aparece');for(let i=0;i<90;i++){simulate(1/30);hold();}check(b.hp<h,'o Garibaldi peleia junto');}
@@ -676,6 +723,8 @@
     check($('poderBox').parentElement.id==='combatStack'&&r.length>=3&&r.every((a,i)=>r.every((c,j)=>i===j||a.bottom<=c.top||c.bottom<=a.top||a.right<=c.left||c.right<=a.left)),'facão, arma de longe e poder ficam empilhados sem se encavalar');}
    caveLeave();worldOut=null;G.phase='prep';}
   {goOutside();G.up.bodoque=false;delete G.mataSeen;garibaldiIntro();check(G.up.bodoque&&/bodoque/.test($('dialogContent').textContent+(talkState?.lines||[]).map(l=>l[1]).join(' ')),'o Garibaldi dá o bodoque e explica como usar');closeDialog(true);goInside();}
+  {goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);const f=VILA.fogo,M=WORLD_MAPS.vila;
+   check([[f.x+20,f.y+120],[f.x+150,f.y+60],[f.x+300,f.y+150],[f.x+50,f.y+f.h-30],[f.x+f.w-40,f.y+f.h-30]].every(([x,y])=>!M.canWalk(x,y))&&M.canWalk(f.x+f.w/2,f.y+f.h+30),'campo: a cerca, a fogueira, a lenha e o barril bloqueiam (o Sadi não some atrás), e a entrada segue livre');}
   {goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);keys.clear();const dir=(dx,dy)=>{Object.assign(worldOut,{dx,dy,walk:false});return sadiPoseSpec(worldOut.x,worldOut.y)?.direction;};
    check(dir(1,0)===1&&dir(-1,0)===1&&dir(0,-1)===2&&dir(0,1)===0,'parado, o Sadi fica virado pra onde andava (lado, costas ou frente)');
    {const keep=expansionSprite,seen=[];expansionSprite=function(key,i,...r){if(key==='sadi-mounted-v1')seen.push(i);return keep.call(this,key,i,...r);};try{for(const [dx,dy] of [[1,0],[0,-1],[0,1]])mountedPose('sadi-mounted-v1',100,100,dx,dy,false,true);}finally{expansionSprite=keep;}check(seen.join()==='5,9,1','a cavalo também: parado, fica virado pra onde andava');}goInside();}

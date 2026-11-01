@@ -105,12 +105,14 @@ function paintFrontierTerrain(view) {
     gradient.addColorStop(0,n>.62?'#b5a36940':'#263e2b48');gradient.addColorStop(1,'#455b3200');
     ctx.fillStyle=gradient;ctx.fillRect(cx-260,cy-260,520,520);
   }
-  // Flores miúdas no campo (o caminho pinta por cima).
+  // Pasto verde, campo seco, flores e pedrinhas (fronteira-beleza.js); o caminho pinta por cima.
+  if(typeof paintFronteiraMeadow==='function')paintFronteiraMeadow(view);
   paintWorldFlowers(view,(fx,fy)=>frontierOnLand(fx-70,fy)&&frontierOnLand(fx,fy+70));
   // Cascalho sob os trilhos do trem.
   for(const [expansion,alpha] of [[9,.25],[4,.5],[0,1]]){const r=[1690,VILA.rail-20,VILA.W-1690,48];if(r[1]+r[3]+15<y||r[1]-15>y+h)break;ctx.save();ctx.clip(frontierRoadPath(r,expansion));ctx.globalAlpha=alpha;frontierTexture(1,x,y,w,h);ctx.restore();}
   // Estradas e as trilhas até as portas: fitas de terra com as pontas e os cantos arredondados.
   paintWorldPaths(WORLD_MAPS.vila,view);
+  if(typeof paintFronteiraRoads==='function')paintFronteiraRoads(view);
   // Scuffed clearings connect thresholds to the paths, with feathered edges.
   for(const r of worldDressingBuildings('vila')){
     const cx=r.x+r.w/2,cy=r.y+r.h+12;

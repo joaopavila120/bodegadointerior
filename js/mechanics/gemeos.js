@@ -49,21 +49,23 @@ function gemeosAsk(who, set, onDone) {
   gemeosRound = { who, set, n: 0, wrong: 0, onDone, said: null };
   gemeosQuestion();
 }
+// No ensaio (o Sadi ajudando), quem fala é o Márcio.
 function gemeosQuestion() {
-  const r = gemeosRound, Q = GEMEOS_ROUNDS[r.set][r.n], i = PEOPLE.findIndex(p => p.id === r.who), speaker = r.who === 'sadi' ? '' : `<div class="rpg-speaker">${portraitHTML(i, 88)}<div><p><b>${PEOPLE[i].name}</b></p><p>${Q.q}</p></div></div>`;
-  const reply = r.said ? `<div class="callout choice-reply">${r.said}</div>` : '', order = Q.order ??= shuffle(Q.a.map((_, k) => k));
-  const opts = order.map(k => `<button class="choice" data-act="gemeosChoice" data-id="${k}">${Q.a[k][0]}</button>`).join('');
-  openDialog(r.who === 'sadi' ? 'Na sala da Casona' : 'Conversa com ' + PEOPLE[i].name, `${speaker || `<p>${Q.q}</p>`}${reply}<p class="small-note">O que o Sadi diz?</p><div class="choice-list">${opts}</div>`, 'gemeosChoice');
+  const r = gemeosRound, Q = GEMEOS_ROUNDS[r.set][r.n], by = r.who === 'sadi' ? 'marcio' : r.who, order = Q.order ??= shuffle(Q.a.map((_, k) => k));
+  const title = r.who === 'sadi' ? 'Na sala da Casona' : 'Conversa com ' + PEOPLE.find(p => p.id === by).name;
+  talkChoose([...(r.said ? [[by, r.said]] : []), [by, Q.q, title]], order.map(k => [Q.a[k][0], 'gemeosChoice', k]));
 }
+// A reação vira fala de quem reagiu (sem repetir o nome do Márcio na frente).
+function gemeosSaid(reply) { return String(reply).replace(/^Márcio: /, ''); }
 function gemeosChoice(k) {
   const r = gemeosRound; if (!r) return; const Q = GEMEOS_ROUNDS[r.set][r.n], [said, reply, good] = Q.a[Number(k)] || [];
   if (!said) return;
   if (good) {
-    AudioEngine.heart(); r.n++; r.said = reply ? '<b>' + (r.who === 'sadi' ? '' : PEOPLE[PEOPLE.findIndex(p => p.id === r.who)].name + ':</b> ') + reply : null;
+    AudioEngine.heart(); r.n++; r.said = reply ? gemeosSaid(reply) : null;
     if (r.n >= GEMEOS_ROUNDS[r.set].length) { const done = r.onDone, last = r.said; gemeosRound = null; closeDialog(true); done?.(true, last); return; }
     gemeosQuestion(); return;
   }
-  AudioEngine.bad(); r.wrong++; r.said = (r.who === 'sadi' ? '' : '<b>' + PEOPLE[PEOPLE.findIndex(p => p.id === r.who)].name + ':</b> ') + reply;
+  AudioEngine.bad(); r.wrong++; r.said = gemeosSaid(reply);
   if (r.who !== 'sadi' && r.wrong >= GEMEOS_PATIENCE) { const done = r.onDone, who = r.who; gemeosRound = null; closeDialog(true); done?.(false, who); return; }
   gemeosQuestion();
 }

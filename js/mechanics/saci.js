@@ -121,7 +121,7 @@ function saciWishOptions() {
 function saciWishDialog() {
   const w = saciEncounter, opts = w?.opts; if (!opts) return;
   const i = PEOPLE.findIndex(p => p.id === 'saci');
-  openDialog('Um desejo do Saci', `<div class="rpg-speaker">${portraitHTML(i, 72)}<div><p><b>Saci</b></p><p>Escolhe um, que o vento não espera!</p></div></div><div class="store-list">${opts.map((o, n) => `<div class="supply"><span class="icon">${o.icon}</span><div><b>${o.title}</b><p>${o.text}</p></div><button class="primary" data-act="saciWish" data-id="${n}">Esse!</button></div>`).join('')}</div>`, 'saciWish');
+  talkChoose([[PEOPLE[i].id, 'Escolhe um, que o vento não espera!', 'Um desejo do Saci']], opts.map((o, n) => [o.title + ' · ' + o.text, 'saciWish', n]));
 }
 function saciWish(n) {
   const w = saciEncounter, o = w?.opts?.[Number(n)]; if (!o) return;

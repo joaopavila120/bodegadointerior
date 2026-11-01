@@ -4,7 +4,7 @@
 VILA.ctg = {x:2040,y:1890,w:1000,h:420};
 SC.oktoberfest = {x:1640,y:230,w:780,h:430};
 const WORLD_DISCOVERIES = [
- {id:'espinilho',map:'vila',name:'Parque do Espinilho',x:710,y:2152,setting:'tree',
+ {id:'espinilho',map:'vila',name:'Parque do Espinilho',x:700,y:2440,setting:'tree',
   where:'Perto da margem oeste, ao sul da casa de Valter.',
   text:'Em Barra do Quaraí, o Parque Estadual do Espinilho protege uma savana-parque: campos com árvores esparsas, como espinilhos e inhanduvais. No Brasil, essa formação está restrita ao extremo oeste gaúcho.',
   clue:'Caminhe para nordeste desse recanto. Um visitante amarelo se esconde na vegetação rasteira.'},
@@ -12,7 +12,7 @@ const WORLD_DISCOVERIES = [
   where:'No sudeste do mapa, além da brasa do Peixinho.',
   text:'O Museu da Família Colonial, em Blumenau, reúne casas históricas e objetos que contam o cotidiano da antiga colônia. Nos fundos do complexo ficam o horto e um memorial bastante incomum.',
   clue:'A nordeste desse recanto, observe de perto as pequenas pedras entre a vegetação.'},
- {id:'cardeal',map:'vila',name:'O visitante amarelo',x:873,y:2050,secret:true,parent:'espinilho',
+ {id:'cardeal',map:'vila',name:'O visitante amarelo',x:1080,y:2075,secret:true,parent:'espinilho',
   text:'Você reparou no cardeal-amarelo! Essa ave está entre as espécies associadas aos ambientes protegidos pelo Parque do Espinilho. O segredo aqui é observar a fauna sem retirar nada da natureza.'},
  {id:'saberes',map:'serra',name:'A colônia além das pedras',x:970,y:1870,secret:true,
   text:'Uma pequena lembrança da colônia: o patrimônio dos Caminhos de Pedra também está nos ofícios. A tecelagem, a moagem da erva-mate e os produtos coloniais ajudam a contar essa história viva.'},

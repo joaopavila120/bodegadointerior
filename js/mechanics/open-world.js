@@ -237,7 +237,7 @@ WORLD_MAPS.vila = {
   id: 'vila', name: 'Fronteira', W: VILA.W, H: VILA.H,
   residents: ['valter', 'manolima', 'baitaca', 'guri', 'jayme'],
   walkLines: [[[620, 735], [1620, 735], [2600, 735], [3500, 735]], [[1620, 800], [1620, 1470], [1620, 2300]], [[620, 1470], [1620, 1470], [2700, 1470], [3500, 1470]]],
-  obstacles() { const V = VILA; return [V.bodega, V.cancha, V.horta, { x: V.fogo.x + 50, y: V.fogo.y + 80, w: V.fogo.w - 100, h: V.fogo.h - 150 }, V.agro, V.gado, V.atacado, V.acougue, V.ferragem, V.quadro, V.marco, { x: V.missoes.x, y: V.missoes.y + 60, w: V.missoes.w, h: V.missoes.h - 60 }, V.pouso, V.estacao, ...V.houses]; },
+  obstacles() { const V = VILA; return [V.bodega, V.cancha, V.horta, { x: V.fogo.x - 6, y: V.fogo.y + 36, w: V.fogo.w + 36, h: 200 }, { x: V.fogo.x + 12, y: V.fogo.y + V.fogo.h - 75, w: 92, h: 72 }, { x: V.fogo.x + V.fogo.w - 68, y: V.fogo.y + V.fogo.h - 65, w: 60, h: 62 }, V.agro, V.gado, V.atacado, V.acougue, V.ferragem, V.quadro, V.marco, { x: V.missoes.x, y: V.missoes.y + 60, w: V.missoes.w, h: V.missoes.h - 60 }, V.pouso, V.estacao, ...V.houses]; },
   canWalk(x, y) {
     if (y < 130 || x > VILA.W + 20) return false;
     if (y > VILA.border - 20) return false;                          // rio Uruguai embaixo: fronteira com o Uruguai
@@ -278,9 +278,11 @@ WORLD_MAPS.vila = {
     for (const r of VILA_ROADS) road(...r);
     drawVilaRiver();
     const add = (r, fn) => { if (seen(r.x + r.w / 2, r.y + r.h / 2, Math.max(r.w, r.h))) layers.push({ y: r.y + r.h, draw: fn }); };
-    add(V.bodega, drawWorldBodega); add(V.cancha, drawWorldCancha); drawHortaLayers(layers, seen); add(V.fogo, drawWorldFogo); add(V.marco, drawWorldMarco); drawForage(layers, seen);
-    // o campo: cerca, uma vaca e a placa, para ninguém confundir com só um fogo de chão
-    add({ ...V.fogo, h: V.fogo.h - 120 }, () => { const f = V.fogo; worldFence(f.x, f.y + 40, f.w); drawBoi(2, Math.floor(frameClock * 1.2) % 2 ? 2 : 0, f.x + f.w - 46, f.y + 118, 1.1, true); signBoard(f.x + f.w / 2, f.y + 6, 180, 'CAMPO E CURRAL', 12); });
+    add(V.bodega, drawWorldBodega); add(V.cancha, drawWorldCancha); drawHortaLayers(layers, seen); add({ ...V.fogo, h: 232 }, drawWorldFogo); add(V.marco, drawWorldMarco); drawForage(layers, seen);
+    // o campo: cerca, uma vaca e a placa, para ninguém confundir com só um fogo de chão. Cada um na sua profundidade (a cerca
+    // no pé dela, a fogueira na base das pedras) e o bloqueio cobre tudo: o Sadi não some mais atrás da cerca nem dos espetos.
+    add({ ...V.fogo, h: 70 }, () => { const f = V.fogo; worldFence(f.x, f.y + 40, f.w); signBoard(f.x + f.w / 2, f.y + 6, 180, 'CAMPO E CURRAL', 12); });
+    add({ ...V.fogo, h: 120 }, () => { const f = V.fogo; drawBoi(2, Math.floor(frameClock * 1.2) % 2 ? 2 : 0, f.x + f.w - 46, f.y + 118, 1.1, true); });
     add(V.agro, () => drawWorldShop(V.agro, 'ARMAZÉM QUERÊNCIA', 'produtos para agricultura', '#4a7a3a', '#e8e0c8', ['semente', 'regador', 'enxada']));
     add(V.gado, () => drawWorldShop(V.gado, 'CASA DO CAMPEIRO', 'produtos para pecuária', '#8a3a24', '#e8d8b8', ['sal', 'racao', 'arreio']));
     add(V.atacado, () => drawWorldShop(V.atacado, 'ARMAZÉM GERAL', 'bebidas, pão e balcão', '#2a5a8a', '#e8e0d0', ['garrafa', 'sal', 'garrafa']));

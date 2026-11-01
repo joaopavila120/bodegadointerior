@@ -1,6 +1,6 @@
 // Os bichos brabos novos da mata adentro (quem aparece em cada trecho fica em mata-trechos.js).
 //   · Cobra-coral: pequena e vistosa (vermelho, preto e branco), anda pela picada. Chegou perto, ela se enrola (o círculo
-//     vermelho avisa) e dá o bote. A picada envenena: tira vida devagar até passar; o chá de marcela corta o veneno.
+//     vermelho avisa) e dá o bote ligeiro. A picada envenena: tira vida devagar até passar; o chá de marcela corta o veneno.
 //   · Teiú: o lagartão preto e branco. Anda aos arrancos, morde dando o bote e, de perto, dá rabada em volta (o anel
 //     amarelo avisa: sai de perto).
 //   · Ouriço-cacheiro: devagar, mas eriça os espinhos e solta uma chuva deles. Bater nele de espinho em pé espeta a mão;
@@ -13,7 +13,8 @@ CAVE_BEASTS.coral = { name: 'Cobra-coral', hp: 14, speed: 60, dmg: 8, r: 18, cas
 CAVE_BEASTS.teiu = { name: 'Teiú', hp: 40, speed: 170, dmg: 12, r: 28, cash: [3, 6], from: 999, weight: 0 };
 CAVE_BEASTS.ourico = { name: 'Ouriço-cacheiro', hp: 30, speed: 45, dmg: 6, r: 24, cash: [3, 5], from: 999, weight: 0 };
 CAVE_BEASTS.corposeco = { name: 'Corpo-seco', hp: 60, speed: 70, dmg: 12, r: 26, cash: [5, 9], from: 999, weight: 0 };
-const MATA_BICHO = { coralBote: 95, venenoTempo: 6, teiuRabo: 140, espinhos: 12, espinhoVel: 380, agarra: 1.8 };
+// O bote da coral: `coralArma` enrolada avisando, `coralPica` o salto. O veneno: `venenoDano` por segundo durante `venenoTempo`.
+const MATA_BICHO = { coralBote: 95, coralArma: .35, coralPica: .14, venenoTempo: 8, venenoDano: 3, teiuRabo: 140, espinhos: 12, espinhoVel: 380, agarra: 1.8 };
 let mataGrab = null;   // o corpo-seco segurando o Sadi: { b, t, tick }
 
 // ---------- Comportamento ----------
@@ -22,6 +23,8 @@ function mataWander(b, speed, dt) {
   const r = mataGo(b, { x: b.tx, y: b.ty }, speed, dt);
   if (r === true || r === 'blocked' || b.t <= 0) { const a = Math.random() * Math.PI * 2, rr = 60 + Math.random() * 180, x = b.home.x + Math.cos(a) * rr, y = b.home.y + Math.sin(a) * rr * .7; if (mataFree(x, y)) { b.tx = x; b.ty = y; } b.t = 2 + Math.random() * 3; }
 }
+// A picada de cobra (a coral, a jararaca e a cascavel) envenena: tira vida devagar até passar.
+function mataEnvenena(nome, p) { mataBuffs.veneno = MATA_BICHO.venenoTempo; mataBuffs.venenoTick = .6; effect('Veneno de ' + nome + '!', p.x, p.y - 160, '#b8f070', 16); }
 function coralTick(b, dt, p) {
   const B = CAVE_BEASTS.coral, dxp = p.x - b.x, dyp = p.y - b.y, d = Math.hypot(dxp, dyp) || 1;
   b.t -= dt; b.cool = Math.max(0, b.cool - dt); b.hurt = Math.max(0, b.hurt - dt); b.attack = Math.max(0, b.attack - dt);
@@ -29,11 +32,11 @@ function coralTick(b, dt, p) {
   else if (b.state === 'chase') {
     b.frame += dt * 9; if (d > 560) { b.state = 'roam'; return; }
     mataTurn(b, dxp); mataStep(b, dxp / d * 75, dyp / d * 75, dt);
-    if (d < MATA_BICHO.coralBote && b.cool <= 0) { b.state = 'coil'; b.t = .45; b.tx = p.x; b.ty = p.y; AudioEngine.hiss?.(.4, .04, 3600); }
-  } else if (b.state === 'coil') { b.frame += dt * 2; if (b.t <= 0) { b.state = 'bite'; b.t = .18; const k = Math.hypot(b.tx - b.x, b.ty - b.y) || 1; b.vx = (b.tx - b.x) / k; b.vy = (b.ty - b.y) / k; AudioEngine.swoosh?.(.04); } }
+    if (d < MATA_BICHO.coralBote && b.cool <= 0) { b.state = 'coil'; b.t = MATA_BICHO.coralArma; b.tx = p.x; b.ty = p.y; }
+  } else if (b.state === 'coil') { b.frame += dt * 2; if (b.t <= 0) { b.state = 'bite'; b.t = MATA_BICHO.coralPica; const k = Math.hypot(b.tx - b.x, b.ty - b.y) || 1; b.vx = (b.tx - b.x) / k; b.vy = (b.ty - b.y) / k; AudioEngine.swoosh?.(.04); } }
   else if (b.state === 'bite') {
-    mataStep(b, b.vx * 380, b.vy * 380, dt);
-    if (b.t <= 0) { if (Math.hypot(p.x - b.x, p.y - b.y) < B.r + 40) { const before = caveState().hp; mataHurt(B.dmg, b); if (caveState().hp < before) { mataBuffs.veneno = MATA_BICHO.venenoTempo; mataBuffs.venenoTick = .6; effect('Veneno de coral!', p.x, p.y - 160, '#b8f070', 16); } b.attack = .3; } b.state = 'rest'; b.t = .9; b.cool = 2.2; }
+    mataStep(b, b.vx * 490, b.vy * 490, dt);
+    if (b.t <= 0) { if (Math.hypot(p.x - b.x, p.y - b.y) < B.r + 40) { const before = caveState().hp; mataHurt(B.dmg, b); if (caveState().hp < before) mataEnvenena('coral', p); b.attack = .3; } b.state = 'rest'; b.t = .9; b.cool = 2.2; }
   } else if (b.state === 'rest') { if (b.t <= 0) b.state = 'chase'; }
 }
 function teiuTick(b, dt, p) {
@@ -111,7 +114,7 @@ function mataShotsTick(N, dt) {
 function mataHpBar(b, name, y = 80) { if (b.hp < b.max && b.hp > 0) { txt(name, b.x, b.y - y, 11, '#ffe2a6'); bar(b.x - 20, b.y - y + 6, 40, b.hp / b.max, '#df674c'); } }
 // Coral: o corpo em onda, com os anéis vermelho, preto e branco; a cabeça preta com a faixa clara atrás.
 function drawCoral(b) {
-  const dir = b.dx < 0 ? -1 : 1, n = 18, coil = b.state === 'coil', bite = b.state === 'bite' ? clamp(1 - b.t / .18, 0, 1) : 0;
+  const dir = b.dx < 0 ? -1 : 1, n = 18, coil = b.state === 'coil', bite = b.state === 'bite' ? clamp(1 - b.t / MATA_BICHO.coralPica, 0, 1) : 0;
   ctx.save(); ctx.translate(b.x, b.y); ctx.scale(dir * 1.7, 1.7); if (b.hurt > 0) ctx.globalAlpha = .6 + .4 * Math.sin(frameClock * 40);
   ellipse(-8, 1, 30, 6, 'rgba(10,14,8,.35)');
   const pts = []; for (let i = 0; i < n; i++) { const k = i / (n - 1), amp = coil ? 7 : 4.5; let x = 16 - k * (coil ? 34 : 56), y = -3 + Math.sin(b.frame * 1.4 - k * 7) * amp * (.35 + k * .65); if (coil) { const a = k * Math.PI * 2.2; x = Math.cos(a) * (14 - k * 8) - 4; y = -4 + Math.sin(a) * (6 - k * 3); } if (i === 0) x += bite * 22, y -= coil ? 8 + Math.sin(frameClock * 30) * 1.5 : 0; pts.push([x, y]); }
@@ -206,7 +209,7 @@ function drawMataShots(N) {
 function drawMataBichoWarnings(N) {
   for (const b of N.beasts) {
     if (b.hp <= 0) continue;
-    if (b.kind === 'coral' && b.state === 'coil') teleArea(b.tx, b.ty, 40, 16, teleK(b.t, .45));
+    if (b.kind === 'coral' && b.state === 'coil') teleArea(b.tx, b.ty, 40, 16, teleK(b.t, MATA_BICHO.coralArma));
     if (b.kind === 'teiu' && b.state === 'tailwind') teleArea(b.x, b.y, MATA_BICHO.teiuRabo, MATA_BICHO.teiuRabo / 1.2 * .6, teleK(b.t, .5), '255,190,50');
     if (b.kind === 'teiu' && b.state === 'windup') teleLane(b.x, b.y, Math.atan2(b.vy, b.vx), 130, 30, teleK(b.t, .35), '255,140,40');
     if (b.kind === 'ourico' && b.state === 'bristle') teleArea(b.x, b.y - 10, 150, 82, teleK(b.t, .7), '255,220,120');

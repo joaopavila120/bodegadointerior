@@ -3,7 +3,7 @@
   action('new');sceneSkip();closeDialog(true);skipWorldTalk();
   G.prologue.done=true;G.tutorial.complete=true;G.phase='prep';G.day=30;
   G.regions={serra:true,sc:true};G.valterQueue=[];G.teachQueue=[];G.mount={owned:false};
-  G.missions={};for(const m of storyChapters())if(m.chapter<15)G.missions[m.id]={status:'done',day:1};
+  G.missions={};for(const m of storyChapters())if(m.id !== 'lendaria')G.missions[m.id]={status:'done',day:1};
   started=true;paused=false;scene=null;talkState=null;G.mataSeen=true;G.mataGralha=true;
   mataState().metGaribaldi=true;G.mata.folks={};
   worldOut={map:'mata',x:200,y:985,dx:0,dy:1};

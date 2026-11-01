@@ -148,10 +148,10 @@ function diaboEscape(run, b) {
 }
 // A Teiniaguá oferece: ouro, poder ou nada. Quem recusa ganha coragem.
 function salamancaTemptation() {
-  openDialog('A Teiniaguá', `<div class="rpg-speaker">${expansionPortrait('cave-beasts-b-v1', 4, 88)}<div><p><b>Teiniaguá</b> · da gaiola de luz, ela fala na tua cabeça</p><p>“Ninguém vence o Anhangá-Pitã sem pagar. Escolhe, gaúcho: ouro, poder… ou nada.”</p></div></div><div class="store-list">
-    <div class="supply"><span class="icon"><span class="bag-emoji">🪙</span></span><div><b>Ouro</b><p>R$ 150 na mão agora. O Diabo recupera um quarto da vida.</p></div><button data-act="salamancaEscolha" data-id="ouro">Aceitar o ouro</button></div>
-    <div class="supply"><span class="icon"><span class="bag-emoji">🔥</span></span><div><b>Poder</b><p>+60% de dano por 20 segundos. O Diabo recupera um quarto da vida.</p></div><button data-act="salamancaEscolha" data-id="poder">Aceitar o poder</button></div>
-    <div class="supply"><span class="icon"><span class="bag-emoji">🤠</span></span><div><b>Nada</b><p>Recusar a Salamanca. Coragem de gaúcho: +25% de dano até o fim da luta e +30 de vida.</p></div><button class="primary" data-act="salamancaEscolha" data-id="nada">Recusar</button></div></div>`, 'salamanca');
+  talkChoose([[teiniaguaSpeaker(), 'Da gaiola de luz, ela fala na tua cabeça: ninguém vence o Anhangá-Pitã sem pagar. Escolhe, gaúcho: ouro, poder… ou nada.', 'A Teiniaguá']], [
+    ['Ouro: R$ 150 na mão agora (o Diabo recupera um quarto da vida)', 'salamancaEscolha', 'ouro'],
+    ['Poder: +60% de dano por 20 segundos (o Diabo recupera um quarto da vida)', 'salamancaEscolha', 'poder'],
+    ['Nada: recusar a Salamanca (coragem de gaúcho: +25% de dano até o fim da luta e +30 de vida)', 'salamancaEscolha', 'nada']]);
 }
 function salamancaChoice(id) {
   const run = salamancaRun(), b = salamancaBoss(run); closeDialog(true); if (!run || !b) return;

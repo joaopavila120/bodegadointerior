@@ -37,8 +37,8 @@
  check(G.tutorial.complete&&G.phase==='closed'&&G.stats.served===8&&G.stats.lost===0&&modal==='tvAward','concluir as lições encerra o dia, sem perdas, e entrega a TV');
  check(G.tv&&!G.tables[0].dirty,'TV e limpeza permanecem após tutorial');
  action('tvAwardClose');check(modal==='report'&&sportState().challenge.tutorial,'relatório aparece antes do convite');closeDialog();
- check(!modal&&PEOPLE[G.challengeVisit?.person]?.id==='lauro','o Lauro Bolador entra pela porta da bodega antes de convidar');for(let n=0;n<400&&modal!=='sportChallenge';n++)simulate(.05);
- check(modal==='sportChallenge'&&G.challengeVisit.arrived,'o convite para a bocha aparece quando ele chega até você');answerSportChallenge(false);check(G.challengeVisit?.leaving,'recusar faz o visitante ir embora');
+ check(!modal&&PEOPLE[G.challengeVisit?.person]?.id==='lauro','o Lauro Bolador entra pela porta da bodega antes de convidar');const convite=()=>talkState?.choices?.some(o=>o[1]==='sportAccept');for(let n=0;n<400&&!convite();n++)simulate(.05);
+ check(convite()&&G.challengeVisit.arrived,'o convite para a bocha aparece quando ele chega até você');answerSportChallenge(false);check(G.challengeVisit?.leaving,'recusar faz o visitante ir embora');
  check(homeLesson()==='sleep'&&/sua casa/.test(waitingHint()),'fim do primeiro dia: a dica manda ir dormir em casa');
  goOutside();{const p=worldGuidePoint(),h=guideSpot('player-home');check(p&&h&&Math.hypot(p.x-h.x,p.y-h.y)<1,'no pátio, a seta aponta a casa');}
  enterInterior('casa:sadi');closeDialog(true);check(/cama/.test(waitingHint()),'em casa: a dica manda ir pra cama');

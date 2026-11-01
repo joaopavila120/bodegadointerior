@@ -39,7 +39,7 @@ function mataAnimal(i,x,y,w,h,dx=1){
     if(!MATA_ART['mata-fauna'].naturalWidth)return cobra(b,cascavel);
     const d=Math.hypot(worldOut.x-b.x,worldOut.y-b.y),hidden=b.state==='hide'&&d>150;
     let x=b.x,y=b.y;
-    if(b.state==='strike'){const k=clamp(1-Math.max(0,b.t)/.18,0,1);x+=(b.tx-x)*k*.75;y+=(b.ty-y)*k*.75;}
+    if(b.state==='strike'){const k=clamp(1-Math.max(0,b.t)/MATA_BICHOS.pica,0,1);x+=(b.tx-x)*k*.75;y+=(b.ty-y)*k*.75;}
     ctx.save();ctx.globalAlpha=hidden?.32:1;
     const shake=b.state==='warn'?Math.sin(frameClock*28)*1.5:0;
     mataAnimal(cascavel?3:2,x+shake,y,65,51,b.dx);ctx.restore();

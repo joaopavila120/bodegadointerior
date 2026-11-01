@@ -318,10 +318,9 @@ function worldGuidePoint() {
   if (prologueActive()) goal = prologueStep().target;
   else if (waiting) goal = { map: 'cancha', spot: 'waiting' };
   else if (tutorialActive() && G.phase === 'prep') goal = { kitchen: true };
-  // Depois dos tutoriais, a seta segue a história até o capítulo 4 (chapterGuide); daí em diante, o jogador anda sozinho.
+  // Depois dos tutoriais, a seta só aparece onde é difícil achar sozinho (chapterGuide).
   else {
     const g = chapterGuide(); if (!g) return null;
-    if (g.cave && inCave()) { const run = caveFloorRun(); if (run.floor < BAIA_FLOOR) return run.ladder?.shown ? { x: run.ladder.x, y: run.ladder.y - 70 } : null; const s = run.floor === BAIA_FLOOR && baiaCaveSpot(run); return s ? { x: s.x, y: s.y - 70 } : null; }
     return routeGuide(g);
   }
   if (!goal) return null;
@@ -336,15 +335,13 @@ function worldGuidePoint() {
   }
   return map === 'vila' && WORLD_ENTRANCES[goal.map] ? guideSpot(WORLD_ENTRANCES[goal.map]) : null;
 }
-// A seta da história, do capítulo 1 ao 4: a Ferragem (trago), o fim da estrada da Serra (mata do Garibaldi), a porta da
-// bodega de manhã (três noites), a casa do Mano Lima e a gruta da Serra (lá dentro, a escada e a Baia).
+// A seta da história só onde é difícil achar sozinho: o capítulo 1 (a primeira compra, na Ferragem) e o capítulo 2 (a
+// primeira viagem longa, até o fim da estrada da Serra e a mata do Garibaldi). Daí em diante, o quadro dá as dicas e o
+// jogador procura.
 function chapterGuide() {
-  if (typeof baiaCalling === 'function' && baiaCalling()) return { region: 'vila', spot: 'house:manolima' };
   const ch = activeChapter(); if (!ch) return null;
   if (ch.id === 'trago') return upgradeOwned('trago') ? null : ch.guide;
   if (ch.id === 'fantasma') return G.mata?.metGaribaldi ? null : { region: 'serra', point: () => ({ x: SERRA.W - 90, y: SERRA.roadY + 45 }) };
-  if (ch.id === 'abertura') return G.phase === 'prep' ? { region: 'vila', spot: 'door' } : null;
-  if (ch.id === 'baia') { const s = baiaStage(); return s === 'return' ? { region: 'vila', spot: 'house:manolima' } : ['search', 'trail'].includes(s) ? { region: 'serra', spot: 'caverna', cave: true } : null; }
   return null;
 }
 // Caminho até o objetivo do capítulo: dentro do lugar, o ponto exato; na região, a porta; noutra região, a estrada.

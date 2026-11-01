@@ -1,7 +1,8 @@
 // Mais bichos da mata.
 //   · Papagaios-charão (mansos): de vez em quando um bando passa voando por cima do pinheiral, na gritaria, e pousa na
 //     copa de uma araucária. Passou embaixo, o bando levanta voo de novo. Só no pinheiral (trecho 1 e do 2 ao 7).
-//   · Jararaca: camuflada no chão, na beira do arroio. Chegou perto, ela marca o bote (alvo vermelho no chão) e ataca.
+//   · Jararaca: camuflada no chão, na beira do arroio. Chegou perto, ela marca o bote (alvo vermelho no chão) e ataca
+//     ligeiro; a picada envenena, como a da coral.
 //   · Queixadas: bando de cinco porcos-do-mato que corre junto. Eles miram (a faixa vermelha avisa) e passam em
 //     disparada: tem que sair do caminho.
 //   Quem aparece em cada trecho, e quando, fica em mata-trechos.js.
@@ -9,7 +10,8 @@
 
 CAVE_BEASTS.queixada = { name: 'Queixada', hp: 18, speed: 150, dmg: 9, r: 26, cash: [1, 3], from: 999, weight: 0 };
 CAVE_BEASTS.jararaca = { name: 'Jararaca', hp: 14, speed: 0, dmg: 12, r: 20, cash: [2, 4], from: 999, weight: 0 };
-const MATA_BICHOS = { queixadas: 5, bote: 135, boteR: 52, estouro: 380 };
+// `arma`: o tempo do alvo no chão até o bote; `pica`: o bote esticando até o alvo.
+const MATA_BICHOS = { queixadas: 5, bote: 135, boteR: 52, arma: .58, pica: .14, estouro: 380 };
 
 // =================== Papagaios-charão ===================
 let mataParrots = null;
@@ -77,9 +79,9 @@ function drawMataParrots() {
 function mataJararacaTick(b, dt, p) {
   const B = CAVE_BEASTS[b.kind] || CAVE_BEASTS.jararaca; b.cool = Math.max(0, b.cool - dt); b.hurt = Math.max(0, b.hurt - dt); b.attack = Math.max(0, b.attack - dt); b.t -= dt; b.frame += dt * 3;
   const d = Math.hypot(p.x - b.x, p.y - b.y);
-  if (b.state === 'hide') { if (d < MATA_BICHOS.bote && b.cool <= 0) { b.state = 'warn'; b.t = .75; b.tx = p.x; b.ty = p.y; b.dx = p.x < b.x ? -1 : 1; AudioEngine.hiss?.(.6, .05, 3200); } }
-  else if (b.state === 'warn') { if (b.t <= 0) { b.state = 'strike'; b.t = .18; AudioEngine.swoosh?.(.05); } }
-  else if (b.state === 'strike') { if (b.t <= 0) { if (Math.hypot(p.x - b.tx, p.y - b.ty) < MATA_BICHOS.boteR) { mataHurt(B.dmg, b); b.attack = .3; } b.state = 'rest'; b.t = 1.1; b.cool = 2.2; } }
+  if (b.state === 'hide') { if (d < MATA_BICHOS.bote && b.cool <= 0) { b.state = 'warn'; b.t = MATA_BICHOS.arma; b.tx = p.x; b.ty = p.y; b.dx = p.x < b.x ? -1 : 1; } }
+  else if (b.state === 'warn') { if (b.t <= 0) { b.state = 'strike'; b.t = MATA_BICHOS.pica; AudioEngine.swoosh?.(.05); } }
+  else if (b.state === 'strike') { if (b.t <= 0) { if (Math.hypot(p.x - b.tx, p.y - b.ty) < MATA_BICHOS.boteR) { const before = caveState().hp; mataHurt(B.dmg, b); if (caveState().hp < before) mataEnvenena(b.kind === 'cascavel' ? 'cascavel' : 'jararaca', p); b.attack = .3; } b.state = 'rest'; b.t = 1.1; b.cool = 2.2; } }
   else if (b.state === 'rest') { if (b.t <= 0) b.state = 'hide'; }
 }
 // O bando: mira junto, passa em disparada numa linha reta, se espalha, dá a volta e mira de novo.
@@ -147,7 +149,7 @@ function drawJararaca(b, cascavel = false) {
 // Por cima do escuro: o alvo do bote e a faixa do estouro das queixadas.
 function drawMataWarnings() {
   const N = mataNight; if (!N || !mataCombatOn() || scene) return;
-  for (const b of N.beasts) if (b.hp > 0 && (b.kind === 'jararaca' || b.kind === 'cascavel') && b.state === 'warn') teleArea(b.tx, b.ty, 46, 18, teleK(b.t, .75));
+  for (const b of N.beasts) if (b.hp > 0 && (b.kind === 'jararaca' || b.kind === 'cascavel') && b.state === 'warn') teleArea(b.tx, b.ty, 46, 18, teleK(b.t, MATA_BICHOS.arma));
   for (const h of N.herds || []) if (h.state === 'gather') {
     teleLane(h.cx, h.cy - 10, Math.atan2(h.vy, h.vx), 640, 140, teleK(h.t, .75), '255,90,50', .5);
   }

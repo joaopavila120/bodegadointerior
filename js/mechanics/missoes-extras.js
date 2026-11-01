@@ -196,7 +196,7 @@ function rioPlant(id) {
 }
 function rioHerb(id) {
   const h = RIO_HERBS.find(x => x.id === id); if (!h || !missionActive('rio') || rioState().herbs[id]) return;
-  openDialog('Uma erva do mato', `<p>${h.clue}</p><p><b>Que erva é essa?</b></p><div class="actions">${h.options.map(o => `<button class="primary" data-act="rioErva" data-id="${id}:${o}">${o}</button>`).join('')}</div>`, 'rioErva');
+  talkChoose([['sadi', '(' + h.clue + ' Que erva é essa?)', 'Uma erva do mato']], [...h.options.map(o => [o, 'rioErva', id + ':' + o]), ['Olhar de novo depois']], h.options.length);
 }
 function rioErva(arg) {
   const [id, name] = String(arg).split(':'), h = RIO_HERBS.find(x => x.id === id); if (!h) return; closeDialog(true);

@@ -58,12 +58,16 @@ function historyPose(moving, dx = 1, dy = 0, action = false, phase = frameClock 
   // Back has two opposing strides and a planted passing pose.
   return direction === 2 ? [9, 8, 10, 8][Math.floor(phase) % 4] : direction * 4 + step;
 }
+// As almas (Garibaldi, Anita, Bento, o Lanceiro Negro e o Sepé): aura azul por trás e o corpo meio transparente.
+const SPIRIT_IDS = new Set(['garibaldi-ghost', 'anita', 'bento', 'lanceiro', 'sepe']);
 function historyFigure(id, x, y, alpha, dx, moving, dy, action = false, phase) {
   if (!ACTION_ART[id]?.naturalWidth) return false;
   const ghost = CAMP_FOLK_LIST.find(f => f.id === id)?.ghost || ['mariath', 'marinheiro', 'garibaldi-ghost'].includes(id);
   const index = historyPose(moving, dx, dy, action, phase), size = FOLK_ART_SIZE[id];
-  ellipse(x, y + 2, 21, 6, `rgba(22,35,33,${.27 * alpha})`);
-  ctx.save(); ctx.globalAlpha *= alpha * (ghost ? .84 : 1);
+  const spirit = SPIRIT_IDS.has(id);
+  ellipse(x, y + 2, 21, 6, `rgba(22,35,33,${(spirit ? .14 : .27) * alpha})`);
+  if (spirit) { const k = alpha * (.85 + .15 * Math.sin(frameClock * 2 + x * .01)); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - size * .45, size * .72, .3 * k, '110,170,255'); glow(x, y - size * .5, size * .36, .2 * k, '175,215,255'); ctx.restore(); }
+  ctx.save(); ctx.globalAlpha *= alpha * (spirit ? .6 : ghost ? .84 : 1);
   // Small breathing motion, no expensive per-frame glow filters or stretched legs.
   const bob = ghost ? Math.sin(frameClock * 1.7 + x * .01) * 1.5 : 0;
   actionSprite(id, index, x, y + bob, size, dx < 0 && (index >= 4 && index < 8 || index === 11));
@@ -150,7 +154,7 @@ function historyPortrait(id, size = 104) {
 }
 
 function forestBeastPose(b) {
-  if (b.kind === 'coral') return b.state === 'coil' ? (b.t > .2 ? 4 : 5) : b.state === 'bite' ? 6 : b.state === 'rest' ? 7 : Math.floor(b.frame || 0) % 4;
+  if (b.kind === 'coral') return b.state === 'coil' ? (b.t > MATA_BICHO.coralArma * .45 ? 4 : 5) : b.state === 'bite' ? 6 : b.state === 'rest' ? 7 : Math.floor(b.frame || 0) % 4;
   if (b.kind === 'teiu') return ['tailwind', 'windup'].includes(b.state) ? 4 : b.state === 'lunge' ? 5 : b.state === 'tail' ? 6 : ['rest', 'pause'].includes(b.state) ? 7 : Math.floor(b.frame || 0) % 4;
   if (b.kind === 'ourico') return b.state === 'bristle' ? (b.t > .35 ? 4 : 5) : b.state === 'shoot' ? 6 : b.state === 'rest' ? 7 : Math.floor(b.frame || 0) % 4;
   return ['buried', 'down'].includes(b.state) ? 7 : b.state === 'rise' ? 4 : ['reach', 'grab'].includes(b.state) ? 5 : b.state === 'stagger' ? 6 : Math.floor(b.frame || 0) % 4;

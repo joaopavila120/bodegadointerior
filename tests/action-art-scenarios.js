@@ -3,7 +3,7 @@
   action('new'); sceneSkip(); closeDialog(true);
   G.prologue.done = true; G.tutorial.complete = true; G.phase = 'prep'; G.day = 30;
   G.regions = { serra: true, sc: true }; G.valterQueue = []; G.teachQueue = []; G.mount = { owned: false };
-  G.missions = {}; for (const m of storyChapters()) if (m.chapter < 15) G.missions[m.id] = { status: 'done', day: 1 };
+  G.missions = {}; for (const m of storyChapters()) if (m.id !== 'lendaria') G.missions[m.id] = { status: 'done', day: 1 };
   started = true; paused = false; scene = null; talkState = null; closeDialog(true);
   check(Object.keys(ACTION_ART).length === 18 && Object.values(ACTION_ART).every(im => im.naturalWidth), '18 atlases loaded');
   check(Object.values(ACTION_ART_CROPS).reduce((n, s) => n + s.frames.length, 0) === 208, '208 complete poses');

@@ -77,7 +77,7 @@ function drawFiadoCaderno(x, y) {
   // O caderninho em cima da cabeça de quem deve.
   const land = worldLandscape; worldLandscape = function (M, seen, layers, view) {
     land(M, seen, layers, view); if (M.id !== 'vila') return;
-    for (const w of worldWalkers) if (!w.flee && seen(w.x, w.y) && fiadoRuaDebt(w.person)) layers.push({ y: 1e7, draw: () => drawFiadoCaderno(w.x, w.y - 168 + Math.sin(frameClock * 3 + w.x) * 3) });
+    for (const w of worldWalkers) if (!w.flee && seen(w.x, w.y) && fiadoRuaDebt(w.person)) layers.push({ y: 1e7, draw: () => drawFiadoCaderno(w.x, w.y - 168 + Math.sin(frameClock * 3 + w.person) * 3) });
   };
   const panel = fiadoPanel; fiadoPanel = function () { return panel().replace('alguns somem.</p>', 'alguns somem. Quem deve às vezes anda pela Fronteira (📒 na cabeça): cara a cara, a cobrança rende mais.</p>'); };
 }

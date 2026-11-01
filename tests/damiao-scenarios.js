@@ -3,7 +3,7 @@
   action('new'); sceneSkip(); closeDialog(true); skipWorldTalk();
   G.prologue.done = true; G.tutorial.complete = true; G.phase = 'prep'; G.day = 30;
   G.regions = { serra: true, sc: true }; G.valterQueue = []; G.teachQueue = [];
-  G.missions = {}; for (const m of storyChapters()) if (m.chapter < 15) G.missions[m.id] = { status: 'done', day: 1 };
+  G.missions = {}; for (const m of storyChapters()) if (m.id !== 'lendaria') G.missions[m.id] = { status: 'done', day: 1 };
   started = true; paused = false; scene = null; talkState = null;
   const i = PEOPLE.findIndex(p => p.id === 'damiao'), p = PEOPLE[i];
   check(i === PEOPLE.length - 1 && !isSpecial(i) && !p.worldOnly, 'Damião é um freguês comum, sem reordenar os personagens antigos');

@@ -36,8 +36,10 @@ const SALAMANCA_PROVAS = [
 ];
 function salamancaQuestion() {
   const q = G.salamanca, [ask, opts] = SALAMANCA_PROVAS[q.n];
-  openDialog('🦎 As provas da Salamanca · ' + (q.n + 1) + '/3', `<div class="rpg-speaker">${expansionPortrait('cave-beasts-b-v1', 4, 88)}<div><p><b>Teiniaguá</b></p><p>${ask}</p></div></div><p class="small-note">O que o Sadi responde?</p><div class="choice-list">${opts.map((o, k) => `<button class="choice" data-act="salamancaAnswer" data-id="${k}">${o}</button>`).join('')}</div>`, 'salamanca');
+  talkChoose([[teiniaguaSpeaker(), ask.replace(/[“”]/g, ''), '🦎 As provas da Salamanca · ' + (q.n + 1) + '/3']], opts.map((o, k) => [o, 'salamancaAnswer', k]));
 }
+// A Teiniaguá falando na caixa azul, com o retrato dela.
+function teiniaguaSpeaker() { return { name: 'Teiniaguá', portrait: expansionPortrait('cave-beasts-b-v1', 4, 104) }; }
 function salamancaAnswer(k) {
   const q = G.salamanca; if (!q) return; if (Number(k) === SALAMANCA_PROVAS[q.n][2]) { q.right++; AudioEngine.heart(); } else AudioEngine.bad();
   q.n++; if (q.n < SALAMANCA_PROVAS.length) { salamancaQuestion(); return; }

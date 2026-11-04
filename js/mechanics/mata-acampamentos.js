@@ -159,11 +159,14 @@ function paintFolk(L) {
     ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1.2; for (const x of [-8, 0, 8]) { ctx.beginPath(); ctx.moveTo(x * .6, -54); ctx.lineTo(x * 1.3, -14); ctx.stroke(); }
     for (const x of [-8, 8]) shape([[x - 5, -14], [x + 5, -14], [x + 7, -2], [x - 6, -2]], L.boots);
   } else for (const side of [-1, 1]) {
-    const hx = side * 8;
-    shape([[hx - 6, -56], [hx + 6, -56], [hx + 5, -12], [hx - 5, -12]], L.pants || L.skin);
+    // Andando (L.step), uma perna vai pra frente e a outra fica pra trás, com o pé de trás um pouco erguido.
+    const hx = side * 8, st = (L.step || 0) * side, up = st < 0 ? -st * .5 : 0;
+    shape([[hx - 6, -56], [hx + 6, -56], [hx + 5 + st, -12 - up], [hx - 5 + st, -12 - up]], L.pants || L.skin);
     if (L.scaly) for (let k = 0; k < 4; k++) ellipse(hx, -48 + k * 10, 2, 1.5, '#4a4a26');
+    ctx.save(); ctx.translate(st, -up);
     if (L.barefoot) shape([[hx - 5, -13], [hx + 5, -13], [hx + 9, -2], [hx - 5, -2]], L.skin, 1.2);
     else shape([[hx - 6, -22], [hx + 6, -22], [hx + 6, -6], [hx + 11, -6], [hx + 11, 0], [hx - 6, 0]], L.boots);
+    ctx.restore();
   }
   if (L.leafSkirt) for (let k = 0; k < 8; k++) shape([[-17 + k * 4.6, -62], [-14 + k * 4.6, -38], [-11 + k * 4.6, -62]], k % 2 ? '#4a7a2a' : '#3a6a24', 1);
   // Braços atrás do tronco.

@@ -188,7 +188,7 @@ let mataNight = null;
 // Quem chama decide o que nasce (os trechos e o navio trocam esta função); no trecho 1 não nasce nada.
 function mataNightStart() { mataNight = { day: G.day, beasts: [], drops: [], herds: [], shots: [], cd: 0, inv: 0, hurt: 0, swing: null }; }
 function mataHurt(dmg, from) {
-  const N = mataNight, st = caveState(); if (!N || N.inv > 0 || N.faint) return;
+  const N = mataNight, st = caveState(); if (!N || N.inv > 0 || N.faint || worldDash) return;
   st.hp = Math.max(0, st.hp - dmg); N.inv = .9; N.hurt = .3; AudioEngine.caveOuch?.(); effect('−' + dmg, worldOut.x, worldOut.y - 130, '#ff8a7a', 24);
   const d = Math.hypot(worldOut.x - from.x, worldOut.y - from.y) || 1; mataStep(worldOut, (worldOut.x - from.x) / d * 60, (worldOut.y - from.y) / d * 60, 1);
   if (st.hp <= 0) mataFaint();
@@ -233,7 +233,7 @@ function mataAttack() {
   const reach = caveReach(); let flesh = false;
   for (const b of N.beasts) {
     if (b.hp <= 0) continue; const d = Math.hypot(b.x - p.x, (b.y - 20) - (p.y - 30)); if (d > reach) continue;
-    const a = Math.atan2((b.y - 20) - (p.y - 30), b.x - p.x); if (Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) > 1.25 && d > 40) continue;
+    const a = Math.atan2((b.y - 20) - (p.y - 30), b.x - p.x); if (Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) > mataArco() && d > 40) continue;
     const dmg = caveDmg(); b.hp -= dmg; b.hurt = .18; const k = Math.hypot(b.x - p.x, b.y - p.y) || 1; mataStep(b, (b.x - p.x) / k * 45, (b.y - p.y) / k * 45, 1);
     if (b.state === 'lunge' || b.state === 'windup') { b.state = 'rest'; b.t = .6; }
     if (!flesh) { AudioEngine.caveFlesh?.('facao'); AudioEngine.caveCry?.(b.kind, b.hp <= 0); } flesh = true; fxStars(b.x, b.y - 50, 3);
@@ -287,4 +287,6 @@ function drawMataNightLayers(layers, seen) {
   document.addEventListener('DOMContentLoaded', () => { $('hudLayer')?.insertAdjacentHTML('beforeend', '<button id="mataAttackButton" class="sling-button cave-attack hidden" type="button" data-act="mataAttack">🔪 Facão</button>'); });
   const act = action; action = function (name, id) { if (name === 'mataAttack') { mataAttack(); return; } return act(name, id); };
 }
+// Meia abertura do leque do golpe (radianos).
+function mataArco() { return 1.25; }
 function mataUpdateButton() { const btn = $('mataAttackButton'); if (btn) btn.classList.toggle('hidden', !(mataCombatOn() && caveState().facao)); }

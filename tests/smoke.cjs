@@ -101,6 +101,131 @@ async function main() {
     };
     await send('Runtime.enable'); await send('Page.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    if(process.env.BODEGA_FOCUS==='newCustomers'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),customerArtReady,restoreDialogues()])');
+      assert.equal(await evaluate('customerArtReady'),true);
+      for(const file of ['new-customers-scenarios.js','teiniagua-forms-scenarios.js','damiao-scenarios.js','missions-scenarios.js','novidades-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await evaluate('scene=null;closeDialog(true);worldOut=null;G=fresh();started=true;paused=true;');
+      const gallery=await evaluate(fs.readFileSync(path.join(__dirname,'new-customers-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});fs.writeFileSync(path.join(root,'docs/previews/new-customers.png'),Buffer.from(gallery.split(',')[1],'base64'));
+      for(const [form,data] of Object.entries(await evaluate('window.teiniaguaPreviews')))fs.writeFileSync(path.join(root,'docs/previews/teiniagua-'+form+'.png'),Buffer.from(data.split(',')[1],'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('customerArtReady'),true);
+      await evaluate('restoreDialogues()');assert.equal(await evaluate('customDialogues.gaucha_chique.length'),8);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS new customers: HTTP, file://, editable dialogue and story integration');return;
+    }
+    if(process.env.BODEGA_FOCUS==='sadiTools'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadSadiToolArt()])');
+      for(const file of ['sadi-tools-scenarios.js','action-art-scenarios.js','novidades-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      const gallery=await evaluate(fs.readFileSync(path.join(__dirname,'sadi-tools-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});fs.writeFileSync(path.join(root,'docs/previews/sadi-tools-poses.png'),Buffer.from(gallery.split(',')[1],'base64'));
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadSadiToolArt()])');
+      await evaluate(`G=fresh();G.day=40;G.prologue={done:true};G.tutorial.complete=true;G.phase='prep';started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();$('start').classList.add('hidden');$('phone').classList.add('hidden');G.cave={facao:true,hp:100,forged:{sabre:true},weapon:'sabre'};worldWalkers=[];worldOut={map:'ilha',x:3200,y:1420,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.hurt=0;paused=false;mataAttack();mataNight.swing.t=.08;paused=true;refreshHUD();draw();`);
+      let shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/sadi-sabre-game.png'),Buffer.from(shot.data,'base64'));
+      await evaluate(`mataNight=null;worldOut=null;G.herd=4;G.lassoTaught=true;startLasso();scene=null;closeDialog(true);paused=false;Object.assign(G.player,{x:700,y:700,dx:1,dy:0});lassoCharge();G.lasso.time=.3;G.lasso.charge=.4;paused=true;refreshHUD();draw();`);
+      shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/sadi-laco-game.png'),Buffer.from(shot.data,'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadSadiToolArt()'),true);
+      blockedPath='/assets/images/actions/sadi-sabre-v2.png';await load(base+'/index.html');assert.equal(await evaluate('loadSadiToolArt()'),false);
+      await evaluate(`G=fresh();started=true;G.cave={facao:true,hp:100,forged:{sabre:true},weapon:'sabre'};worldOut={map:'ilha',x:3200,y:1420,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.hurt=0;mataNight.swing={t:.1,ang:0,artWeapon:'sabre'};drawExpansionPerson(0,500,500,false,true,1,false,null,0);`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS sabre/lasso: HTTP, file:// and missing atlas fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='fortCannons'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt()])');
+      console.log('PASS novidades: '+(await evaluate(fs.readFileSync(path.join(__dirname,'novidades-scenarios.js'),'utf8'))).length+' checks');
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt()])');
+      await evaluate(`G=fresh();G.day=40;G.prologue={done:true};G.tutorial.complete=true;G.phase='prep';started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');caveState().facao=true;worldWalkers=[];worldOut={map:'ilha',x:3200,y:1490,dx:1,dy:0};camera.zoom=.85;mataNight=null;refreshHUD();draw();`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const[name,code]of [['fort-cannons-courtyard','draw();'],['fort-cannons-fire',`worldOut.x=2900;camera.zoom=1;mataNightStart();mataNight.beasts=[ilhaMob('grenfell',{x:3100,y:1320},()=>.5,{boss:true,state:'chase',fase:1})];mataNight.grenfell=true;mataNight.canhoes=[];grenfellCanhoes(mataNight,{x:2900,y:1350},1);mataNight.canhoes[0].t-=.05;draw();`]]){
+        await evaluate(code);const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate(`loadIslandArt(['canhao-patio'])`),true);
+      blockedPath='/assets/images/island/canhao-patio-v1.png';await load(base+'/index.html');assert.equal(await evaluate(`loadIslandArt(['canhao-patio'])`),false);
+      await evaluate(`for(const w of FORT_PARTS.walls.filter(w=>w.cannons))drawFortWall(w);`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS inward cannons: HTTP, file:// and missing PNG fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='futureArt'){
+      for(const url of [base+'/assets/images/future-characters/preview.html',pathToFileURL(path.join(root,'assets/images/future-characters/preview.html')).href]){
+        await send('Page.navigate',{url});
+        await waitUntil(()=>evaluate(`document.documentElement?.dataset.spritesReady==='true'`),'Historical sprite preview did not load: '+url);
+        assert.equal(await evaluate('figures.length'),3);
+        assert.equal(await evaluate(`FUTURE_CHARACTER_SPRITES['monge-joao-maria'].frames.length`),12);
+        assert.equal(await evaluate('figures.reduce((n,f)=>n+f.sheet.frames.length,0)'),36);
+        await evaluate(`setPlaying(false);for(const name of ['idle','down','right','left','up','gesture']){select.value=name;for(let i=0;i<4;i++){phase=i;render();}}select.value='idle';phase=0;render();`);
+        await click('#step');assert.equal(await evaluate('phase'),1);
+        assert.equal(await evaluate('playing'),false);
+      }
+      const shot=await send('Page.captureScreenshot',{format:'png'});
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});fs.writeFileSync(path.join(root,'docs/previews/future-characters.png'),Buffer.from(shot.data,'base64'));
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS historical art: 3 atlases, 36 poses, all directions, HTTP and file:// preview');return;
+    }
+    if(process.env.BODEGA_FOCUS==='islandItems'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt()])');
+      assert.equal(await evaluate('loadIslandItemArt()'),true);
+      for(const file of ['island-items-scenarios.js','action-art-scenarios.js','novidades-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      const gallery=await evaluate(fs.readFileSync(path.join(__dirname,'island-items-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});fs.writeFileSync(path.join(root,'docs/previews/island-items-actions.png'),Buffer.from(gallery.split(',')[1],'base64'));
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadIslandItemArt()])');
+      await evaluate(`G=fresh();G.day=40;G.cash=2000;G.prologue={done:true};G.tutorial.complete=true;G.phase='prep';G.rangedTip=true;started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();$('start').classList.add('hidden');$('phone').classList.add('hidden');caveState().facao=true;worldWalkers=[];worldOut={map:'ilha',x:3200,y:1420,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.hurt=0;mataNight.swing=null;G.up.carabina=true;G.up.arpao=true;ilhaState().cartuchos=10;`);
+      for(const weapon of ['carabina','arpao']){
+        await evaluate(`paused=false;G.rangedPick='${weapon}';Object.assign(ranged,{cd:0,reload:0,flash:0,shots:[]});rangedFire();paused=true;refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/sadi-'+weapon+'-game.png'),Buffer.from(shot.data,'base64'));
+      }
+      await evaluate(`for(const id of ['prata','sal','arruda','garapuvu','corrente_ferro','sabre_peca'])bagAdd(id,20);griggsShop();draw();`);
+      const shop=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/griggs-item-shop.png'),Buffer.from(shop.data,'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadIslandItemArt()'),true);
+      blockedPath='/assets/images/actions/sadi-carabina-v1.png';await load(base+'/index.html');assert.equal(await evaluate('loadIslandItemArt()'),false);
+      await evaluate(`G=fresh();G.prologue={done:true};started=true;worldOut={map:'ilha',x:3200,y:3500,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.hurt=0;G.up.carabina=true;G.rangedPick='carabina';ranged.hold=.4;startSadiShot('carabina',0);drawRangedHand();drawExpansionPerson(0,500,500,false,true,1,false,null,0);`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS HTTP, file://, and missing action atlas fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='islandArchitecture'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      assert.equal(await evaluate('Object.keys(ISLAND_ART).length'),0,'architecture loads only when needed');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt()])');
+      assert.equal(await evaluate('loadIslandArt()'),true);
+      for(const file of ['island-architecture-scenarios.js','island-art-scenarios.js','novidades-scenarios.js'])console.log('PASS '+file+': '+(await evaluate(fs.readFileSync(path.join(__dirname,file),'utf8'))).length+' checks');
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt()])');
+      await evaluate(`G=fresh();G.day=40;G.prologue={done:true};G.tutorial.complete=true;G.regions={serra:true,sc:true};G.phase='prep';started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');caveState().facao=true;worldWalkers=[];`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const[name,map,x,y]of [['capela','ilha',1600,3820],['vila','ilha',4820,4310],['oficina','ilha',2630,4750],['farol','ilha',5480,1750],['forte','ilha',3200,1240],['muralhas','ilha',3200,1820],['baluarte','ilha',2470,1560],['picada','ilha',3200,2240],['masmorra','masmorra',1400,1370],['cela','masmorra',1400,420]]){
+        await evaluate(`worldOut={map:'${map}',x:${x},y:${y},dx:1,dy:0};mataNight=null;refreshHUD();draw();`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/island-'+name+'.png'),Buffer.from(shot.data,'base64'));
+      }
+      console.log('Dungeon render (software Chrome): '+await evaluate(`(()=>{draw();const t=performance.now();for(let i=0;i<45;i++)draw();return ((performance.now()-t)/45).toFixed(2)+' ms/frame';})()`));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadIslandArt()'),true);
+      blockedPath='/assets/images/island/masmorra-materiais-v1.png';await load(base+'/index.html');assert.equal(await evaluate('loadIslandArt()'),false);
+      await evaluate(`G=fresh();G.prologue={done:true};worldOut={map:'masmorra',x:1400,y:1770};mataNight=null;const fallbackLayers=[];drawMasmorra({x:900,y:900,w:1000,h:900},()=>true,fallbackLayers);fallbackLayers.forEach(l=>l.draw());`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS HTTP, file:// and missing dungeon material fallback');return;
+    }
+    if(process.env.BODEGA_FOCUS==='islandArt'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      assert.equal(await evaluate('Object.keys(CREATURE_ART).length'),0,'new atlases must stay lazy at startup');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll()])');
+      assert.equal(await evaluate('loadCreatureArt()'),true);
+      const artResults=await evaluate(fs.readFileSync(path.join(__dirname,'island-art-scenarios.js'),'utf8'));
+      console.log('PASS island art: '+artResults.length+' checks');console.log(artResults.find(s=>s.startsWith('cached')));
+      console.log('PASS existing action art: '+(await evaluate(fs.readFileSync(path.join(__dirname,'action-art-scenarios.js'),'utf8'))).length+' checks');
+      console.log('PASS novidades: '+(await evaluate(fs.readFileSync(path.join(__dirname,'novidades-scenarios.js'),'utf8'))).length+' checks');
+      const previews=await evaluate(fs.readFileSync(path.join(__dirname,'island-art-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const[name,url]of Object.entries(previews))fs.writeFileSync(path.join(root,'docs/previews/creatures-'+name+'.png'),Buffer.from(url.split(',')[1],'base64'));
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt()])');
+      await evaluate(`G=fresh();G.day=40;G.prologue={done:true};G.tutorial.complete=true;G.regions={serra:true,sc:true};G.phase='prep';started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');caveState().facao=true;worldWalkers=[];`);
+      for(const [name,setup]of [
+        ['bruxas',`ilhaState().trecho=3;worldOut={...ilhaMatoEntrada(3),dx:1,dy:0};mataNightStart();const b=mataNight.beasts.find(b=>b.kind==='bruxa');worldOut.x=b.x-140;worldOut.y=b.y+50;b.state='cast';b.t=.1;`],
+        ['griggs',`worldOut={map:'ilha',x:2440,y:GRIGGS.y+80,dx:1,dy:0};mataNight=null;`],
+        ['nereu',`worldOut={map:'sc',x:SC_ITAJAI.nereu.x-140,y:SC_ITAJAI.nereu.y+25,dx:1,dy:0};mataNight=null;`]
+      ]){
+        await evaluate(`(()=>{${setup}refreshHUD();draw();})()`);
+        const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/creatures-'+name+'-game.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadCreatureArt()'),true);
+      blockedPath='/assets/images/creatures/bruxa-v1.png';await load(base+'/index.html');assert.equal(await evaluate(`loadCreatureArt(['bruxa'])`),false);
+      await evaluate(`drawCaveBeast({kind:'bruxa',state:'hover',x:500,y:500,dx:1,hp:110,max:110,frame:0,t:1})`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS file:// and missing-sprite fallback');return;
+    }
     if(process.env.BODEGA_FOCUS==='damiao'){
       await load(base+'/index.html');
       await evaluate('window.confirm=()=>true');

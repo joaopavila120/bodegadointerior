@@ -71,7 +71,7 @@ function secondaryPose(sprite, x, y, walking, dx, dy) {
     ctx.drawImage(frame, x - width / 2, y - height, width, height);
     return true;
   }
-  return expansionSprite(pose.key, pose.start + direction * pose.steps + step, x, y, 124, direction === 1 && dx < 0, pose.height);
+  return expansionSprite(pose.key, pose.start + direction * pose.steps + step, x, y, 124, direction === 1 && dx < 0, pose.directionHeights?.[direction] || pose.height);
 }
 // Parado, o cavaleiro fica de frente; o Sadi (keep) fica virado pra onde andava.
 function mountedPose(key, x, y, dx, dy, moving, keep = false) {

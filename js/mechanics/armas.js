@@ -40,6 +40,7 @@ function rangedFire() {
   const id = rangedWeapon(); if (!id) { floatNote('Sem arma de longe: o Garibaldi dá um bodoque a quem chega na mata, e ele e o São Dunstano vendem o revólver 38.'); AudioEngine.bad(); return; }
   if (ranged.cd > 0 || ranged.reload > 0) return;
   if (id === 'revolver38' && rangedDrum() <= 0) { if (rangedBalas() > 0) rangedReload(); else rangedDry(); return; }
+  if (id === 'carabina' && carabinaBalas() <= 0) { carabinaSeca(); return; }
   const W = RANGED[id], p = worldOut, ox = p.x, oy = p.y - 62, face = Math.atan2(p.dy || 0, p.dx || (p.dy ? 0 : 1));
   let best = null, bd = W.range;
   for (const b of rangedTargets()) {
@@ -47,9 +48,10 @@ function rangedFire() {
     if (d < bd && Math.abs(Math.atan2(Math.sin(a - face), Math.cos(a - face))) < .75) { bd = d; best = t; }
   }
   const ang = best ? Math.atan2(best.y - oy, best.x - ox) : face;
-  ranged.shots.push({ id, x: ox + Math.cos(ang) * 30, y: oy + Math.sin(ang) * 30, vx: Math.cos(ang) * W.speed, vy: Math.sin(ang) * W.speed, left: W.range });
+  ranged.shots.push({ id, x: ox + Math.cos(ang) * 30, y: oy + Math.sin(ang) * 30, vx: Math.cos(ang) * W.speed, vy: Math.sin(ang) * W.speed, left: W.range, hits: W.pierce ? [] : null });
   ranged.cd = W.cd; ranged.hold = .4; ranged.ang = ang;
   if (id === 'revolver38') { G.drum38 = rangedDrum() - 1; ranged.flash = .07; AudioEngine.gunshot(); if (G.drum38 <= 0 && rangedBalas() > 0) rangedReload(); }
+  else if (id === 'carabina') { carabinaGasta(); ranged.flash = .07; AudioEngine.gunshot(); }
   else AudioEngine.swoosh?.(.06);
   updateRangedButton();
 }
@@ -72,8 +74,8 @@ function rangedSwap() {
 function rangedHit(b, s) {
   const W = RANGED[s.id], cave = inCave(), dmg = Math.max(1, Math.round((cave ? caveHitDmg(b) : caveDmg()) * W.dmg));
   b.hp -= dmg; b.hurt = .18;
-  // O tiro do 38 segura bicho comum no bote (chefe e lenda, não).
-  if (s.id === 'revolver38' && CAVE_BEASTS[b.kind] && !b.boss && !b.lenda && b.kind !== 'diabo' && ['windup', 'lunge', 'charge'].includes(b.state)) { b.state = 'rest'; b.t = .5; }
+  // O tiro do 38 (e o da carabina) segura bicho comum no bote (chefe e lenda, não).
+  if ((s.id === 'revolver38' || s.id === 'carabina') && CAVE_BEASTS[b.kind] && !b.boss && !b.lenda && b.kind !== 'diabo' && ['windup', 'lunge', 'charge'].includes(b.state)) { b.state = 'rest'; b.t = .5; }
   AudioEngine.caveFlesh?.(); AudioEngine.caveCry?.(b.kind, b.hp <= 0); fxStars(b.x, b.y - 50, s.id === 'bodoque' ? 2 : 3);
   effect('−' + dmg, b.x + (Math.random() - .5) * 20, b.y - 80, '#ffd2a0', 21);
   if (b.hp <= 0) { if (cave) caveKill(b); else mataKill(b); }
@@ -97,8 +99,8 @@ function rangedTick(dt) {
     const sp = Math.hypot(s.vx, s.vy), n = Math.max(1, Math.ceil(sp * dt / 24));
     for (let i = 0; i < n && !s.done; i++) {
       s.x += s.vx * dt / n; s.y += s.vy * dt / n; s.left -= sp * dt / n;
-      const b = rangedTargets().find(b => { const t = rangedAim(b); return Math.hypot(t.x - s.x, t.y - s.y) < rangedRadius(b); });
-      if (b) { s.done = true; rangedHit(b, s); }
+      const b = rangedTargets().find(b => { if (s.hits?.includes(b)) return false; const t = rangedAim(b); return Math.hypot(t.x - s.x, t.y - s.y) < rangedRadius(b); });
+      if (b) { if (s.hits) s.hits.push(b); else s.done = true; rangedHit(b, s); }
       else if (s.left <= 0 || (inCave() && !caveFree(s.x, s.y + 40, 4))) { s.done = true; rangedMiss(s); }
     }
   }
@@ -138,7 +140,12 @@ function drawRangedHand() {
   const id = rangedWeapon(); if (!id || ranged.hold <= 0) return;
   const p = worldOut, a = ranged.ang, left = Math.cos(a) < 0, hx = p.x + Math.cos(a) * 22, hy = p.y - 60 + Math.sin(a) * 8, im = rangedImage(id);
   ctx.save(); ctx.globalAlpha = Math.min(1, ranged.hold / .12); ctx.imageSmoothingEnabled = false;
-  if (id === 'revolver38') {
+  if (id === 'arpao') { ctx.translate(hx, hy); ctx.rotate(a); if (left) ctx.scale(1, -1); if (im.naturalWidth) ctx.drawImage(im, -18, -16, 44, 32); }
+  else if (id === 'carabina') {
+    ctx.translate(hx, hy); ctx.rotate(a); if (left) ctx.scale(1, -1); if (im.naturalWidth) ctx.drawImage(im, -22, -12, 64, 24);
+    const v = left ? 2 : -2; ranged.tipX = hx + Math.cos(a) * 42 - Math.sin(a) * v; ranged.tipY = hy + Math.sin(a) * 42 + Math.cos(a) * v;
+  }
+  else if (id === 'revolver38') {
     ctx.translate(hx, hy); ctx.rotate(a); if (left) ctx.scale(1, -1);
     if (im.naturalWidth) ctx.drawImage(im, -10, -22, 36, 36);
     const v = left ? 11 : -11; ranged.tipX = hx + Math.cos(a) * 24 - Math.sin(a) * v; ranged.tipY = hy + Math.sin(a) * 24 + Math.cos(a) * v; // a boca do cano
@@ -157,11 +164,12 @@ function drawRangedWorld() {
   }
   for (const s of ranged.shots) {
     const { x, y } = typeof rangedDrawPoint === 'function' ? rangedDrawPoint(s) : s;
-    if (s.id === 'revolver38') {
+    if (s.id === 'revolver38' || s.id === 'carabina') {
       const k = 34 / Math.hypot(s.vx, s.vy) * 1.6; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
       ctx.strokeStyle = 'rgba(255,200,120,.45)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x - s.vx * k, y - s.vy * k); ctx.lineTo(x, y); ctx.stroke();
       ctx.strokeStyle = 'rgba(255,250,220,.95)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - s.vx * k * .5, y - s.vy * k * .5); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
-    } else { ellipse(x, y + 42, 5, 2, 'rgba(0,0,0,.25)'); ellipse(x, y, 5, 5, '#5a5048'); ellipse(x - 1.5, y - 1.5, 2, 2, '#a89c90'); }
+    } else if (s.id === 'arpao') arpaoDrawShot(s, x, y);
+    else { ellipse(x, y + 42, 5, 2, 'rgba(0,0,0,.25)'); ellipse(x, y, 5, 5, '#5a5048'); ellipse(x - 1.5, y - 1.5, 2, 2, '#a89c90'); }
   }
   drawRangedHand();
   if (ranged.flash > 0) {
@@ -175,7 +183,7 @@ let rangedLabel = '';
 function updateRangedButton() {
   const box = $('rangedBox'); if (!box) return;
   const id = rangedWeapon(), show = !!id && rangedCombat() && !modal && !scene; box.classList.toggle('hidden', !show); box.classList.toggle('in-cave', inCave()); if (!show) return;
-  const drum = rangedDrum(), text = id === 'revolver38' ? '<b>R</b> · 38 ' + (ranged.reload > 0 ? '⟳' : '●'.repeat(drum) + '○'.repeat(RANGED.revolver38.drum - drum)) + ' <small>' + rangedBalas() + '</small>' : '<b>R</b> · Bodoque';
+  const drum = rangedDrum(), text = id === 'revolver38' ? '<b>R</b> · 38 ' + (ranged.reload > 0 ? '⟳' : '●'.repeat(drum) + '○'.repeat(RANGED.revolver38.drum - drum)) + ' <small>' + rangedBalas() + '</small>' : id === 'carabina' ? '<b>R</b> · Carabina <small>' + carabinaBalas() + '</small>' : '<b>R</b> · ' + (id === 'arpao' ? 'Arpão' : 'Bodoque');
   if (text !== rangedLabel) { rangedLabel = text; $('rangedButton').innerHTML = text; }
   $('rangedSwap').classList.toggle('hidden', rangedList().length < 2);
 }

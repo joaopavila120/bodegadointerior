@@ -728,6 +728,167 @@
   {goOutside();switchMap({map:'vila',x:1500,y:900});closeDialog(true);keys.clear();const dir=(dx,dy)=>{Object.assign(worldOut,{dx,dy,walk:false});return sadiPoseSpec(worldOut.x,worldOut.y)?.direction;};
    check(dir(1,0)===1&&dir(-1,0)===1&&dir(0,-1)===2&&dir(0,1)===0,'parado, o Sadi fica virado pra onde andava (lado, costas ou frente)');
    {const keep=expansionSprite,seen=[];expansionSprite=function(key,i,...r){if(key==='sadi-mounted-v1')seen.push(i);return keep.call(this,key,i,...r);};try{for(const [dx,dy] of [[1,0],[0,-1],[0,1]])mountedPose('sadi-mounted-v1',100,100,dx,dy,false,true);}finally{expansionSprite=keep;}check(seen.join()==='5,9,1','a cavalo também: parado, fica virado pra onde andava');}goInside();}
+  // A Ilha da Fortaleza: depois de Laguna, levaram o Bento; o Peixinho conta do barqueiro e o seu Nereu leva até a ilha.
+  {const L=lagunaState();L.won=G.day-1;L.carregado=1;G.missions.laguna={status:'done',day:G.day-1};G.mataSeen=true;G.mata.metGaribaldi=true;caveState().facao=true;caveState().hp=caveMaxHp();
+   check(trackerLines().some(l=>/Bento/.test(l.title)),'depois de Laguna, o Garibaldi chama: levaram o Bento');
+   goOutside();switchMap({map:'laguna',x:600,y:1000});closeDialog(true);keys.clear();
+   withScenes(()=>missionsTick());check(modal==='talk'&&talkState?.lines?.[0]?.[0]==='garibaldi','na barra, o Garibaldi e a Anita contam do sequestro');talkAll();
+   check(missionActive('bento')&&campFolk(26)===null,'a missão começa e o Bento some do acampamento dele');
+   switchMap({map:'sc',x:2000,y:1000});closeDialog(true);
+   const casa=WORLD_MAPS['casa:peixinhonabrasa'].spots().find(s=>s.id==='home:peixinhonabrasa');check(/ilha/.test(casa?.label||''),'na casa do Peixinho, a pergunta da ilha da cerração');
+   casa.act();talkAll();check(!!ilhaState().sabeBarqueiro,'o Peixinho conta do seu Nereu, barqueiro do Itajaí-Açu');
+   check(!WORLD_MAPS.sc.canWalk(3520,1300)&&WORLD_MAPS.sc.canWalk(3480,1000),'o Itajaí-Açu corre na beira do vale, com o trapiche no fim da rua');
+   const cash=G.cash;Object.assign(worldOut,{x:3420,y:1000});const nereu=worldNearest();check(nereu?.id==='sc:nereu','no trapiche, o seu Nereu');
+   nereu.act();talkAll();check(talkState?.choices?.length===2,'o barqueiro pergunta se vai (na caixa azul)');talkPick(0);talkAll();
+   check(worldOut.map==='ilha'&&G.cash===cash-ILHA.fare&&WORLD_MAPS.ilha.canWalk(worldOut.x,worldOut.y),'paga a viagem e desce no trapiche da ilha');
+   mataCombatTick(1/30);{const k=kind=>mataNight.beasts.filter(b=>b.kind===kind).length;check(k('pirata')>=10&&k('afogado')>=5&&k('marujo')>=10,'embaixo, piratas fantasmas e afogados; lá no alto, os marinheiros da fortaleza');}
+   check(CAVE_BEASTS.marujo.hp>=CAVE_BEASTS.marinheiro.hp*3&&CAVE_BEASTS.marujo.dmg>=CAVE_BEASTS.marinheiro.dmg*2&&CAVE_BEASTS.marujo.speed>CAVE_BEASTS.marinheiro.speed,'e eles são bem mais fortes que os de Laguna');
+   {const b=mataNight.beasts.find(x=>x.kind==='marujo'),hp=caveState().hp;mataNight.inv=0;Object.assign(b,{x:worldOut.x+40,y:worldOut.y,state:'lunge',t:.3,vx:-1,vy:0,attack:0});mataBeastTick(b,1/30,worldOut);check(caveState().hp===hp,'perto do barco do seu Nereu, ninguém machuca');}
+   {Object.assign(worldOut,{x:3200,y:2950});const b=mataNight.beasts.find(x=>x.kind==='marujo'),hp=caveState().hp;mataNight.inv=0;Object.assign(b,{x:worldOut.x+30,y:worldOut.y,state:'lunge',t:.3,vx:-1,vy:0,attack:0});mataBeastTick(b,1/30,worldOut);check(caveState().hp<hp,'longe do barco, o marinheiro acerta');caveState().hp=caveMaxHp();mataNight.inv=1;}
+   check(WORLD_MAPS.ilha.canWalk(3200,ilhaRioY(3200))&&!WORLD_MAPS.ilha.canWalk(3700,ilhaRioY(3700)),'o rio corta a ilha: atravessa pela ponte');
+   masmorraEntra();check(worldOut.map==='ilha'&&!ilhaState().chave,'a grade da cripta tá trancada: a chave fica com quem manda na fortaleza');closeDialog(true);
+   switchMap({map:'masmorra',...WORLD_MAPS.masmorra.spawn()});closeDialog(true);talkAll();
+   mataNight=null;mataCombatTick(1/30);mataFaint();talkAll();check(worldOut.map==='ilha'&&ilhaSafe(worldOut.x,worldOut.y),'desmaiou na cripta: acorda no trapiche da ilha');
+   ilhaVolta();check(worldOut.map==='sc'&&WORLD_MAPS.sc.canWalk(worldOut.x,worldOut.y),'o seu Nereu traz de volta pro trapiche do Itajaí-Açu');
+   mataNight=null;worldOut=null;}
+  // A Mata da cerração: o paredão, os sete trechos escuros, os bichos novos, a Bruxa-mor, a Bernúncia-mãe e o alto da ilha.
+  {G.ilha.planalto=0;G.ilha.bruxaMor=0;G.ilha.bernunciaMae=0;G.ilha.baus={};G.ilha.cartuchos=0;caveState().hp=caveMaxHp();goOutside();switchMap({map:'ilha',x:3200,y:2250});closeDialog(true);keys.clear();
+   {Object.assign(worldOut,{x:GRIGGS.x,y:GRIGGS.y+60});check(worldNearest()?.id==='ilha:griggs','na entrada da ilha, o acampamento do John Griggs');G.ilha.griggs=0;griggsTalk();check(talkState?.lines?.length===6,'na primeira prosa, o Griggs conta do Seival e de Laguna');talkAll();check(modal==='griggsShop','e abre o que ele vende');
+    const c=G.cash,n=mataBag().bomba||0;griggsItem('bomba');check(G.cash===c-BOMBA.cost&&mataBag().bomba===n+1,'compra bomba de pólvora pro bornal');check(!MATA_ITEMS.filter(i=>!i.griggs).some(i=>i.id==='bomba'),'a bomba é do Griggs: o Garibaldi não vende');closeDialog(true);}
+   const boca=WORLD_MAPS.ilha.edge({x:3200,y:2070});check(boca?.map==='ilhamato'&&boca.n===1&&!WORLD_MAPS.ilha.canWalk(3200,2030)&&!WORLD_MAPS.ilha.canWalk(2600,2060),'um paredão cerca o alto da ilha; a picada no pé dele entra na Mata da cerração');
+   const kinds=n=>{mataNight=null;switchMap(ilhaMatoEntrada(n));closeDialog(true);mataCombatTick(1/30);const c={};for(const b of mataNight.beasts)c[b.kind]=(c[b.kind]||0)+1;return c;};
+   const k1=kinds(1);check(k1.pirata&&k1.afogado&&ilhaMatoLayout(1).pools.length,'trecho 1: piratas fantasmas e afogados nas poças');
+   check(ilhaMatoLayout(7).dark>ilhaMatoLayout(1).dark,'cada trecho é mais escuro que o anterior');
+   {const L=ilhaMatoLayout(1),M=WORLD_MAPS.ilhamato;let fora=null;for(let x=700;x<2800&&!fora;x+=40)for(const d of [-1,1]){const y=ilhaMatoTrailY(L,x)+d*460;if(y>150&&y<L.H-60&&!ilhaMatoDentro(L,x,y)){fora={x,y};break;}}
+    check(!!fora&&!M.canWalk(fora.x,fora.y)&&M.canWalk(1500,ilhaMatoTrailY(L,1500)),'na cerração, só se anda pela picada: fora dela é mato fechado');
+    const reach=L2=>{const o=L2.open,C=ILHAMATO.cell,vis=new Uint8Array(o.cells.length),q=[Math.floor(L2.yIn/C)*o.cw+2];vis[q[0]]=1;for(let h=0;h<q.length;h++){const i=q[h],gx=i%o.cw;for(const j of [gx>0?i-1:-1,gx<o.cw-1?i+1:-1,i-o.cw,i+o.cw])if(j>=0&&j<o.cells.length&&!vis[j]&&o.cells[j]){vis[j]=1;q.push(j);}}return (x,y)=>!!vis[Math.floor(y/C)*o.cw+Math.floor(x/C)];};
+    check([1,2,3,4,5,6,7].every(n=>{const L2=ilhaMatoLayout(n),ok=reach(L2);return L2.baus.filter(c=>!c.chefe).length===2&&L2.baus.every(c=>ok(c.x,c.y+20))&&ok(L2.W-50,L2.yOut);}),'cada trecho tem dois ramais com baú; da entrada se chega nos baús e na saída');
+    {const mp={x:1500,y:ilhaMatoTrailY(L,1500)};for(let k=0;k<120;k++)ilhaFly(mp,0,400,1/30);check(ilhaMatoAbre(L,mp.x,mp.y),'nem bicho que voa sai da picada');}
+    {const c=L.baus[0],p0=bagQty('prata'),c0=carabinaBalas(),cash=G.cash;Object.assign(worldOut,{x:c.x,y:c.y+40});const sp=worldNearest();check(sp?.id==='ilhamato:bau:'+c.id,'no fim do ramal, um baú de pirata');sp.act();talkAll();
+     check(bagQty('prata')>p0&&carabinaBalas()>c0&&G.cash>cash,'o baú tem prata, cartucho de carabina e moeda');const p1=bagQty('prata');ilhaBauAbre(L,c);check(bagQty('prata')===p1&&!M.spots().some(x=>x.id==='ilhamato:bau:'+c.id),'cada baú abre uma vez só');}
+    check(ilhaBauLoot(7,{id:'r1'}).raw.prata>ilhaBauLoot(1,{id:'r1'}).raw.prata&&ilhaBauLoot(7,{id:'r1'}).cash>ilhaBauLoot(1,{id:'r1'}).cash,'quanto mais fundo, mais prata e mais moeda nos baús');}
+   {const pir=mataNight.beasts.find(b=>b.kind==='pirata'),hp=caveState().hp;mataNight.inv=0;Object.assign(worldOut,{x:pir.x-300,y:pir.y+30});Object.assign(pir,{state:'aim',t:0,ax:worldOut.x,ay:worldOut.y-30,dx:-1});mataBeastTick(pir,1/30,worldOut);check(caveState().hp<hp&&!!pir.shot,'o pirata mira (a linha avisa) e atira de longe');caveState().hp=caveMaxHp();}
+   {const af=mataNight.beasts.find(b=>b.kind==='afogado');mataNight.inv=1;Object.assign(af,{state:'chase',cool:0,x:worldOut.x+30,y:worldOut.y});mataBeastTick(af,1/30,worldOut);check(af.state==='grab'&&mataNight.grab===af,'o afogado agarra o Sadi');af.hp-=10;mataBeastTick(af,1/30,worldOut);check(af.state==='solta','batendo nele, o afogado solta');mataNight.grab=null;}
+   const k3=kinds(3);check(k3.bruxa&&k3.mariposa>=5&&k3.minhocao,'trecho 3: bruxas, nuvens de mariposas-bruxas e o minhocão');
+   {const mi=mataNight.beasts.find(b=>b.kind==='minhocao');mi.state='cavando';check(!rangedTargets().includes(mi),'debaixo da terra, o minhocão não leva tiro');mi.state='exposto';check(rangedTargets().includes(mi),'fora da terra, leva');}
+   {const mi=mataNight.beasts.find(b=>b.kind==='minhocao');Object.assign(mi,{state:'cavando',cool:99});for(const o of mataNight.beasts)if(o!==mi)Object.assign(o,{x:80,y:160});Object.assign(worldOut,{x:mi.x-200,y:mi.y,dx:1,dy:0});mataBag().bomba=1;const hp=mi.hp;check(mataUseItem('bomba')&&!mataBag().bomba,'a bomba sai do bornal na mão do Sadi');bombaTick(.5);bombaTick(.5);check(mi.hp===hp-BOMBA.dmg&&mi.state==='exposto','a bomba estoura e tira o minhocão de debaixo da terra');}
+   {const bx=mataNight.beasts.find(b=>b.kind==='bruxa');Object.assign(worldOut,{x:bx.x-300,y:bx.y});Object.assign(bx,{state:'cast',t:0,hurt:0});mataNight.ish=[];mataBeastTick(bx,1/30,worldOut);check(mataNight.ish.length===1,'a bruxa joga a praga');mataNight.ish=[];}
+   {const L=ilhaMatoLayout(3),bx=mataNight.beasts.find(b=>b.kind==='bruxa'),y=ilhaMatoTrailY(L,1500);Object.assign(bx,{x:1500,y,state:'hover',hurt:0,foge:0,blink:0,stun:0,cool:9});Object.assign(worldOut,{x:1300,y});mataBeastTick(bx,1/30,worldOut);check(Math.hypot(bx.x-worldOut.x,bx.y-worldOut.y)>200,'a bruxa foge ligeiro de quem chega perto');
+    Object.assign(bx,{x:1500,y,foge:0});Object.assign(worldOut,{x:1400,y});mataBeastTick(bx,1/30,worldOut);check(Math.hypot(bx.x-worldOut.x,bx.y-worldOut.y)>200&&ilhaMatoAbre(L,bx.x,bx.y),'se o Sadi encosta, ela some e aparece longe (na picada)');}
+   kinds(4);{const L=ilhaMatoLayout(4);check(!WORLD_MAPS.ilhamato.canWalk(L.W-100,L.yOut),'trecho 4: a névoa tranca a saída enquanto a Bruxa-mor estiver viva');check(!WORLD_MAPS.ilhamato.spots().some(s=>s.id==='ilhamato:bau:chefe'),'o baú da clareira só aparece depois do chefe');
+    Object.assign(worldOut,{x:L.arena.x-200,y:L.arena.y});mataCombatTick(1/30);const boss=mataNight.beasts.find(b=>b.boss);check(boss?.kind==='bruxaMor'&&modal==='talk','na clareira de cinzas, a Bruxa-mor');talkAll();
+    boss.hp=0;mataKill(boss);talkAll();check(!!G.ilha.bruxaMor&&WORLD_MAPS.ilhamato.canWalk(L.W-100,L.yOut),'vencida a Bruxa-mor, a cerração deixa passar');check(WORLD_MAPS.ilhamato.spots().some(s=>s.id==='ilhamato:bau:chefe'),'e aparece o baú da clareira');}
+   const k6=kinds(6);check(k6.bernuncia>=3,'trecho 6: as bernúncias');
+   kinds(7);{const L=ilhaMatoLayout(7);Object.assign(worldOut,{x:L.arena.x-200,y:L.arena.y});mataCombatTick(1/30);const boss=mataNight.beasts.find(b=>b.boss);check(boss?.kind==='bernunciaMae','trecho 7: a Bernúncia-mãe guarda a subida');talkAll();
+    boss.hp=0;mataKill(boss);talkAll();const to=WORLD_MAPS.ilhamato.edge({x:L.W-2,y:L.yOut});check(to?.map==='ilha'&&to.planalto,'vencida a Bernúncia-mãe, a saída sobe pro alto da ilha');
+    mataNight=null;switchMap(to);talkAll();check(!!G.ilha.planalto&&WORLD_MAPS.ilha.spots().some(s=>s.id==='ilha:masmorra')&&WORLD_MAPS.ilha.canWalk(worldOut.x,worldOut.y),'lá em cima, a fortaleza e a escada das masmorras');}
+   check(WORLD_MAPS.ilha.spots().some(s=>s.id==='ilha:subir'),'depois da primeira subida, a trilha velha leva do trapiche direto pro alto');
+   mataNight=null;worldOut=null;}
+  // A cerração protege os bichos da ilha: arma comum quase não pega; o Griggs faz o que pega, com a prata dos baús.
+  {goOutside();switchMap({map:'ilha',x:3150,y:3700});closeDialog(true);keys.clear();mataNight=null;mataCombatTick(1/30);G.up.revolver38=true;Object.assign(G.ilha,{benzido:0,facaoPrata:0,fio_facao:0,dicaArma:0});mataBuffs.reza=0;
+   const pir=mataNight.beasts.find(b=>b.kind==='pirata'),base=caveDmg(),cheio=Math.max(1,Math.round(base*1.2));
+   const golpe=()=>{pir.hp=pir.max;pir.state='roam';Object.assign(worldOut,{x:pir.x-60,y:pir.y,dx:1,dy:0});mataNight.cd=0;mataAttack();return pir.max-pir.hp;};
+   const tiro=()=>{pir.hp=pir.max;rangedHit(pir,{id:'revolver38'});return pir.max-pir.hp;};
+   check(golpe()<base&&tiro()<cheio*.3&&!!G.ilha.dicaArma,'a cerração protege os bichos da ilha: facão e bala comum quase não pegam');
+   const A=ilhaAchados();check(['arruda','sal','prata'].every(k=>A.some(a=>a.k===k))&&A.every(a=>WORLD_MAPS.ilha.canWalk(a.x,a.y)),'na parte de baixo da ilha: arruda, sal grosso e baús de prata pra juntar');
+   check(A.filter(a=>a.k==='prata').length>=4,'quatro baús de prata pela beira da ilha');
+   {const i=A.findIndex(a=>a.k==='sal'),q=bagQty('sal');ilhaColhe(i);ilhaColhe(i);check(bagQty('sal')===q+1,'cada achado da ilha dá uma vez por dia');}
+   check(!ILHA_RECEITAS.some(r=>r.id==='prata'||r.id==='benzido')&&ILHA_RECEITAS.find(r=>r.id==='facao')?.name==='Facão de prata','sem bala de prata nem facão benzido: agora é o facão de prata');
+   bagAdd('arruda',6);bagAdd('sal',4);bagAdd('prata',5);G.cash+=200;action('griggsFaz','facao');action('griggsFaz','reza');closeDialog(true);
+   check(!!G.ilha.facaoPrata&&mataBag().reza>=1,'o Griggs faz o facão de prata (com a prata dos baús) e a reza de sal e arruda');
+   check(golpe()===base,'com o facão de prata, o golpe pega cheio');
+   check(tiro()<cheio*.3,'o 38 segue quase não pegando, mesmo com o facão de prata');
+   bagAdd('prata',ILHA_FIO.facao.prata[0]);G.cash+=200;action('griggsAfia','facao');closeDialog(true);
+   check(G.ilha.fio_facao===1&&caveDmg()===base+ILHA_FIO.facao.dmg&&golpe()===base+ILHA_FIO.facao.dmg,'afiar o facão com prata aumenta o dano');
+   check(mataUseItem('reza')&&mataBuffs.reza>0&&tiro()===Math.max(1,Math.round(caveDmg()*1.2)),'a reza benze até a bala comum, por um tempo');mataBuffs.reza=0;
+   {const p0=bagQty('prata');pir.hp=0;mataKill(pir);check(bagQty('prata')===p0,'pirata não deixa prata: a prata é dos baús');}
+   mataNight=null;worldOut=null;}
+  // Arpão de baleeiro, carabina e sabre de abordagem (o Griggs faz com garapuvu, corrente, prata e pedaços de sabre).
+  {goOutside();switchMap({map:'ilha',x:GRIGGS.x,y:GRIGGS.y+60});closeDialog(true);keys.clear();G.ilha.fio_arpao=0;G.ilha.cartuchos=0;
+   check(ilhaAchados().some(a=>a.k==='garapuvu'),'troncos de garapuvu caídos na mata de baixo da ilha');
+   {const r=ILHA_RECEITAS.find(r=>r.id==='arpao');check(/bom contra bruxas/i.test(r.desc)&&r.needs.prata>0,'o arpão custa prata e, na descrição, é bom contra bruxas');}
+   bagAdd('garapuvu',5);bagAdd('corrente_ferro',4);bagAdd('sabre_peca',4);bagAdd('prata',6);G.cash+=400;const cd=caveCd(),arco=mataArco();
+   action('griggsFaz','arpao');action('griggsFaz','sabre');closeDialog(true);
+   check(rangedOwned('arpao')&&caveWeapon().id==='sabre','o Griggs faz o arpão e o sabre de abordagem');
+   check(caveCd()<cd&&mataArco()>arco,'o sabre é mais ligeiro e corta em arco largo');
+   {const a0=RANGED.arpao.dmg;check(a0<RANGED.revolver38.dmg,'o arpão começa fraco');bagAdd('prata',ILHA_FIO.arpao.prata[0]);G.cash+=100;action('griggsAfia','arpao');closeDialog(true);check(RANGED.arpao.dmg>a0&&G.ilha.fio_arpao===1,'o Griggs afia a ponta do arpão com prata');}
+   mataNight=null;switchMap(ilhaMatoEntrada(1));closeDialog(true);mataCombatTick(1/30);const ps=mataNight.beasts.filter(b=>b.kind==='pirata').slice(0,2);for(const o of mataNight.beasts)if(!ps.includes(o))Object.assign(o,{x:60,y:200});
+   const L=ilhaMatoLayout(),[a,b]=[L.pts[1],L.pts[2]],at=t=>({x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t}),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+   Object.assign(worldOut,at(.1),{dx:Math.cos(ang),dy:Math.sin(ang)});ps.forEach((p,i)=>Object.assign(p,at(.55+i*.15),{hp:p.max,state:'roam',stun:0}));const d0=ps.map(p=>Math.hypot(p.x-worldOut.x,p.y-worldOut.y));
+   G.rangedPick='arpao';ranged.cd=0;rangedFire();for(let k=0;k<40;k++){rangedTick(1/60);arpaoTick(1/60);}
+   check(ps.every(p=>p.hp<p.max),'o arpão atravessa a fila de bichos');check(ps.every((p,i)=>Math.hypot(p.x-worldOut.x,p.y-worldOut.y)<d0[i]-60),'e puxa os bichos pequenos pra perto do Sadi');
+   {const R0=caveRand(3),bx=ilhaMob('bruxa',at(.6),R0,{state:'hover'}),pi=ilhaMob('pirata',at(.6),R0);mataNight.beasts.push(bx,pi);
+    rangedHit(bx,{id:'arpao'});const db=bx.max-bx.hp;rangedHit(pi,{id:'arpao'});const dp=pi.max-pi.hp;check(db>dp,'o arpão bate mais forte em bruxa');
+    check(bx.stun>=ILHA_FIO.preso,'e prende a bruxa na corda (nem foge nem some)');arpaoTick(1);check(Math.hypot(bx.x-worldOut.x,bx.y-worldOut.y)<120,'puxada pra boca do facão');}
+   {bagAdd('garapuvu',2);bagAdd('corrente_ferro',3);bagAdd('prata',3);G.cash+=300;action('griggsFaz','carabina');closeDialog(true);
+    check(rangedOwned('carabina')&&carabinaBalas()===CARABINA.nova&&G.rangedPick==='carabina','o Griggs monta a carabina com garapuvu, corrente e prata (vem com cartucho)');
+    const big=ilhaMob('bernuncia',at(.6),caveRand(5));mataNight.beasts.push(big);rangedHit(big,{id:'carabina'});check(big.max-big.hp===Math.max(1,Math.round(caveDmg()*RANGED.carabina.dmg)),'a carabina, feita na ilha, pega cheio e forte');
+    ranged.cd=0;ranged.shots=[];rangedFire();check(carabinaBalas()===CARABINA.nova-1&&ranged.shots.some(s=>s.id==='carabina'),'cada tiro gasta um cartucho de carabina');
+    G.ilha.cartuchos=0;ranged.cd=0;ranged.shots=[];rangedFire();check(!ranged.shots.length,'sem cartucho, a carabina só estala');
+    G.cash+=CARABINA.cost;griggsCartuchos();check(carabinaBalas()===CARABINA.box,'o Griggs vende caixa de cartucho');}
+   mataNight=null;worldOut=null;}
+  // O dash comprado com São Dunstano vale no jogo todo: fora da caverna também, com recarga, e bicho nenhum acerta durante.
+  {goOutside();closeDialog(true);keys.clear();const cs=caveState();cs.up??={};const had=cs.up.dash;cs.up.dash=true;worldDash=null;worldDashCd=0;
+   const x0=worldOut.x,y0=worldOut.y,dir=[[1,0],[-1,0],[0,1],[0,-1]].find(([dx,dy])=>{for(let k=10;k<=230;k+=10)if(!worldCanWalk(x0+dx*k,y0+dy*k))return false;return true;})||[1,0];
+   Object.assign(worldOut,{dx:dir[0],dy:dir[1]});check(caveDash()&&!!worldDash,'fora da caverna, Shift dá o dash');
+   for(let k=0;k<20;k++)outsideTick(1/60);check(Math.hypot(worldOut.x-x0,worldOut.y-y0)>120&&!worldDash,'o dash leva o Sadi ligeiro, no mundo aberto');
+   check(!caveDash(),'e tem recarga');worldDashCd=0;
+   mataNight=null;switchMap(ilhaMatoEntrada(1));closeDialog(true);mataCombatTick(1/30);caveState().hp=caveMaxHp();mataNight.inv=0;check(caveDash(),'na mata da ilha também');mataHurt(20,{x:worldOut.x+50,y:worldOut.y});check(caveState().hp===caveMaxHp(),'durante o dash, bicho nenhum acerta');
+   worldDash=null;worldDashCd=0;cs.up.dash=had;mataNight=null;worldOut=null;}
+  // As fogueiras do caminho até a fortaleza: o monge João Maria (trecho 2), uma de pouso (trecho 5) e o general Canabarro (no alto).
+  {goOutside();closeDialog(true);keys.clear();Object.assign(G.ilha,{fogos:{},folks:{},rezaDia:0,cartuchoDia:0});delete mataBag().reza;
+   check([2,5].every(n=>{const L=ilhaMatoLayout(n),P=ilhaFogoPartes(L.camp);return !!L.camp&&ilhaMatoAbre(L,P.fogo.x+90,P.fogo.y+60)&&!L.baus.some(c=>Math.hypot(c.x-L.camp.x,c.y-L.camp.y)<L.camp.rx);}),'nos trechos 2 e 5 da cerração, uma clareira com fogueira, longe dos baús');
+   mataNight=null;switchMap(ilhaMatoEntrada(2));closeDialog(true);talkAll();mataCombatTick(1/30);const L=ilhaMatoLayout(2),P=ilhaFogoPartes(L.camp);
+   check(WORLD_MAPS.ilhamato.canWalk(P.fogo.x+90,P.fogo.y+60)&&!WORLD_MAPS.ilhamato.canWalk(P.fogo.x,P.fogo.y),'dá pra andar em volta do fogo (no fogo, não)');
+   Object.assign(worldOut,{x:P.fogo.x+90,y:P.fogo.y+60});caveState().hp=caveMaxHp();mataNight.inv=0;mataHurt(20,{x:worldOut.x+40,y:worldOut.y});check(caveState().hp===caveMaxHp()&&ilhaSafeNow(worldOut),'perto do fogo, bicho nenhum acerta');
+   Object.assign(worldOut,{x:P.folk.x+120,y:P.folk.y+60});outsideTick(1/60);check(modal==='talk'&&talkState.lines.some(l=>l[0]?.name==='João Maria'),'na fogueira do monge, o João Maria');talkAll();talkAll();check(!!G.ilha.folks.joaomaria,'e a prosa fica guardada');
+   caveState().hp=10;Object.assign(worldOut,{x:P.fogo.x+10,y:P.fogo.y+80});{const sp=worldNearest();check(sp?.id==='fogo:monge','descansar na fogueira');sp.act();talkAll();}
+   check(caveState().hp===caveMaxHp()&&ilhaFogoAceso('monge')&&mataBag().reza===1,'descansar enche a vida, acende a fogueira e o monge benze uma reza');
+   worldNearest().act();talkAll();check(mataBag().reza===1,'a reza do monge é uma por dia');
+   mataNight=null;switchMap({map:'ilha',x:2750,y:1950});closeDialog(true);talkAll();{const f=ILHA_FOGOS.find(f=>f.id==='cerco'),Q=ilhaFogoPartes(f);
+    check(WORLD_MAPS.ilha.canWalk(Q.fogo.x+90,Q.fogo.y+60),'no alto da ilha, o acampamento do Canabarro, na frente da fortaleza');
+    Object.assign(worldOut,{x:Q.folk.x+120,y:Q.folk.y+60});outsideTick(1/60);check(modal==='talk'&&talkState.lines.some(l=>l[0]?.name==='David Canabarro')&&talkState.lines.some(l=>/arpão/.test(l[1])),'o general Canabarro conta do Grenfell e do arpão');talkAll();talkAll();
+    G.up.carabina=true;G.ilha.cartuchos=0;Object.assign(worldOut,{x:Q.fogo.x+10,y:Q.fogo.y+80});worldNearest().act();talkAll();check(carabinaBalas()===ILHA_FOGO_PRESENTE.cartuchos,'descansando, os soldados dele deixam cartucho de carabina');}
+   switchMap({map:'ilha',x:GRIGGS.x,y:GRIGGS.y+60});closeDialog(true);talkAll();Object.assign(worldOut,{x:GRIGGS.tent.x,y:GRIGGS.tent.y+60});
+   {const sp=worldNearest();check(sp?.id==='ilha:fogueiras','no acampamento do Griggs, a trilha dos farrapos');sp.act();check(talkState?.choices?.length===3,'leva pras fogueiras acesas');closeDialog(true);}
+   ilhaFogoVai(ILHA_FOGOS[0]);closeDialog(true);check(worldOut.map==='ilhamato'&&G.ilha.trecho===2&&WORLD_MAPS.ilhamato.canWalk(worldOut.x,worldOut.y),'e chega na fogueira do monge');
+   mataNight=null;worldOut=null;}
+  // O chefe final da ilha: o almirante Grenfell, no pátio da fortaleza (o arpão tira ele da muralha).
+  {goOutside();closeDialog(true);keys.clear();Object.assign(G.ilha,{pista:0,grenfell:0,grenfellViu:0,chave:0,contou:0,masmorra:0});G.up.arpao=true;caveState().hp=caveMaxHp();G.missions.bento={status:'active',day:G.day};
+   check(/almirante Grenfell/.test(MISSIONS.find(m=>m.id==='bento').goal()),'a missão do Bento manda enfrentar o almirante no pátio');
+   switchMap({map:'ilha',x:3200,y:1450});closeDialog(true);talkAll();mataNight=null;mataCombatTick(1/30);const b=grenfellVivo(),N=mataNight;
+   check(!!b&&modal==='talk'&&talkState.lines.some(l=>/Fanfa/.test(l[1])),'no pátio da fortaleza, o almirante Grenfell espera quem vem atrás do Bento');talkAll();
+   {const drawn=[],keep=islandSprite;islandSprite=function(id,i,x,y,w,h,...rest){if(id==='canhao-patio'){const t=ctx.getTransform();drawn.push({x,y,w,h,upright:t.a*t.d-t.b*t.c>0});}return keep.call(this,id,i,x,y,w,h,...rest);};try{for(const w of FORT_PARTS.walls.filter(w=>w.cannons))drawFortWall(w);}finally{islandSprite=keep;}
+    check(drawn.length===4&&drawn.every(c=>c.upright&&c.y===fortCannonPose(c.x).y&&c.h>c.w),'os quatro canhões usam vista traseira, apoiados na muralha e sem inverter a perspectiva');}
+   check(!N.beasts.some(x=>x.kind==='marujo'&&x.hp>0&&!x.minion&&grenfellNoPatio(x)),'os marinheiros do pátio entram em forma');
+   b.ordem=0;b.vez=0;mataBeastTick(b,1/30,worldOut);check(N.canhoes.length===3,'Fogo!: os canhões da muralha atiram no pátio');
+   check(N.canhoes.every(c=>{const p=fortCannonPose(c.cx);return p&&c.cy===p.muzzle.y&&c.cy<p.y;}),'as balas saem da ponta do cano voltada para dentro do pátio');
+   {const c=N.canhoes[0];caveState().hp=caveMaxHp();N.inv=0;Object.assign(worldOut,{x:c.x,y:c.y});c.t=0;ilhaCombatExtras(N,1/30,worldOut);check(caveState().hp<caveMaxHp(),'quem fica no círculo leva a bala de canhão');N.canhoes=[];caveState().hp=caveMaxHp();}
+   b.ordem=0;mataBeastTick(b,1/30,worldOut);check(N.beasts.filter(x=>x.minion&&x.hp>0).length===2,'Abordagem!: uma leva de marinheiros');N.beasts.forEach(x=>{if(x.minion)x.hp=0;});
+   Object.assign(worldOut,{x:3200,y:1450});b.hp=Math.round(b.max*.69);b.stun=0;mataBeastTick(b,1/30,worldOut);check(b.state==='sobe','abaixo de 70%, ele corre pra muralha');
+   for(let k=0;k<400&&b.state!=='muralha';k++)mataBeastTick(b,1/30,worldOut);check(b.state==='muralha'&&b.alto>0,'e sobe na ronda da muralha');
+   {const hp=b.hp;Object.assign(worldOut,{x:b.x,y:1620,dx:0,dy:1});N.cd=0;mataAttack();rangedHit(b,{id:'carabina'});bombaEstoura(b.x,b.y);check(b.hp===hp,'lá em cima, nem facão, nem bala, nem bomba');
+    rangedHit(b,{id:'arpao'});check(b.hp<hp&&b.state==='salto','o arpão pega e puxa o almirante');for(let k=0;k<40&&b.state==='salto';k++)mataBeastTick(b,1/30,worldOut);check(b.alto===0&&b.stun>0&&grenfellNoPatio(b),'ele cai atordoado no pátio');}
+   b.stun=0;b.hp=Math.round(b.max*.3);mataBeastTick(b,1/30,worldOut);check(b.fase===3&&!b.alto,'abaixo de 35%, a abordagem: ele desce de vez');
+   {Object.assign(b,{state:'guarda',t:1,stun:0,x:3200,y:1400,dx:1});Object.assign(worldOut,{x:3270,y:1400,dx:-1,dy:0});N.cd=0;const hp=b.hp;mataAttack();check(b.hp===hp&&b.state==='contra','em guarda, de frente, o facão não passa e ele revida');
+    Object.assign(b,{state:'guarda',t:1});rangedHit(b,{id:'arpao'});check(b.stun>0&&b.state==='chase'&&b.hp<hp,'o arpão quebra a guarda');}
+   {Object.assign(b,{state:'gancho',t:0,stun:0,vx:1,vy:0,x:3000,y:1400});Object.assign(worldOut,{x:3300,y:1400});worldDash=null;mataBeastTick(b,1/30,worldOut);check(!!N.gancho&&b.state==='puxa','o gancho fisga o Sadi');ilhaCombatExtras(N,.4,worldOut);check(Math.hypot(worldOut.x-b.x,worldOut.y-b.y)<120,'e arrasta ele pra perto do sabre');}
+   {const pr=bagQty('prata');b.hp=0;withScenes(()=>mataKill(b));check(!!G.ilha.grenfell&&scene?.id==='ilha-chave'&&!G.ilha.chave,'vencido, o almirante some na cerração: a cena da chave');sceneSkip();
+    check(!!G.ilha.chave&&bagQty('prata')>pr&&modal==='talk','o Sadi pega a chave da cripta (e a recompensa)');talkAll();check(/cripta/.test(MISSIONS.find(m=>m.id==='bento').goal()),'a missão manda abrir a cripta');}
+   check(WORLD_MAPS.ilha.spots().find(s=>s.id==='ilha:masmorra')?.label==='Descer à cripta','com a chave, a escada do pátio desce à cripta');
+   masmorraEntra();closeDialog(true);talkAll();check(worldOut.map==='masmorra','a chave abre a grade da cripta');
+   mataNight=null;mataCombatTick(1/30);{const n=criptaFaltam();check(n>=10&&new RegExp('faltam '+n).test(MISSIONS.find(m=>m.id==='bento').goal()),'lá embaixo, os carcereiros (a missão conta quantos faltam)');}
+   Object.assign(worldOut,{x:MASM.clue.x,y:MASM.clue.y+40});{const cela=worldNearest();check(cela?.id==='masmorra:cela','a cela do Bento, no fim do corredor');cela.act();check(!G.ilha.pista&&!scene,'com carcereiro de guarda, a cela não abre');
+    for(const g of mataNight.beasts){g.hp=0;}check(criptaFaltam()===0,'derrubados todos os carcereiros');withScenes(()=>cela.act());check(scene?.id==='ilha-cela','a cena da cela do Bento');sceneSkip();
+    check(!!G.ilha.pista&&modal==='talk'&&talkState.lines.some(l=>/Forte do Mar/.test(l[1])),'na cela: o lenço e a ordem do Império: levaram o Bento pro Forte do Mar, na Bahia');talkAll();}
+   check(/Giuseppe/.test(MISSIONS.find(m=>m.id==='bento').goal())&&!missionDone('bento'),'falta voltar e contar pro Giuseppe');
+   mataNight=null;switchMap({map:'mata',x:RANCHO_GHOST.x+80,y:RANCHO_GHOST.y+60});closeDialog(true);talkAll();
+   {const g=WORLD_MAPS.mata.spots().find(s=>s.id==='garibaldi');withScenes(()=>g.act());check(scene?.id==='bento-reuniao'&&['anita','lanceiro','canabarro'].every(id=>scene.steps.some(st=>st.actor===id)),'o Giuseppe reúne a Anita, o Lanceiro Negro e o general Canabarro pra batalha final');sceneSkip();talkAll();}
+   withScenes(()=>missionsTick());talkAll();check(missionDone('bento')&&!!G.ilha.contou,'contando pro Giuseppe, a missão do Bento fecha');
+   check(WORLD_MAPS.mata.spots().some(s=>s.id==='mata:canabarro'),'o general Canabarro passa a ficar no pinheiral do Giuseppe');
+   {const c=WORLD_MAPS.mata.spots().find(s=>s.id==='mata:canabarro');c.act();check(modal==='talk'&&talkState.lines.some(l=>l[0]?.name==='David Canabarro'),'e prosa sobre o plano');talkAll();}
+   switchMap({map:'ilha',x:2750,y:1950});closeDialog(true);talkAll();check(!WORLD_MAPS.ilha.spots().some(s=>s.id==='folk:canabarro'),'na ilha, o acampamento dele fica só com a fogueira');
+   mataNight=null;worldOut=null;}
  }finally{window.confirm=confirmBefore;window.NO_SCENES=scenesBefore;Math.random=randomBefore;if(phoneOpen)togglePhone(false);if(farmGame)cancelFarmGame();scene=null;fishing=null;G.lasso=null;$('lassoUI')?.classList.add('hidden');closeDialog(true);worldOut=null;}
  return results;
 })()

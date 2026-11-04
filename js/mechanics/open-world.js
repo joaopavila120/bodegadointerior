@@ -129,9 +129,10 @@ function outsideTick(dt) {
   if (worldTalkOpen() && worldTalkAt && Math.hypot(worldTalkAt.x - p.x, worldTalkAt.y - p.y) > 240) showRpgBox('worldTalk', null);
   if(typeof inCave==='function'&&inCave()){cavePlayerTick(dt);return;}
   let dx = (keys.has('d') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('a') || keys.has('ArrowLeft') ? 1 : 0), dy = (keys.has('s') || keys.has('ArrowDown') ? 1 : 0) - (keys.has('w') || keys.has('ArrowUp') ? 1 : 0);
+  const dash = typeof worldDashNow === 'function' ? worldDashNow(dt) : null; if (dash) { dx = dash.dx; dy = dash.dy; }
   const len = Math.hypot(dx, dy); p.walk = !!len; if (!len) return;
   const oldX=p.x,oldY=p.y;
-  dx /= len; dy /= len; p.dx = dx; p.dy = dy; const step = BASE_SPEED * 1.4 * (1 + movementBonus()) * (typeof playerMounted === 'function' && playerMounted() ? 1.65 : 1) * dt;
+  dx /= len; dy /= len; p.dx = dx; p.dy = dy; const step = dash ? dash.step : BASE_SPEED * 1.4 * (1 + movementBonus()) * (typeof playerMounted === 'function' && playerMounted() ? 1.65 : 1) * dt;
   for (let n = 0; n < 4; n++) { const x = p.x + dx * step / 4, y = p.y + dy * step / 4; if (worldCanWalk(x, p.y)) p.x = x; if (worldCanWalk(p.x, y)) p.y = y; }
   p.walk=Math.hypot(p.x-oldX,p.y-oldY)>.01;
   const to = worldMap().edge?.(p); if (to) { const lock = prologueBlocks(to.map) ? 'prologue' : regionLocked(to.map) ? 'region' : null; if (lock) { p.x = oldX; p.y = oldY - 30 * Math.sign(dy || 0); p.x = oldX - 30 * Math.sign(dx || 0); p.walk = false; keys.clear(); if (lock === 'prologue') prologueWarn(); else warnDialog('Caminho fechado', regionLockText(to.map)); return; } switchMap(to); return; }
@@ -168,6 +169,7 @@ function drawOutside() {
   worldLandscape(M, seen, layers, view);
   for (const w of worldWalkers) if (seen(w.x, w.y)) layers.push({ y: w.y, draw: () => personDraw(PEOPLE[w.person].sprite, w.x, w.y, w.walk, false, w.dx, false, 0, w.dy||0) });
   layers.push({ y: worldOut.y, draw: () => { personDraw(avatarSprite(), worldOut.x, worldOut.y, worldOut.walk, true, worldOut.dx, false, 0, worldOut.dy); } });
+  if (typeof worldDash !== 'undefined' && (worldDash || worldDashTrail.length)) layers.push({ y: worldOut.y - 1, draw: drawWorldDash });
   layers.sort((a, b) => a.y - b.y).forEach(l => l.draw());
   drawSecrets(); drawQuestMarkers(view); drawWorldGuide(view);
   const night = G.phase === 'closed' ? .5 : G.phase === 'open' ? clamp((G.elapsed / DAY - .7) * 1.2, 0, .35) : 0;

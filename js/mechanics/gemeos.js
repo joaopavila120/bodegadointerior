@@ -72,10 +72,9 @@ function gemeosChoice(k) {
 
 // ---------- Cenas (na Casona e no campinho de verdade) ----------
 const CASONA_DOOR = { x: 700, y: 900 };
-// A Grazi de farda: o quepe da Brigada por cima.
+// Grazi usa sua própria folha de poses, incluindo a farda e o quepe.
 function drawGrazi(a, y) {
   personDraw(PEOPLE.find(p => p.id === 'grazi').sprite, a.x, y, a.walk, false, a.dx, false, 0, a.dy || 0);
-  rect(a.x - 17, y - 132, 34, 11, '#2a3a4a', 4, '#141c26'); rect(a.x - 20, y - 123, 40, 5, '#1a242e', 2); ellipse(a.x, y - 127, 4, 4, '#e8c040');
 }
 const GRAZI_ACTOR = { draw: drawGrazi };
 function casonaView(extra = {}) { return sceneWorld({ map: 'casa:marcio', x: 900, y: 700, ...extra }); }

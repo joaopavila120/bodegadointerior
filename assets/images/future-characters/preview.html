@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Personagens históricos · Prévia dos sprites</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:32px;background:#202b25;color:#f3e6c8;font:16px system-ui,sans-serif}
+  main{max-width:1000px;margin:auto}h1{font:700 30px Georgia,serif;margin:0 0 10px}p{color:#bcc7b8;line-height:1.5}
+  .controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:26px 0}
+  select,button{font:inherit;color:#f3e6c8;border:1px solid #7d7859;border-radius:8px;padding:10px 16px;background:#344237}
+  button{cursor:pointer}button:hover{background:#465744}select:focus-visible,button:focus-visible{outline:2px solid #e4bb6a;outline-offset:3px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}.card{background:#2b382e;border:1px solid #59634c;border-radius:14px;overflow:hidden;text-align:center}
+  canvas{display:block;width:100%;height:auto;background:linear-gradient(#354439,#26342b)}h2{font:700 24px Georgia,serif;margin:0 16px 12px}.card p{font-size:14px;padding:0 16px}
+  a{color:#e6c780}footer{font-size:14px;line-height:1.8;margin-top:24px}#status{font-size:14px}small{color:#b5c0ad}
+  @media(max-width:650px){body{padding:20px}.cards{grid-template-columns:1fr}h1{font-size:26px}}
+</style>
+<main>
+  <h1>Personagens históricos</h1>
+  <p>Sprites preparados para uso futuro. Escolha uma direção para conferir as animações.</p>
+  <div class="controls">
+    <label for="animation">Animação</label>
+    <select id="animation">
+      <option value="right">Caminhar para a direita</option><option value="left">Caminhar para a esquerda</option>
+      <option value="down">Caminhar de frente</option><option value="up">Caminhar de costas</option>
+      <option value="idle">Parado</option><option value="gesture">Gesto</option>
+    </select>
+    <button id="pause" type="button" aria-pressed="false">Pausar</button>
+    <button id="step" type="button">Próxima pose</button>
+  </div>
+  <div class="cards" id="cards"></div>
+  <p id="status" role="status">Carregando os sprites…</p>
+  <footer><a href="sprites.js">Dados dos recortes e animações</a> · <a href="uso.txt">Como usar depois</a><br><small>PNG transparente · 12 poses por personagem · 7 quadros por segundo</small></footer>
+</main>
+<script src="sprites.js"></script>
+<script>
+'use strict';
+const select=document.querySelector('#animation'), pause=document.querySelector('#pause');
+let playing=true, phase=0, last=null;
+const figures=Object.entries(FUTURE_CHARACTER_SPRITES).map(([id,sheet])=>{
+  const article=document.createElement('article');article.className='card';
+  article.innerHTML=`<canvas width="480" height="310" aria-label="${sheet.name} animado"></canvas><h2>${sheet.name}</h2><p><a href="${sheet.image}">Abrir folha de sprites</a> · <span class="frame"></span></p>`;
+  document.querySelector('#cards').append(article);
+  const image=new Image(),ready=new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Falha ao carregar '+sheet.image));});
+  image.src=sheet.image;
+  return {id,sheet,image,ready,canvas:article.querySelector('canvas'),label:article.querySelector('.frame')};
+});
+function render(){
+  for(const f of figures){
+    const s=f.sheet,frames=s.animations[select.value],index=frames[Math.floor(phase)%frames.length],r=s.frames[index];
+    const ctx=f.canvas.getContext('2d'),scale=195/s.reference;ctx.clearRect(0,0,480,310);
+    ctx.strokeStyle='#728068';ctx.beginPath();ctx.moveTo(80,266);ctx.lineTo(400,266);ctx.stroke();
+    ctx.save();ctx.translate(240,265);if(s.flipAnimations.includes(select.value))ctx.scale(-1,1);
+    ctx.scale(scale,scale);ctx.translate(-r[4],-r[5]);
+    if(s.clips?.[index]){ctx.beginPath();s.clips[index].forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.clip();}
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(f.image,...r.slice(0,4),0,0,r[2],r[3]);ctx.restore();
+    f.label.textContent='Pose '+index;
+  }
+}
+function tick(now){if(last!==null&&playing)phase+=(now-last)/1000*7;last=now;render();requestAnimationFrame(tick);}
+function setPlaying(value){playing=value;pause.textContent=value?'Pausar':'Continuar';pause.setAttribute('aria-pressed',String(!value));}
+pause.onclick=()=>setPlaying(!playing);
+select.onchange=()=>{phase=0;render();};
+document.querySelector('#step').onclick=()=>{setPlaying(false);phase=Math.floor(phase)+1;render();};
+Promise.all(figures.map(f=>f.ready)).then(()=>{
+  for(const {sheet:s,image:im}of figures){
+    if(im.naturalWidth!==s.size[0]||im.naturalHeight!==s.size[1])throw Error('Dimensão de atlas divergente');
+    if(s.frames.length!==12||s.frames.some(r=>r[0]<0||r[1]<0||r[0]+r[2]>s.size[0]||r[1]+r[3]>s.size[1]))throw Error('Recorte inválido');
+    if(Object.values(s.animations).flat().some(i=>!s.frames[i]))throw Error('Pose ausente');
+  }
+  const total=figures.reduce((n,f)=>n+f.sheet.frames.length,0);
+  document.querySelector('#status').textContent=total+' poses carregadas. As caminhadas usam a mesma escala e o mesmo apoio no chão.';
+  document.documentElement.dataset.spritesReady='true';requestAnimationFrame(tick);
+}).catch(error=>{document.querySelector('#status').textContent=error.message;console.error(error);});
+</script>
+</html>

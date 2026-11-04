@@ -3451,4 +3451,32 @@ Quer sentar um pouco? | Quero sim. Caminhei tanto hoje que até a sombra pediu d
 Qual o segredo de um bom churrasco? | Brasa com calma e sal na medida. E alguém pra cuidar da carne enquanto eu corto o pão.
 Até a próxima, Damião! | Até, tchê! Guarda um lugarzinho, que uma hora dessas eu volto pra comer.
 
+[grazi]
+Buenas, Grazi! Tudo tranquilo? | Tudo certo, Sadi. Vim pela prosa; a denúncia de saudade é lá na Casona.
+E o som do Márcio? | No seis, como combinamos. O Marcelo já perguntou se seis em cada caixa conta como doze.
+Vai um café? | Vai bem. Um café, um descanso e depois sigo meu caminho.
+Gostou do anel? | Ficou lindo. Só não deixo o Márcio contar o preço em voz alta toda vez que alguém olha.
+
+[princesa]
+# Teiniaguá na forma de princesa; usada na história da Salamanca, não é outra cliente.
+É tu, Teiniaguá? | Sou eu, gaúcho. A princesa e a lagartixa eram a mesma alma, presa pelo mesmo encanto.
+Há quanto tempo tu tá aqui? | Há tanto que eu contava os anos pelas gotas que caíam da pedra.
+Que luz é essa? | É o carbúnculo. Ele guardou a luz da serra enquanto eu não podia vê-la.
+Tu ouviu o São Dunstano? | Ouvi o martelo do ferreiro lá de cima. Era um dos poucos sons que chegavam até mim.
+O Diabo te prende aqui? | Prende o corpo. Minha vontade de sair ele nunca conseguiu prender.
+Tá livre, princesa. | Então deixa a coroa com o passado. Quero pisar no chão desta terra com meus próprios pés.
+Pra onde tu vai agora? | Pra onde houver céu aberto, prosa boa e uma porta que eu possa atravessar.
+Aparece na bodega. | Apareço, Sadi. Desta vez, sem gaiola, sem encanto e sem coroa.
+
+[gaucha_chique]
+# A mesma Teiniaguá, livre e sem coroa; visita a bodega depois da vitória na caverna.
+Buenas, Teiniaguá! Como vai a vida aqui fora? | Bah, Sadi, até a chuva no rosto parece novidade depois daquele tempo embaixo da terra.
+E a coroa de princesa? | Ficou com o encanto. Aqui eu prefiro um vestido de prenda e liberdade pra ir e vir.
+Te arrumo uma mesa? | Uma perto da janela. Passei tanto tempo vendo pedra que agora quero ver o céu.
+Vai levar erva? | Vou. A primeira cuia que tomei em liberdade valeu mais que o ouro inteiro da Salamanca.
+Aceita um xis? | Aceito, e bem servido. Só traz guardanapo, que esse bordado não combina com maionese.
+Tu ainda lembra da caverna? | Lembro. Mas agora posso escolher onde passo a noite. Obrigada por isso, gaúcho.
+Vai dançar no baile? | Vou aprender uma vaneira. Depois de andar de quatro patas, acertar dois pés já é um progresso!
+Vai querer a conta? | Vou. E diz pro São Dunstano que qualquer dia levo um café lá na forja.
+
 */ };

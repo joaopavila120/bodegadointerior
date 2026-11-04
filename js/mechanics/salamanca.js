@@ -221,7 +221,7 @@ function drawDiaboEyes(b) { if (!diaboHidden(b) || scene) return; const h = diab
 function drawSalamancaHall(run) {
   // A gaiola de luz da Teiniaguá, a fenda e o ouro amontoado.
   const c = caveCenter(...SALAMANCA_CELL.cage), k = caveCenter(...SALAMANCA_CELL.crack), gone = run.teiniaguaGone || 0;
-  if (!salamancaDone() && gone < 1) {
+  if (!salamancaDone() && gone < 1 && !run.teiniaguaActor) {
     const free = run.cageOpen;
     ctx.save(); ctx.globalAlpha = 1 - gone; ctx.globalCompositeOperation = 'lighter'; glow(c.x, c.y + 10, free ? 220 : 110, (free ? .55 : .35) + .1 * Math.sin(frameClock * 3), '255,90,60'); ctx.restore();
     ctx.save(); ctx.globalAlpha = 1 - gone; expansionSprite('cave-beasts-b-v1', 4 + Math.floor(frameClock * 3) % 3, c.x, c.y + 40 - (free ? Math.abs(Math.sin(frameClock * 4)) * 10 : 0), 70, false, expansionRowHeight('cave-beasts-b-v1', 4, 3)); ctx.restore();
@@ -245,7 +245,7 @@ function drawSalamancaHazards(run) {
   }
   for (const s of run.brasas) teleArea(s.x, s.y, 46, 18, teleK(s.t, 1.1), '255,80,30');
   const r = run.rope;
-  if (r && r.t > 0) { const p = worldOut, n = r.target ? diaboNeck(r.target) : r, tx = r.snap ? (p.x + n.x) / 2 : n.x, ty = r.snap ? (p.y - 70 + n.y) / 2 : n.y; ctx.strokeStyle = '#c8a060'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(p.x + 12, p.y - 70); ctx.quadraticCurveTo((p.x + tx) / 2, Math.min(p.y, ty) - 60, tx, ty); ctx.stroke(); }
+  if (r && r.t > 0) { const p = worldOut, n = r.target ? diaboNeck(r.target) : r, tx = r.snap ? (p.x + n.x) / 2 : n.x, ty = r.snap ? (p.y - 70 + n.y) / 2 : n.y, hand = (typeof sadiLassoHand === 'function' && sadiLassoHand(p)) || {x:p.x+12,y:p.y-70}; ctx.strokeStyle = '#c8a060'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hand.x, hand.y); ctx.quadraticCurveTo((hand.x + tx) / 2, Math.min(hand.y, ty) - 35, tx, ty); ctx.stroke(); }
 }
 function drawSalamancaHUD(run) {
   const b = salamancaBoss(run); if (!b) return;
@@ -305,22 +305,31 @@ function salamancaNoEnchant() {
 function salamancaVictory(b) {
   const run = caveFloorRun(); run.fires = []; run.brasas = []; run.rope = null; run.swing = null; run.cd = 0; for (const m of run.beasts) if (m.minion) m.hp = 0;
   run.drops.push({ x: b.x, y: b.y + 30, k: 'ouro', q: 3 }, { x: b.x + 40, y: b.y + 30, k: 'opala', q: 2 });
-  const finish = () => { G.cave.salamanca = G.day; run.torch = true; run.ladder.shown = true; run.ladderPing = 3; run.cageOpen = false; run.teiniaguaLeaving = false; run.teiniaguaGone = 0; save(); completeMission(jarauMission()); };
+  const finish = () => { G.cave.salamanca = G.day; run.torch = true; run.ladder.shown = true; run.ladderPing = 3; run.cageOpen = false; run.teiniaguaActor = false; run.teiniaguaLeaving = false; run.teiniaguaGone = 0; save(); completeMission(jarauMission()); };
   if (!scenesEnabled()) { finish(); return; }
   const p = worldOut, mid = { x: (p.x + b.x) / 2, y: (p.y + b.y) / 2 + 60 }, sadiDx = b.x < p.x ? -1 : 1, cage = caveCenter(...SALAMANCA_CELL.cage);
   playSteps([...sceneWorld({ map: 'caverna', x: mid.x, y: mid.y, night: .3, lights: salamancaLights() }),
     { actor: 'sadi', x: p.x, y: p.y, dx: sadiDx }, { actor: 'diabo', x: b.x, y: b.y, dx: -sadiDx, draw: diaboActorDraw }, { fade: 'in', time: .5 },
     { say: 'diabo', text: 'Arghh… ferro encantado e laço de gaúcho… Isso não termina aqui, guri!' },
     { do: () => { scene.actors.diabo.sinking = true; AudioEngine.caveCrumble(); AudioEngine.caveFireball(); fxPuffs(b.x, b.y - 40, 16, 160, '#ff7a3a'); } }, { wait: 1.6 },
-    scenePan(cage.x - 120, cage.y + 260), { do: () => { run.cageOpen = true; AudioEngine.caveGem(); fxStars(cage.x, cage.y - 20, 8); } }, { wait: 1.4 },
-    { say: 'teiniagua', text: 'A gaiola caiu! Mil anos, gaúcho… mil anos sem ver a luz da serra.' },
+    scenePan(cage.x - 120, cage.y + 260), { do: () => { run.cageOpen = true; run.teiniaguaActor = true; AudioEngine.caveGem(); fxStars(cage.x, cage.y - 20, 8); } },
+    { actor: 'teiniagua', x: cage.x, y: cage.y + 40, dx: 0, dy: 1, speed: 110, form: 'lagartixa', draw: teiniaguaActorDraw },
+    { walk: 'teiniagua', to: { x: cage.x, y: cage.y + 180 } },
+    { do: () => teiniaguaTransform('princesa') }, { wait: .8 },
+    { say: 'teiniagua', text: 'A gaiola caiu, e o encanto de lagartixa se desfez! Sou a Teiniaguá. Mil anos, gaúcho… mil anos sem ver a luz da serra.' },
     { say: 'sadi', text: 'Tá livre, princesa. Pode ir pra onde quiser.' },
+    { say: 'teiniagua', text: 'Então deixo a coroa com o passado. Quero viver aqui, como uma gaúcha, dona do meu próprio caminho.' },
+    { do: () => teiniaguaTransform('gaucha') }, { wait: .8 },
+    { say: 'teiniagua', text: 'Um vestido de prenda, dois pés no chão e céu aberto. Agora sim, Sadi.' },
     { actor: 'dunstano', x: p.x - 110 * sadiDx, y: p.y + 20, dx: sadiDx, alpha: 0, alphaTo: .9, ghost: true }, { do: () => AudioEngine.caveGhost() }, scenePan(p.x, p.y + 80), { wait: 1.4 },
     { say: 'dunstano', text: 'Eu senti o tranco lá do primeiro andar! A gruta inteira tremeu.' },
     { say: 'dunstano', text: 'Faz mil anos eu peguei esse diabo pelo nariz com a tenaz. Agora foi um gaúcho de laço e facão. Que orgulho, vivente!' },
     { say: 'sadi', text: 'O facão era o do vô, santo. O encanto foi o senhor que pôs.' },
     { say: 'teiniagua', text: 'Santo ferreiro, gaúcho: fiquem com a luz da minha pedra. Onde vocês pisarem nesta serra, nunca mais vai ser escuro.' },
-    { do: () => { const w = scene.world; w.night = 0; w.lights.push({ x: p.x, y: p.y - 80, r: 900, a: .28, color: '255,220,160' }); run.teiniaguaLeaving = true; AudioEngine.caveGem(); AudioEngine.ready(); } }, { wait: 1.6 },
+    { do: () => { const w = scene.world; w.night = 0; w.lights.push({ x: p.x, y: p.y - 80, r: 900, a: .28, color: '255,220,160' }); AudioEngine.caveGem(); AudioEngine.ready(); } }, { wait: 1.6 },
+    { say: 'sadi', text: 'Quando subir, aparece na bodega. Te guardo uma mesa perto da janela.' },
+    { say: 'teiniagua', text: 'Combinado, gaúcho. Agora posso entrar por uma porta e sair quando eu quiser.' },
+    { walk: 'teiniagua', to: { x: cage.x + 180, y: cage.y + 360 } },
     { say: 'dunstano', text: 'Teu vô ia ficar faceiro. Agora sobe e vai abrir a bodega, que o povo tá com sede!' },
     { fade: 'out', time: .8 }], 'salamanca-vitoria', finish);
 }

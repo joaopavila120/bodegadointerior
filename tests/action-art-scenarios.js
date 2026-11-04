@@ -5,10 +5,13 @@
   G.regions = { serra: true, sc: true }; G.valterQueue = []; G.teachQueue = []; G.mount = { owned: false };
   G.missions = {}; for (const m of storyChapters()) if (m.id !== 'lendaria') G.missions[m.id] = { status: 'done', day: 1 };
   started = true; paused = false; scene = null; talkState = null; closeDialog(true);
-  check(Object.keys(ACTION_ART).length === 18 && Object.values(ACTION_ART).every(im => im.naturalWidth), '18 atlases loaded');
-  check(Object.values(ACTION_ART_CROPS).reduce((n, s) => n + s.frames.length, 0) === 208, '208 complete poses');
+  // Later regions register more characters in the shared map on demand.
+  const coreAtlases = ['anita','baia','bento','coral','corposeco','cusco','damiao','garibaldi-ghost','jasy','kurupi','lanceiro','mariath','marinheiro','ourico','sadi-bodoque','sadi-revolver','sepe','teiu'];
+  check(coreAtlases.every(id=>ACTION_ART_CROPS[id]), '18 core atlases registered');
+  check(coreAtlases.every(id => ACTION_ART[id]?.naturalWidth), 'core atlases loaded; missing: '+coreAtlases.filter(id=>!ACTION_ART[id]?.naturalWidth).join(', '));
+  check(coreAtlases.reduce((n, id) => n + ACTION_ART_CROPS[id].frames.length, 0) === 208, '208 core poses');
   check(personHeight(0, true) === 130 && !sadiRangedPose(), 'bodega scale and idle preserved');
-  for (const id of Object.keys(FOLK_ART_SIZE)) {
+  for (const id of Object.keys(FOLK_ART_SIZE).filter(id=>coreAtlases.includes(id))) {
     check(historyFigure(id, 500, 300, 1, 1, true, 0, false, 1), id + ' draws a walking pose');
     check(historyPortrait(id).includes('actions/' + id), id + ' has matching portrait');
   }

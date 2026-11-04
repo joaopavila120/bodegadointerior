@@ -10,7 +10,7 @@ function worldCharacterSpec(sprite,x,y,walking,dx,dy){
     const gait=secondaryGait(secondary.id,x,y,walking,dx,dy);
     const direction=walking?walkDirection(gait.dx,gait.dy):0;
     const step=walking?secondaryStep(secondary.steps,gait.phase,true):0;
-    return {kind:'secondary',id:secondary.id,key:secondary.key,index:secondary.start+direction*secondary.steps+step,reference:secondary.height,flip:direction===1&&gait.dx<0,height:124};
+    return {kind:'secondary',id:secondary.id,key:secondary.key,index:secondary.start+direction*secondary.steps+step,reference:secondary.directionHeights?.[direction] || secondary.height,flip:direction===1&&gait.dx<0,height:124};
   }
   if(!id||id==='sadi'||!WALK_ART[id]?.naturalWidth)return null;
   if(walking)({dx,dy}=visitorWalkDirection(id,x,y,dx,dy));

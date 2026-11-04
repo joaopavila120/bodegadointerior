@@ -6,7 +6,7 @@
   G.missions = {}; for (const m of storyChapters()) if (m.id !== 'lendaria') G.missions[m.id] = { status: 'done', day: 1 };
   started = true; paused = false; scene = null; talkState = null;
   const i = PEOPLE.findIndex(p => p.id === 'damiao'), p = PEOPLE[i];
-  check(i === PEOPLE.length - 1 && !isSpecial(i) && !p.worldOnly, 'Damião é um freguês comum, sem reordenar os personagens antigos');
+  check(i >= 0 && i < PEOPLE.findIndex(p=>p.id==='princesa') && !isSpecial(i) && !p.worldOnly, 'Damião é um freguês comum, sem reordenar os personagens antigos');
   check(visitorPool().includes(i) && minorPeople().includes(i), 'participa das visitas e das caminhadas comuns');
   check(customDialogues.damiao?.length === 16 && personalizedProse(i)?.id.startsWith('person:damiao:'), '16 falas do TXT disponíveis na bodega');
   const oldLines = customDialogues.damiao;

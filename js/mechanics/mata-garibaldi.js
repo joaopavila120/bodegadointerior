@@ -170,7 +170,7 @@ function garibaldiLojaHTML() {
 }
 function garibaldiBornalHTML() {
   const bag = mataBag(), max = mataBagMax();
-  return `<p class="small-note">Na mata, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${caveUp('bornal') ? '' : '; o bornal de couro cru da ferraria dobra'}).</p><div class="store-list">` + MATA_ITEMS.map(i => {
+  return `<p class="small-note">Na mata, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${caveUp('bornal') ? '' : '; o bornal de couro cru da ferraria dobra'}).</p><div class="store-list">` + MATA_ITEMS.filter(i => !i.griggs).map(i => {
     const have = bag[i.id] || 0, room = max - have;
     return forjaCard(`${mataGearHTML(i.id)}`, i.name + ` <small>· ${have}/${max}</small>`, i.desc, '', `<button class="primary" data-act="garibaldiItem" data-id="${i.id}" ${room > 0 && hasCash(i.cost) ? '' : 'disabled'}>${room > 0 ? 'Comprar · ' + money(i.cost) : 'Cheio'}</button>`);
   }).join('') + '</div>';

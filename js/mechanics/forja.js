@@ -235,7 +235,7 @@ function reqChips(needs = {}, cost = 0) {
 function forjaCard(icon, name, desc, info, btn, cls = '') { return `<div class="supply forja-card ${cls}"><span class="icon">${icon}</span><div><b>${name}</b><p>${desc}${info ? '<br>' + info : ''}</p></div>${btn}</div>`; }
 function dunstanWeaponsHTML() {
   const cur = caveWeapon();
-  return CAVE_WEAPONS.map(w => {
+  return CAVE_WEAPONS.filter(w => !w.griggs || weaponOwned(w.id)).map(w => {
     const emoji = forgeWeaponIcon(w.id), using = cur.id === w.id;
     if (weaponOwned(w.id)) return forjaCard(emoji, w.name, w.desc, `<small>${w.id === 'facao' ? 'Dano ' + (using ? caveDmg() : 12) : w.dmg + ' de dano'}${weaponRefine(w.id) ? ' · afiado +' + weaponRefine(w.id) : ''}</small>`,
       using ? '<button disabled>✔ Na mão</button>' : `<button class="primary" data-act="forjaEquip" data-id="${w.id}">Usar</button>`, using ? 'using' : 'owned');

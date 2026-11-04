@@ -532,6 +532,11 @@ function discardCostelao(){
  return any;
 }
 function skipLasso(){G.lassoDay=G.day;closeDialog(true);say('Sem bois, o costelão de amanhã fica só com o que sobrou no estoque.');nextDay();}
+function drawLassoRope(L){
+ ctx.strokeStyle='#e8cc8a';ctx.lineWidth=3;
+ if(L.charging){const a=lassoAim(),ang=L.time*14;ctx.beginPath();ctx.ellipse(G.player.x+Math.cos(ang)*8,G.player.y-132,30,10,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([8,8]);ctx.strokeStyle='#fff4c488';ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-60);ctx.lineTo(a.x,a.y);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#ffe28a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y,52,20,0,0,Math.PI*2);ctx.stroke();}
+ if(L.throw){const t=L.throw,k=clamp(t.time/t.total,0,1),x=t.sx+(t.tx-t.sx)*k,y=t.sy+(t.ty-t.sy)*k-Math.sin(k*Math.PI)*90;ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-80);ctx.quadraticCurveTo((G.player.x+x)/2,Math.min(y,G.player.y)-60,x,y);ctx.stroke();ctx.beginPath();ctx.ellipse(x,y,34*(.5+k*.5),12*(.5+k*.5),0,0,Math.PI*2);ctx.stroke();}
+}
 function drawLasso(){
  const L=G.lasso;if(!L){if(scene)drawScene();else draw();return;}beginWorld();drawCampoBackground();
  // curral (na caçada de javali é de noite e não tem curral)
@@ -542,9 +547,7 @@ function drawLasso(){
  for(const q of activeQueros(L))if(q.state==='guard')layers.push({y:q.y,draw:()=>drawQuero(0,q.x,q.y-30,1.8,q.face<0)});
  layers.sort((a,b)=>a.y-b.y).forEach(l=>l.draw());
  drawQueroAir(L);drawFx();
- ctx.strokeStyle='#e8cc8a';ctx.lineWidth=3;
- if(L.charging){const a=lassoAim(),ang=L.time*14;ctx.beginPath();ctx.ellipse(G.player.x+Math.cos(ang)*8,G.player.y-132,30,10,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([8,8]);ctx.strokeStyle='#fff4c488';ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-60);ctx.lineTo(a.x,a.y);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#ffe28a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y,52,20,0,0,Math.PI*2);ctx.stroke();}
- if(L.throw){const t=L.throw,k=clamp(t.time/t.total,0,1),x=t.sx+(t.tx-t.sx)*k,y=t.sy+(t.ty-t.sy)*k-Math.sin(k*Math.PI)*90;ctx.beginPath();ctx.moveTo(G.player.x,G.player.y-80);ctx.quadraticCurveTo((G.player.x+x)/2,Math.min(y,G.player.y)-60,x,y);ctx.stroke();ctx.beginPath();ctx.ellipse(x,y,34*(.5+k*.5),12*(.5+k*.5),0,0,Math.PI*2);ctx.stroke();}
+ drawLassoRope(L);
  drawSparks('lasso');
  if(L.mode==='rodeio')drawRodeioHUD(L);
  ctx.setTransform(1,0,0,1,0,0);

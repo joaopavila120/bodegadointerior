@@ -20,6 +20,14 @@ function actionSprite(id, index, x, y, size, flip = false) {
   if (!tile) {
     tile = document.createElement('canvas'); tile.width = w; tile.height = h;
     const g = tile.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    // A few generated atlas poses have overlapping rectangles, but separate
+    // silhouettes. Clip only while caching their frame to exclude neighbours.
+    const clip = sheet.clips?.[index];
+    if (clip) {
+      g.beginPath();
+      clip.forEach(([px, py], i) => i ? g.lineTo(px * w / r[2], py * h / r[3]) : g.moveTo(px * w / r[2], py * h / r[3]));
+      g.closePath(); g.clip();
+    }
     g.drawImage(image, ...r.slice(0, 4), 0, 0, w, h);
     actionFrameCache.set(key, tile); actionFramePixels += w * h;
     while (actionFrameCache.size > 160 || actionFramePixels > 4 * 1024 * 1024) {
@@ -89,7 +97,7 @@ function historyFigure(id, x, y, alpha, dx, moving, dy, action = false, phase) {
     if (!historyFigure('mariath', x, y, alpha * (hurt > 0 ? .6 : 1), dx, moving, dy, strike)) captain(x, y, alpha, dx, state, hurt);
   };
   drawMarinheiro = function(b) {
-    if (!historyFigure('marinheiro', b.x, b.y, b.hurt > 0 ? .6 : 1, b.dx, b.state === 'chase', 0, b.state === 'lunge', b.frame)) return sailor(b);
+    if (!historyFigure('marinheiro', b.x, b.y, b.hurt > 0 ? .6 : 1, b.dx, b.state === 'chase' || !!b.moving, 0, b.state === 'lunge', b.frame)) return sailor(b);
     mataHpBar(b, 'Marinheiro', 145);
   };
   const garibaldi=drawGaribaldi;
@@ -212,11 +220,17 @@ function companionPose(walking, sleepy, alert, pet = false, attack = 0, clock = 
 // when the player swaps it or the final cartridge starts an automatic reload.
 const sadiShot = { until: 0, start: 0, weapon: null, angle: 0, map: null, game: null, field: false };
 function startSadiShot(weapon, angle, field = false) {
-  Object.assign(sadiShot, { until: frameClock + .4, start: frameClock, weapon, angle, map: worldOut?.map || null, game: G, field });
+  const duration = weapon === 'carabina' ? .84 : weapon === 'arpao' ? .8 : .4;
+  Object.assign(sadiShot, { until: frameClock + duration, start: frameClock, weapon, angle, map: worldOut?.map || null, game: G, field });
 }
-function rangedMuzzle(p, angle, stage = 0) {
+function rangedPoseId(weapon) { return weapon === 'bodoque' ? 'sadi-bodoque' : weapon === 'revolver38' ? 'sadi-revolver' : 'island:sadi-' + weapon; }
+function rangedMuzzle(p, angle, stage = 0, weapon = rangedWeapon()) {
   const sadi = avatarSprite() === 0 || walkCharacterId(avatarSprite()) === 'sadi';
-  if (!sadi || !ACTION_ART[rangedWeapon() === 'bodoque' ? 'sadi-bodoque' : 'sadi-revolver']?.naturalWidth || playerMounted() || playerCarrying()) return null;
+  if (!sadi || !ACTION_ART[rangedPoseId(weapon)]?.naturalWidth || playerMounted() || playerCarrying()) return null;
+  if ((weapon === 'carabina' || weapon === 'arpao') && typeof islandWeaponMuzzle === 'function') {
+    const point = islandWeaponMuzzle(p, angle, stage, weapon);
+    return point && weapon === 'arpao' ? { x: point.x + Math.cos(angle) * 64, y: point.y + Math.sin(angle) * 64 } : point;
+  }
   const direction = walkDirection(Math.cos(angle), Math.sin(angle)), side = direction === 1, sign = Math.cos(angle) < 0 ? -1 : 1;
   const scale = (worldOut && !worldMap().indoor ? 124 : 130) / 124 * sadiScale();
   return { x: p.x + (side ? (stage === 1 ? 43 : 53) * sign : 0) * scale, y: p.y - (side ? (stage === 1 ? 119 : 96) : direction === 2 ? 126 : 85) * scale };
@@ -239,12 +253,16 @@ function sadiRangedPose() {
   } else if (sadiShot.game === G && sadiShot.until > frameClock && sadiShot.map === (worldOut?.map || null) && (sadiShot.field ? slingActive() : rangedCombat())) {
     weapon = sadiShot.weapon; angle = sadiShot.angle;
     const elapsed = frameClock - sadiShot.start;
-    stage = weapon === 'bodoque' ? (elapsed < .045 ? 1 : elapsed < .19 ? 2 : 3) : (elapsed < .035 ? 0 : elapsed < .13 ? 1 : elapsed < .24 ? 2 : 3);
+    stage = weapon === 'bodoque' ? (elapsed < .045 ? 1 : elapsed < .19 ? 2 : 3)
+      : weapon === 'carabina' ? (elapsed < .05 ? 0 : elapsed < .18 ? 1 : elapsed < .64 ? 2 : 3)
+      : weapon === 'arpao' ? (elapsed < .13 ? 1 : elapsed < .32 ? 2 : elapsed < .59 ? 3 : 0)
+      : (elapsed < .035 ? 0 : elapsed < .13 ? 1 : elapsed < .24 ? 2 : 3);
   } else return null;
-  const id = weapon === 'bodoque' ? 'sadi-bodoque' : 'sadi-revolver';
+  const id = rangedPoseId(weapon);
+  if ((weapon === 'carabina' || weapon === 'arpao') && typeof islandWeaponImage === 'function') islandWeaponImage(weapon);
   if (!ACTION_ART[id]?.naturalWidth) return null;
   const dx = Math.cos(angle), dy = Math.sin(angle), direction = walkDirection(dx, dy);
-  return { id, direction, stage, index: direction * 4 + stage, flip: direction === 1 && dx < 0, angle };
+  return { id, weapon, direction, stage, index: direction * 4 + stage, flip: direction === 1 && dx < 0, angle };
 }
 {
   const fire = rangedFire, tick = rangedTick;
@@ -252,7 +270,7 @@ function sadiRangedPose() {
     const count = ranged.shots.length, weapon = rangedWeapon(); fire();
     if (ranged.shots.length > count) {
       startSadiShot(weapon, ranged.ang);
-      const shot = ranged.shots[ranged.shots.length - 1], tip = rangedMuzzle(worldOut, ranged.ang);
+      const shot = ranged.shots[ranged.shots.length - 1], tip = rangedMuzzle(worldOut, ranged.ang, weapon === 'arpao' ? 1 : 0, weapon);
       if (tip) Object.assign(shot, { artX: tip.x - shot.x, artY: tip.y - shot.y, artAge: 0 });
     }
   };
@@ -279,7 +297,7 @@ function sadiRangedPose() {
     const pose = (avatarSprite() === 0 || walkCharacterId(avatarSprite()) === 'sadi') && sadiRangedPose();
     if (!pose || !worldOut) return hand();
     // Flash stays at the weapon tip; do not draw an extra detached gun over the pose.
-    const muzzle = rangedMuzzle(worldOut, pose.angle, pose.stage);
+    const muzzle = rangedMuzzle(worldOut, pose.angle, pose.stage, pose.weapon);
     if (muzzle) { ranged.tipX = muzzle.x; ranged.tipY = muzzle.y; }
   };
 }

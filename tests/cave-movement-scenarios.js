@@ -46,7 +46,8 @@
     reset(620,720);G.cave.floor=run.floor=1;caveMovePlayer(160,-80);check(worldCanWalk(worldOut.x,worldOut.y),'Movimento respeita também a ferraria');
     reset();G.cave.floor=run.floor=2;run.ladder.shown=true;caveDash();caveDescend();
     check(!caveFloorRun().dash&&worldCanWalk(worldOut.x,worldOut.y),'Troca de andar limpa o dash e mantém entrada acessível');
-    worldOut.map='serra';caveUpdateControls();check(!caveDash()&&$('caveDashButton').classList.contains('hidden'),'Dash e botão ficam restritos à caverna');
+    worldOut.map='serra';caveUpdateControls();check($('caveDashButton').classList.contains('hidden'),'Fora da caverna, sem bicho por perto, o botão do dash some');
+    check(caveDash()&&!!worldDash,'mas o Shift dá o dash no jogo todo');worldDash=null;worldDashCd=0;
   } finally {
     keys.clear();skipWorldTalk();closeDialog(true);
     G=saved.G;worldOut=saved.worldOut;caveRun=saved.caveRun;caveTrip=saved.caveTrip;started=saved.started;paused=saved.paused;modal=saved.modal;scene=saved.scene;phoneOpen=saved.phoneOpen;caveUpdateControls();

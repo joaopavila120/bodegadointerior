@@ -1,0 +1,36 @@
+SPRITES RESERVADOS PARA USO FUTURO
+
+David Canabarro: david-canabarro-v1.png
+Dom Pedro II: dom-pedro-ii-v1.png
+Monge João Maria: monge-joao-maria-v1.png
+
+Abra preview.html diretamente no navegador para conferir as animações.
+Estes arquivos ainda não registram personagens nem carregam imagens no jogo.
+
+Cada PNG contém 12 poses, em 4 colunas e 3 linhas:
+0: parado de frente; 1–3: passos de frente.
+4: parado de lado; 5–7: passos para a direita.
+8: parado de costas; 9–10: passos de costas.
+11: gesto (Canabarro dando uma orientação; Pedro II cumprimentando;
+João Maria conversando/abençoando, apoiado no cajado).
+Para a esquerda, espelhar horizontalmente as poses de lado.
+
+sprites.js declara FUTURE_CHARACTER_SPRITES com os recortes reais de cada pose.
+Não dividir o PNG em células iguais: as artes têm espaçamentos ligeiramente diferentes.
+Cada frame é [x, y, largura, altura, apoioX, apoioY].
+reference: altura de referência para manter a escala constante entre as poses.
+displayHeight: sugestão de altura no mundo do jogo (132, 136 e 126).
+animations: sequências de índices; fps: 7; flipAnimations: direções espelhadas.
+Se houver clips, aplicar o polígono ao recorte, como já faz actionSprite.
+
+O formato dos recortes é compatível com actionSprite/historyPose. Na integração
+futura, registrar as imagens e metadados nos respectivos mapas e dar ao NPC
+seu comportamento. Os sprites são opacos: efeitos de fantasma podem ser
+aplicados pelo jogo, sem precisar redesenhar as artes.
+
+Para recalcular os metadados sem alterar os PNGs:
+python scripts/build-creature-crops.py --future-characters
+
+Prompts e referências: docs/future-character-art-prompts.json
+Prompt e referências do monge: docs/monge-joao-maria-prompts.json
+O monge segue a iconografia de João Maria de Jesus, adaptada ao jogo.

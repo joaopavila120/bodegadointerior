@@ -189,18 +189,39 @@ function caveMovePlayer(dx,dy) {
   }
   return Math.hypot(p.x-oldX,p.y-oldY);
 }
+// O dash comprado com São Dunstano vale no jogo todo: fora da caverna (vila, mata, ilha) corre pelo outsideTick,
+// com o mesmo tempo, velocidade e recarga, e deixa o Sadi invulnerável aos bichos da mata enquanto dura.
+let worldDash=null,worldDashCd=0,worldDashTrail=[];
 function caveDash() {
   if(caveDefeatActive())return false;
-  if(!inCave()||!started||paused||modal||scene||phoneOpen||worldTalkOpen()||G.game||G.bocce||G.penalties)return false;
-  if(!caveUp('dash')){floatNote('Compre o Passo de esquiva com São Dunstano no primeiro andar.');return false;}
-  const run=caveFloorRun(),p=worldOut;if(run.dash||(run.dashCd||0)>0)return false;
+  if(!worldOut||!started||paused||modal||scene||phoneOpen||worldTalkOpen()||G.game||G.bocce||G.penalties)return false;
+  if(!caveUp('dash')){floatNote('Compre o Passo de esquiva com São Dunstano no primeiro andar da caverna.');return false;}
+  const cave=inCave(),run=cave?caveFloorRun():null,p=worldOut;
+  if(cave?run.dash||(run.dashCd||0)>0:worldDash||worldDashCd>0||typeof playerMounted==='function'&&playerMounted())return false;
   let dx=Number(keys.has('d')||keys.has('ArrowRight'))-Number(keys.has('a')||keys.has('ArrowLeft'));
   let dy=Number(keys.has('s')||keys.has('ArrowDown'))-Number(keys.has('w')||keys.has('ArrowUp'));
   if(!dx&&!dy){dx=p.dx||0;dy=p.dy||0;}if(!dx&&!dy)dy=1;
-  const length=Math.hypot(dx,dy);dx/=length;dy/=length;caveUnstickPlayer();
-  run.dash={t:CAVE_DASH.duration,dx,dy};run.dashCd=CAVE_DASH.cooldown;run.swing=null;
+  const length=Math.hypot(dx,dy);dx/=length;dy/=length;
+  if(cave){caveUnstickPlayer();run.dash={t:CAVE_DASH.duration,dx,dy};run.dashCd=CAVE_DASH.cooldown;run.swing=null;}
+  else{worldDash={t:CAVE_DASH.duration,dx,dy};worldDashCd=CAVE_DASH.cooldown;}
   p.dx=dx;p.dy=dy;AudioEngine.swoosh(.07);caveUpdateControls();return true;
 }
+// Fora da caverna: o passo do dash deste quadro (direção e distância), ou null.
+function worldDashNow(dt) {
+  worldDashTrail=worldDashTrail.filter(t=>(t.life-=dt)>0);worldDashCd=Math.max(0,worldDashCd-dt);
+  const d=worldDash;if(!d)return null;if(!worldOut||inCave()){worldDash=null;return null;}
+  const time=Math.min(Math.max(0,d.t),dt);d.t-=dt;if(d.t<=0)worldDash=null;if(time<=0)return null;
+  worldDashTrail.push({x:worldOut.x,y:worldOut.y,life:.16});
+  return {dx:d.dx,dy:d.dy,step:CAVE_DASH.speed*time};
+}
+function drawWorldDash() {
+  ctx.save();
+  for(const t of worldDashTrail){ctx.globalAlpha=t.life/.16*.45;ellipse(t.x,t.y-8,20,9,'#a9eaff');}
+  if(worldDash){ctx.globalAlpha=.65;ctx.strokeStyle='#b8f1ff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(worldOut.x,worldOut.y-10,26,12,0,0,Math.PI*2);ctx.stroke();}
+  ctx.restore();
+}
+// O botão do dash (celular) aparece na caverna e onde tem bicho pra brigar.
+function worldDashHud() { return !!worldOut&&(inCave()||typeof mataHere==='function'&&mataHere()&&mataCombatOn()); }
 function cavePlayerTick(dt) {
   if(caveDefeatActive())return;
   if(paused||modal||scene||phoneOpen)return;
@@ -220,11 +241,11 @@ function cavePlayerTick(dt) {
   p.walk=caveMovePlayer(dx*step,dy*step)>.01;
 }
 function caveUpdateControls() {
-  const visible=inCave(),run=visible?caveFloorRun():null,btn=$('caveDashButton');
-  $('caveAttackButton')?.classList.toggle('hidden',!visible);
+  const cave=inCave(),visible=worldDashHud(),run=cave?caveFloorRun():null,btn=$('caveDashButton');
+  $('caveAttackButton')?.classList.toggle('hidden',!cave);
   if(!btn)return;btn.classList.toggle('hidden',!visible||!caveUp('dash'));
-  const cooldown=run?.dashCd||0;btn.disabled=!visible||!caveUp('dash')||!!run?.dash||cooldown>0;
-  btn.textContent=run?.dash?'Dash · invulnerável':cooldown>0?'Dash · '+cooldown.toFixed(1)+'s':'Shift · Dash';
+  const dash=cave?run?.dash:worldDash,cooldown=cave?run?.dashCd||0:worldDashCd;btn.disabled=!visible||!caveUp('dash')||!!dash||cooldown>0;
+  btn.textContent=dash?'Dash · invulnerável':cooldown>0?'Dash · '+cooldown.toFixed(1)+'s':'Shift · Dash';
 }
 function drawCaveDash() {
   const run=caveFloorRun();ctx.save();
@@ -440,7 +461,7 @@ function drawCaveSwing() {
   const k = 1 - s.t / .2, a0 = s.ang - 1.2 + k * 2.4;
   ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(${caveSwingColor()},${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(0, 0, 78, s.ang - 1.2, a0); ctx.stroke();
-  if (typeof EXPANSION_ART === 'undefined' || !expansionImage('sadi-combat-v1')?.naturalWidth) {
+  if (!(typeof sadiToolPose === 'function' && sadiToolPose()?.tool === 'sabre') && (typeof EXPANSION_ART === 'undefined' || !expansionImage('sadi-combat-v1')?.naturalWidth)) {
     ctx.rotate(a0); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3);
   }
   ctx.restore();
@@ -540,6 +561,7 @@ function drawCaveMouth(layers, seen) {
   const begin = beginOutside; beginOutside = function (M) { const view = begin(M), k = inCave() ? (caveRun?.shake || 0) * 34 : 0; if (k) ctx.translate((Math.random() - .5) * k, (Math.random() - .5) * k); return view; };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inCave() && !modal && !scene) caveTick(dt); else if(!inCave())caveUpdateControls(); };
   document.addEventListener('keydown', e => { if (!inCave() || e.repeat || modal || scene || worldTalkOpen() || ['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)) return; const k = e.key.toLowerCase(); if (k === 'shift') { e.preventDefault();caveDash(); } else if (k === ' ' || k === 'f') { e.preventDefault(); caveAttack(); } });
+  document.addEventListener('keydown', e => { if (!worldOut || inCave() || e.repeat || e.key !== 'Shift' || modal || scene || worldTalkOpen() || ['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)) return; e.preventDefault(); caveDash(); });
 }
 document.addEventListener('DOMContentLoaded', () => {
   const secrets = drawSecrets; drawSecrets = function () { secrets(); drawCaveLight(); };

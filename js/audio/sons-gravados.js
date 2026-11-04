@@ -11,8 +11,8 @@ const SONS_LACOS = { caverna: 32, campo: 32, mata: 30, noite: 30, fogo: 20, trem
 // Os laços sintetizados que o gravado substitui.
 const SONS_TROCA = { grutaRonco: 'caverna', grutaVento: 'caverna', fire: 'fogo' };
 // Mapas de céu aberto (os outros são casas, salões, a caverna e o navio).
-const SONS_FORA = new Set(['vila', 'serra', 'sc', 'mata', 'trecho', 'arena', 'laguna', 'horta', 'curral']);
-const SONS_MATO = new Set(['mata', 'trecho', 'arena']);
+const SONS_FORA = new Set(['vila', 'serra', 'sc', 'mata', 'trecho', 'arena', 'laguna', 'horta', 'curral', 'ilha', 'ilhamato']);
+const SONS_MATO = new Set(['mata', 'trecho', 'arena', 'ilha', 'ilhamato']);
 
 Object.assign(AudioEngine, {
   sons: {}, sonsPedidos: false, sonsLacos: {},
@@ -110,7 +110,7 @@ function sonsTrem(p) {
   const amb = AudioEngine.ambience;
   AudioEngine.ambience = function (dt) {
     amb.call(this, dt);
-    const p = worldOut, gruta = typeof inCave === 'function' && inCave(), fora = !!p && SONS_FORA.has(p.map) && !gruta;
+    const p = worldOut, gruta = typeof inCave === 'function' && inCave() || p?.map === 'masmorra', fora = !!p && SONS_FORA.has(p.map) && !gruta;
     const noite = fora && worldNight(), mato = fora && SONS_MATO.has(p.map), campo = isCampo() && !p;
     const fuel = campo && !G.lasso && campoState().lit ? (campoState().fuel ?? 0) / 100 : 0;
     // Os grilos cantam umas rodadas curtas e param um pouco (nunca um chiado sem fim).

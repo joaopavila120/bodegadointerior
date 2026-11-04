@@ -1,0 +1,20 @@
+# O Pages publica o jogo; fontes de arte, testes e divulgação continuam no Git.
+exclude:
+  - README.md
+  - docs
+  - divulgacao
+  - scripts
+  - tests
+  - tools
+  - tmp
+  - "assets/images/world/preview-*.png"
+  - .sass-cache
+  - .jekyll-cache
+  - gemfiles
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle
+  - vendor/cache
+  - vendor/gems
+  - vendor/ruby

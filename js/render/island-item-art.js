@@ -73,7 +73,7 @@ function islandWeaponMuzzle(p,angle,stage,weapon){
   mataGearHTML=(id,size=64)=>['bomba','reza'].includes(id)?islandItemIcon(id,size):gear(id,size);
   rangedIcon=id=>['arpao','carabina','cartuchos'].includes(id)?islandItemIcon(id):icon(id);
   griggsEmoji=e=>({'🔪':'facao_prata','🙏':'reza','⚔️':'sabre','💣':'bomba'}[e]?islandItemIcon({'🔪':'facao_prata','🙏':'reza','⚔️':'sabre','💣':'bomba'}[e]):emoji(e));
-  forgeWeaponIcon=id=>id==='sabre'?islandItemIcon(id):weapon(id);
+  forgeWeaponIcon=id=>{if(!armaSabre(id))return weapon(id);const f=ILHA_SABRES[id].filtro;return f?`<span style="display:inline-flex;filter:${f}">${islandItemIcon('sabre')}</span>`:islandItemIcon('sabre');};
   itemImageForSize=(id,size)=>islandItemIndex(id)>=0?islandItemFrame(id,size)||item(id,size):item(id,size);
   const achado=drawAchado;
   drawAchado=function(a){

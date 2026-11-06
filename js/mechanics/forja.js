@@ -1,5 +1,5 @@
 // A caverna vira jogo próprio: minérios que melhoram conforme se desce (cobre e ferro em cima, opala e ouro lá no fundo),
-// a forja de São Dunstano (facão de cobre, de ferro, espada de ametista, de ágata e a da Salamanca, que se afiam com
+// a forja de São Dunstano (facão de cobre, de ferro, de ametista, de ágata e a espada da Salamanca, que se afiam com
 // minério), equipamento campeiro, o bornal da caverna (tecla B) com o bolicho do santo (chimarrão, charque, canha,
 // esporas, boleadeira, água benta, patuá e tição) e os atalhos 1 a 5. Na primeira descida, o susto: o fantasma se
 // apresenta e ensina tudo. E em algumas noites ele sai da gruta e caminha pela estrada da Serra, contando a vida dele.
@@ -56,11 +56,11 @@ function caveOreGlow(k) { return k === 'ametista' ? '190,140,255' : k === 'agata
 // ---------- Armas da forja ----------
 const CAVE_WEAPONS = [
   { id: 'facao', name: 'Facão do vô', icon: '🔪', dmg: 12, desc: 'O facão de cabo de chifre que estava cravado na boca da gruta. Afia com as melhorias do vô.' },
-  { id: 'cobre', name: 'Facão de cobre', icon: '🗡️', dmg: 20, cost: 60, needs: { cobre: 8 }, ore: 'cobre', color: '255,170,100', desc: 'Cobre das primeiras galerias, batido a frio. Leve e ligeiro.' },
-  { id: 'ferro', name: 'Facão de ferro batido', icon: '🗡️', dmg: 28, cost: 140, needs: { ferro: 8, cobre: 4 }, ore: 'ferro', color: '220,220,235', desc: 'Ferro das galerias do meio, temperado na água fria do arroio.' },
-  { id: 'ametista', name: 'Espada de ametista', icon: '⚔️', dmg: 34, cost: 200, needs: { ametista: 10 }, ore: 'ametista', color: '200,150,255', desc: 'Fio de ametista lapidada sobre alma de aço: corta e brilha no escuro.' },
-  { id: 'agata', name: 'Espada de ágata', icon: '⚔️', dmg: 42, cost: 320, needs: { agata: 8, ferro: 6 }, ore: 'agata', color: '255,150,90', desc: 'Ágata das galerias vermelhas montada em ferro batido. Pesada e certeira.' },
-  { id: 'ouro', name: 'Espada da Salamanca', icon: '⚔️', dmg: 52, cost: 500, needs: { ouro: 6, opala: 2 }, ore: 'ouro', color: '255,220,110', desc: 'Ouro do fundo da serra com olhos de opala. Dizem que o encanto da Teiniaguá mora nela.' }
+  { id: 'cobre', name: 'Facão de cobre', icon: '🗡️', dmg: 20, cost: 60, needs: { cobre: 8 }, ore: 'cobre', color: '255,170,100', lamina: 'cobre', desc: 'Cobre das primeiras galerias, batido a frio. Leve e ligeiro.' },
+  { id: 'ferro', name: 'Facão de ferro batido', icon: '🗡️', dmg: 28, cost: 140, needs: { ferro: 8, cobre: 4 }, ore: 'ferro', color: '220,220,235', lamina: 'cinza_escuro', desc: 'Ferro das galerias do meio, temperado na água fria do arroio.' },
+  { id: 'ametista', name: 'Facão de ametista', icon: '⚔️', dmg: 34, cost: 200, needs: { ametista: 10 }, ore: 'ametista', color: '200,150,255', lamina: 'ametista', desc: 'Fio de ametista lapidada sobre alma de aço: corta e brilha no escuro.' },
+  { id: 'agata', name: 'Facão de ágata', icon: '⚔️', dmg: 42, cost: 320, needs: { agata: 8, ferro: 6 }, ore: 'agata', color: '255,150,90', lamina: 'agata', desc: 'Ágata das galerias vermelhas montada em ferro batido. Pesada e certeira.' },
+  { id: 'ouro', name: 'Espada da Salamanca', icon: '⚔️', dmg: 52, cost: 500, needs: { ouro: 6, opala: 2 }, ore: 'ouro', color: '255,220,110', lamina: 'dourado', desc: 'Ouro do fundo da serra com olhos de opala. Dizem que o encanto da Teiniaguá mora nela.' }
 ];
 const AFIAR_MAX = 3;
 function caveWeapon() { const st = caveState(); return CAVE_WEAPONS.find(w => w.id === (st.weapon || 'facao')) || CAVE_WEAPONS[0]; }
@@ -307,7 +307,7 @@ const DUNSTAN_TEACH = [
   ['dunstano', 'Este primeiro andar é um refúgio: aqui nenhum bicho entra. Daqui pra baixo, cada andar é mais fundo e mais brabo.'],
   ['card', '<b>Como funciona a caverna</b><br><b>Espaço</b> ou <b>F</b>: golpe · <b>Shift</b>: esquiva (depois de comprar) · <b>E</b>: escada, baú e corda<br><b>B</b>: bornal da caverna · <b>1</b> a <b>5</b>: usam os itens do bornal<br>A escada aparece quando os bichos acabam ou embaixo de uma pedra.', 'São Dunstano ensina'],
   ['dunstano', 'Quebra as pedras: lá embaixo tem cobre, ferro e ametista. Mais fundo, opala, ágata e até ouro. Quanto mais tu desce, melhor o minério.'],
-  ['dunstano', 'Traz os minérios pra minha forja. Com dez ametistas e um dinheirinho eu te faço uma espada de ametista, e depois a gente afia ela. O que sobrar eu compro.'],
+  ['dunstano', 'Traz os minérios pra minha forja. Com dez ametistas e um dinheirinho eu te faço um facão de ametista, e depois a gente afia ele. O que sobrar eu compro.'],
   ['dunstano', 'No bolicho da ferraria tem cuia de chimarrão, charque, trago de canha, esporas, boleadeira e água benta do Padre Romio. Guarda no bornal e usa na hora do aperto.'],
   ['dunstano', 'Se a vida acabar, tu desmaia e acorda na boca da gruta, mais leve no bolso. Mas ninguém precisa esperar o pior: a corda te leva de volta pra Serra quando quiser.'],
   ['sadi', 'Entendido, seu Dunstano! Vou conhecer a forja antes de descer.']
@@ -355,7 +355,7 @@ const DUNSTAN_LORE = [
   [['dunstano', 'O causo mais contado é este: o diabo apareceu na minha forja, disfarçado. Eu peguei ele pelo nariz com a tenaz em brasa.'], ['sadi', 'Pelo nariz?!'], ['dunstano', 'Saiu berrando que se ouviu três léguas. É causo, mas é dos bons.']],
   [['dunstano', 'Outro causo: o diabo veio pedir ferradura pro casco dele. Eu preguei com tanta força que ele implorou pra eu tirar.'], ['dunstano', 'Só tirei quando jurou nunca entrar em casa com ferradura na porta. Dizem que daí vem a ferradura da sorte.'], ['sadi', 'Vou pregar uma na porta da bodega!']],
   [['dunstano', 'Tive briga com um rei moço e fui mandado pro exílio, longe do meu mosteiro.'], ['dunstano', 'Lá conheci mosteiros reformados e voltei com ideia nova. Às vezes o exílio ensina mais que a casa.']],
-  [['dunstano', 'Fui arcebispo de 959 até morrer. Em 973 coroei um rei.'], ['dunstano', 'O jeito que montei aquela coroação virou costume de coroar rei por mais de mil anos.'], ['sadi', 'E agora o senhor coroa bodegueiro com espada de ametista.']],
+  [['dunstano', 'Fui arcebispo de 959 até morrer. Em 973 coroei um rei.'], ['dunstano', 'O jeito que montei aquela coroação virou costume de coroar rei por mais de mil anos.'], ['sadi', 'E agora o senhor coroa bodegueiro com facão de ametista.']],
   [['dunstano', 'Morri num 19 de maio, em 988. Os ourives contaram o ano da marca do ouro a partir do meu dia por uns seiscentos anos.'], ['dunstano', 'Por isso, quando tu me traz minério bom, eu sinto o cheiro da ourivesaria de novo.']],
   [['dunstano', 'Dizem que a minha harpa, pendurada na parede, tocou sozinha um hino.'], ['dunstano', 'Eu não confirmo nem desminto. Mas aqui na gruta, quando venta pela fenda, parece música.']]
 ];
@@ -364,7 +364,7 @@ WORLD_TALK.dunstano.push(
   { player: 'Quem é o senhor, afinal?', reply: 'Sou Dunstano: ferreiro, ourives e santo. Nasci lá pelo ano de 909, e meu nome quer dizer algo como “pedra escura”.' },
   { player: 'É verdade o causo do diabo e da tenaz?', reply: 'Dizem que peguei o diabo pelo nariz com a tenaz em brasa. Causo de ferreiro… mas olha bem a minha tenaz.' },
   { player: 'O senhor é padroeiro de quem?', reply: 'De ferreiros, ourives e músicos. Quem bate ferro ou toca gaita pode contar comigo.' },
-  { player: 'O que eu faço com tanto minério?', reply: 'Cobre e ferro viram facão; ametista vira espada. Afiar também gasta minério. O resto eu compro.' }
+  { player: 'O que eu faço com tanto minério?', reply: 'Cobre, ferro, ametista e ágata viram facão; ouro e opala, a espada da Salamanca. Afiar também gasta minério. O resto eu compro.' }
 );
 function dunstanLoreTalk() {
   const st = caveState(), k = (st.lore || 0) % DUNSTAN_LORE.length; st.lore = (st.lore || 0) + 1; save();

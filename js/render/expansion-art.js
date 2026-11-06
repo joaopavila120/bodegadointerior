@@ -85,7 +85,7 @@ function drawExpansionPerson(sprite, x, y, walking, chef, dx, seated, mood, dy) 
   if (chef && inCave() && (sprite === 0 || walkCharacterId(sprite) === 'sadi')) {
     const run = caveFloorRun(), direction = walkDirection(dx, dy);
     if (run.hurt > 0 || run.swing) {
-      const step = run.hurt > 0 ? 3 : Math.min(2, Math.floor((1 - run.swing.t / .2) * 3));
+      const step = run.hurt > 0 ? 3 : Math.min(2, Math.floor(golpeK(run.swing) * 3));
       return expansionSprite('sadi-combat-v1', direction * 4 + step, x, y, 150, direction === 1 && dx < 0, expansionRowHeight('sadi-combat-v1', 0, 12));
     }
   }

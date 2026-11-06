@@ -11,6 +11,7 @@
   for(const id of ['prata','sal','arruda','garapuvu','corrente_ferro','sabre_peca'])check(bagIcon(id).includes('data-island-item="'+id+'"'),id+' inventory integration');
   for(const id of ['arpao','carabina','cartuchos'])check(rangedIcon(id).includes(ISLAND_ITEM_FILE),id+' shop integration');
   check(forgeWeaponIcon('sabre').includes(ISLAND_ITEM_FILE),'sabre has art in forge equipment list');
+  for(const id of ['sabre_preto','sabre_dourado'])check(forgeWeaponIcon(id).includes(ISLAND_ITEM_FILE)&&forgeWeaponIcon(id).includes('filter:'),id+' uses the sabre art tinted in its own color');
   check(mataGearHTML('bomba',42).includes(ISLAND_ITEM_FILE)&&mataGearHTML('reza',42).includes(ISLAND_ITEM_FILE),'bomb and blessing belt art');
   for(const[id,a]of Object.entries(ISLAND_WEAPON_POSES)){
     check(a.frames.length===12&&ACTION_ART['island:'+id]?.naturalWidth===a.size[0],id+' twelve poses loaded');

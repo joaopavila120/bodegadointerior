@@ -77,6 +77,7 @@ function griggsSolid(x, y) { const t = GRIGGS.tent; return inRect({ x: t.x - 95,
 const GRIGGS_FALAS = [
   'Arpão de baleeiro atravessa bernúncia de ponta a ponta. Traz garapuvu e corrente de afogado, que eu monto.',
   'Os marinheiros lá de cima usam sabre de abordagem. Traz os pedaços que eu refaço um pra ti.',
+  'Com mais pedaço de sabre, corrente e prata, eu escureço a lâmina no breu. Sabre dourado eu só faço pra quem derrubar o almirante.',
   'Quem manda na fortaleza é o Grenfell, um inglês, almirante do Império. Se ele subir na muralha, só o arpão tira ele de lá.',
   'Bala comum passa por alma que nem vento. A carabina que eu monto, não: coronha de garapuvu, ferragem de corrente e mira de prata.',
   'Bruxa foge de quem chega perto. Com o arpão tu puxa ela pra boca do facão.',
@@ -113,6 +114,7 @@ function griggsShop() {
     <p class="small-note">Na ilha, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${caveUp('bornal') ? '' : '; o bornal de couro cru da ferraria dobra'}).</p>
     ${griggsReceitasHTML()}
     ${griggsAfiarHTML()}
+    ${griggsGolpeHTML()}
     <h3 class="forja-sec">🎒 Pro bornal <small>pra subir a ilha</small></h3><div class="store-list">${itens}</div>
     <h3 class="forja-sec">🎯 Munição <small>a bala acaba</small></h3><div class="store-list">${balas}${cartuchos}</div>`, 'griggsShop');
   box.scrollTop = keep;
@@ -231,17 +233,18 @@ function griggsReceitasHTML() {
     let extra = '', off = !hasNeeds(r.needs) || !hasCash(r.cost), label = 'Fazer' + (r.cost ? ' · ' + money(r.cost) : '');
     if (r.id === 'facao' && ilhaFacaoPrata()) { off = true; label = '✔ Já é de prata'; }
     if (r.id === 'reza') { extra = ` <small>· ${bag.reza || 0}/${max}</small>`; if ((bag.reza || 0) >= max) { off = true; label = 'Bornal cheio'; } }
-    if (['arpao', 'carabina', 'sabre'].includes(r.id) && ilhaArmaFeita(r.id)) { off = true; label = '✔ Já é teu'; }
-    return forjaCard(RANGED_ART[r.id] ? rangedIcon(r.id) : griggsEmoji(r.icon), r.name + extra, r.desc, reqChips(r.needs, r.cost), `<button class="primary" data-act="griggsFaz" data-id="${r.id}" ${off ? 'disabled' : ''}>${label}</button>`);
+    const antes = r.antes?.(); if (antes) { off = true; label = antes; }
+    if (ilhaArmaDele(r.id) && ilhaArmaFeita(r.id)) { off = true; label = '✔ Já é teu'; }
+    return forjaCard(RANGED_ART[r.id] ? rangedIcon(r.id) : ILHA_SABRES[r.id] ? forgeWeaponIcon(r.id) : griggsEmoji(r.icon), r.name + extra, r.desc, reqChips(r.needs, r.cost), `<button class="primary" data-act="griggsFaz" data-id="${r.id}" ${off ? 'disabled' : ''}>${label}</button>`);
   };
   const tem = ['prata', 'arruda', 'sal', 'garapuvu', 'corrente_ferro', 'sabre_peca'].filter(k => k === 'prata' || bagQty(k) >= 1).map(k => (typeof islandItemIcon === 'function' ? islandItemIcon(k,22) : BAG_RAW[k].icon) + ' ' + Math.floor(bagQty(k)) + ' ' + BAG_RAW[k].name.toLowerCase()).join(' · ');
   return `<h3 class="forja-sec">⚒️ Pedir pro Griggs fazer <small>com o que tu junta na ilha</small></h3><p class="small-note">Contigo: ${tem}.</p><div class="store-list">${ILHA_RECEITAS.map(card).join('')}</div>`;
 }
 function griggsFaz(id) {
-  const r = ILHA_RECEITAS.find(x => x.id === id), st = ilhaState(), bag = mataBag(); if (!r || !hasNeeds(r.needs) || !hasCash(r.cost)) return;
+  const r = ILHA_RECEITAS.find(x => x.id === id), st = ilhaState(), bag = mataBag(); if (!r || r.antes?.() || !hasNeeds(r.needs) || !hasCash(r.cost)) return;
   if (id === 'facao') { if (ilhaFacaoPrata()) return; st.facaoPrata = G.day; }
   else if (id === 'reza') { if ((bag.reza || 0) >= mataBagMax()) return; bag.reza = (bag.reza || 0) + 1; mataBeltRefresh(); }
-  else if (['arpao', 'carabina', 'sabre'].includes(id)) { if (ilhaArmaFeita(id)) return; ilhaArmaFaz(id); }
+  else if (ilhaArmaDele(id)) { if (ilhaArmaFeita(id)) return; ilhaArmaFaz(id); }
   takeNeeds(r.needs); if (r.cost) spendCash(r.cost); AudioEngine.caveAnvil?.(); AudioEngine.coins?.(); save(); refreshHUD();
   if (id === 'facao') worldSay('O Griggs derrete a prata dos piratas numa colher de ferro e passa no fio da lâmina. Agora sim: prata pega em assombração.');
   griggsShop();
@@ -258,7 +261,7 @@ function drawReza() {
 }
 {
   // Golpe, pedrada e tiro: na ilha, com o dano da cerração.
-  const atk = mataAttack; mataAttack = function () { const R = ilhaResiste(); if (!R) return atk(); const mult = ilhaFacaoPrata() || mataBuffs.reza > 0 || caveWeapon().id === 'sabre' ? 1 : R.mao, N = mataNight, cd = N.cd, r = ilhaComDano(mult, atk); if (mult < 1 && N.cd !== cd) ilhaFraco(); return r; };
+  const atk = mataAttack; mataAttack = function () { const R = ilhaResiste(); if (!R) return atk(); const mult = ilhaFacaoPrata() || mataBuffs.reza > 0 || armaSabre() ? 1 : R.mao, N = mataNight, cd = N.cd, r = ilhaComDano(mult, atk); if (mult < 1 && N.cd !== cd) ilhaFraco(); return r; };
   const shot = rangedHit; rangedHit = function (b, s) {
     const R = ilhaResiste(); if (!R || !ILHA_MOBS[b.kind]) return shot(b, s);
     // Arpão e carabina, feitos na ilha, pegam cheio (e o arpão bate mais forte em bruxa); a pedra e a bala comum, só com a reza.
@@ -307,10 +310,12 @@ function ilhaItemImage(k, pixels = 48) {
 //   · Carabina (arma de longe): tiro forte e comprido, um de cada vez, com cartucho próprio (o Griggs vende; os baús e
 //     os piratas dão).
 //   · Sabre (arma de corpo a corpo): golpe mais ligeiro, um pouco mais comprido e em arco bem largo.
+//     O preto e o dourado têm o mesmo golpe e mais dano: o preto vem depois do de abordagem; o dourado, depois do preto
+//     e do Grenfell derrubado. A cor sai da mesma linha de animação (laminas.js).
 Object.assign(BAG_RAW, {
   garapuvu: { name: 'Madeira de garapuvu', icon: '🪵', value: 3, note: 'Tronco caído de garapuvu, a árvore das canoas da ilha. O Griggs faz o arpão e a coronha da carabina.' },
   corrente_ferro: { name: 'Corrente enferrujada', icon: '⛓️', value: 2, note: 'Corrente de âncora que os afogados arrastam. O Griggs faz o arpão e a ferragem da carabina.' },
-  sabre_peca: { name: 'Pedaço de sabre', icon: '🗡️', value: 4, note: 'Lâmina quebrada dos marinheiros da fortaleza. O Griggs refaz o sabre de abordagem.' }
+  sabre_peca: { name: 'Pedaço de sabre', icon: '🗡️', value: 4, note: 'Lâmina quebrada dos marinheiros da fortaleza. O Griggs refaz o sabre de abordagem e, depois, o preto e o dourado.' }
 });
 const ARPAO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48"><path d="M4 31 L44 22" stroke="#7a5230" stroke-width="5" stroke-linecap="round"/><path d="M43 22 L61 18 L46 14 Z" fill="#c8ccd0" stroke="#3a3a3a" stroke-width="1.5"/><path d="M48 21 L43 28" stroke="#c8ccd0" stroke-width="3"/><path d="M10 30 q-7 6 0 10 q7 4 11 -2" fill="none" stroke="#d8c080" stroke-width="2.5"/></svg>';
 RANGED.arpao = { name: 'Arpão de baleeiro', range: 640, speed: 1100, cd: 1, pierce: true, get dmg() { return ILHA_FIO.arpao.base + ILHA_FIO.arpao.dmg * ilhaFio('arpao'); } };
@@ -327,18 +332,32 @@ function carabinaGasta() { const st = ilhaState(); st.cartuchos = Math.max(0, (s
 // Sem cartucho: o cão bate seco.
 function carabinaSeca() { ranged.cd = .3; ranged.hold = .3; AudioEngine.gunDry?.(); if (frameClock - ranged.dryNote > 4) { ranged.dryNote = frameClock; floatNote('Click! Sem cartucho na carabina. O John Griggs vende, e os baús de pirata da ilha costumam ter.'); } }
 function griggsCartuchos() { if (!rangedOwned('carabina') || carabinaBalas() >= CARABINA.max || !hasCash(CARABINA.cost)) return; spendCash(CARABINA.cost); carabinaAdd(CARABINA.box); AudioEngine.coins?.(); save(); refreshHUD(); griggsShop(); }
-CAVE_WEAPONS.push({ id: 'sabre', name: 'Sabre de abordagem', icon: '⚔️', dmg: 44, griggs: true, color: '225,235,255', desc: 'O sabre curvo dos marinheiros da fortaleza, refeito pelo Griggs com prata na guarda: golpe mais ligeiro, em arco largo, e pega cheio nos bichos da ilha.' });
+CAVE_WEAPONS.push(
+  { id: 'sabre', name: 'Sabre de abordagem', icon: '⚔️', dmg: 44, griggs: true, color: '225,235,255', lamina: 'cinza', desc: 'O sabre curvo dos marinheiros da fortaleza, refeito pelo Griggs com prata na guarda: golpe mais ligeiro, em arco largo, e pega cheio nos bichos da ilha.' },
+  { id: 'sabre_preto', name: 'Sabre preto', icon: '⚔️', dmg: 48, griggs: true, ore: 'ferro', color: '130,136,150', lamina: 'preto', desc: 'A lâmina passada no breu quente e na corrente de afogado, até ficar preta e mais dura. O mesmo golpe ligeiro e largo, e pega cheio nos bichos da ilha.' },
+  { id: 'sabre_dourado', name: 'Sabre dourado', icon: '⚔️', dmg: 54, griggs: true, ore: 'ouro', color: '255,220,110', lamina: 'dourado', desc: 'Sabre de almirante, banhado no ouro da serra: o mais forte que o Griggs sabe fazer. O mesmo golpe ligeiro e largo, e pega cheio nos bichos da ilha.' }
+);
+// Os três sabres têm a mesma animação e o mesmo golpe; muda a cor da lâmina, o ícone e o dano.
+const ILHA_SABRES = {
+  sabre: { fala: 'O Griggs bate as lâminas quebradas numa só e põe prata na guarda: o sabre de abordagem já tá na mão.' },
+  sabre_preto: { filtro: 'grayscale(1) brightness(.42) contrast(1.35)', fala: 'O Griggs passa a lâmina no breu quente e na corrente de afogado até ficar preta: o sabre preto já tá na mão.' },
+  sabre_dourado: { filtro: 'sepia(1) saturate(3.4) hue-rotate(-6deg) brightness(1.12)', fala: 'O Griggs banha o sabre no ouro da serra, como os almirantes usam: o sabre dourado já tá na mão.' }
+};
+function armaSabre(id = caveWeapon().id) { return !!ILHA_SABRES[id]; }
+function ilhaArmaDele(id) { return id === 'arpao' || id === 'carabina' || armaSabre(id); }
 ILHA_ACHADO_TXT.garapuvu = 'Cortar madeira de garapuvu';
 ILHA_RECEITAS.push(
   { id: 'arpao', name: 'Arpão de baleeiro', icon: '🔱', needs: { garapuvu: 3, corrente_ferro: 2, prata: 4 }, cost: 120, desc: 'Bom contra bruxas: prende a bruxa na corda um tempo (nem foge nem some) e bate mais forte nela. Arma de longe (R atira, X troca): atravessa a fila de bichos e puxa os pequenos pra perto. Começa fraco; o Griggs afia a ponta com prata.' },
   { id: 'carabina', name: 'Carabina', icon: '🎯', needs: { garapuvu: 2, corrente_ferro: 3, prata: 3 }, cost: 260, desc: 'Arma de longe (R atira, X troca): tiro forte e comprido, um de cada vez, com cartucho de carabina. Coronha de garapuvu, ferragem de corrente e mira de prata: feita na ilha, pega cheio nos bichos dela. Vem com ' + CARABINA.nova + ' cartuchos.' },
-  { id: 'sabre', name: 'Sabre de abordagem', icon: '⚔️', needs: { sabre_peca: 4, prata: 2 }, cost: 220, desc: 'Golpe mais ligeiro, em arco largo, e pega cheio nos bichos da ilha. A arma pra fortaleza e pra masmorra.' }
+  { id: 'sabre', name: 'Sabre de abordagem', icon: '⚔️', needs: { sabre_peca: 4, prata: 2 }, cost: 220, desc: 'Golpe mais ligeiro, em arco largo, e pega cheio nos bichos da ilha. A arma pra fortaleza e pra masmorra.' },
+  { id: 'sabre_preto', name: 'Sabre preto', icon: '⚔️', needs: { sabre_peca: 6, corrente_ferro: 4, prata: 5 }, cost: 380, antes: () => weaponOwned('sabre') ? null : 'Antes, o sabre de abordagem', desc: '48 de dano, com o golpe ligeiro e largo do sabre. O Griggs escurece a lâmina no breu quente e na corrente de afogado.' },
+  { id: 'sabre_dourado', name: 'Sabre dourado', icon: '⚔️', needs: { sabre_peca: 8, ouro: 4, prata: 8 }, cost: 640, antes: () => !weaponOwned('sabre_preto') ? 'Antes, o sabre preto' : !ilhaState().grenfell ? 'Antes, derrube o Grenfell' : null, desc: '54 de dano, com o golpe ligeiro e largo do sabre. Sabre de almirante, banhado no ouro da serra: o Griggs só faz depois que o Grenfell cair.' }
 );
-function ilhaArmaFeita(id) { return id === 'arpao' || id === 'carabina' ? rangedOwned(id) : id === 'sabre' ? weaponOwned('sabre') : false; }
+function ilhaArmaFeita(id) { return id === 'arpao' || id === 'carabina' ? rangedOwned(id) : armaSabre(id) ? weaponOwned(id) : false; }
 function ilhaArmaFaz(id) {
   if (id === 'arpao') { G.up.arpao = true; G.rangedPick = 'arpao'; updateRangedButton(); worldSay('O Griggs crava a ponta de prata no cabo de garapuvu e enrola a corrente: arpão de baleeiro. Bom contra bruxas. X troca de arma.'); }
   else if (id === 'carabina') { G.up.carabina = true; G.rangedPick = 'carabina'; carabinaAdd(CARABINA.nova); updateRangedButton(); worldSay('Coronha de garapuvu, ferragem de corrente e mira de prata: a carabina do Griggs, com ' + CARABINA.nova + ' cartuchos. X troca de arma.'); }
-  else if (id === 'sabre') { const st = caveState(); st.forged ??= {}; st.forged.sabre = G.day; st.weapon = 'sabre'; worldSay('O Griggs bate as lâminas quebradas numa só e põe prata na guarda: o sabre de abordagem já tá na mão.'); }
+  else if (armaSabre(id)) { const st = caveState(); st.forged ??= {}; st.forged[id] = G.day; st.weapon = id; worldSay(ILHA_SABRES[id].fala); }
 }
 // O arpão em voo, preso na corda até a mão do Sadi.
 function arpaoDrawShot(s, x, y) {
@@ -363,9 +382,9 @@ function arpaoTick(dt) {
 {
   const arpaoHit = rangedHit; rangedHit = function (b, s) { const r = arpaoHit(b, s); if (s.id === 'arpao') arpaoPuxa(b); return r; };
   const fwi = forgeWeaponIcon; forgeWeaponIcon = function (id) { return id === 'sabre' ? `<span style="display:inline-flex;filter:grayscale(1) brightness(1.2) contrast(1.1)">${fwi('ouro')}</span>` : fwi(id); };
-  const cd = caveCd; caveCd = function () { return caveWeapon().id === 'sabre' ? cd() * .7 : cd(); };
-  const reach = caveReach; caveReach = function () { return reach() + (caveWeapon().id === 'sabre' ? 20 : 0); };
-  const arco = mataArco; mataArco = function () { return caveWeapon().id === 'sabre' ? 1.9 : arco(); };
+  const cd = caveCd; caveCd = function () { return armaSabre() ? cd() * .7 : cd(); };
+  const reach = caveReach; caveReach = function () { return reach() + (armaSabre() ? 20 : 0); };
+  const arco = mataArco; mataArco = function () { return armaSabre() ? 1.9 : arco(); };
   ILHA_MOBS.afogado.onKill = b => { if (Math.random() < .55) { bagAdd('corrente_ferro', 1); effect('+1 ⛓️ corrente enferrujada', b.x, b.y - 120, '#d8d0c0', 15); } };
   ILHA_MOBS.marujo.onKill = b => { if (Math.random() < .5) { bagAdd('sabre_peca', 1); effect('+1 🗡️ pedaço de sabre', b.x, b.y - 120, '#e0e8f0', 15); } };
   const spec = ruralItemSpec; ruralItemSpec = function (key) { return key === 'corrente_ferro' ? ['keepsakes-v2', KEEPSAKE_ART.freio] : spec(key); };

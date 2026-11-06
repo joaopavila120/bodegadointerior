@@ -97,6 +97,8 @@ function caveMaxHp() { return caveUp('poncho') ? 140 : CAVE.maxHp; }
 function caveDmg() { return caveUp('aco') ? 26 : caveUp('afiado') ? 18 : 12; }
 function caveCd() { return caveUp('cabo') ? .26 : .38; }
 function caveReach() { return caveUp('comprida') ? 145 : 110; }
+// O quanto o golpe empurra o bicho (o combo, em golpes.js, empurra menos enquanto ainda vai emendar).
+function caveEmpurrao() { return 60; }
 // Dano de um golpe num bicho (a água benta de forja.js dobra contra as assombrações).
 function caveHitDmg(b) { return caveDmg(); }
 // Cor do rastro do golpe: a da arma na mão (forja.js).
@@ -159,7 +161,7 @@ function caveFree(x, y, pad = 30) { if (caveWall(x, y)) return false; for (const
 // One foot collider for walking, knockback and dash. A center-point check used
 // by the old knockback could put the player inside the walking collider's wall.
 const CAVE_PLAYER_RADIUS = 16;
-const CAVE_DASH = { duration:.22, speed:900, cooldown:1.2 };
+const CAVE_DASH = { duration:.22, speed:900, cooldown:1.2, vulto:.22 };
 function cavePlayerFree(x,y) {
   const cy=y-10,r=CAVE_PLAYER_RADIUS,C=CAVE.cell,run=caveFloorRun();
   for(let row=Math.floor((cy-r)/C);row<=Math.floor((cy+r)/C);row++)
@@ -211,15 +213,10 @@ function worldDashNow(dt) {
   worldDashTrail=worldDashTrail.filter(t=>(t.life-=dt)>0);worldDashCd=Math.max(0,worldDashCd-dt);
   const d=worldDash;if(!d)return null;if(!worldOut||inCave()){worldDash=null;return null;}
   const time=Math.min(Math.max(0,d.t),dt);d.t-=dt;if(d.t<=0)worldDash=null;if(time<=0)return null;
-  worldDashTrail.push({x:worldOut.x,y:worldOut.y,life:.16});
+  worldDashTrail.push({x:worldOut.x,y:worldOut.y,life:CAVE_DASH.vulto,dx:d.dx,dy:d.dy});
   return {dx:d.dx,dy:d.dy,step:CAVE_DASH.speed*time};
 }
-function drawWorldDash() {
-  ctx.save();
-  for(const t of worldDashTrail){ctx.globalAlpha=t.life/.16*.45;ellipse(t.x,t.y-8,20,9,'#a9eaff');}
-  if(worldDash){ctx.globalAlpha=.65;ctx.strokeStyle='#b8f1ff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(worldOut.x,worldOut.y-10,26,12,0,0,Math.PI*2);ctx.stroke();}
-  ctx.restore();
-}
+function drawWorldDash() { drawDashRastro(worldDashTrail); }
 // O botão do dash (celular) aparece na caverna e onde tem bicho pra brigar.
 function worldDashHud() { return !!worldOut&&(inCave()||typeof mataHere==='function'&&mataHere()&&mataCombatOn()); }
 function cavePlayerTick(dt) {
@@ -229,7 +226,7 @@ function cavePlayerTick(dt) {
   run.dashTrail=(run.dashTrail||[]).filter(t=>(t.life-=dt)>0);
   if(run.dash) {
     const d=run.dash,time=Math.min(Math.max(0,d.t),dt);
-    if(time>0)run.dashTrail.push({x:p.x,y:p.y,life:.16});
+    if(time>0)run.dashTrail.push({x:p.x,y:p.y,life:CAVE_DASH.vulto,dx:d.dx,dy:d.dy});
     p.walk=caveMovePlayer(d.dx*CAVE_DASH.speed*time,d.dy*CAVE_DASH.speed*time)>.01;
     p.dx=d.dx;p.dy=d.dy;d.t-=dt;return;
   }
@@ -247,12 +244,7 @@ function caveUpdateControls() {
   const dash=cave?run?.dash:worldDash,cooldown=cave?run?.dashCd||0:worldDashCd;btn.disabled=!visible||!caveUp('dash')||!!dash||cooldown>0;
   btn.textContent=dash?'Dash · invulnerável':cooldown>0?'Dash · '+cooldown.toFixed(1)+'s':'Shift · Dash';
 }
-function drawCaveDash() {
-  const run=caveFloorRun();ctx.save();
-  for(const t of run.dashTrail||[]){ctx.globalAlpha=t.life/.16*.45;ellipse(t.x,t.y-8,20,9,'#a9eaff');}
-  if(run.dash){ctx.globalAlpha=.65;ctx.strokeStyle='#b8f1ff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(worldOut.x,worldOut.y-10,26,12,0,0,Math.PI*2);ctx.stroke();}
-  ctx.restore();
-}
+function drawCaveDash() { drawDashRastro(caveFloorRun().dashTrail); }
 
 // ---------- Entrar, descer, subir e desmaiar ----------
 function caveDoorSpot() {
@@ -304,9 +296,9 @@ function caveAttack() {
   const run = caveFloorRun(), p = worldOut; if (run.cd > 0 || run.dash) return;
   run.cd = caveCd(); const ang = Math.atan2(p.dy || 0, p.dx || (p.dy ? 0 : 1)); run.swing = { t: .2, ang };
   AudioEngine.swoosh(.08); let flesh = false, stone = false;
-  const inArc = (x, y, reach) => { const d = Math.hypot(x - p.x, y - (p.y - 30)); if (d > reach) return false; const a = Math.atan2(y - (p.y - 30), x - p.x); return Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) < 1.25 || d < 40; };
+  const inArc = (x, y, reach) => { const d = Math.hypot(x - p.x, y - (p.y - 30)); if (d > reach) return false; const a = Math.atan2(y - (p.y - 30), x - p.x); return Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) < mataArco() || d < 40; };
   for (const b of run.beasts) if (b.hp > 0 && inArc(b.x, b.y - 20, caveReach())) {
-    const dmg = caveHitDmg(b); b.hp -= dmg; b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1; caveMove(b, (b.x - p.x) / d * 60, (b.y - p.y) / d * 60);
+    const dmg = caveHitDmg(b); b.hp -= dmg; b.hurt = .18; const d = Math.hypot(b.x - p.x, b.y - p.y) || 1, push = caveEmpurrao(); caveMove(b, (b.x - p.x) / d * push, (b.y - p.y) / d * push);
     if (b.state === 'charge' || b.state === 'lunge') b.state = 'rest', b.t = .5;
     // Acertou: baque, o grito do bicho, faísca do facão e uma travadinha na tela (só um grito por golpe).
     if (!flesh) { AudioEngine.caveFlesh('facao'); AudioEngine.caveCry(b.kind, b.hp <= 0); }
@@ -456,15 +448,24 @@ function drawCaveBeast(b) {
   ctx.restore();
   if (b.hp < b.max) { txt(CAVE_BEASTS[b.kind].name, b.x, b.y - 114, 11, '#ffe2a6'); rect(b.x - 26, b.y - 104, 52, 6, '#1a1008', 2); rect(b.x - 26, b.y - 104, 52 * b.hp / b.max, 6, '#e86a4a', 2); }
 }
+// Cada golpe do combo (golpes.js) tem o seu rastro: o talho desce em arco, o revés volta rasteiro e o giro dá a volta inteira.
+const GOLPE_RASTRO = { 1: { de: -1.5, ate: 1.1, r: 88, w: 13, plano: 1, cauda: 1.7, y: -54 }, 2: { de: 1.2, ate: -1.7, r: 80, w: 15, plano: 1, cauda: 2.1, y: -62 }, 3: { de: 0, ate: Math.PI * 2, r: 112, w: 24, plano: .55, cauda: 3.8, y: -40 } };
+function golpeK(s) { return clamp(1 - s.t / (s.T || .2), 0, 1); }
+function drawGolpeRastro(s, p) {
+  const F = GOLPE_RASTRO[s.n] || GOLPE_RASTRO[1], k = golpeK(s), sweep = F.ate - F.de, dir = Math.sign(sweep), rgb = caveSwingColor(), feito = Math.min(1, k * 1.25);
+  const head = s.ang + F.de + sweep * feito, tail = head - dir * Math.min(F.cauda, Math.abs(sweep) * feito), fade = Math.min(1, (1 - k) * 2.4), N = 24;
+  ctx.save(); ctx.translate(p.x, p.y + F.y); ctx.scale(1, F.plano); ctx.lineCap = 'butt';
+  // Fino e apagado na cauda, grosso e aceso na ponta.
+  for (let i = 0; i < N; i++) { const t = (i + 1) / N; ctx.strokeStyle = `rgba(${rgb},${.8 * fade * t})`; ctx.lineWidth = F.w * (.25 + .75 * t); ctx.beginPath(); ctx.arc(0, 0, F.r, tail + (head - tail) * (i / N), tail + (head - tail) * t, dir < 0); ctx.stroke(); }
+  ctx.lineCap = 'round'; ctx.strokeStyle = `rgba(255,255,255,${.7 * fade})`; ctx.lineWidth = F.w * .28; ctx.beginPath(); ctx.arc(0, 0, F.r, head - dir * Math.min(.5, Math.abs(head - tail)), head, dir < 0); ctx.stroke();
+  ctx.restore();
+}
 function drawCaveSwing() {
   const s = caveFloorRun().swing, p = worldOut; if (!s) return;
-  const k = 1 - s.t / .2, a0 = s.ang - 1.2 + k * 2.4;
-  ctx.save(); ctx.translate(p.x, p.y - 40); ctx.strokeStyle = `rgba(${caveSwingColor()},${.75 * (1 - k)})`; ctx.lineWidth = 10; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.arc(0, 0, 78, s.ang - 1.2, a0); ctx.stroke();
-  if (!(typeof sadiToolPose === 'function' && sadiToolPose()?.tool === 'sabre') && (typeof EXPANSION_ART === 'undefined' || !expansionImage('sadi-combat-v1')?.naturalWidth)) {
-    ctx.rotate(a0); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3);
+  drawGolpeRastro(s, p);
+  if (!(typeof sadiToolPose === 'function' && sadiToolPose()) && (typeof EXPANSION_ART === 'undefined' || !expansionImage('sadi-combat-v1')?.naturalWidth)) {
+    ctx.save(); ctx.translate(p.x, p.y - 40); ctx.rotate(s.ang - 1.2 + golpeK(s) * 2.4); rect(30, -4, 58, 8, '#d8d8e0', 3, '#5a5a66'); rect(14, -5, 18, 10, '#6a3a1a', 3); ctx.restore();
   }
-  ctx.restore();
 }
 function drawCaveLadder(l) { ellipse(l.x, l.y, 34, 16, '#050403'); ellipse(l.x, l.y - 2, 28, 11, '#0c0907'); for (const dx of [-12, 12]) rect(l.x + dx - 2, l.y - 34, 4, 36, '#8a6238', 1); for (let k = 0; k < 3; k++) rect(l.x - 13, l.y - 28 + k * 10, 26, 3, '#a07444', 1); }
 function drawCaveRope(x, y) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 60, 120, .25, '255,230,170'); ctx.restore(); rect(x - 2, y - 220, 4, 200, '#b89a62', 1); for (let k = 0; k < 10; k++) rect(x - 3, y - 210 + k * 20, 6, 3, '#8a7040', 1); ellipse(x, y - 18, 8, 5, '#b89a62'); }

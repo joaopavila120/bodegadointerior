@@ -126,6 +126,7 @@ async function main() {
       await evaluate(`mataNight=null;worldOut=null;G.herd=4;G.lassoTaught=true;startLasso();scene=null;closeDialog(true);paused=false;Object.assign(G.player,{x:700,y:700,dx:1,dy:0});lassoCharge();G.lasso.time=.3;G.lasso.charge=.4;paused=true;refreshHUD();draw();`);
       shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/sadi-laco-game.png'),Buffer.from(shot.data,'base64'));
       await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadSadiToolArt()'),true);
+      assert.equal(await evaluate("laminaFolha('sabre','dourado')"),'tool:sadi-sabre:dourado');
       blockedPath='/assets/images/actions/sadi-sabre-v2.png';await load(base+'/index.html');assert.equal(await evaluate('loadSadiToolArt()'),false);
       await evaluate(`G=fresh();started=true;G.cave={facao:true,hp:100,forged:{sabre:true},weapon:'sabre'};worldOut={map:'ilha',x:3200,y:1420,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.hurt=0;mataNight.swing={t:.1,ang:0,artWeapon:'sabre'};drawExpansionPerson(0,500,500,false,true,1,false,null,0);`);
       assert.equal(errors.length,0,errors.join('\n'));console.log('PASS sabre/lasso: HTTP, file:// and missing atlas fallback');return;

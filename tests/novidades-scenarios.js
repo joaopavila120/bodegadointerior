@@ -37,8 +37,8 @@
    check(['cobre','ferro','opala','ouro'].every(k=>Object.values(floors).some(l=>l.includes(k))),'cobre, ferro, opala e ouro aparecem conforme desce');
    check(Object.keys(CAVE_ORES).every(k=>!SELLABLE.includes(k)&&BAG_RAW[k]),'minérios novos: só São Dunstano compra');
    enterCave(1);closeDialog(true);talkAll();switchMap({map:'caverna',x:830,y:800});closeDialog(true);dunstanShop();{const html=$('dialogContent').innerHTML,heads=[...$('dialogContent').querySelectorAll('h3.forja-sec')].map(h=>h.textContent);check(modal==='dunstanShop'&&$('dialogContent').querySelectorAll('[data-act="dunstanTab"]').length===2&&heads.length===5&&/Armas/.test(heads[0])&&/Revólver/.test(heads[1])&&/Bolicho/.test(heads[4])&&html.includes('forja-ores')&&html.includes('data-act="bolichoBuy"')&&html.includes('data-act="forjaMake"')&&!html.includes('data-act="dunstanSell"'),'ferraria num menu só (armas, afiar, equipamento e bolicho, com os minérios no topo); vender fica na aba do lado');}
-   const d0=caveDmg();bagAdd('ametista',9);action('forjaMake','ametista');check(caveWeapon().id==='facao'&&bagQty('ametista')===9,'sem 10 ametistas, nada de espada');
-   bagAdd('ametista',1);const c0=G.cash;action('forjaMake','ametista');check(caveWeapon().id==='ametista'&&!bagQty('ametista')&&G.cash===c0-200&&caveDmg()===34&&caveDmg()>d0,'10 ametistas + R$ 200: espada de ametista na mão');
+   const d0=caveDmg();bagAdd('ametista',9);action('forjaMake','ametista');check(caveWeapon().id==='facao'&&bagQty('ametista')===9,'sem 10 ametistas, nada de facão');
+   bagAdd('ametista',1);const c0=G.cash;action('forjaMake','ametista');check(caveWeapon().id==='ametista'&&!bagQty('ametista')&&G.cash===c0-200&&caveDmg()===34&&caveDmg()>d0,'10 ametistas + R$ 200: facão de ametista na mão');
    bagAdd('ametista',2);action('forjaAfiar');check(weaponRefine()===1&&caveDmg()===37,'afiar na pedra com minério: +3 de dano');
    action('forjaEquip','facao');check(caveDmg()===d0,'troca de volta pro facão do vô');action('forjaEquip','ametista');
    bagAdd('cobre',3);action('dunstanTab','equipamento');facaoBuy('chapeu');check(caveUp('chapeu')&&!bagQty('cobre'),'chapéu de aba larga custa cobre além do dinheiro');
@@ -811,6 +811,17 @@
    action('griggsFaz','arpao');action('griggsFaz','sabre');closeDialog(true);
    check(rangedOwned('arpao')&&caveWeapon().id==='sabre','o Griggs faz o arpão e o sabre de abordagem');
    check(caveCd()<cd&&mataArco()>arco,'o sabre é mais ligeiro e corta em arco largo');
+   check(CAVE_WEAPONS.find(w=>w.id==='ametista').name==='Facão de ametista'&&CAVE_WEAPONS.find(w=>w.id==='agata').name==='Facão de ágata','as lâminas de pedra se chamam facão');
+   {const R=id=>ILHA_RECEITAS.find(r=>r.id===id),arma=id=>CAVE_WEAPONS.find(w=>w.id===id),paga=id=>{for(const[k,q]of Object.entries(R(id).needs))bagAdd(k,q);G.cash+=R(id).cost;},g0=G.ilha.grenfell,facao=G.ilha.facaoPrata,dano=caveDmg();
+    check(arma('sabre').dmg<arma('sabre_preto').dmg&&arma('sabre_preto').dmg<arma('sabre_dourado').dmg,'cada sabre bate mais que o anterior');
+    delete G.ilha.grenfell;paga('sabre_dourado');action('griggsFaz','sabre_dourado');closeDialog(true);check(!weaponOwned('sabre_dourado')&&/Antes, o sabre preto/.test(griggsReceitasHTML()),'sem o sabre preto, o Griggs não faz o dourado');
+    const c0=G.cash;paga('sabre_preto');action('griggsFaz','sabre_preto');closeDialog(true);check(caveWeapon().id==='sabre_preto'&&G.cash===c0,'o sabre preto sai da forja do Griggs e vai pra mão');
+    check(caveCd()<cd&&mataArco()>arco&&caveDmg()-dano===arma('sabre_preto').dmg-arma('sabre').dmg,'o sabre preto tem o golpe ligeiro e largo do sabre, com mais dano');
+    action('griggsFaz','sabre_dourado');closeDialog(true);check(!weaponOwned('sabre_dourado')&&/Antes, derrube o Grenfell/.test(griggsReceitasHTML()),'o dourado espera o almirante cair');
+    G.ilha.grenfell=G.day;action('griggsFaz','sabre_dourado');closeDialog(true);check(caveWeapon().id==='sabre_dourado'&&laminaDaArma('sabre_dourado')==='dourado'&&laminaTool('sabre_preto')==='sabre','com o Grenfell derrubado, o sabre dourado');
+    check(/✔ Já é teu/.test(griggsReceitasHTML()),'o que já foi feito não se paga de novo');
+    G.ilha.facaoPrata=G.day;check(laminaDaArma('sabre_preto')==='preto'&&laminaDaArma('sabre_dourado')==='dourado','o fio de prata não apaga a cor dos sabres preto e dourado');
+    if(g0===undefined)delete G.ilha.grenfell;else G.ilha.grenfell=g0;if(facao===undefined)delete G.ilha.facaoPrata;else G.ilha.facaoPrata=facao;delete caveState().forged.sabre_preto;delete caveState().forged.sabre_dourado;caveState().weapon='sabre';}
    {const a0=RANGED.arpao.dmg;check(a0<RANGED.revolver38.dmg,'o arpão começa fraco');bagAdd('prata',ILHA_FIO.arpao.prata[0]);G.cash+=100;action('griggsAfia','arpao');closeDialog(true);check(RANGED.arpao.dmg>a0&&G.ilha.fio_arpao===1,'o Griggs afia a ponta do arpão com prata');}
    mataNight=null;switchMap(ilhaMatoEntrada(1));closeDialog(true);mataCombatTick(1/30);const ps=mataNight.beasts.filter(b=>b.kind==='pirata').slice(0,2);for(const o of mataNight.beasts)if(!ps.includes(o))Object.assign(o,{x:60,y:200});
    const L=ilhaMatoLayout(),[a,b]=[L.pts[1],L.pts[2]],at=t=>({x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t}),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);

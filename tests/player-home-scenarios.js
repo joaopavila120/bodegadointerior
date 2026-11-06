@@ -23,7 +23,7 @@
   window.confirm=()=>false;sleepDay();check(G.rep===rep&&G.day===day+1,'cancel sleep preserves day');
   window.confirm=()=>true;sleepDay();check(G.day===day+2&&G.rep<rep&&nearHomeBed(),'confirmed skipped day returns to bed');closeDialog(true);
   for(const item of CAVE_ITEMS)check(caveItemIcon(item).includes('forge-supplies')&&!caveItemIcon(item).includes('undefined'),'supply art '+item.id);
-  for(const item of CAVE_UPGRADES)check(forgeUpgradeIcon(item.id).includes('forge-equipment'),'equipment art '+item.id);
+  for(const item of CAVE_UPGRADES)check(forgeUpgradeIcon(item.id).includes(item.id==='giro'?'data:image/svg':'forge-equipment'),'equipment art '+item.id);
   check(caveItemIcon(CAVE_ITEMS[0])===caveItemIcon(CAVE_ITEMS[0]),'stable belt markup');
   return results;
  }finally{window.confirm=confirmBefore;closeDialog(true);({G,worldOut,started,paused,modal}=original);}

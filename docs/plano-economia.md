@@ -51,7 +51,7 @@ Este é o valor de limpar um andar inteiro (bichos, pedras e baú), na média de
 - **De onde vem o dinheiro:** cerca de 60% da bodega, 25% da caverna (aventura com risco, não emprego) e 15% de missões, eventos e pedidos. Essas três fontes também dão a maior parte do XP.
 - **Capítulos:** cada um paga de 1 a 2 dias de lucro daquele momento do jogo.
 - **Ritmo de nível:** N2 no dia 3–4, N3 no 8, N4 no 14 (libera a gaita), N5 no 22 (o baú), N6 no 32 e N7 no 45.
-- **Compras grandes:** o cavalo custa de 4 a 6 dias de lucro de quando o jogador costuma comprar. A melhor espada pede cerca de uma semana de caverna mais bodega.
+- **Compras grandes:** o cavalo custa de 4 a 6 dias de lucro de quando o jogador costuma comprar. O melhor facão pede cerca de uma semana de caverna mais bodega.
 
 ## 4. Mudanças (aplicadas)
 

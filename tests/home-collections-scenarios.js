@@ -32,7 +32,8 @@
    check(idle.index===front&&!idle.flip,'Resting pose faces forward: '+p.id);
    for(const [dx,dy]of[[0,1],[1,0],[0,-1],[-1,0]]){
     frameClock+=.5;const pose=worldCharacterSpec(p.sprite,400,500,true,dx,dy);
-    check(pose.reference===idle.reference&&pose.height===idle.height,'Scale remains constant through movement: '+p.id);
+    const sec=SECONDARY_POSES.get(p.sprite),row=sec?Math.floor((pose.index-sec.start)/sec.steps):0,ref=sec?.directionHeights?.[row]??idle.reference;
+    check(pose.reference===ref&&pose.height===idle.height&&(!sec?.directionHeights||ref===expansionRowHeight(sec.key,row*sec.steps+sec.start,sec.steps)),'Scale remains constant through movement: '+p.id);
    }
   }
  }finally{closeDialog(true);({G,worldOut,ctx,frameClock,modal}=before);}

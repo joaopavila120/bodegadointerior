@@ -204,7 +204,7 @@ function drawAchado(a) {
 // ---------- O que o Griggs faz ----------
 MATA_ITEMS.push({ id: 'reza', name: 'Reza de sal e arruda', icon: '🙏', cost: 0, griggs: true, desc: 'Por 30 segundos, tudo que sai da tua mão pega cheio nos bichos da ilha, e a praga das bruxas não te pega.' });
 const ILHA_RECEITAS = [
-  { id: 'facao', name: 'Facão de prata', icon: '🔪', needs: { prata: 5 }, cost: 80, desc: 'O Griggs derrete a prata dos baús de pirata no fio da tua lâmina (facão, espada ou sabre): o golpe pega cheio nos bichos da ilha. Pra sempre. Depois, dá pra afiar com mais prata.' },
+  { id: 'facao', name: 'Facão de prata', icon: '🔪', needs: { prata: 5 }, cost: 80, desc: 'O Griggs derrete a prata dos baús de pirata no fio da tua lâmina (facão ou sabre): o golpe pega cheio nos bichos da ilha. Pra sempre. Depois, dá pra afiar com mais prata.' },
   { id: 'reza', name: 'Reza de sal e arruda', icon: '🙏', needs: { arruda: 1, sal: 1 }, cost: 0, desc: 'Vai pro bornal (teclas 1 a 5): por 30 segundos tudo que sai da tua mão pega cheio, e a praga das bruxas não te pega.' }
 ];
 // Afiar com prata: cada fio no facão dá mais dano (em todo lugar); a ponta de prata faz o arpão bater mais forte.

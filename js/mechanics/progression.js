@@ -54,7 +54,7 @@ const ACHIEVEMENTS=[
  {id:'baudovo',name:'O baú do vô',desc:'Abrir o baú do vô no fundo da caverna.',xp:200,test:()=>!!G.cave?.vo},
  {id:'cacador',name:'Caçador de assombração',desc:'Derrubar 100 bichos na caverna.',xp:200,test:()=>(G.cave?.killsTotal||0)>=100},
  {id:'afiado',name:'Fio de navalha',desc:'Afiar uma arma até +3 na pedra do São Dunstano.',xp:150,test:()=>Object.values(G.cave?.refine||{}).some(n=>n>=3)},
- {id:'salamanca',name:'Ferreiro de mosteiro',desc:'Forjar a Espada da Salamanca com o São Dunstano.',xp:300,test:()=>!!G.cave?.forged?.ouro},
+ {id:'salamanca',name:'Ferreiro de mosteiro',desc:'Forjar o Facão da Salamanca com o São Dunstano.',xp:300,test:()=>!!G.cave?.forged?.ouro},
  {id:'folclore',name:'Assombrações do Sul',desc:'Vencer todas as assombrações do folclore, de noite.',xp:300,test:()=>Object.keys(FOLK).every(k=>G.folk?.[k]?.wins)},
  {id:'saci',name:'Pegou o Saci',desc:'Segurar o Saci pela carapuça e fazer um desejo.',xp:150,test:()=>(G.saci?.caught||0)>0},
  {id:'dourado',name:'Rei do rio',desc:'Fisgar um dourado no trapiche.',xp:150,test:()=>!!G.fishRecords?.dourado},

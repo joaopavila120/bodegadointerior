@@ -1,5 +1,5 @@
 // A caverna vira jogo próprio: minérios que melhoram conforme se desce (cobre e ferro em cima, opala e ouro lá no fundo),
-// a forja de São Dunstano (facão de cobre, de ferro, de ametista, de ágata e a espada da Salamanca, que se afiam com
+// a forja de São Dunstano (facão de cobre, de ferro, de ametista, de ágata e o da Salamanca, que se afiam com
 // minério), equipamento campeiro, o bornal da caverna (tecla B) com o bolicho do santo (chimarrão, charque, canha,
 // esporas, boleadeira, água benta, patuá e tição) e os atalhos 1 a 5. Na primeira descida, o susto: o fantasma se
 // apresenta e ensina tudo. E em algumas noites ele sai da gruta e caminha pela estrada da Serra, contando a vida dele.
@@ -58,9 +58,9 @@ const CAVE_WEAPONS = [
   { id: 'facao', name: 'Facão do vô', icon: '🔪', dmg: 12, desc: 'O facão de cabo de chifre que estava cravado na boca da gruta. Afia com as melhorias do vô.' },
   { id: 'cobre', name: 'Facão de cobre', icon: '🗡️', dmg: 20, cost: 60, needs: { cobre: 8 }, ore: 'cobre', color: '255,170,100', lamina: 'cobre', desc: 'Cobre das primeiras galerias, batido a frio. Leve e ligeiro.' },
   { id: 'ferro', name: 'Facão de ferro batido', icon: '🗡️', dmg: 28, cost: 140, needs: { ferro: 8, cobre: 4 }, ore: 'ferro', color: '220,220,235', lamina: 'cinza_escuro', desc: 'Ferro das galerias do meio, temperado na água fria do arroio.' },
-  { id: 'ametista', name: 'Facão de ametista', icon: '⚔️', dmg: 34, cost: 200, needs: { ametista: 10 }, ore: 'ametista', color: '200,150,255', lamina: 'ametista', desc: 'Fio de ametista lapidada sobre alma de aço: corta e brilha no escuro.' },
-  { id: 'agata', name: 'Facão de ágata', icon: '⚔️', dmg: 42, cost: 320, needs: { agata: 8, ferro: 6 }, ore: 'agata', color: '255,150,90', lamina: 'agata', desc: 'Ágata das galerias vermelhas montada em ferro batido. Pesada e certeira.' },
-  { id: 'ouro', name: 'Espada da Salamanca', icon: '⚔️', dmg: 52, cost: 500, needs: { ouro: 6, opala: 2 }, ore: 'ouro', color: '255,220,110', lamina: 'dourado', desc: 'Ouro do fundo da serra com olhos de opala. Dizem que o encanto da Teiniaguá mora nela.' }
+  { id: 'ametista', name: 'Facão de ametista', icon: '🗡️', dmg: 34, cost: 200, needs: { ametista: 10 }, ore: 'ametista', color: '200,150,255', lamina: 'ametista', desc: 'Fio de ametista lapidada sobre alma de aço: corta e brilha no escuro.' },
+  { id: 'agata', name: 'Facão de ágata', icon: '🗡️', dmg: 42, cost: 320, needs: { agata: 8, ferro: 6 }, ore: 'agata', color: '255,150,90', lamina: 'agata', desc: 'Ágata das galerias vermelhas montada em ferro batido. Pesada e certeira.' },
+  { id: 'ouro', name: 'Facão da Salamanca', icon: '🗡️', dmg: 52, cost: 500, needs: { ouro: 6, opala: 2 }, ore: 'ouro', color: '255,220,110', lamina: 'dourado', desc: 'Ouro do fundo da serra com olhos de opala. Dizem que o encanto da Teiniaguá mora nele.' }
 ];
 const AFIAR_MAX = 3;
 function caveWeapon() { const st = caveState(); return CAVE_WEAPONS.find(w => w.id === (st.weapon || 'facao')) || CAVE_WEAPONS[0]; }
@@ -364,7 +364,7 @@ WORLD_TALK.dunstano.push(
   { player: 'Quem é o senhor, afinal?', reply: 'Sou Dunstano: ferreiro, ourives e santo. Nasci lá pelo ano de 909, e meu nome quer dizer algo como “pedra escura”.' },
   { player: 'É verdade o causo do diabo e da tenaz?', reply: 'Dizem que peguei o diabo pelo nariz com a tenaz em brasa. Causo de ferreiro… mas olha bem a minha tenaz.' },
   { player: 'O senhor é padroeiro de quem?', reply: 'De ferreiros, ourives e músicos. Quem bate ferro ou toca gaita pode contar comigo.' },
-  { player: 'O que eu faço com tanto minério?', reply: 'Cobre, ferro, ametista e ágata viram facão; ouro e opala, a espada da Salamanca. Afiar também gasta minério. O resto eu compro.' }
+  { player: 'O que eu faço com tanto minério?', reply: 'Todo minério vira facão: cobre, ferro, ametista, ágata e, com ouro e opala, o da Salamanca. Afiar também gasta minério. O resto eu compro.' }
 );
 function dunstanLoreTalk() {
   const st = caveState(), k = (st.lore || 0) % DUNSTAN_LORE.length; st.lore = (st.lore || 0) + 1; save();

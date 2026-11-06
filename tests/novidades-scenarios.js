@@ -811,7 +811,7 @@
    action('griggsFaz','arpao');action('griggsFaz','sabre');closeDialog(true);
    check(rangedOwned('arpao')&&caveWeapon().id==='sabre','o Griggs faz o arpão e o sabre de abordagem');
    check(caveCd()<cd&&mataArco()>arco,'o sabre é mais ligeiro e corta em arco largo');
-   check(CAVE_WEAPONS.find(w=>w.id==='ametista').name==='Facão de ametista'&&CAVE_WEAPONS.find(w=>w.id==='agata').name==='Facão de ágata','as lâminas de pedra se chamam facão');
+   check(CAVE_WEAPONS.find(w=>w.id==='ametista').name==='Facão de ametista'&&CAVE_WEAPONS.find(w=>w.id==='agata').name==='Facão de ágata'&&CAVE_WEAPONS.find(w=>w.id==='ouro').name==='Facão da Salamanca','os da forja se chamam facão');
    {const R=id=>ILHA_RECEITAS.find(r=>r.id===id),arma=id=>CAVE_WEAPONS.find(w=>w.id===id),paga=id=>{for(const[k,q]of Object.entries(R(id).needs))bagAdd(k,q);G.cash+=R(id).cost;},g0=G.ilha.grenfell,facao=G.ilha.facaoPrata,dano=caveDmg();
     check(arma('sabre').dmg<arma('sabre_preto').dmg&&arma('sabre_preto').dmg<arma('sabre_dourado').dmg,'cada sabre bate mais que o anterior');
     delete G.ilha.grenfell;paga('sabre_dourado');action('griggsFaz','sabre_dourado');closeDialog(true);check(!weaponOwned('sabre_dourado')&&/Antes, o sabre preto/.test(griggsReceitasHTML()),'sem o sabre preto, o Griggs não faz o dourado');

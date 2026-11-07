@@ -408,9 +408,8 @@ function caveChest() {
       ['sadi', 'Bah, vô… até aqui embaixo tu deixou recado.']], null, 'Guardar');
     return;
   }
-  const gem = run.floor > 10 ? 'agata' : 'ametista', card = Math.random() < .5 ? randomLooseCard() : null;
-  const loot = caveChestLoot({ cash: 10 + Math.floor(Math.random() * 21) + Math.round(run.floor * 1.5), [gem]: 1 + (Math.random() < .3 ? 1 : 0), heal: Math.random() < .35 ? 25 : 0, cards: card ? [card] : [] }); save();
-  talk([['card', `<b>🧰 Baú do andar ${run.floor}</b><br>Um baú velho de tropeiro, meio enterrado na pedra. Dentro tinha:${caveLootHTML(loot)}${loot.heal ? '<small>Tinha um cantil de água fresca: +' + loot.heal + ' de vida.</small>' : ''}`, 'Achou um baú']], null, 'Guardar');
+  const sorte = bauMonta('caverna', run.floor), loot = caveChestLoot({ cash: sorte.cash, ...sorte.raw, heal: sorte.heal || 0, balas: sorte.balas || 0, cards: sorte.cards }), extras = bauExtras(sorte); save();
+  talk([['card', `<b>🧰 Baú do andar ${run.floor} · ${BAU_NOMES[sorte.tema]}</b><br>Um baú velho de tropeiro, meio enterrado na pedra. Dentro tinha:${caveLootHTML(loot)}${extras.length ? `<div class="bag-grid cave-loot">${extras.map(([i, g, p]) => `<div class="bag-item">${i}<b>${g}</b><small>${p}</small></div>`).join('')}</div>` : ''}${loot.heal ? '<small>Tinha um cantil de água fresca: +' + loot.heal + ' de vida.</small>' : ''}`, 'Achou um baú']], null, 'Guardar');
 }
 
 // ---------- Desenho ----------

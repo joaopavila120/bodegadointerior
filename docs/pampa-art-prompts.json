@@ -1,0 +1,88 @@
+{
+  "mode": "Built-in imagegen; original PNGs copied unchanged; alpha bounds and anchors registered by scripts/build-pampa-crops.py.",
+  "prompts": [
+    {
+      "key": "sadi-lanca-walk-v1",
+      "ref": "assets/images/actions/sadi-sabre-v2.png",
+      "cols": 4,
+      "rows": 3,
+      "prompt": "Production pixel-art sprite atlas for Bodega do Sadi, a Brazilian rural overhead RPG. Match reference pixel clusters, warm earthy palette, crisp brown outlines, approximately four-head adult body proportions and slightly overhead 3/4 camera. Transparent PNG alpha, NOT a painted/checkerboard background. Exact regular grid, large clear gutters, no labels, no ground shadows, no glows. Whole figures and weapons must fit each cell without touching neighbors. Same scale within each character sequence. Reference is Sadi's EXACT identity: keep identical curly brown hair, thick dark moustache/short beard, warm face, white rolled-sleeve shirt, red neckerchief, white apron tied over charcoal bombachas and brown boots. Replace sabre with one long wooden farroupilha SPEAR with leaf-shaped steel point and small red cloth tied below it. Hold shaft convincingly in right hand, butt near ground, mostly upright, never floating. TWELVE frames, 4 columns x 3 rows. Row1 facing down/front; row2 right profile; row3 back/up. Each row: idle planted feet; left-foot-forward walk; passing step; right-foot-forward walk. Distinct leg positions and hand gripping the same spear. Natural short steps, stable head and body size. Spear is about 1.45 times body height; leave headroom above its tip in every cell. No other weapon. The only changes from reference are poses and weapon.",
+      "file": "assets/images/pampa/sadi-lanca-walk-v1.png"
+    },
+    {
+      "key": "sadi-lanca-attack-v1",
+      "ref": "assets/images/actions/sadi-sabre-v2.png",
+      "cols": 4,
+      "rows": 3,
+      "prompt": "Production pixel-art sprite atlas for Bodega do Sadi, a Brazilian rural overhead RPG. Match reference pixel clusters, warm earthy palette, crisp brown outlines, approximately four-head adult body proportions and slightly overhead 3/4 camera. Transparent PNG alpha, NOT a painted/checkerboard background. Exact regular grid, large clear gutters, no labels, no ground shadows, no glows. Whole figures and weapons must fit each cell without touching neighbors. Same scale within each character sequence. EXACT Sadi from reference: identical curly brown hair, thick dark moustache/short beard, white shirt, red neckerchief, white apron, charcoal bombachas, brown boots. TWELVE spear-combat poses, 4 columns x 3 rows. Row1 front/down; row2 right/profile; row3 back/up. Columns in every row: 1 braced two-handed spear held back at waist preparing thrust; 2 long forward thrust with both hands gripping shaft, one planted forward foot; 3 broad waist-high sweeping spear swing, torso twisting; 4 powerful finishing slam planting spear diagonally forward while crouching with knees flexed, both hands firmly gripping. Wooden shaft and broad steel leaf tip, red cloth below tip; shaft around 1.4 times upright body height. Whole spear visible in each spacious cell, no duplicate spear/limbs, NO effect trails or light in the bitmap. Keep facial identity, no new warrior face/helmet. All figures same bodily scale despite different crouches.",
+      "file": "assets/images/pampa/sadi-lanca-attack-v1.png"
+    },
+    {
+      "key": "pampa-props-v1",
+      "ref": "assets/images/world/frontier-flora.webp",
+      "cols": 4,
+      "rows": 4,
+      "prompt": "Production pixel-art sprite atlas for Bodega do Sadi, a Brazilian rural overhead RPG. Match reference pixel clusters, warm earthy palette, crisp brown outlines, approximately four-head adult body proportions and slightly overhead 3/4 camera. Transparent PNG alpha, NOT a painted/checkerboard background. Exact regular grid, large clear gutters, no labels, no ground shadows, no glows. Whole figures and weapons must fit each cell without touching neighbors. Same scale within each character sequence. Environmental objects, sixteen separate sprites in strict FOUR columns FOUR rows, row-major order: ROW1 (1) low straight horizontal dry-stacked gray basalt stone wall/taipa, three courses of irregular fitted stones, moss sparingly; (2) same short wall running north-south viewed overhead, top stones visible; (3) short L corner of same wall; (4) old wooden fence post with round reddish clay oven-shaped JOAO-DE-BARRO nest attached on top and tiny rufous bird perched beside the hole. ROW2 (5) restrained straw/olive tussock of native pampas grass; (6) marsh cattails/reeds; (7) small weathered basalt outcrop with lichens and sparse grass; (8) wild marcela and carqueja medicinal herb clump with tiny pale yellow tips, no flowerbed. ROW3 (9) old covered wooden ox cart, cream canvas and big wheels; (10) abandoned small adobe/stone tapera ruin, partially collapsed roof and broken doorway; (11) rustic front-facing gaucho blacksmith shed, rough stone base, dark timber, weathered clay roof, open work bay with anvil and warm forge; (12) low wooden outdoor proclamation dais with steps in front, no flag, no text. ROW4 (13) small bleached cattle skull and horns on ground; (14) single upright farroupilha spear with red pennant; (15) bundle of confiscated spears lying horizontally; (16) weathered horizontal wooden ranch gate panel between posts. Consistent overhead perspective, not front-flat pictograms, no decorative isolated grass platforms beneath objects, no cartoon outlines, no written signs. Plenty of transparent margin and readable details at game size.",
+      "file": "assets/images/pampa/pampa-props-v1.png"
+    },
+    {
+      "key": "pampa-chefes-v1",
+      "ref": "assets/images/creatures/pirata-v1.png",
+      "cols": 4,
+      "rows": 6,
+      "prompt": "Production pixel-art atlas for the same overhead Brazilian rural RPG as the reference, warm earthy restrained palette, sharply clustered pixels and dark brown outlines, slightly overhead camera with visible tops, no blur or vector illustration. Real transparent PNG alpha. Regular grid with ample empty gutters, figures entirely contained in their cells, no captions/background/ground shadows. TWENTY FOUR full-body poses, FOUR columns SIX rows. Three characters, two rows each. First row of each pair: right-facing idle, left-foot-forward, passing step, right-foot-forward. Second row: prepare attack, extended strike, sweeping followthrough, guarding recovery. Rows1-2 SARGENTO RECOLHEDOR: stocky large middle-aged moustached imperial scavenger in weathered dark navy coatee, black low-brim hat, gray trousers and boots. Carries a bundle of confiscated wooden farroupilha spears tied with rope behind his shoulder; row2 draws ONE from bundle, throws it forward, sweeps bundle low, regains footing. Reds on spear pennants. Rows3-4 CAVALRY CAPTAIN on foot: fit adult with moustache/sideburns, navy coatee, gold epaulettes, red sash, ivory pants and black riding boots, black bicorne. Unsheathed curved silver sabre: raise, thrust, slash, guard. Rows5-6 COLONEL MORINGUE on foot: taller older imposing officer, broad face, heavy black moustache and gray sideburns, black bicorne with brass badge, very dark indigo long coat, broad gold epaulettes, deep red sash, ivory trousers, tall black boots. Long sabre and more imperious silhouette. Row2 of his pair: low guard preparation, long lunging thrust, returning high cut, crossed guard. Stable faces and body scale, natural alternating legs. All right-facing for horizontal mirroring, no pirate resemblance, no drawn magic effects.",
+      "file": "assets/images/pampa/pampa-chefes-v1.png"
+    },
+    {
+      "key": "pampa-cavalaria-v1",
+      "ref": "assets/images/creatures/pirata-v1.png",
+      "cols": 4,
+      "rows": 3,
+      "prompt": "Production pixel-art atlas for the same overhead Brazilian rural RPG as the reference, warm earthy restrained palette, sharply clustered pixels and dark brown outlines, slightly overhead camera with visible tops, no blur or vector illustration. Real transparent PNG alpha. Regular grid with ample empty gutters, figures entirely contained in their cells, no captions/background/ground shadows. TWELVE mounted enemy sprites, FOUR columns THREE rows, horse and rider integrated naturally in every cell, all facing RIGHT, rider adult proportions with believable hands on reins/weapon. Row1 IMPERIAL LANCER: navy short coat, blue neckcloth, cream trousers, black broad-brim military hat, brown horse and wooden steel-tipped spear. Row2 CAVALRY CAPTAIN: moustache/sideburns, navy coat with gold epaulettes, red sash, black bicorne, chestnut horse and cavalry spear. Row3 CORONEL MORINGUE: older imposing broad-faced officer, heavy black moustache, gray sideburns, indigo long coat, broad gold epaulettes, deep red sash, black bicorne with brass badge, coal-black horse and lance. In EACH ROW columns: 1 horse planted idle rider spear upright; 2 horse trotting left/front diagonal leg pair forward spear upright; 3 opposing diagonal stride spear slightly tilted; 4 full charging gallop horse stretched, rider leaning with lance lowered HORIZONTALLY FORWARD. Horse leg animation real, 4 legs, not duplicate identical poses. Same rider head and height across row, horse about human height at withers, enough space for complete long lance. Match the game's textures, not photoreal or chibi.",
+      "file": "assets/images/pampa/pampa-cavalaria-v1.png"
+    },
+    {
+      "key": "pampa-flora-v1",
+      "ref": "assets/images/world/frontier-flora.webp",
+      "cols": 4,
+      "rows": 2,
+      "prompt": "Production pixel-art atlas for the same overhead Brazilian rural RPG as the reference, warm earthy restrained palette, sharply clustered pixels and dark brown outlines, slightly overhead camera with visible tops, no blur or vector illustration. Real transparent PNG alpha. Regular grid with ample empty gutters, figures entirely contained in their cells, no captions/background/ground shadows. EIGHT separate landscape sprites in FOUR columns TWO rows, consistent 3/4 overhead game view. Row1: (1) mature southern Brazilian OMBU/UMBU tree with very thick swollen short trunk, exposed spreading roots and broad low umbrella crown of muted olive green leaves, much WIDER than tall, realistic shape; (2) ESPINILHO small spreading crooked thorn tree, sparse gray-green feathery foliage, warm dusty branches; (3) native short pampas grass clump, restrained straw gold mixed with sage, a few fine pale seed stems; (4) small FLAT dark basalt outcrop with lichen and sparse grass. Row2: (5) tiny cute RUFOUS HORNERO joao-de-barro, warm cinnamon back, pale buff belly, slim slightly curved bill and small feet, standing right-facing; (6) same bird hopping with wings open; (7) low rounded weathered pampas CERRO rocky rise, horizontally layered stone, short muted grass on top, NOT a tall mountain, height less than width; (8) restrained wild carqueja/marcela herbs, muted gray-green leaves, few tiny cream seed heads. No flowerbeds, no flowers everywhere, no decorative pedestal/grass island, retain clean transparent edges. Enough empty gutters, only the specified objects.",
+      "file": "assets/images/pampa/pampa-flora-v1.png"
+    },
+    {
+      "key": "pampa-terrain-v1",
+      "ref": "assets/images/world/frontier-flora.webp",
+      "cols": 2,
+      "rows": 2,
+      "terrain": true,
+      "prompt": "Production pixel-art terrain texture atlas for overhead rural gaucho RPG matching the reference's muted earthy pixel style. EXACT FOUR square seamless texture swatches in a 2 by 2 grid, all edge-to-edge with NO gutters/borders/divider lines, every tile 512-ish pixels. Top left: short Pampa grass, muted sage olive and straw gold, delicate small irregular tufts and subdued bare patches, low contrast, no flowers or objects. Top right: packed sandy brown dirt road, fine compact grain with sparse tiny pebbles, soft natural variation, no huge rocks or ruts. Bottom left: damp olive marsh grass and dark soil, subdued mottling, no reeds/bushes/water bodies. Bottom right: dry weathered basalt gravel and sparse straw short grass for a low cerro, very fine dispersed stones, no large boulders. All four surfaces flat directly top-down, even diffuse lighting, same fine pixel density, each swatch independently seamless, no dramatic gradients, no illustrative landmarks, no text. Opaque full background. Harmonious calm readable playable ground, no visual noise overload.",
+      "file": "assets/images/pampa/pampa-terrain-v1.png"
+    }
+  ],
+  "additionalAtlasBriefs": [
+    {
+      "key": "pampa-npcs-v1",
+      "cols": 4,
+      "rows": 4,
+      "brief": "Zeferino: elderly gaucho blacksmith, gray moustache, brown brimmed hat and leather apron. Neto: dark moustache, olive coat, red scarf and gold sash. Each has four front and four profile idle/walking poses.",
+      "file": "assets/images/pampa/pampa-npcs-v1.png",
+      "reference": "assets/images/creatures/pirata-v1.png"
+    },
+    {
+      "key": "pampa-fauna-v1",
+      "cols": 4,
+      "rows": 4,
+      "brief": "Graxaim and Boi Barroso: each with four right-facing idle/walk poses and four warning, attack and recovery poses. Graxaim gray and tawny; Boi Barroso clay-brown with large cream horns.",
+      "file": "assets/images/pampa/pampa-fauna-v1.png",
+      "reference": "assets/images/creatures/pirata-v1.png"
+    },
+    {
+      "key": "pampa-tropas-v1",
+      "cols": 4,
+      "rows": 6,
+      "brief": "Batedor with boleadeiras, imperial carabineer and dismounted lancer. Each has four right-facing idle/walk poses plus four preparation, attack and recovery poses.",
+      "file": "assets/images/pampa/pampa-tropas-v1.png",
+      "reference": "assets/images/creatures/pirata-v1.png"
+    }
+  ]
+}

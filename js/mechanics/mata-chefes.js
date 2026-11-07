@@ -8,8 +8,8 @@
 //   Vencido, o acampamento do trecho acende e a picada abre.
 'use strict';
 
-CAVE_BEASTS.cachaco = { name: 'Javali Cachaço', hp: 1200, speed: 140, dmg: 20, r: 56, cash: [40, 60], from: 999, weight: 0 };
-CAVE_BEASTS.papo = { name: 'Lagarto do papo-amarelo', hp: 1500, speed: 170, dmg: 22, r: 50, cash: [60, 90], from: 999, weight: 0 };
+CAVE_BEASTS.cachaco = { name: 'Javali Cachaço', hp: 1700, speed: 140, dmg: 17, r: 56, cash: [40, 60], from: 999, weight: 0 };
+CAVE_BEASTS.papo = { name: 'Lagarto do papo-amarelo', hp: 2900, speed: 170, dmg: 20, r: 50, cash: [60, 90], from: 999, weight: 0 };
 const BOSS_INFO = {
   cachaco: { title: 'O Javali Cachaço', icon: '🐗', reward: { cash: 220, xp: 160, rep: 4 }, xp: 120 },
   papo: { title: 'O Lagarto do papo-amarelo', icon: '🦎', reward: { cash: 380, xp: 260, rep: 6 }, xp: 200 }
@@ -32,14 +32,14 @@ trechoBossEnter = function (T) {
 };
 function bossIntro(T, b) {
   b.met = true; keys.clear();
-  const lines = b.kind === 'cachaco'
-    ? [['card', '<b>🐗 O Javali Cachaço</b><br>No meio da clareira, fuçando a terra, um javali do tamanho de um boi: crina de arame, presa amarela e torta, o couro cheio de cicatriz. É o cachaço velho que manda no pinheiral.', 'Pinheiral'],
-       ['sadi', 'Bah… isso não é um javali, é uma carreta com dente!'],
-       ['dica', '· A <b>faixa vermelha</b> avisa a investida: sai do caminho. Se ele bater num tronco, fica tonto e apanha mais.<br>· Perto demais, ele dá <b>presada</b> pra frente.<br>· Quando fuça, joga <b>torrão</b>: sai do círculo no chão.<br>· O ronco chama a <b>vara de javalis</b>.', 'O Javali Cachaço']]
-    : [['card', '<b>🦎 O Lagarto do papo-amarelo</b><br>Na clareira da descida, deitado na pedra quente, um teiú do tamanho de uma canoa. O papo é amarelo como gema e o rabo, grosso como um palanque. Os antigos dizem que ele guarda a descida da serra pro litoral.', 'Encosta da Serra'],
-       ['sadi', 'Esse aí não é lagarto, é parente de jacaré!'],
-       ['dica', '· A <b>linha</b> avisa o bote: sai do lado. O <b>anel amarelo</b> é a rabada: sai de perto.<br>· Quando ele <b>se enterra</b>, o rastro de terra vem atrás do Sadi: sai do <b>círculo vermelho</b>. Depois de sair do chão, ele fica preso um pouco.<br>· Brabo, ele <b>incha o papo</b> e solta um chiado que empurra e deixa tonto.', 'O Lagarto do papo-amarelo']];
-  talk(lines, null, 'Encarar');
+  if (b.kind === 'cachaco') chefeCena('cachaco', { b, som: () => AudioEngine.caveCry?.('cachaco'),
+    falas: [['card', 'No meio da clareira, fuçando a terra, um javali do tamanho de um boi: crina de arame, presa amarela e torta, o couro cheio de cicatriz. É o cachaço velho que manda no pinheiral.'], ['sadi', 'Bah… isso não é um javali, é uma carreta com dente!'], ['sadi', 'Vem, cachaço. Hoje o pinheiral troca de dono.']],
+    curtas: [['sadi', 'Tu de novo, carreta com dente. Desta vez eu termino o serviço.']],
+    regras: [['dica', '· A <b>faixa vermelha</b> avisa a investida: sai do caminho. Se ele bater num tronco, fica tonto e apanha mais.<br>· Perto demais, ele dá <b>presada</b> pra frente.<br>· Quando fuça, joga <b>torrão</b>: sai do círculo no chão.<br>· O ronco chama a <b>vara de javalis</b>.', 'O Javali Cachaço']] });
+  else chefeCena('papo', { b, som: () => AudioEngine.caveCry?.('papo'),
+    falas: [['card', 'Na clareira da descida, deitado na pedra quente, um teiú do tamanho de uma canoa. O papo é amarelo como gema e o rabo, grosso como um palanque. Os antigos dizem que ele guarda a descida da serra pro litoral.'], ['sadi', 'Esse aí não é lagarto, é parente de jacaré!'], ['sadi', 'Com licença, seu lagarto. O caminho pro litoral é por aí, e eu tô com pressa.']],
+    curtas: [['sadi', 'Parente de jacaré, de novo. Agora eu já sei onde tu morde.']],
+    regras: [['dica', '· A <b>linha</b> avisa o bote: sai do lado. O <b>anel amarelo</b> é a rabada: sai de perto.<br>· Quando ele <b>se enterra</b>, o rastro de terra vem atrás do Sadi: sai do <b>círculo vermelho</b>. Depois de sair do chão, ele fica preso um pouco.<br>· Brabo, ele <b>incha o papo</b> e solta um chiado que empurra e deixa tonto.', 'O Lagarto do papo-amarelo']] });
 }
 
 // ---------- O Javali Cachaço ----------

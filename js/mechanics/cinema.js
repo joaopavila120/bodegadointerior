@@ -2,7 +2,7 @@
 // Fronteira, a beira do rio) e os atores andam por cima dele, com noite, lampiões, fogo de chão e câmera que desliza.
 // Uso: playSteps([...sceneWorld({ map, x, y, night }), { actor: 'valter', x, y }, { fade: 'in', time: .6 }, ...]).
 // Atores aceitam extras: as (quem desenhar), horse (pelagem do cavalo, 0 a 2), lamp (lampião na mão), hop (pula de
-// alegria), alpha (aparição) e draw (desenho próprio).
+// alegria), alpha (aparição), layerY (ordem de desenho sobre plataformas) e draw (desenho próprio).
 'use strict';
 
 // Gente que só aparece nas cenas (no fim da lista, pra não mexer nos saves): a Soldado Grazi, da Brigada (arco da Casona).
@@ -41,7 +41,7 @@ function drawSceneWorld() {
     if (!M.indoor) worldLandscape(M, seen, layers, view);
     w.props?.(layers, seen);
     for (const f of w.fires) layers.push({ y: f.y, draw: () => sceneFire(f.x, f.y) });
-    for (const [id, a] of Object.entries(s.actors)) layers.push({ y: a.y, draw: () => sceneActorDraw(id, a) });
+    for (const [id, a] of Object.entries(s.actors)) layers.push({ y: a.layerY ?? a.y, draw: () => sceneActorDraw(id, a) });
     layers.sort((a, b) => a.y - b.y).forEach(l => l.draw());
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const a of Object.values(s.actors)) if (a.ghost) glow(a.x, a.y - 70, 180, .4 * (a.alpha ?? 1), '120,190,255'); ctx.restore();
     if (w.night) {

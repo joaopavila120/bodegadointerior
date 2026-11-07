@@ -230,8 +230,8 @@ REGION_NAMES.ilha = 'Ilha da Fortaleza'; REGION_NAMES.masmorra = 'Ilha da Fortal
 // ---------- Quem mora em cada parte ----------
 // (x, y, quantos, quem). Embaixo, piratas fantasmas nas trilhas e afogados na beira d'água; lá no alto, os marinheiros.
 const ILHA_GUARDAS = [
-  [3150, 3900, 1, 'pirata'], [2000, 4000, 2, 'pirata'], [1450, 3150, 1, 'pirata'], [4300, 3780, 1, 'pirata'], [4700, 4000, 2, 'pirata'],
-  [1300, 2200, 1, 'pirata'], [4700, 2950, 2, 'pirata'], [4900, 2150, 1, 'pirata'], [5300, 1900, 2, 'pirata'], [3200, 2300, 2, 'pirata'],
+  [3150, 3900, 1, 'pirata'], [2000, 4000, 1, 'pirata'], [4700, 4000, 1, 'pirata'], [2600, 3400, 2, 'pirata'], [3800, 3350, 2, 'pirata'], [1450, 3150, 2, 'pirata'], [4300, 3300, 2, 'pirata'], [3200, 3050, 2, 'pirata'],
+  [1300, 2200, 2, 'pirata'], [4700, 2950, 3, 'pirata'], [4900, 2150, 3, 'pirata'], [5300, 1900, 3, 'pirata'], [3200, 2300, 3, 'pirata'], [2500, 2380, 3, 'pirata'], [3900, 2380, 3, 'pirata'],
   ...[2300, 2800, 3700, 4250, 5000].map((x, i) => [x, ilhaRioY(x) + (i % 2 ? 1 : -1) * (ilhaRioHalf(x) + 46), 1, 'afogado']),
   ...[1.25, 2.0, .55, 2.6].map(a => { const k = ilhaK(a) - .035; return [ILHA.cx + Math.cos(a) * ILHA.rx * k, ILHA.cy + Math.sin(a) * ILHA.ry * k, 1, 'afogado']; }),
   [3200, 1880, 3, 'marujo'], [2800, 1350, 3, 'marujo'], [3650, 1560, 3, 'marujo'], [3200, 1130, 2, 'marujo'], [2200, 1500, 2, 'marujo'], [4200, 1500, 2, 'marujo']
@@ -253,7 +253,7 @@ function ilhaBeastsStart() {
   const masm = map === 'masmorra', list = map === 'ilha' ? ILHA_GUARDAS : masm ? MASM_GUARDAS : ilhaMatoGuardas(ilhaState().trecho || 1), beasts = [];
   for (const [gx, gy, n, kind = 'marujo'] of list) for (let k = 0; k < n; k++) {
     const swarm = kind === 'mariposa', at = ilhaSpotNear(map, gx + (k - (n - 1) / 2) * (swarm ? 40 : 80), gy + (k % 2 ? 36 : -28)); if (!at) continue;
-    beasts.push(ilhaMob(kind, at, R, masm ? { hpMul: 1.25, dmgMul: 1.2 } : {}));
+    beasts.push(ilhaMob(kind, at, R, { hpMul: ilhaForcaEm(map, at.y).hp }));
   }
   beasts.forEach((b, i) => { b.idx = i; if (dead.includes(i)) b.hp = 0; });
   mataNight = { day: G.day, key: ilhaKey(), ilha: key, beasts, drops: [], herds: [], shots: [], ish: [], cd: 0, inv: 0, hurt: 0, swing: null };
@@ -417,7 +417,7 @@ function paintIlhaGround(view) {
   ctx.save(); ctx.clip(coast); if (!mataTexture(4, x, y, w, h)) rect(x, y, w, h, '#d7c49a'); ctx.restore();
   ctx.save(); ctx.strokeStyle = 'rgba(80,64,40,.35)'; ctx.lineWidth = 16; ctx.stroke(coast); ctx.restore();
   ctx.save(); ctx.clip(campo); if (!mataTexture(3, x, y, w, h)) rect(x, y, w, h, '#697447');
-  ilhaBlotches(view, 0, .6, 260, 11); ilhaBlotches(view, 2, .5, 300, 37, (cx, cy) => cy < 2150);
+  ilhaBlotches(view, 0, .07, 260, 11); ilhaBlotches(view, 2, .07, 300, 37, (cx, cy) => cy < 2150);
   ctx.fillStyle = 'rgba(20,30,16,.12)'; ctx.fillRect(x, y, w, h);
   ctx.restore();
   ctx.save(); ctx.strokeStyle = 'rgba(70,90,40,.45)'; ctx.lineWidth = 10; ctx.stroke(campo); ctx.restore();
@@ -594,7 +594,7 @@ function ilhaTop() {
   drawMataWarnings();
   if (N.hurt > 0) { ctx.fillStyle = `rgba(200,30,20,${N.hurt * .8})`; ctx.fillRect(worldOut.x - 3000, worldOut.y - 3000, 6000, 6000); }
   const left = N.beasts.filter(b => b.hp > 0 && !b.minion).length, safe = ilhaSafeNow(worldOut), map = worldOut.map;
-  const title = map === 'ilha' ? 'Ilha da Fortaleza' : map === 'masmorra' ? 'Cripta da fortaleza' : 'Mata da cerração · trecho ' + (ilhaState().trecho || 1) + '/' + ILHAMATO.last;
+  const title = map === 'ilha' ? ilhaRegiao(worldOut.x, worldOut.y) : map === 'masmorra' ? 'Cripta da fortaleza' : ILHA_TRECHOS[ilhaState().trecho || 1].nome + ' · trecho ' + (ilhaState().trecho || 1) + '/' + ILHAMATO.last;
   mataHudPanel(title, safe ? 'perto do fogo, ninguém chega' : left ? left + (left === 1 ? ' inimigo por perto' : ' inimigos por perto') : 'tudo limpo por hoje');
   const boss = N.beasts.find(b => b.boss && b.hp > 0); if (boss) ilhaBossBar(boss);
 }
@@ -606,7 +606,7 @@ MISSIONS.push({ id: 'bento', title: 'Levaram o Bento!', giver: 'garibaldi', side
   when: () => bentoChamando() && ['mata', 'laguna'].includes(worldOut?.map) && !scene && !modal && !worldTalkOpen() && !paused,
   goal: () => bentoGoal(), done: () => !!ilhaState().contou,
   reward: { cash: 400, xp: 250, rep: 5 }, outroBy: 'sadi',
-  outro: ['O Bento tá preso no Forte do Mar, na Bahia, e o Giuseppe já juntou a tropa.', 'Aguenta firme, Bento: a gente tá indo te buscar. (A história continua…)'] });
+  outro: ['O Bento tá preso no Cerro de Porongos, no fundo do pampa, e o Giuseppe já juntou a tropa.', 'Aguenta firme, Bento: a gente tá indo te buscar. A porteira fica no fim da estrada da Serra. (A história continua…)'] });
 function bentoGoal() {
   const st = ilhaState();
   if (!st.sabeBarqueiro) return 'Descubra como chegar à ilha da fortaleza: em Santa Catarina, pergunte ao Peixinho na Brasa, que vive da pesca';
@@ -669,10 +669,11 @@ function peixinhoTemPista() { return missionActive('bento') && !ilhaState().sabe
   // Desmaiou na ilha ou na masmorra: acorda no trapiche, com o seu Nereu.
   const faint = mataFaint; mataFaint = function () {
     if (!ilhaAqui()) return faint();
-    const N = mataNight; if (!N || N.faint) return; N.faint = true; keys.clear();
+    const N = mataNight; if (!N || N.faint || mataDefeatActive()) return;
+    desmaioComTela(() => { N.faint = true; keys.clear();
     const lost = Math.min(80, Math.round(G.cash * .1)); G.cash = round(G.cash - lost); caveState().hp = caveMaxHp(); mataBuffs.veneno = 0; AudioEngine.caveFaintSound?.(); save();
     mataNight = null; switchMap({ map: 'ilha', ...ILHA.arrive, title: 'Ilha da Fortaleza' });
-    talk([['card', `<b>😵 Desmaiou na ilha</b><br>Acordou no trapiche, com a cabeça doendo e o bolso mais leve (−${money(lost)}). O seu Nereu te arrastou até o barco.`, 'Ilha da Fortaleza'], [nereuSpeaker(), 'Bah, vivente! Esses marinheiros não brincam. Descansa no fogo antes de subir de novo.']], null, 'Levantar');
+    talk([['card', `<b>😵 Desmaiou na ilha</b><br>Acordou no trapiche, com a cabeça doendo e o bolso mais leve (−${money(lost)}). O seu Nereu te arrastou até o barco.`, 'Ilha da Fortaleza'], [nereuSpeaker(), 'Bah, vivente! Esses marinheiros não brincam. Descansa no fogo antes de subir de novo.']], null, 'Levantar'); });
   };
   const mounted = playerMounted; playerMounted = function () { return ilhaAqui() ? false : mounted(); };
   const sparks = drawSparks; drawSparks = function (map = null) { sparks(map); if (map === worldOut?.map && ilhaAqui()) ilhaTop(); };

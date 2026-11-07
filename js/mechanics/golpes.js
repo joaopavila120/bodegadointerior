@@ -13,6 +13,7 @@ CAVE_UPGRADES.push({ id: 'giro', name: 'Golpe de giro', icon: '🌀', cost: 260,
 const GIRO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M50 15A25 25 0 1 1 15 13" fill="none" stroke="#8a93a0" stroke-width="7" stroke-linecap="round"/><path d="M50 15A25 25 0 1 1 15 13" fill="none" stroke="#e8edf2" stroke-width="3" stroke-linecap="round"/><path d="M15 3 L27 13 L11 22 Z" fill="#e8edf2" stroke="#3a3a42" stroke-width="2" stroke-linejoin="round"/><path d="M24 42 L42 24" stroke="#c8ccd4" stroke-width="6" stroke-linecap="round"/><path d="M20 46 L27 39" stroke="#6a4426" stroke-width="7" stroke-linecap="round"/></svg>';
 let golpeTreme = 0;
 function golpeMaximo() { return caveUp('giro') ? 3 : 2; }
+function golpeDados(n) { return GOLPES[n]; }
 // O golpe da vez: emenda se veio dentro da janela (dois apertos no mesmo instante não são combo).
 function golpeProximo(r) { const dt = frameClock - (r.golpeEm ?? -9); return r.golpeN && r.golpeN < golpeMaximo() && dt > .06 && dt <= GOLPE.janela ? r.golpeN + 1 : 1; }
 function golpeCom(g, fn) {
@@ -52,14 +53,14 @@ function griggsGolpeHTML() {
     const combo = function () {
       const r = cave ? (inCave() ? caveFloorRun() : null) : mataNight; if (!r) return attack();
       if (r.cd > 0) { if (r.cd < GOLPE.fila) r.fila = frameClock; return; }
-      const old = r.swing, n = golpeProximo(r), g = GOLPES[n], antes = g.empurra ? new Map(r.beasts.filter(b => b.hp > 0).map(b => [b, b.hp])) : null;
+      const old = r.swing, n = golpeProximo(r), g = golpeDados(n), antes = g.empurra ? new Map(r.beasts.filter(b => b.hp > 0).map(b => [b, b.hp])) : null;
       const result = golpeCom(g, attack), s = r.swing; if (!s || s === old) return result;
       // Golpe de verdade: o que vem depois dele depende de ainda ter o que emendar.
       const fim = n >= golpeMaximo();
       s.n = n; s.t = s.T = g.T; r.golpeN = n; r.golpeEm = frameClock; r.fila = 0;
-      r.cd = fim ? caveCd() * (n === 3 ? GOLPE.recuoGiro : GOLPE.recuo) : Math.min(r.cd, GOLPE.elo);
-      if (n === 3) { AudioEngine.swoosh?.(.1); golpeImpacto(r, antes, g, cave); }
-      if (!G.dicaGolpes) { G.dicaGolpes = G.day; floatNote('⚔️ F, F bem ligeiro: dois golpes em sequência, e o segundo pega mais forte.'); }
+      r.cd = fim ? caveCd() * (n >= 3 ? GOLPE.recuoGiro : GOLPE.recuo) : Math.min(r.cd, GOLPE.elo);
+      if (g.empurra) { AudioEngine.swoosh?.(.1); golpeImpacto(r, antes, g, cave); }
+      if (!G.dicaGolpes) { G.dicaGolpes = G.day; floatNote(typeof armaLanca === 'function' && armaLanca() ? 'F, F, F, F: o quarto golpe da lança faz uma varredura forte em área.' : '⚔️ F, F bem ligeiro: dois golpes em sequência, e o segundo pega mais forte.'); }
       return result;
     };
     if (cave) caveAttack = combo; else mataAttack = combo;

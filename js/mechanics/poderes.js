@@ -44,7 +44,7 @@ function poderUse() {
   const id = poderPick();
   if (!id) { floatNote('Sem poder ainda. Dizem que ' + Object.values(PODER_DICAS).join('; ') + '.'); AudioEngine.bad(); return; }
   if ((poder.cd[id] || 0) > 0) { floatNote(PODERES[id].name + ': volta em ' + Math.ceil(poder.cd[id]) + ' s.'); AudioEngine.bad(); return; }
-  poder.cd[id] = PODERES[id].cd; ({ grito: poderGrito, lunar: poderLunar, gralhas: poderGralhas, benzedura: poderBenzedura })[id](); updatePoderButton();
+  poder.cd[id] = PODERES[id].cd; ({ grito: poderGrito, lunar: poderLunar, gralhas: poderGralhas, benzedura: poderBenzedura, boi: poderBoi, monge: poderMonge })[id](); updatePoderButton();
 }
 function poderGrito() {
   const p = worldOut, dx = p.dx < 0 ? -1 : 1;
@@ -153,7 +153,7 @@ function drawPoderWorld() {
   for (const b of rangedTargets()) if (b.lunar > 0) for (let k = 0; k < 3; k++) { const a = frameClock * 6 + k * 2.1; txt('✦', b.x + Math.cos(a) * 34, b.y - (b.boss || b.lenda ? 190 : 110) + Math.sin(a) * 8, 15, '#fff2b0', 'center'); }
   const a = poder.ally;
   if (a) {
-    const alpha = clamp(Math.min((10 - a.t) / .5, a.t / .6), 0, 1); drawGaribaldi(a.x, a.y, alpha, a.dx, a.walk, a.dy || 0);
+    const alpha = clamp(Math.min((10 - a.t) / .5, a.t / .6), 0, 1); drawGaribaldi(a.x, a.y, alpha, a.dx, a.walk, a.dy || 0, a.swing);
     if (a.swing > 0) { const k = 1 - a.swing / .25; ctx.save(); ctx.strokeStyle = `rgba(220,236,255,${.8 * (1 - k)})`; ctx.lineWidth = 6; ctx.lineCap = 'round'; const ang = a.dx > 0 ? 0 : Math.PI; ctx.beginPath(); ctx.arc(a.x, a.y - 70, 78, ang - 1.2, ang - 1.2 + k * 2.4); ctx.stroke(); ctx.restore(); } // o sabre
   }
   for (const g of poder.gralhas) drawGralha(g.x, g.y, g.dx, true, 1.3);

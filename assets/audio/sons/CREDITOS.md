@@ -10,6 +10,10 @@ Cortados, em mono, normalizados e (os laços) emendados com cruzamento. Depois d
 | tiro | #0438 Shot in .357 Magnum |
 | facao | #0127 Sword That Cuts |
 | vulto | #0128 Sword Through the Air |
+| lanca1 | #1797 Whoosh #5 (vara comprida de madeira) |
+| lanca2 | #1798 Whoosh #10 (bambu grosso) |
+| lanca1 | #1797 Whoosh #5 (vara comprida de madeira) |
+| lanca2 | #1798 Whoosh #10 (bambu grosso) |
 | soco | #2460 Punch #5 |
 | bau | #3205 Creaking Door #2, #0787 Closet door e #0194 Coins #2 (montado) |
 | boi1, boi2, boi3 | #2383, #2384, #2386 Cow moos |

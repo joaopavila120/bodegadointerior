@@ -56,7 +56,10 @@
    check(ouro==='tool:sadi-sabre:dourado'&&soma(ouro,...lamina).r>soma(preto,...lamina).r*2&&soma(ouro,...lamina).r>soma(ouro,...lamina).b*1.3,'a paleta pinta a lâmina');
    check(soma(ouro,...corpo).r===soma(preto,...corpo).r,'e não mexe no corpo do Sadi');
    const am=laminaFolha('facao','ametista'),f=[640,488,120,44],s=soma(am,...f);check(s.b>s.r*.9&&laminaFolha('nada','ametista')==='tool:sadi-nada'&&laminaFolha('sabre',null)==='tool:sadi-sabre','o facão de ametista puxa pro lilás; sem paleta, a folha original');
-   laminaFolha('sabre','prata');laminaFolha('sabre','cobre');check(laminaFolhas.size<=LAMINA_FOLHAS_MAX&&!ACTION_ART[ouro],'guarda poucas folhas pintadas na memória');
+   // Earlier poses may already have warmed prata/cobre; request enough distinct
+   // palettes to force eviction regardless of the initial cache contents.
+   for(const paleta of ['prata','cobre','cinza_escuro','prata_escura','cinza'])laminaFolha('sabre',paleta);
+   check(laminaFolhas.size<=LAMINA_FOLHAS_MAX&&!ACTION_ART[ouro],'guarda poucas folhas pintadas na memória');
   }
   // A animação do dash: arranque, corrida inclinada com as pernas trocando e freada; vultos atrás e poeira no chão.
   {worldOut={map:'caverna',x:600,y:600,dx:1,dy:0,walk:false};Object.assign(run,{hurt:0,swing:null,dashTrail:[],dashCd:0});dashVisto=null;dashFreada=null;const T=CAVE_DASH.duration;

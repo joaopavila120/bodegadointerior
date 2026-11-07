@@ -13,18 +13,20 @@ const LAMINA_PALETAS = {
   dourado: { sombra: '#5e3d0c', luz: '#ffe9a0' },
   cobre: { sombra: '#4e2610', luz: '#f5b98c' },
   ametista: { sombra: '#4d4560', luz: '#efe4ff', perola: ['#ff9be8', '#9fc4ff', '#d8a6ff'], forca: .34 },
-  agata: { sombra: '#5b463f', luz: '#ffe2cf', perola: ['#ffb27a', '#ffd9a0', '#ff8f70'], forca: .3 }
+  agata: { sombra: '#5b463f', luz: '#ffe2cf', perola: ['#ffb27a', '#ffd9a0', '#ff8f70'], forca: .3 },
+  // Sem lâmina nenhuma: é a pose do sabre com a mão vazia, pra lança entrar por cima (pampa-chefes.js).
+  sem: { sem: true }
 };
 const LAMINA_CAMADAS = { sabre: 'assets/images/actions/sadi-sabre-lamina-v1.png', facao: 'assets/images/actions/sadi-facao-lamina-v1.png' };
 // Pedra preciosa, ouro e os sabres preto e dourado ficam com a cor deles mesmo com o fio de prata do Griggs; as outras lâminas ficam prateadas.
-const LAMINA_PEDRAS = ['ametista', 'agata', 'ouro', 'sabre_preto', 'sabre_dourado'], LAMINA_FOLHAS_MAX = 3;
+const LAMINA_PEDRAS = ['ametista', 'agata', 'ouro', 'sabre_preto', 'sabre_dourado', 'lanca'], LAMINA_FOLHAS_MAX = 3;
 const laminaCamadas = {}, laminaLoads = {}, laminaFolhas = new Map();
 function laminaCamada(tool) {
   if (!laminaCamadas[tool]) { const im = laminaCamadas[tool] = new Image(); laminaLoads[tool] = new Promise(resolve => { im.onload = () => resolve(true); im.onerror = () => resolve(false); }); im.src = LAMINA_CAMADAS[tool]; }
   return laminaCamadas[tool];
 }
 function loadLaminaArt() { for (const tool of Object.keys(LAMINA_CAMADAS)) laminaCamada(tool); return Promise.all(Object.values(laminaLoads)).then(r => r.every(Boolean)); }
-function laminaTool(weapon) { return armaSabre(weapon) ? 'sabre' : 'facao'; }
+function laminaTool(weapon) { return armaSabre(weapon) || weapon === 'lanca' ? 'sabre' : 'facao'; }
 function laminaDaArma(weapon) {
   const w = CAVE_WEAPONS.find(x => x.id === weapon); if (!w) return null;
   return typeof ilhaFacaoPrata === 'function' && ilhaFacaoPrata() && !LAMINA_PEDRAS.includes(weapon) ? 'prata' : w.lamina || null;
@@ -51,7 +53,7 @@ function laminaFolha(tool, paleta) {
   const id = base + ':' + paleta; if (laminaFolhas.has(id)) return id;
   const folha = sadiToolImage(tool), camada = laminaCamada(tool); if (!folha?.naturalWidth || !camada.naturalWidth) return base;
   const c = document.createElement('canvas'), g = (c.width = folha.naturalWidth, c.height = folha.naturalHeight, c.getContext('2d'));
-  g.drawImage(folha, 0, 0); g.globalCompositeOperation = 'destination-out'; g.drawImage(camada, 0, 0); g.globalCompositeOperation = 'source-over'; g.drawImage(laminaPintada(camada, P), 0, 0);
+  g.drawImage(folha, 0, 0); g.globalCompositeOperation = 'destination-out'; g.drawImage(camada, 0, 0); g.globalCompositeOperation = 'source-over'; if (!P.sem) g.drawImage(laminaPintada(camada, P), 0, 0);
   c.naturalWidth = c.width; ACTION_ART[id] = c; ACTION_ART_CROPS[id] = SADI_TOOL_POSES[tool]; laminaFolhas.set(id, c);
   while (laminaFolhas.size > LAMINA_FOLHAS_MAX) { const old = laminaFolhas.keys().next().value, im = laminaFolhas.get(old); laminaFolhas.delete(old); delete ACTION_ART[old]; delete ACTION_ART_CROPS[old]; im.width = im.height = 0; }
   return id;

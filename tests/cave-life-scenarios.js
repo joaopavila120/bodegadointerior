@@ -44,7 +44,7 @@
     caveDefeatTick(1);check(inCave()&&Number($('caveDefeat').firstElementChild.style.opacity)===0,'Queda aparece antes da frase');
     const surface=document.createElement('canvas');surface.width=500;surface.height=300;ctx=surface.getContext('2d');
     check(drawCaveDefeatedPlayer(180,230),'Pose de queda é desenhável');ctx=old.ctx;
-    caveDefeatTick(1.6);check($('caveDefeat').textContent==='às vezes é morto quem peleia'&&Number($('caveDefeat').firstElementChild.style.opacity)===1,'Frase completa sobre a tela preta');
+    caveDefeatTick(1.6);check($('caveDefeat').firstElementChild.firstChild.textContent==='às vezes é morto quem peleia'&&/desmaiou/.test($('caveDefeat').textContent)&&Number($('caveDefeat').firstElementChild.style.opacity)===1,'Frase completa sobre a tela preta');
     caveDefeatTick(2);check(!caveDefeatActive()&&worldOut.map==='serra'&&G.cave.hp===caveMaxHp()&&bagQty('ametista')===2,'Recupera na entrada e mantém minérios');finishTalk();
     // Dois moradores catarinenses com pedidos exclusivos de chopp.
     worldOut={map:'sc',x:1200,y:800,dx:0,dy:1};G.phase='prep';G.roadEncounterSeed=123456;

@@ -146,7 +146,7 @@ function beginCaveDefeat(){
   const lost=Math.min(50,Math.round(G.cash*.1));G.cash=round(G.cash-lost);caveState().hp=0;
   caveDefeat={game:G,t:0,lost};keys.clear();worldOut.walk=false;caveFloorRun().swing=null;caveFloorRun().dash=null;
   AudioEngine.caveFaintSound();save();
-  let el=$('caveDefeat');if(!el){el=document.createElement('section');el.id='caveDefeat';el.className='cave-defeat';el.setAttribute('role','status');el.innerHTML='<p>às vezes é morto quem peleia</p>';document.body.appendChild(el);}
+  let el=$('caveDefeat');if(!el){el=document.createElement('section');el.id='caveDefeat';el.className='cave-defeat';el.setAttribute('role','status');el.innerHTML='<p>às vezes é morto quem peleia<small></small></p>';document.body.appendChild(el);}el.querySelector('small')?.replaceChildren(avatarName()+' desmaiou');
   el.classList.remove('hidden');updateCaveDefeatOverlay();
 }
 function updateCaveDefeatOverlay(){

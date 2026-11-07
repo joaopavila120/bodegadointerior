@@ -12,7 +12,7 @@
 const SALAMANCA_FLOOR = 20, JARAU_FROM = 10, SALAMANCA_CELL = { boss: [11, 5], cage: [11, 1], crack: [20, 1] };
 const ENCANTO = { needs: { opala: 3, ouro: 2 } };
 const DIABO = { daze: 2.2, hold: 2.6, bonus: 1.3, hide: .5, stompR: 170 };
-CAVE_BEASTS.diabo = { name: 'Anhangá-Pitã, o Diabo Vermelho', hp: 2000, speed: 120, dmg: 18, r: 40, cash: [20, 30], from: 999, weight: 0 };
+CAVE_BEASTS.diabo = { name: 'Anhangá-Pitã, o Diabo Vermelho', hp: 3200, speed: 120, dmg: 18, r: 40, cash: [20, 30], from: 999, weight: 0 };
 const DIABO_STATES = new Set(['idle', 'windup', 'charge', 'dazed', 'stomp', 'flee']);
 function salamancaDone() { return !!G.cave?.salamanca; }
 function caveEnchanted() { return !!G.cave?.enchanted; }
@@ -392,7 +392,8 @@ function salamancaVictory(b) {
     const b = salamancaBoss(run); if (!b) return;
     if (!caveEnchanted()) { salamancaNoEnchant(); return; }
     if (!G.cave.jarauMet) { salamancaArrival(); return; }
-    effect('Voltou, gaúcho? Hehehe…', b.x, b.y - 240, '#ffb3a0', 18); AudioEngine.caveGrowl(.6, .1);
+    if (!scenesEnabled()) { effect('Voltou, gaúcho? Hehehe…', b.x, b.y - 240, '#ffb3a0', 18); AudioEngine.caveGrowl(.6, .1); return; }
+    { const s = caveCenter(...CAVE.start), boss = caveCenter(...SALAMANCA_CELL.boss), spot = { x: 470, y: 640 }; playSteps([...sceneWorld({ map: 'caverna', x: 540, y: 700, night: .35, lights: salamancaLights() }), { actor: 'sadi', x: s.x, y: s.y - 10, dx: 1, dy: -1 }, { actor: 'diabo', x: boss.x, y: boss.y, dx: -1, draw: diaboActorDraw }, { fade: 'in', time: .5 }, { walk: 'sadi', to: spot }, { do: () => AudioEngine.caveGrowl(.6, .1) }, { say: 'diabo', text: 'Voltou, gaúcho? Hehehe… O ouro te chamou de novo?' }, { say: 'sadi', text: 'Não foi o ouro. Hoje a Teiniaguá sai dessa gaiola.' }, { fade: 'out', time: .3 }], 'salamanca-volta', () => { Object.assign(worldOut, spot, { dx: 1, dy: 0, walk: false }); keys.clear(); }); }
   };
   // O HUD do chefe e os avisos vão por cima da luz da caverna.
   const light = drawCaveLight; drawCaveLight = function () { light(); const run = salamancaRun(); if (run && !scene) { drawSalamancaHazards(run); drawSalamancaHUD(run); } };

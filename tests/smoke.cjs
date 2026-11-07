@@ -114,6 +114,57 @@ async function main() {
       await evaluate('restoreDialogues()');assert.equal(await evaluate('customDialogues.gaucha_chique.length'),8);
       assert.equal(errors.length,0,errors.join('\n'));console.log('PASS new customers: HTTP, file://, editable dialogue and story integration');return;
     }
+    if(process.env.BODEGA_FOCUS==='combate'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
+      const r=await evaluate(fs.readFileSync(path.join(__dirname,'combate-scenarios.js'),'utf8'));for(const x of r)console.log('PASS '+x);assert.equal(errors.length,0,errors.join('\n'));assert(fs.readFileSync(path.join(__dirname,'..','assets/audio/sons/sons.js'),'utf8').includes('"lanca2"'));console.log('PASS combate: '+r.length+' checks');return;
+    }
+    if(process.env.BODEGA_FOCUS==='testeChefes'){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
+      const r=await evaluate(fs.readFileSync(path.join(__dirname,'teste-chefes-scenarios.js'),'utf8'));for(const x of r)console.log('PASS '+x);assert.equal(errors.length,0,errors.join('\n'));console.log('PASS painel de teste: '+r.length+' checks');return;
+    }
+    if(process.env.BODEGA_FOCUS==='pampaActors'){
+      await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
+      await evaluate(`$('start').classList.add('hidden');$('phone').classList.add('hidden');camera.zoom=.9;`);
+      const result=await evaluate(fs.readFileSync(path.join(__dirname,'pampa-actors-scenarios.js'),'utf8'));for(const x of result)console.log('PASS '+x);
+      await evaluate('draw();');fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/coronel-neto-palanque.png'),Buffer.from(shot.data,'base64'));
+      const preview=await evaluate(fs.readFileSync(path.join(__dirname,'garibaldi-attack-preview.js'),'utf8'));fs.writeFileSync(path.join(root,'docs/previews/garibaldi-ataque.png'),Buffer.from(preview.split(',')[1],'base64'));
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('actionArtReady'),true);await evaluate('loadPampaArt()');
+      await evaluate(`drawGaribaldi(500,500,1,-1,false,0,.17);pampaFigura('neto',700,500);`);
+      blockedPath='/assets/images/actions/garibaldi-attack-v1.png';await load(base+'/index.html');assert.equal(await evaluate('actionArtReady'),false);
+      await evaluate('drawGaribaldi(500,500,1,1,false,0,.15)');
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS Neto/Giuseppe: '+result.length+' checks; HTTP, file:// and missing sprite fallback');return;
+    }
+    if(['pampa','pampaArt'].includes(process.env.BODEGA_FOCUS)){
+      await load(base+'/index.html');await evaluate('window.confirm=()=>true');
+      await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
+      assert.equal(await evaluate('loadPampaArt()'),true);
+      const r=process.env.BODEGA_FOCUS==='pampa'?await evaluate(fs.readFileSync(path.join(__dirname,'pampa-scenarios.js'),'utf8')):[];for(const x of r)console.log('PASS '+x);
+      const art=await evaluate(fs.readFileSync(path.join(__dirname,'pampa-art-scenarios.js'),'utf8'));for(const x of art)console.log('PASS '+x);
+      const patrols=await evaluate(fs.readFileSync(path.join(__dirname,'pampa-patrulhas-scenarios.js'),'utf8'));for(const x of patrols)console.log('PASS '+x);
+      const lancers=await evaluate(fs.readFileSync(path.join(__dirname,'lanceiros-variants-scenarios.js'),'utf8'));for(const x of lancers)console.log('PASS '+x);
+      const lancerPreview=await evaluate(fs.readFileSync(path.join(__dirname,'lanceiros-variants-preview.js'),'utf8'));
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});fs.writeFileSync(path.join(root,'docs/previews/lanceiros-variantes.png'),Buffer.from(lancerPreview.split(',')[1],'base64'));
+      await evaluate(`G=fresh();G.day=40;G.prologue={done:true};G.tutorial.complete=true;G.phase='prep';G.ilha={grenfell:40};G.pampa={area:1,sargento:40,boi:40,capitao:40,lanceiros:40};G.cave={facao:true,hp:100,forged:{lanca:true},weapon:'lanca'};started=true;scene=null;phoneOpen=false;closeDialog(true);skipWorldTalk();paused=true;$('start').classList.add('hidden');$('phone').classList.add('hidden');worldWalkers=[];worldDash=null;worldOut={map:'pampa',x:1680,y:980,dx:0,dy:1};mataNight=null;camera.zoom=.9;sparks.length=0;fx.length=0;$('floatNotes').replaceChildren();$('banner').classList.add('hidden');bannerQueue.length=0;clearTimeout(bannerTimer);bannerTimer=null;refreshHUD();mataUpdateButton();draw();`);
+      fs.mkdirSync(path.join(root,'docs/previews'),{recursive:true});
+      for(const[name,code]of [
+        ['pampa-ferraria','draw();'],
+        ['pampa-lanceiros',`G.pampa.area=PAMPA_N.lanceiros;{const c=pampaLayout().camp;worldOut.x=c.x;worldOut.y=c.y+280;}mataNightStart();mataNight.beasts=[];draw();`],
+        ['pampa-ninhos',`G.pampa.area=2;{const q=pampaNestSites(pampaLayout()).find(q=>q.y>800)||pampaNestSites(pampaLayout())[0];worldOut.x=q.x+(WORLD_MAPS.pampa.canWalk(q.x+100,q.y+60)?100:-100);worldOut.y=q.y+60;}mataNightStart();mataNight.beasts=[];draw();`],
+        ['pampa-arvores',`{const L=pampaLayout(),u=L.umbus.slice().sort((a,b)=>pampaLinhaDist(L.pts,a.x,a.y)-pampaLinhaDist(L.pts,b.x,b.y))[0];worldOut.x=u.x+130;worldOut.y=u.y+20;}mataNight.beasts=[];draw();`],
+        ['pampa-oficial',`worldOut.x=pampaEstradaX(pampaLayout(),1200);worldOut.y=1200;mataNight.beasts=[ilhaMob('oficialAdaga',{x:worldOut.x+130,y:worldOut.y},()=>.5,{state:'windup',t:.3,vx:-1,vy:0,dx:-1})];draw();`],
+        ['pampa-taipas',`G.pampa.area=2;worldOut.x=pampaEstradaX(pampaLayout(),1200);worldOut.y=1200;mataNightStart();mataNight.beasts=[ilhaMob('graxaim',{x:pampaEstradaX(pampaLayout(),worldOut.y+170),y:worldOut.y+170},()=>.5,{state:'windup',t:.3}),ilhaMob('carabineiro',{x:pampaEstradaX(pampaLayout(),worldOut.y-170),y:worldOut.y-170},()=>.5,{state:'aim',t:.7,ax:worldOut.x,ay:worldOut.y-30})];draw();`],
+        ['pampa-cavalaria',`G.pampa.area=PAMPA_N.capitao;worldOut.x=pampaLayout().campo.x;worldOut.y=pampaLayout().campo.y;mataNightStart();mataNight.beasts=[ilhaMob('capitao',{x:worldOut.x+280,y:worldOut.y-70},()=>.5,{boss:true,montado:true,state:'ronda',dx:-1}),ilhaMob('lanceiroMontado',{x:worldOut.x-250,y:worldOut.y+140},()=>.5,{montado:true,state:'mira',vx:1,vy:0,t:.8,dx:1})];draw();`],
+        ['pampa-combo',`mataNight.beasts=[];mataNight.swing={n:4,t:.24,T:.62,ang:0,artWeapon:'lanca',impactX:worldOut.x,impactY:worldOut.y,impactReach:caveReach()*1.45};draw();`]
+      ]){await evaluate(code);const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/'+name+'.png'),Buffer.from(shot.data,'base64'));}
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);assert.equal(await evaluate('loadPampaArt()'),true);
+      await evaluate(`G=fresh();started=true;G.cave={facao:true,forged:{lanca:true},weapon:'lanca'};worldOut={map:'pampa',x:1900,y:130,dx:1,dy:0};pampaForja();closeDialog(true);drawExpansionPerson(0,500,500,true,true,1,false,null,0);`);
+      blockedPath='/assets/images/pampa/sadi-lanca-attack-v1.png';await load(base+'/index.html');assert.equal(await evaluate('loadPampaArt()'),false);
+      await evaluate(`G=fresh();started=true;G.cave={facao:true,hp:100,forged:{lanca:true},weapon:'lanca'};G.pampa={area:2};worldOut={map:'pampa',x:1900,y:600,dx:1,dy:0};mataNightStart();mataNight.beasts=[];mataNight.swing={n:4,t:.24,T:.62,ang:0,artWeapon:'lanca'};drawExpansionPerson(0,500,500,false,true,1,false,null,0);drawGolpeRastro(mataNight.swing,worldOut);`);
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS pampa: '+(r.length+art.length+patrols.length+lancers.length)+' checks; HTTP, file://, absent PNG fallback and game previews');return;
+    }
     if(process.env.BODEGA_FOCUS==='sadiTools'){
       await load(base+'/index.html');await evaluate('window.confirm=()=>true');
       await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadSadiToolArt()])');
@@ -711,6 +762,9 @@ async function main() {
     assert(await evaluate('!G.game&&!modal'));
     console.log('PASS Y, aposta, pausa durante o truco e retorno ao atendimento');
 
+    for(const result of await evaluate(fs.readFileSync(path.join(__dirname,'pampa-scenarios.js'),'utf8')))console.log('PASS pampa: '+result);
+    for(const result of await evaluate(fs.readFileSync(path.join(__dirname,'teste-chefes-scenarios.js'),'utf8')))console.log('PASS painel de teste: '+result);
+    for(const result of await evaluate(fs.readFileSync(path.join(__dirname,'combate-scenarios.js'),'utf8')))console.log('PASS combate: '+result);
     const bocce=await evaluate(fs.readFileSync(path.join(__dirname,'bocce-scenarios.js'),'utf8'));
     for(const result of bocce)console.log('PASS '+result);
     const bx=await evaluate('G.bocce.playerX');await key('d',150);

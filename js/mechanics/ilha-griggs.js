@@ -106,21 +106,22 @@ function griggsTalk() {
 function griggsShop() {
   if (worldOut?.map !== 'ilha') return; skipWorldTalk();
   const bag = mataBag(), max = mataBagMax(), own = rangedOwned('revolver38'), full = rangedBalas() >= BALAS.max, ownC = rangedOwned('carabina'), fullC = carabinaBalas() >= CARABINA.max, box = $('dialogContent').closest('.dialog'), keep = modal === 'griggsShop' ? box.scrollTop : 0;
-  const itens = ['bomba', 'marcela', 'carqueja'].map(id => MATA_ITEMS.find(i => i.id === id)).map(i => { const have = bag[i.id] || 0, room = max - have; return forjaCard(mataGearHTML(i.id), i.name + ` <small>· ${have}/${max}</small>`, i.desc, '', `<button class="primary" data-act="griggsItem" data-id="${i.id}" ${room > 0 && hasCash(i.cost) ? '' : 'disabled'}>${room > 0 ? 'Comprar · ' + money(i.cost) : 'Cheio'}</button>`); }).join('');
+  const itens = ['marcela', 'caldo', 'carqueja', 'canha', 'bomba'].map(id => MATA_ITEMS.find(i => i.id === id)).map(i => { const have = bag[i.id] || 0, mx = mataBagMax(i.id), room = mx - have; return forjaCard(mataGearHTML(i.id), i.name + ` <small>· ${have}/${mx}</small>`, i.desc, '', `<button class="primary" data-act="griggsItem" data-id="${i.id}" ${room > 0 && hasCash(i.cost) ? '' : 'disabled'}>${room > 0 ? 'Comprar · ' + money(i.cost) : 'Cheio'}</button>`); }).join('');
   const balas = forjaCard(rangedIcon('balas'), 'Caixa de balas .38', BALAS.box + ' balas, secas, embrulhadas em lona de vela.', `<small>Na guaiaca: ${rangedBalas()}/${BALAS.max}</small>`, `<button class="primary" data-act="griggsBalas" ${own && !full && hasCash(BALAS.cost) ? '' : 'disabled'}>${!own ? 'Antes, o revólver (Garibaldi ou São Dunstano)' : full ? 'Guaiaca cheia' : 'Comprar · ' + money(BALAS.cost)}</button>`);
   const cartuchos = forjaCard(rangedIcon('cartuchos'), 'Caixa de cartuchos', CARABINA.box + ' cartuchos de carabina, de papel encerado.', `<small>Na guaiaca: ${carabinaBalas()}/${CARABINA.max}</small>`, `<button class="primary" data-act="griggsCartuchos" ${ownC && !fullC && hasCash(CARABINA.cost) ? '' : 'disabled'}>${!ownC ? 'Antes, a carabina' : fullC ? 'Guaiaca cheia' : 'Comprar · ' + money(CARABINA.cost)}</button>`);
   openDialog('Acampamento do John Griggs', `<div class="rpg-speaker">${griggsPortrait(72)}<div><p><b>John Griggs</b></p><p>${pick(GRIGGS_FALAS)}</p></div></div>
     <div class="forja-top"><span>❤ ${Math.round(caveState().hp)}/${caveMaxHp()}</span><span>💰 ${money(G.cash)}</span></div>
-    <p class="small-note">Na ilha, as teclas <b>1 a 5</b> usam o que tá no bornal (até ${max} de cada${caveUp('bornal') ? '' : '; o bornal de couro cru da ferraria dobra'}).</p>
+    <p class="small-note">As teclas <b>1 a 9</b> usam o que tá no bornal (até ${max} de cada, menos nos itens mais fortes). Bornal maior deixa levar mais.</p>
     ${griggsReceitasHTML()}
     ${griggsAfiarHTML()}
     ${griggsGolpeHTML()}
+    ${griggsEquipHTML()}
     <h3 class="forja-sec">🎒 Pro bornal <small>pra subir a ilha</small></h3><div class="store-list">${itens}</div>
     <h3 class="forja-sec">🎯 Munição <small>a bala acaba</small></h3><div class="store-list">${balas}${cartuchos}</div>`, 'griggsShop');
   box.scrollTop = keep;
 }
 function griggsItem(id) {
-  const i = MATA_ITEMS.find(x => x.id === id), bag = mataBag(); if (!i || (bag[id] || 0) >= mataBagMax() || !hasCash(i.cost)) return;
+  const i = MATA_ITEMS.find(x => x.id === id), bag = mataBag(); if (!i || (bag[id] || 0) >= mataBagMax(id) || !hasCash(i.cost)) return;
   spendCash(i.cost); bag[id] = (bag[id] || 0) + 1; AudioEngine.coins?.(); save(); refreshHUD(); mataBeltRefresh(); griggsShop();
 }
 function griggsBalas() { if (!rangedOwned('revolver38') || rangedBalas() >= BALAS.max || !hasCash(BALAS.cost)) return; spendCash(BALAS.cost); rangedAddBalas(BALAS.box); AudioEngine.coins?.(); save(); refreshHUD(); griggsShop(); }
@@ -205,7 +206,7 @@ function drawAchado(a) {
 MATA_ITEMS.push({ id: 'reza', name: 'Reza de sal e arruda', icon: '🙏', cost: 0, griggs: true, desc: 'Por 30 segundos, tudo que sai da tua mão pega cheio nos bichos da ilha, e a praga das bruxas não te pega.' });
 const ILHA_RECEITAS = [
   { id: 'facao', name: 'Facão de prata', icon: '🔪', needs: { prata: 5 }, cost: 80, desc: 'O Griggs derrete a prata dos baús de pirata no fio da tua lâmina (facão ou sabre): o golpe pega cheio nos bichos da ilha. Pra sempre. Depois, dá pra afiar com mais prata.' },
-  { id: 'reza', name: 'Reza de sal e arruda', icon: '🙏', needs: { arruda: 1, sal: 1 }, cost: 0, desc: 'Vai pro bornal (teclas 1 a 5): por 30 segundos tudo que sai da tua mão pega cheio, e a praga das bruxas não te pega.' }
+  { id: 'reza', name: 'Reza de sal e arruda', icon: '🙏', needs: { arruda: 1, sal: 1 }, cost: 0, desc: 'Vai pro bornal (teclas 1 a 9): por 30 segundos tudo que sai da tua mão pega cheio, e a praga das bruxas não te pega.' }
 ];
 // Afiar com prata: cada fio no facão dá mais dano (em todo lugar); a ponta de prata faz o arpão bater mais forte.
 const ILHA_FIO = { max: 3, facao: { dmg: 5, prata: [3, 5, 7], cost: [40, 80, 120] }, arpao: { base: .8, dmg: .35, prata: [2, 4, 6], cost: [30, 60, 90] }, bruxa: 1.5, preso: 1.6 };

@@ -1,0 +1,23 @@
+{
+  "mode": "builtin image_gen",
+  "assets": [
+    {
+      "key": "pampa-campo-v2",
+      "ref": "assets/images/environment/tree-varieties-v1.png",
+      "transparent": true,
+      "prompt": "Create a crisp 2D pixel-art game sprite sheet, four separate objects arranged in a strict 2x2 grid with large EMPTY TRANSPARENT gutters. Reference image is only the existing game's pixel style. Top left: a modest rounded green ombu tree, trunk thin and naturally tapered, roots small, overall taller than wide. Top right: airy espinilho tree, thin crooked trunk with delicate spreading yellow-green branches, overall taller than wide. Bottom left: a narrow old wooden fence post with a red clay joao-de-barro nest and tiny bird ON TOP, circular nest entrance facing viewer. Bottom right: same bare old wooden post. Orthographic topdown RPG viewing angle, leaves hand-clustered in pixels, three-tone clean shading, sharp outlines. Each tree height 450 pixels and max width 400 pixels; each post height 350 pixels, width 60 pixels except nest 100 pixels. Draw ONLY object silhouettes. NO atmosphere, no glow, no gradient, no vignette, no aura, no cast shadows, no surrounding ground, no fuzzy edge pixels, no text. The entire space outside the four objects MUST be 100% transparent alpha, including every corner and gaps between branches. All four objects must be visually separated by entirely transparent space. Match the referenced tree sprites' solid clean pixel clusters."
+    },
+    {
+      "key": "oficial-adaga-v1",
+      "ref": "assets/images/pampa/pampa-tropas-v1.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Create ONE coherent pixel-art sprite atlas of a new imperial DAGGER OFFICER enemy in the same Brazilian rural overhead RPG as reference. Keep reference adult proportions, detailed earthy pixel clusters, crisp brown contours, slightly overhead 3/4 perspective. He is a lean middle-aged moustached officer, short navy coat with restrained brass shoulder insignia, burgundy waist sash, cream trousers, brown riding boots and dark peaked period military cap. DISTINCT recognizable short silver DAGGER, a hand-and-a-half blade length at most, in his right hand, never a sabre or sword or gun. EIGHT full-body poses in FOUR columns TWO rows, facing RIGHT for mirroring. Row1 idle guarded stance; left leg forward stride; passing footstep; right leg forward stride. Actual alternating legs, stable face and bodily scale. Row2: visibly pull dagger arm back to telegraph the strike; lunge forward and extend right hand with SHORT dagger; follow-through low diagonal close-range slash; step back and recover guard. Feet fully drawn. One dagger, two arms, two legs. Large transparent gutters between poses, no overlapping cells, no motion trail or impact FX, no text or ground shadows, real transparent alpha. This is a sprite sheet, not an illustration scene."
+    },
+    {
+      "key": "pampa-stone-v2",
+      "ref": "assets/images/pampa/pampa-props-v1.png",
+      "transparent": false,
+      "prompt": "Use case: stylized-concept. Production PIXEL ART MATERIAL TEXTURE atlas for a low traditional gaucho dry-stone wall, matching the reference earthy grey-brown stone style. TWO rectangular seamless material swatches stacked vertically, each covers exactly HALF the entire image, edge-to-edge with NO gutters, no background margin, no captions. TOP HALF: orthographic FRONT FACE material of hand-laid dark warm-grey basalt, three uneven courses of SMALL flat irregular fitted stones, staggered joints, subtle ochre lichen, low contrast. NOT square bricks, NOT round cobbles, NOT towers, not an isolated wall object. Stonework fills the entire top half all the way to edges. BOTTOM HALF: directly overhead TOP SURFACE material of a dry-stone wall, fitted flat basalt capstones, similar warm-grey palette but slightly lighter upper faces; stones fill the entire half. Each swatch must tile horizontally and vertically without obvious seams. Subtle pixel clusters, readable flat material, restrained highlights, no harsh black outlines, NO drop shadow or outer silhouette or perspective scene, NO vegetation except sparse tiny lichen spots. This image is an opaque TEXTURE atlas which the game will map onto a continuous wall, not a sprite sheet of separate wall pieces."
+    }
+  ]
+}

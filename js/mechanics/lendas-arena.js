@@ -315,7 +315,7 @@ REGION_NAMES.arena = 'Clareira da lenda';
   // O causo da vitória fala com o rosto da lenda.
   const speaker = sceneSpeaker; sceneSpeaker = function (who) { if (!String(who).startsWith('causo:')) return speaker(who); const id = who.slice(6); return { ...speaker(id), name: '📜 ' + FOLK[id].name + ' · o causo' }; };
   // Desmaiou na arena: acorda onde estava, sem perder o dia da mata nem dinheiro.
-  const faint = mataFaint; mataFaint = function () { if (!inArena() || !lendaFight) return faint(); if (mataNight) mataNight.faint = true; keys.clear(); lendaLeave(false); };
+  const faint = mataFaint; mataFaint = function () { if (!inArena() || !lendaFight) return faint(); if (mataDefeatActive() || mataNight?.faint) return; desmaioComTela(() => { if (mataNight) mataNight.faint = true; keys.clear(); lendaLeave(false); }); };
   const tick = outsideTick; outsideTick = function (dt) { tick(dt); if (inArena() && !paused && !modal && !scene) lendaHazardsTick(dt); };
   // Por cima da noite (como nos trechos): o clarão do golpe, a vida do Sadi no canto e a da lenda no alto.
   const sparks = drawSparks; drawSparks = function (map = null) {

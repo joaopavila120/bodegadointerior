@@ -11,7 +11,7 @@
 'use strict';
 
 const LAGUNA = { W: 3000, H: 1800, entryY: 820, shoreY: 1250, barraX: 2500, fogo: { x: 620, y: 930 }, marco: { x: 450, y: 960 }, carreta: { x: 930, y: 850 }, boat: { x: 1360, y: 1300 }, ghost: { x: 1150, y: 1010 }, anita: { x: 1250, y: 1040 }, ship: { x: 1980, y: 1500 } };
-CAVE_BEASTS.mariath = { name: 'Capitão Mariath', hp: 1500, speed: 170, dmg: 20, r: 32, cash: [80, 120], from: 999, weight: 0 };
+CAVE_BEASTS.mariath = { name: 'Capitão Mariath', hp: 6000, speed: 170, dmg: 26, r: 32, cash: [80, 120], from: 999, weight: 0 };
 CAVE_BEASTS.marinheiro = { name: 'Marinheiro imperial', hp: 40, speed: 150, dmg: 10, r: 26, cash: [3, 6], from: 999, weight: 0 };
 PEOPLE.push({ id: 'mariath', name: 'Capitão Frederico Mariath', worldOnly: true, unique: true, origin: 'Alma do comandante da esquadra imperial', sprite: (PEOPLE.find(p => p.id === 'jayme') || PEOPLE[0]).sprite });
 function lagunaState() { const st = mataState(); return st.laguna ??= {}; }
@@ -223,11 +223,13 @@ function navioStart() {
 function navioBoss(N = mataNight) { return N?.beasts.find(b => b.kind === 'mariath' && b.hp > 0) || null; }
 function navioIntro(b) {
   b.met = true; keys.clear();
-  talk([['card', '<b>⚓ O capitão Mariath</b><br>No castelo de popa, debaixo da bandeira verde e amarela do Império, um oficial de bicorne e casaca azul, translúcido como neblina. A espada brilha verde.', 'Navio imperial'],
-    ['mariath', 'Quem sobe no meu convés sem licença? Mais um farrapo?'],
-    ['sadi', 'Bodegueiro, capitão. Mas hoje eu vim com o Garibaldi e a Anita.'],
-    ['mariath', 'Sou o capitão Frederico Mariath, da Marinha Imperial. Cumpri as ordens que me deram: retomar Laguna para o Império.'],
-    ['mariath', 'E enquanto aquele marinheiro de camisa vermelha não desistir desta barra, eu também não desisto. Em guarda!']], null, 'Em guarda!');
+  chefeCena('mariath', { b,
+    falas: [['card', 'No castelo de popa, debaixo da bandeira verde e amarela do Império, um oficial de bicorne e casaca azul, translúcido como neblina. A espada brilha verde.'],
+      ['mariath', 'Quem sobe no meu convés sem licença? Mais um farrapo?'],
+      ['sadi', 'Bodegueiro, capitão. Mas hoje eu vim com o Garibaldi e a Anita.'],
+      ['mariath', 'Sou o capitão Frederico Mariath, da Marinha Imperial. Cumpri as ordens que me deram: retomar Laguna para o Império.'],
+      ['mariath', 'E enquanto aquele marinheiro de camisa vermelha não desistir desta barra, eu também não desisto. Em guarda!']],
+    curtas: [['mariath', 'De volta ao meu convés, farrapo? O mar não te ensinou nada.'], ['sadi', 'Me ensinou a nadar, capitão. E a voltar.']] });
 }
 function navioSailor(N) {
   const B = CAVE_BEASTS.marinheiro, h = NAVIO.hatch;

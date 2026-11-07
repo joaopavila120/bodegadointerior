@@ -122,7 +122,7 @@ function ilhaFolkFala(lines) { return lines.map(([who, text]) => [ILHA_FOLKS[who
 function ilhaFolkMeet(f) {
   const st = ilhaState(), fk = ILHA_FOLKS[f.folk]; st.folks ??= {}; if (st.folks[f.folk]) return; st.folks[f.folk] = G.day; keys.clear(); mataXP(20); save();
   const rw = { xp: 40, cash: 30 };
-  talk(ilhaFolkFala(ILHA_FOLK_MEET[f.folk]), () => { grantReward(rw); talk([['card', `<b>🔥 ${fk.name}</b><br>${fk.perk}`, f.name], ['reward', rw, 'Prosa na fogueira']], null, 'Valeu'); }, 'Continuar');
+  talk(ilhaFolkFala(ILHA_FOLK_MEET[f.folk]), () => { grantReward(rw); talk([['card', `<b>🔥 ${fk.name}</b><br>${fk.perk}`, f.name], ['reward', rw, 'Prosa na fogueira']], f.folk === 'joaomaria' ? () => mongeEnsina() : null, 'Valeu'); }, 'Continuar');
 }
 function ilhaFolkTalk(f) {
   const st = ilhaState(), lore = ILHA_FOLK_LORE[f.folk]; st.lore ??= {}; const k = (st.lore[f.folk] || 0) % lore.length; st.lore[f.folk] = (st.lore[f.folk] || 0) + 1; save();

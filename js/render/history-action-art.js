@@ -42,6 +42,9 @@ function actionSprite(id, index, x, y, size, flip = false) {
 }
 
 const FOLK_ART_SIZE = { anita: 128, lanceiro: 128, bento: 132, sepe: 128, jasy: 91, kurupi: 112, mariath: 140, marinheiro: 128, 'garibaldi-ghost': 132 };
+const LANCEIRO_ART = ['lanceiro','lanceiro-veterano','lanceiro-campeiro'];
+FOLK_ART_SIZE['lanceiro-veterano']=FOLK_ART_SIZE['lanceiro-campeiro']=FOLK_ART_SIZE.lanceiro;
+function lanceiroArt(index=0){return LANCEIRO_ART[((Math.trunc(index)%3)+3)%3];}
 {
   const allies = navioAlliesTick, captain = mariathTick;
   navioAlliesTick = function(N, dt, p) {
@@ -67,18 +70,21 @@ function historyPose(moving, dx = 1, dy = 0, action = false, phase = frameClock 
   return direction === 2 ? [9, 8, 10, 8][Math.floor(phase) % 4] : direction * 4 + step;
 }
 // As almas (Garibaldi, Anita, Bento, o Lanceiro Negro e o Sepé): aura azul por trás e o corpo meio transparente.
-const SPIRIT_IDS = new Set(['garibaldi-ghost', 'anita', 'bento', 'lanceiro', 'sepe']);
+const SPIRIT_IDS = new Set(['garibaldi-ghost', 'anita', 'bento', ...LANCEIRO_ART, 'sepe']);
+function garibaldiAttackPose(swing){return swing>0?Math.min(3,Math.floor(clamp(1-swing/.25,0,1)*4)):-1;}
 function historyFigure(id, x, y, alpha, dx, moving, dy, action = false, phase) {
+  if(LANCEIRO_ART.includes(id)&&!ACTION_ART[id]?.naturalWidth)id='lanceiro';
   if (!ACTION_ART[id]?.naturalWidth) return false;
-  const ghost = CAMP_FOLK_LIST.find(f => f.id === id)?.ghost || ['mariath', 'marinheiro', 'garibaldi-ghost'].includes(id);
-  const index = historyPose(moving, dx, dy, action, phase), size = FOLK_ART_SIZE[id];
+  const ghost = CAMP_FOLK_LIST.find(f => f.id === id)?.ghost || LANCEIRO_ART.includes(id) || ['mariath', 'marinheiro', 'garibaldi-ghost'].includes(id);
+  const strike=!!(id==='garibaldi-ghost'&&typeof action==='number'&&action>0&&ACTION_ART['garibaldi-attack']?.naturalWidth);
+  const index = strike?garibaldiAttackPose(action):historyPose(moving, dx, dy, action, phase), size = FOLK_ART_SIZE[id];
   const spirit = SPIRIT_IDS.has(id);
   ellipse(x, y + 2, 21, 6, `rgba(22,35,33,${(spirit ? .14 : .27) * alpha})`);
   if (spirit) { const k = alpha * (.85 + .15 * Math.sin(frameClock * 2 + x * .01)); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - size * .45, size * .72, .3 * k, '110,170,255'); glow(x, y - size * .5, size * .36, .2 * k, '175,215,255'); ctx.restore(); }
   ctx.save(); ctx.globalAlpha *= alpha * (spirit ? .6 : ghost ? .84 : 1);
   // Small breathing motion, no expensive per-frame glow filters or stretched legs.
   const bob = ghost ? Math.sin(frameClock * 1.7 + x * .01) * 1.5 : 0;
-  actionSprite(id, index, x, y + bob, size, dx < 0 && (index >= 4 && index < 8 || index === 11));
+  actionSprite(strike?'garibaldi-attack':id, index, x, y + bob, size, dx < 0 && (strike || index >= 4 && index < 8 || index === 11));
   ctx.restore(); return true;
 }
 {
@@ -89,7 +95,7 @@ function historyFigure(id, x, y, alpha, dx, moving, dy, action = false, phase) {
     if (!scene && inTrecho() && campArtWalk?.id === id) {
       moving = campArtWalk.walk; dx = moving ? campArtWalk.dx : dx; dy = moving ? campArtWalk.dy : 0;
     }
-    if (!historyFigure(id, x, y, alpha, dx, moving, dy, action || speaking)) previous(id, x, y, alpha, dx);
+    if (!historyFigure(id, x, y, alpha, dx, moving, dy, action || speaking)) previous(LANCEIRO_ART.includes(id)?'lanceiro':id, x, y, alpha, dx);
   };
   const captain = drawMariath, sailor = drawMarinheiro;
   drawMariath = function(x, y, alpha = 1, dx = 1, state = 'idle', hurt = 0, moving = false, dy = 0) {
@@ -101,9 +107,9 @@ function historyFigure(id, x, y, alpha, dx, moving, dy, action = false, phase) {
     mataHpBar(b, 'Marinheiro', 145);
   };
   const garibaldi=drawGaribaldi;
-  drawGaribaldi=function(x,y,alpha=1,dx=0,moving=false,dy=0){
+  drawGaribaldi=function(x,y,alpha=1,dx=0,moving=false,dy=0,swing=0){
     const speaking=!moving&&(scene?.step?.say==='garibaldi'||talkState?.lines[talkState.i]?.[0]==='garibaldi');
-    if(!historyFigure('garibaldi-ghost',x,y,alpha,dx,moving,dy,speaking))garibaldi(x,y,alpha,dx,moving);
+    if(!historyFigure('garibaldi-ghost',x,y,alpha,dx,moving,dy,swing>0?swing:speaking))garibaldi(x,y,alpha,dx,moving);
   };
 }
 
@@ -153,9 +159,9 @@ function historyPortrait(id, size = 104) {
   garibaldiPortrait = (size = 104) => historyPortrait('garibaldi-ghost', size) || garibaldi(size);
   sceneActorDraw = function(id, a) {
     if(!a.draw&&(a.as||id)==='garibaldi'&&ACTION_ART['garibaldi-ghost']?.naturalWidth){drawGaribaldi(a.x,a.y,a.alpha??1,a.dx,!!a.walk,a.dy||0);return;}
-    if (!a.draw && FOLK_ART_SIZE[a.as || id] && ACTION_ART[a.as || id]?.naturalWidth) {
+    if (!a.draw && FOLK_ART_SIZE[a.as || id]) {
       const role = a.as || id, gesture = ['jasy', 'kurupi', 'sepe', 'bento'].includes(role) && scene?.step?.say === id;
-      historyFigure(role, a.x, a.y, a.alpha ?? 1, a.dx, !!a.walk, a.dy || 0, gesture); return;
+      if(historyFigure(role, a.x, a.y, a.alpha ?? 1, a.dx, !!a.walk, a.dy || 0, gesture))return;
     }
     actor(id, a);
   };

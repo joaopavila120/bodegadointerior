@@ -505,7 +505,7 @@ function trechoComposition(n) {
   return c;
 }
 // Quanto mais fundo, um pouco mais forte: vida e mordida crescem devagar, trecho a trecho.
-function trechoStrength(n) { return { hp: 1 + (n - 2) * .045, dmg: 1 + (n - 2) * .018 }; }
+function trechoStrength(n) { return { hp: 1 + (n - 2) * .05, dmg: 1 + (n - 2) * .024 }; }
 function trechoSpot(T, R, minFrom = 420) {
   const ends = [{ x: 90, y: T.yIn }, { x: T.W - 90, y: T.yOut }];
   for (let k = 0; k < 90; k++) {
@@ -632,7 +632,7 @@ function mataBeltRefresh() {
   const sparks = drawSparks; drawSparks = function (map = null) { sparks(map); if (map === 'trecho' && inTrecho()) trechoTop(); };
   document.addEventListener('keydown', e => {
     if (!mataHere() || phoneOpen || e.repeat || modal || scene || worldTalkOpen() || ['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target?.tagName)) return;
-    const k = Number(e.key); if (!(k >= 1 && k <= 5)) return; const it = mataBeltItems()[k - 1]; if (!it) return; e.preventDefault(); e.stopImmediatePropagation(); mataUseItem(it.id);
+    const k = Number(e.key); if (!(k >= 1 && k <= 9)) return; const it = mataBeltItems()[k - 1]; if (!it) return; e.preventDefault(); e.stopImmediatePropagation(); mataUseItem(it.id);
   }, true);
   document.addEventListener('DOMContentLoaded', () => { $('hudLayer')?.insertAdjacentHTML('beforeend', '<div id="mataBelt" class="horta-bar cave-belt hidden" aria-label="Bornal da mata"></div>'); });
   const act = action; action = function (name, id) {

@@ -11,7 +11,7 @@
 //     corta. Faz guarda com o sabre (de frente, o facão não passa e ele revida): o arpão quebra a guarda.
 'use strict';
 
-CAVE_BEASTS.grenfell = { name: 'Almirante Grenfell', hp: 2600, speed: 185, dmg: 26, r: 34, cash: [0, 0], from: 999, weight: 0 };
+CAVE_BEASTS.grenfell = { name: 'Almirante Grenfell', hp: 13000, speed: 185, dmg: 34, r: 34, cash: [0, 0], from: 999, weight: 0 };
 const GRENFELL = {
   patio: { x0: 2480, x1: 3920, y0: 1170, y1: 1590 },
   // A ronda da muralha da frente: os pés ficam logo depois da muralha (pra desenhar por cima dela) e o corpo, lá em cima.
@@ -41,13 +41,15 @@ function grenfellChega(N) {
   for (const b of N.beasts) if (b.kind === 'marujo' && b.hp > 0 && b.x > FORT.x && b.x < FORT.x + FORT.w && b.y > FORT.y && b.y < FORT.y + FORT.h) { b.hp = 0; fxPuffs(b.x, b.y - 60, 6, 70, '#a8c8d8'); }
   N.beasts.push(ilhaMob('grenfell', GRENFELL.porta, Math.random, { boss: true, state: 'chase', base: 'chase', fase: 1, cool: 2, ordem: 2.5, dx: 1 }));
   AudioEngine.caveCry?.('grenfell'); save();
-  const G0 = grenfellSpeaker();
-  talk([['card', '<b>⚓ O almirante da fortaleza</b><br>Quando o Sadi entra no pátio, uma corneta toca. Na porta da comandância, um oficial de casaca azul e chapéu de dois bicos, com a cerração enrolada nas botas.', 'Pátio da fortaleza'],
-    [G0, 'Então é este o gaúcho que anda atrás do Bento. John Pascoe Grenfell, almirante da Marinha do Império.'],
-    [G0, 'Fui eu que encurralei o teu presidente na Ilha do Fanfa, em 1836. E o braço que a Cisplatina me levou, a cerração me devolveu.'],
-    ['sadi', 'Pois agora o senhor vai me dizer pra onde levaram ele.'],
-    [G0, 'Marinheiros! Aos canhões!'],
-    ['card', '<b>⚓ Almirante Grenfell</b><br>· Círculo no chão: tiro de canhão da muralha. Sai de dentro (o dash, com Shift, ajuda).<br>· Quando ele sobe na muralha, o facão não alcança e a bala bate na ameia: <b>só o arpão do Griggs puxa ele lá de cima</b>.<br>· No fim, ele joga o gancho (a faixa comprida): sai da frente. Com o sabre em guarda, de frente o facão não passa; o arpão quebra a guarda.', 'Pátio da fortaleza']], null, 'Em guarda!');
+  const b = N.beasts[N.beasts.length - 1];
+  chefeCena('grenfell', { b,
+    falas: [['card', 'Quando o Sadi entra no pátio, uma corneta toca. Na porta da comandância, um oficial de casaca azul e chapéu de dois bicos, com a cerração enrolada nas botas.'],
+      ['grenfell', 'Então é este o gaúcho que anda atrás do Bento. John Pascoe Grenfell, almirante da Marinha do Império.'],
+      ['grenfell', 'Fui eu que encurralei o teu presidente na Ilha do Fanfa, em 1836. E o braço que a Cisplatina me levou, a cerração me devolveu.'],
+      ['sadi', 'Pois agora o senhor vai me dizer pra onde levaram ele.'],
+      ['grenfell', 'Marinheiros! Aos canhões!']],
+    curtas: [['grenfell', 'Insistente, o bodegueiro. Marinheiros! Aos canhões!'], ['sadi', 'Pode mandar, almirante. Eu conheço o caminho.']],
+    regras: [['dica', '· Círculo no chão: tiro de canhão da muralha. Sai de dentro (o dash, com Shift, ajuda).<br>· Quando ele sobe na muralha, o facão não alcança e a bala bate na ameia: <b>só o arpão do Griggs puxa ele lá de cima</b>.<br>· No fim, ele joga o gancho (a faixa comprida): sai da frente. Com o sabre em guarda, de frente o facão não passa; o arpão quebra a guarda.', 'Almirante Grenfell']] });
 }
 function grenfellGrita(b, text) { effect(text, b.x, b.y - (b.alto || 0) - 190, '#e8f0ff', 22); AudioEngine.caveVoice?.([190, 240, 180], .4, { formant: 800, q: 1.5, vol: .05, vib: 5, rate: 6 }); }
 function grenfellOrdem(b, N, p) {

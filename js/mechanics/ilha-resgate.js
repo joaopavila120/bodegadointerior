@@ -1,8 +1,8 @@
 // O fim da missão "Levaram o Bento!", depois do almirante Grenfell (ilha-grenfell.js):
 //   · A chave: vencido, o almirante some na cerração e a chave da cripta cai no chão do pátio. O Sadi vai até ela e pega.
 //   · A cripta: a chave abre a grade da escada do pátio. Lá embaixo, os carcereiros; com todos no chão, a cela do Bento
-//     abre: o lenço farrapo, o “B. G. · 1837” riscado na parede e a ordem do Império mandando o Bento pro Forte do Mar,
-//     na Bahia. Tudo numa cena.
+//     abre: o lenço farrapo, o “B. G. · 1837” riscado na parede e a ordem do Império mandando o Bento pro acampamento do
+//     Moringue, no Cerro de Porongos, lá no pampa (pampa.js). Tudo numa cena.
 //   · A volta: o Sadi conta pro Giuseppe, no pinheiral, e o Giuseppe reúne a Anita, o Lanceiro Negro e o general
 //     Canabarro pra batalha final. Daí em diante, o Canabarro fica no pinheiral do Giuseppe, armando o plano.
 // As cenas só desenham e falam: o que muda no jogo acontece no fim de cada uma (e sem cenas, numa conversa).
@@ -46,16 +46,16 @@ function bentoChaveCena(b, rw) {
 }
 
 // ---------- A cela do Bento ----------
-const BENTO_ORDEM = '<b>ORDEM DO IMPÉRIO</b><br>Transfira-se o preso <b>Bento Gonçalves da Silva</b> para o <b>Forte do Mar</b>, na Bahia, no brigue que sai com a maré da madrugada.<br><br><i>— J. P. Grenfell, almirante</i>';
+const BENTO_ORDEM = '<b>ORDEM DO IMPÉRIO</b><br>Transfira-se o preso <b>Bento Gonçalves da Silva</b> para o acampamento do coronel Francisco Pedro de Abreu, o Moringue, no <b>Cerro de Porongos</b>, no fundo do pampa.<br><br><i>— J. P. Grenfell, almirante</i>';
 function bentoCelaCena() {
   const st = ilhaState(), c = MASM.clue, p = { x: worldOut.x, y: worldOut.y };
   const done = () => {
     st.pista = G.day; keys.clear(); AudioEngine.caveGhost?.(); Object.assign(worldOut, { x: c.x, y: c.y + 70, walk: false }); save();
-    talk([['card', '<b>📜 Levaram o Bento pra Bahia</b><br>O lenço farrapo do Bento e a ordem do Império: ele foi levado no brigue pro <b>Forte do Mar</b>, na Bahia.<br><br>Agora é voltar pro pinheiral, na Mata de Araucárias, e contar tudo pro Giuseppe Garibaldi.', 'Cripta da fortaleza']], null, 'Voltar pro Giuseppe');
+    talk([['card', '<b>📜 Levaram o Bento pro pampa</b><br>O lenço farrapo do Bento e a ordem do Império: ele foi levado pro acampamento do Moringue, no <b>Cerro de Porongos</b>, no fundo do pampa.<br><br>Agora é voltar pro pinheiral, na Mata de Araucárias, e contar tudo pro Giuseppe Garibaldi.', 'Cripta da fortaleza']], null, 'Voltar pro Giuseppe');
   };
   if (!scenesEnabled()) {
     talk([['card', '<b>🔒 A cela do Bento</b><br>A grade tá aberta e a cela, vazia. No chão de pedra, um lenço vermelho de farrapo. Riscado na parede, com a ponta de uma espora: <i>“B. G. · 1837”</i>. Embaixo da palha, um papel com o selo do Império.', 'Cripta da fortaleza'],
-      ['card', BENTO_ORDEM, 'Cripta da fortaleza'], ['sadi', 'Pra Bahia! Pro Forte do Mar, onde ele já ficou preso em 1837… Tenho que contar pro Giuseppe.']], done, 'Continuar');
+      ['card', BENTO_ORDEM, 'Cripta da fortaleza'], ['sadi', 'Pro Cerro de Porongos! Onde os lanceiros caíram, em 1844… Tenho que contar pro Giuseppe.']], done, 'Continuar');
     return;
   }
   playSteps([...sceneWorld({ map: 'masmorra', x: c.x, y: c.y + 90, night: .3, lights: [{ x: c.x, y: c.y - 10, r: 260, a: .32, color: '255,190,110' }] }),
@@ -66,7 +66,7 @@ function bentoCelaCena() {
     { say: 'sadi', text: 'O lenço do Bento! E riscado na parede, com a ponta de uma espora: “B. G. · 1837”.' },
     { say: 'sadi', text: 'Embaixo da palha tem um papel… com o selo do Império.' },
     { overlay: 'note', text: BENTO_ORDEM },
-    { say: 'sadi', text: 'Pra Bahia! Pro Forte do Mar, onde ele já ficou preso em 1837…' },
+    { say: 'sadi', text: 'Pro Cerro de Porongos! Onde os lanceiros caíram, em 1844…' },
     { say: 'sadi', text: 'Tenho que contar pro Giuseppe. Ele vai saber o que fazer.' },
     { fade: 'out', time: .6 }], 'ilha-cela', done);
 }
@@ -77,21 +77,21 @@ function bentoReuniao() {
   const st = ilhaState(), R = REUNIAO;
   const done = () => {
     st.contou = G.day; keys.clear(); Object.assign(worldOut, { map: 'mata', x: R.sadi.x, y: R.sadi.y, dx: -1, dy: 0, walk: false }); save();
-    talk([['card', '<b>⚔️ A batalha final</b><br>O Giuseppe reuniu a Anita, o Lanceiro Negro e o general Canabarro. O Bento tá preso no Forte do Mar, na Bahia, e desta vez ninguém vai deixar ele nadar sozinho.<br><br>O general Canabarro agora fica aqui no pinheiral do Giuseppe, armando o plano. Prosa com ele quando quiser.', 'Mata de Araucárias']], null, 'Pra Bahia!');
+    talk([['card', '<b>⚔️ A batalha final</b><br>O Giuseppe reuniu a Anita, o Lanceiro Negro e o general Canabarro. O Bento tá preso no Cerro de Porongos, e desta vez ninguém vai deixar ele sozinho.<br><br>A porteira do pampa fica no fim da estrada da Serra Gaúcha, lá pro sul. O general Canabarro agora fica aqui no pinheiral do Giuseppe, armando o plano. Prosa com ele quando quiser.', 'Mata de Araucárias']], null, 'Pro pampa!');
   };
   const lines = [
     ['sadi', 'Giuseppe! Achei a cela do Bento, na cripta da fortaleza da ilha. Vazia.'],
-    ['sadi', 'O almirante Grenfell guardava a chave. E na cela tinha uma ordem do Império: levaram o Bento num brigue pra Bahia, pro Forte do Mar.'],
-    ['garibaldi', 'O Forte do Mar… de novo! Em 1837 o Bento fugiu de lá nadando, no meio da Baía de Todos os Santos.'],
-    ['garibaldi', 'Desta vez ninguém vai deixar ele nadar sozinho. Anita! Lanceiro! Venham pro fogo!'],
-    ['anita', 'Ouvi tudo, Giuseppe. Se é pra Bahia, eu vou junto. Quem enfrentou o navio do Mariath não tem medo de forte de pedra.'],
-    ['lanceiro', 'Os lanceiros nunca deixaram companheiro pra trás. Conta comigo, gaúcho.'],
+    ['sadi', 'O almirante Grenfell guardava a chave. E na cela tinha uma ordem do Império: levaram o Bento pro acampamento do Moringue, no Cerro de Porongos.'],
+    ['garibaldi', 'Porongos… e o Moringue de novo! Foi ele que caiu em cima dos lanceiros naquela madrugada de 1844.'],
+    ['garibaldi', 'Desta vez ninguém vai deixar o Bento sozinho. Anita! Lanceiro! Venham pro fogo!'],
+    ['anita', 'Ouvi tudo, Giuseppe. Se é pro pampa, eu vou junto. Quem enfrentou o navio do Mariath não tem medo de coxilha.'],
+    ['lanceiro', 'Porongos eu conheço bem. Os lanceiros nunca deixaram companheiro pra trás. Conta comigo, gaúcho.'],
     ['sadi', 'E tem mais gente: o general Canabarro veio comigo da ilha.'],
     ['canabarro', 'General David Canabarro, às ordens. Giuseppe, velho de guerra! Desde Laguna que a gente não divide um fogo.'],
     ['garibaldi', 'Canabarro! Então estamos todos: a Anita, o Lanceiro, o general e o gaúcho da bodega.'],
-    ['canabarro', 'Eu fico aqui no teu pinheiral, armando o plano. Pra entrar no Forte do Mar vai precisar de barco, de pólvora e de muita coragem.'],
-    ['garibaldi', 'Barco eu sei arranjar. Vamos buscar o Bento: essa vai ser a batalha final.'],
-    ['sadi', 'Pois então, pra Bahia!']
+    ['canabarro', 'Eu fico aqui no teu pinheiral, armando o plano. Pra chegar em Porongos vai precisar de cavalo, de pólvora e de muita coragem.'],
+    ['garibaldi', 'Desta vez não precisa de barco: é descer a estrada da Serra até o fim. Vamos buscar o Bento: essa vai ser a batalha final.'],
+    ['sadi', 'Pois então, pro pampa!']
   ];
   if (!scenesEnabled()) { talk(lines.map(([who, text]) => [who === 'canabarro' ? ilhaFolkSpeaker('canabarro') : who, text]), done, 'Continuar'); return; }
   const chega = id => ({ actor: id, x: R[id][0].x, y: R[id][0].y, dx: R[id][1].x > R[id][0].x ? 1 : -1 }), vai = id => R[id][1];
@@ -110,8 +110,8 @@ function bentoReuniao() {
 // ---------- O general Canabarro no pinheiral do Giuseppe ----------
 const CANABARRO_MATA = { pontos: [{ x: 700, y: 1650 }, { x: 820, y: 1600 }, { x: 640, y: 1720 }], vel: 48 };
 const CANABARRO_MATA_LORE = [
-  [['canabarro', 'O Forte do Mar fica no meio da baía, cercado de água por todos os lados. Por terra, ninguém chega.'], ['canabarro', 'Por isso o Bento fugiu nadando, da outra vez. Desta, a gente vai buscar de barco.']],
-  [['canabarro', 'O Giuseppe arranja o barco, a Anita e o Lanceiro vão na frente. E tu, gaúcho, leva o arpão do Griggs: ainda vai ter muralha pra subir.']]
+  [['canabarro', 'O Cerro de Porongos fica no fundo do pampa: campo aberto, sem árvore pra se esconder. Quem chega, chega à vista de todo mundo.'], ['canabarro', 'Por isso a gente vai de acampamento em acampamento, a partir da porteira, no fim da estrada da Serra.']],
+  [['canabarro', 'A Anita e o Lanceiro vão na frente. E tu, gaúcho, passa na ferraria da porteira antes de seguir: lá no campo, lâmina cega não dura.']]
 ];
 let canabarroMata = null;
 function canabarroNoPinheiral() { return !!ilhaState().contou; }

@@ -2,7 +2,7 @@
 // como a mata adentro de Araucárias. Entra-se pela picada no pé do paredão e sai-se, no fim, lá em cima, na fortaleza.
 //   · Trecho 1: piratas fantasmas e afogados nas poças. 2 e 3: as bruxas da ilha começam a aparecer, com as
 //     mariposas-bruxas e o minhocão. 4: a Bruxa-mor, na clareira de cinzas. 5 e 6: as bernúncias. 7: a Bernúncia-mãe.
-//   · Nos trechos dos chefes, uma névoa tranca a saída até o chefe cair.
+//   · Nos trechos dos chefes, um espinheiro tranca a saída até o chefe cair.
 //   · Como na mata adentro, só se anda pelas picadas: a principal, larga, com clareiras nas curvas, e dois ramais que
 //     acabam num baú de pirata (prata, cartucho de carabina e coisa pro Griggs; cada baú abre uma vez só). Nos trechos
 //     dos chefes, um baú na clareira aparece depois da vitória. Fora da picada é mato fechado, pros bichos também.
@@ -18,22 +18,22 @@
 'use strict';
 
 Object.assign(CAVE_BEASTS, {
-  pirata: { name: 'Pirata fantasma', hp: 80, speed: 150, dmg: 12, r: 24, cash: [6, 12], from: 999, weight: 0 },
+  pirata: { name: 'Pirata fantasma', hp: 90, speed: 150, dmg: 14, r: 24, cash: [6, 12], from: 999, weight: 0 },
   afogado: { name: 'Afogado', hp: 100, speed: 95, dmg: 5, r: 26, cash: [4, 8], from: 999, weight: 0 },
   mariposa: { name: 'Mariposa-bruxa', hp: 16, speed: 230, dmg: 6, r: 16, cash: [0, 1], from: 999, weight: 0 },
   minhocao: { name: 'Minhocão', hp: 280, speed: 170, dmg: 26, r: 46, cash: [10, 16], from: 999, weight: 0 },
   bruxa: { name: 'Bruxa da ilha', hp: 110, speed: 170, dmg: 14, r: 24, cash: [8, 14], from: 999, weight: 0 },
   bernuncia: { name: 'Bernúncia', hp: 240, speed: 140, dmg: 22, r: 40, cash: [10, 18], from: 999, weight: 0 },
-  bruxaMor: { name: 'A Bruxa-mor', hp: 1100, speed: 190, dmg: 18, r: 34, cash: [80, 120], from: 999, weight: 0 },
-  bernunciaMae: { name: 'A Bernúncia-mãe', hp: 1800, speed: 125, dmg: 30, r: 64, cash: [100, 150], from: 999, weight: 0 }
+  bruxaMor: { name: 'A Bruxa-mor', hp: 5500, speed: 190, dmg: 20, r: 34, cash: [80, 120], from: 999, weight: 0 },
+  bernunciaMae: { name: 'A Bernúncia-mãe', hp: 12000, speed: 125, dmg: 32, r: 64, cash: [100, 150], from: 999, weight: 0 }
 });
 RANGED_IMMUNE.push('submerso', 'afunda', 'cavando', 'tremor');
 
 // ---------- Os trechos ----------
 const ILHAMATO = { W: 3400, H: 1900, last: 7, half: 125, cell: 20, bosses: { 4: 'bruxaMor', 7: 'bernunciaMae' }, fogos: [2, 5] };
 const ILHAMATO_MOBS = {
-  1: [['pirata', 4], ['afogado', 3]], 2: [['pirata', 2], ['bruxa', 2], ['mariposa', 5]], 3: [['bruxa', 3], ['mariposa', 5], ['mariposa', 5], ['minhocao', 1]],
-  4: [['mariposa', 5]], 5: [['bernuncia', 2], ['bruxa', 2], ['minhocao', 1]], 6: [['bernuncia', 3], ['mariposa', 5], ['minhocao', 2]], 7: [['bruxa', 1]]
+  1: [['pirata', 5], ['afogado', 4]], 2: [['pirata', 3], ['bruxa', 2], ['mariposa', 6], ['afogado', 2]], 3: [['bruxa', 4], ['mariposa', 6], ['mariposa', 6], ['minhocao', 1], ['pirata', 2]],
+  4: [['mariposa', 6], ['pirata', 2]], 5: [['bernuncia', 2], ['bruxa', 3], ['minhocao', 1], ['pirata', 3]], 6: [['bernuncia', 3], ['bruxa', 2], ['mariposa', 6], ['minhocao', 2]], 7: [['bruxa', 2], ['mariposa', 6]]
 };
 const ILHAMATO_AVISOS = { 1: 'Daqui pra frente, a ilha escurece.', 2: 'Cheiro de vela queimada: tem bruxa por perto.', 3: 'Mariposas pretas em volta de tudo, e o chão treme.', 4: 'Uma clareira de cinzas no meio da mata…', 5: 'Rastro de bicho grande no barro.', 6: 'Pedaços de pano colorido nos galhos.', 7: 'A subida pro alto da ilha.' };
 const ilhaMatoCache = new Map();
@@ -43,7 +43,9 @@ function ilhaMatoLayout(n = ilhaState().trecho || 1) {
   const yIn = 520 + R() * 860, yOut = 520 + R() * 860, arena = boss ? { x: W / 2, y: H / 2 + 40, r: 440 } : null, pts = [[-60, yIn], [340, yIn]];
   for (let k = 1; k <= 4; k++) { const x = 340 + k * (W - 680) / 5; let y = clamp(pts[pts.length - 1][1] + (R() - .5) * 760, 320, H - 320); if (arena && (k === 2 || k === 3)) y = arena.y + (k === 2 ? -60 : 60); pts.push([x, y]); }
   pts.push([W - 340, yOut], [W + 60, yOut]);
-  const L = { n, W, H, yIn, yOut, pts, arena, boss, half, clearings: [], ramais: [], baus: [], pools: [], trees: [], brush: [], rocks: [], grid: new Map(), dark: Math.min(.74, .36 + n * .055) };
+  const L = { n, W, H, yIn, yOut, pts, arena, boss, half, clearings: [], ramais: [], baus: [], pools: [], trees: [], brush: [], rocks: [], grid: new Map(), dark: Math.min(.56, .16 + n * .05) };
+  // A picada faz curva de verdade (os pontos de controle seguem servindo pras clareiras e pra arena).
+  L.pts = mataSmooth(pts, 60);
   const longe = (x, r) => !arena || Math.abs(x - arena.x) > arena.r + r;
   // Clareiras nas curvas da picada (no trecho do chefe, a clareira é a arena).
   for (let k = 2; k <= 5; k++) if (longe(pts[k][0], 240) && R() < .8) { const r = 200 + R() * 70; L.clearings.push({ x: pts[k][0], y: pts[k][1], rx: r, ry: r * .8 }); }
@@ -90,7 +92,7 @@ function ilhaMatoLayout(n = ilhaState().trecho || 1) {
   // Umas pedras nas clareiras, pra se esconder do tiro do pirata.
   for (const c of L.clearings) if (!c.fogo && !L.pools.some(o => Math.hypot(o.x - c.x, o.y - c.y) < 400)) for (let k = 0; k < 2; k++) { const a = R() * Math.PI * 2, x = c.x + Math.cos(a) * c.rx * .6, y = c.y + Math.sin(a) * c.ry * .6; if (ilhaMatoTrailDist(L, x, y) > 90) L.rocks.push({ x, y, i: R() < .5 ? 2 : 14, w: R() < .5 ? 96 : 120 }); }
   for (const o of L.rocks) { const key = Math.floor(o.x / 256) + ':' + Math.floor(o.y / 256); if (!L.grid.has(key)) L.grid.set(key, []); L.grid.get(key).push(o); }
-  L.path = new Path2D(); pts.forEach(([x, y], i) => i ? L.path.lineTo(x, y) : L.path.moveTo(x, y));
+  L.path = new Path2D(); L.pts.forEach(([x, y], i) => i ? L.path.lineTo(x, y) : L.path.moveTo(x, y));
   ilhaMatoCache.set(n, L); return L;
 }
 function ilhaMatoTrailY(L, x) { const P = L.pts; for (let i = 1; i < P.length; i++) if (x <= P[i][0]) { const [ax, ay] = P[i - 1], [bx, by] = P[i]; return ay + (by - ay) * (x - ax) / (bx - ax || 1); } return P[P.length - 1][1]; }
@@ -107,7 +109,7 @@ function ilhaMatoDentro(L, x, y) {
 }
 function ilhaMatoAbre(L, x, y) { const o = L.open, gx = Math.floor(x / ILHAMATO.cell), gy = Math.floor(y / ILHAMATO.cell); return gx >= 0 && gy >= 0 && gx < o.cw && gy < o.ch && o.cells[gy * o.cw + gx] === 1; }
 function ilhaMatoAberto(L) { return !L.boss || !!ilhaState()[L.boss]; }
-function ilhaMatoEntrada(n, fim = false) { const L = ilhaMatoLayout(n); return { map: 'ilhamato', n, x: fim ? L.W - 90 : 90, y: fim ? L.yOut : L.yIn, title: 'Mata da cerração · trecho ' + n + '/' + ILHAMATO.last, text: ILHAMATO_AVISOS[n] || '' }; }
+function ilhaMatoEntrada(n, fim = false) { const L = ilhaMatoLayout(n); return { map: 'ilhamato', n, x: fim ? L.W - 90 : 90, y: fim ? L.yOut : L.yIn, title: ILHA_TRECHOS[n].nome + ' · trecho ' + n + '/' + ILHAMATO.last, text: ILHAMATO_AVISOS[n] || '' }; }
 // Quem mora em cada trecho (os afogados ficam na beira das poças; as mariposas, em nuvem).
 function ilhaMatoGuardas(n) {
   const L = ilhaMatoLayout(n), st = ilhaState(), R = caveRand(n * 131 + G.day * 7), out = [];
@@ -228,17 +230,16 @@ function drawIlhaMato(view, seen, layers) {
   for (const r of L.rocks) if (seen(r.x, r.y, 160)) layers.push({ y: r.y, draw: () => mataNature(r.i, r.x, r.y, r.w, r.w * .75) });
   layers.push({ y: L.yIn - 36, draw: () => mataPlaca(300, L.yIn - 36, 'CERRAÇÃO · ' + L.n + '/' + ILHAMATO.last, 190) });
   for (const c of ilhaBausVisiveis(L)) if (seen(c.x, c.y, 120)) layers.push({ y: c.y, draw: () => drawCaveChest({ x: c.x, y: c.y, open: ilhaBauAberto(L, c) }) });
-  // A névoa que tranca a saída enquanto o chefe estiver vivo.
+  // O espinheiro que tranca a saída enquanto o chefe estiver vivo.
   if (!ilhaMatoAberto(L) && seen(L.W - 120, L.H / 2, L.H)) layers.push({ y: 9e5, draw: () => {
-    const g = ctx.createLinearGradient(L.W - 260, 0, L.W, 0); g.addColorStop(0, 'rgba(90,40,120,0)'); g.addColorStop(.4, 'rgba(90,40,120,.55)'); g.addColorStop(1, 'rgba(50,20,70,.85)'); ctx.fillStyle = g; ctx.fillRect(L.W - 260, 0, 260, L.H);
-    ctx.save(); for (let k = 0; k < 10; k++) { const yy = (k * 211 + frameClock * 30) % L.H; ctx.globalAlpha = .2; ellipse(L.W - 120 + Math.sin(frameClock + k) * 40, yy, 110, 46, '#b890e0'); } ctx.restore();
+    const g = ctx.createLinearGradient(L.W - 240, 0, L.W, 0); g.addColorStop(0, 'rgba(14,18,10,0)'); g.addColorStop(.35, 'rgba(14,18,10,.8)'); g.addColorStop(1, 'rgba(8,10,6,.96)'); ctx.fillStyle = g; ctx.fillRect(L.W - 240, 0, 240, L.H);
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = '#2a2414'; for (let k = 0; k < 90; k++) { const yy = k * 23 % L.H, x0 = L.W - 40 - (k * 37) % 180, s = k % 2 ? 1 : -1; ctx.lineWidth = 3 + k % 3; ctx.beginPath(); ctx.moveTo(x0, yy); ctx.quadraticCurveTo(x0 - 40, yy + s * 30, x0 - 70, yy + s * 8); ctx.stroke(); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 - 34, yy + s * 16); ctx.lineTo(x0 - 44, yy + s * 30); ctx.stroke(); } ctx.restore();
   } });
   if (mataCombatOn() && !scene) drawMataNightLayers(layers, seen);
   layers.push({ y: 7e6, draw: () => ilhaShotsDraw(mataNight) });
   layers.push({ y: 8e9, draw: () => {
-    mataNightVeil(view, L.dark); rect(view.x, view.y, view.w, view.h, L.n <= 4 ? 'rgba(60,20,80,.08)' : 'rgba(70,40,10,.07)');
-    ctx.save(); for (let k = 0; k < 5; k++) { const fx = view.x + ((k * 811 + frameClock * 18) % (view.w + 900)) - 450, fy = view.y + (k * 377) % view.h; ctx.globalAlpha = .06; ellipse(fx, fy, 420, 90, '#cfd6e0'); } ctx.restore();
-    darkHole(p.x, p.y - 40, 300 - L.n * 14, 900 - L.n * 45, '3,5,8', .5 + L.n * .03);
+    mataNightVeil(view, L.dark);
+    darkHole(p.x, p.y - 40, 430 - L.n * 16, 1120 - L.n * 45, '3,5,8', .32 + L.n * .035);
     // O brilho dos baús fechados, pra achar o ramal no escuro.
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const c of ilhaBausVisiveis(L)) if (!ilhaBauAberto(L, c) && Math.hypot(c.x - p.x, c.y - p.y) < 1000) glow(c.x, c.y - 22, 46, .22 + .1 * Math.sin(frameClock * 3 + c.x), '255,220,140'); ctx.restore();
   } });
@@ -403,14 +404,26 @@ function bernunciaWarn(b) {
 function ilhaChefeChega(N, L) {
   N.chefe = true; keys.clear(); const p = worldOut, a = L.arena;
   N.beasts.push(ilhaMob(L.boss, { x: a.x + (p.x < a.x ? 220 : -220), y: a.y }, Math.random, { boss: true, state: L.boss === 'bruxaMor' ? 'hover' : 'chase', cool: 1.5 }));
-  if (L.boss === 'bruxaMor') { AudioEngine.caveCry?.('bruxaMor'); talk([['card', '<b>🧹 A Bruxa-mor</b><br>No meio da clareira de cinzas, uma velha de xale preto flutua num redemoinho de mariposas. É ela que segura a cerração: enquanto ela estiver aqui, a mata não deixa ninguém passar.<br><br>· As bolas roxas seguem o Sadi: corre de lado.<br>· Os círculos roxos no chão estouram: sai de dentro.<br>· Quando apanha, ela some e aparece do outro lado.', 'Mata da cerração'], ['sadi', 'Bah… então é verdade o que contam das bruxas da ilha.']], null, 'Em guarda!'); }
-  else { AudioEngine.caveCry?.('bernunciaMae'); talk([['card', '<b>🐉 A Bernúncia-mãe</b><br>A terra treme e da mata sai uma bernúncia enorme, colorida como as do Boi-de-Mamão, mas de verdade, com uma bocarra que engole boi inteiro. Ela guarda a subida pro alto da ilha.<br><br>· A faixa laranja comprida é a investida: sai da frente.<br>· O círculo laranja em volta dela é a rabanada.<br>· Braba, ela cospe filhotes.', 'Mata da cerração'], ['sadi', 'Essa aí não é de pano, não!']], null, 'Em guarda!'); }
+  const b = N.beasts[N.beasts.length - 1];
+  if (L.boss === 'bruxaMor') chefeCena('bruxaMor', { b, som: () => AudioEngine.caveCry?.('bruxaMor'),
+    falas: [['card', 'No meio da clareira de cinzas, uma velha de xale preto flutua num redemoinho de mariposas. É ela que segura a cerração: enquanto ela estiver aqui, a mata não deixa ninguém passar.'],
+      ['bruxaMor', 'Cheiro de erva-mate e de medo… Faz tempo que ninguém sobe esta mata com o coração batendo tão alto.'],
+      ['sadi', 'Com licença, dona. Eu só quero passar, e tem um presidente preso lá em cima.'],
+      ['bruxaMor', 'Passar? Hehehe… A cerração é minha, gaúcho. Quem entra, fica.']],
+    curtas: [['bruxaMor', 'Voltou? A mata ainda tem fome de ti.'], ['sadi', 'E eu ainda tenho pressa, dona.']],
+    regras: [['dica', '· As bolas roxas seguem o Sadi: corre de lado.<br>· Os círculos roxos no chão estouram: sai de dentro.<br>· Quando apanha, ela some e aparece do outro lado.', 'A Bruxa-mor']] });
+  else chefeCena('bernunciaMae', { b, som: () => { AudioEngine.caveCry?.('bernunciaMae'); golpeTreme = Math.max(golpeTreme, .25); },
+    falas: [['card', 'A terra treme e da mata sai uma bernúncia enorme, colorida como as do Boi-de-Mamão, mas de verdade, com uma bocarra que engole boi inteiro. Ela guarda a subida pro alto da ilha.'],
+      ['sadi', 'Bah… lá em Santa Catarina isso é fantasia de festa, com dois guris embaixo do pano.'],
+      ['sadi', 'Esta aqui, olhando bem… não tem guri nenhum.']],
+    curtas: [['sadi', 'Pano colorido, bocarra e mau humor. Agora eu já te conheço, velha.']],
+    regras: [['dica', '· A faixa laranja comprida é a investida: sai da frente.<br>· O círculo laranja em volta dela é a rabanada.<br>· Braba, ela cospe filhotes.', 'A Bernúncia-mãe']] });
 }
 function ilhaChefeVencido(b, N) {
   const st = ilhaState(); st[b.kind] = G.day; N.beasts.forEach(x => { if (x.minion) x.hp = 0; }); N.ish = []; mataXP(80); save();
   const bruxa = b.kind === 'bruxaMor', rw = bruxa ? { cash: 300, xp: 150 } : { cash: 450, xp: 220 };
   grantReward(rw);
-  talk([['card', bruxa ? '<b>🧹 A Bruxa-mor caiu</b><br>Ela vira uma nuvem de mariposas e some entre as árvores, rindo baixinho. A névoa roxa da saída se desfaz: a cerração deixa passar.' : '<b>🐉 A Bernúncia-mãe fugiu</b><br>Ferida, ela se enfia mata adentro, rugindo, e o chão para de tremer. A subida pro alto da ilha tá livre.', 'Mata da cerração'], ['reward', rw, bruxa ? 'A Bruxa-mor' : 'A Bernúncia-mãe']], null, 'Seguir');
+  talk([['card', bruxa ? '<b>🧹 A Bruxa-mor caiu</b><br>Ela vira uma nuvem de mariposas e some entre as árvores, rindo baixinho. O espinheiro da saída se abre: a mata deixa passar.' : '<b>🐉 A Bernúncia-mãe fugiu</b><br>Ferida, ela se enfia mata adentro, rugindo, e o chão para de tremer. A subida pro alto da ilha tá livre.', 'Mata da cerração'], ['reward', rw, bruxa ? 'A Bruxa-mor' : 'A Bernúncia-mãe']], null, 'Seguir');
 }
 function ilhaBossBar(b) {
   const dpr = canvas.width / Math.max(1, canvas.clientWidth), W = canvas.clientWidth, left = 316, right = W - 280, narrow = right - left < 300, w = narrow ? W - 32 : Math.min(520, right - left), x = narrow ? 16 : left + (right - left - w) / 2, y = narrow ? 108 : 16, bruxa = b.kind === 'bruxaMor';

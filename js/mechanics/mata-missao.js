@@ -175,8 +175,16 @@ function mataLockedToday() { return G.mata?.faintDay === G.day; }
 function caveLockedToday() { return G.cave?.faintDay === G.day; }
 const MATA_LOCK_TEXT = 'O corpo ainda dói do desmaio: mata adentro, só amanhã. Descansa e volta com o dia novo.';
 function mataDefeatOverlay() {
-  let el = $('caveDefeat'); if (!el) { el = document.createElement('section'); el.id = 'caveDefeat'; el.className = 'cave-defeat'; el.setAttribute('role', 'status'); el.innerHTML = '<p>às vezes é morto quem peleia</p>'; document.body.appendChild(el); }
+  let el = $('caveDefeat'); if (!el) { el = document.createElement('section'); el.id = 'caveDefeat'; el.className = 'cave-defeat'; el.setAttribute('role', 'status'); el.innerHTML = '<p>às vezes é morto quem peleia<small></small></p>'; document.body.appendChild(el); }
+  el.querySelector('small')?.replaceChildren(avatarName() + ' desmaiou');
   return el;
+}
+// Onde quer que o Sadi caia: a tela escurece, aparece a frase e só então ele acorda no lugar de cada área (fn).
+function desmaioComTela(fn) {
+  if (mataDefeatActive()) return; const N = mataNight;
+  if (!scenesEnabled()) return fn();   // sem cenas (testes), acorda direto
+  mataDefeat = { game: G, t: 0, faint: fn }; mataGrab = null; keys.clear(); if (worldOut) worldOut.walk = false; if (N) N.swing = null; caveState().hp = 0;
+  AudioEngine.caveFaintSound?.(); save(); const el = mataDefeatOverlay(); el.classList.remove('hidden'); el.style.backgroundColor = 'rgba(0,0,0,0)'; el.firstElementChild.style.opacity = 0;
 }
 function drawMataDefeatedPlayer(x, y) {
   const t = clamp(mataDefeat.t / 1.1, 0, 1), ease = t * t * (3 - 2 * t), sprite = avatarSprite();
@@ -189,9 +197,7 @@ function drawMataDefeatedPlayer(x, y) {
   const faint = mataFaint; mataFaint = function () {
     if (mataDefeatActive()) return; const N = mataNight; if (!N || N.faint) return;
     mataState().faintDay = G.day;
-    if (!scenesEnabled()) return faint();   // sem cenas (testes), acorda direto
-    mataDefeat = { game: G, t: 0, faint }; mataGrab = null; keys.clear(); worldOut.walk = false; N.swing = null; caveState().hp = 0;
-    AudioEngine.caveFaintSound?.(); save(); const el = mataDefeatOverlay(); el.classList.remove('hidden'); el.style.backgroundColor = 'rgba(0,0,0,0)'; el.firstElementChild.style.opacity = 0;
+    desmaioComTela(faint);
   };
   const step = frameStep; frameStep = function (time) {
     if (!mataDefeatActive()) { if (mataDefeat) { mataDefeat = null; $('caveDefeat')?.classList.add('hidden'); } return step(time); }

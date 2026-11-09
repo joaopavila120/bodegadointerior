@@ -95,7 +95,7 @@ function drawPampaClima(L, A, view) {
   const M = WORLD_MAPS.pampa, draw = M.draw;
   M.draw = function (view, seen, layers) {
     draw.call(this, view, seen, layers); const L = pampaLayout(), A = PAMPA_AREAS[L.n], agora = performance.now(), dt = Math.min(.1, (agora - PAMPA_CEU.antes) / 1000); PAMPA_CEU.antes = agora;
-    if (A.chao === 'cerro' && !scene) pampaRaio(dt);
+    if (A.chao === 'cerro' && !scene && !(typeof batalhaN === 'function' && batalhaN())) pampaRaio(dt);
     layers.push({ y: 8.1e9, draw: () => drawPampaClima(L, A, view) });
   };
 }

@@ -453,7 +453,7 @@ function moringueVencido(b, N) {
 // ---------- O fim: as almas se despedem, o Bento livre e a República ----------
 function pampaFim() {
   const st = pampaState(), P = pampaLayout(PAMPA_N.capitao).palanque; st.area = PAMPA_N.capitao; st.republica = G.day; st.bandeira = G.day; ilhaState().resgatado = G.day; mataNight = null; AudioEngine.sceneQuiet = false; Object.assign(worldOut, { map: 'pampa', x: P.x + P.w / 2, y: P.y + P.h + 120, dx: 0, dy: -1, walk: false }); caveState().hp = caveMaxHp(); save(); refreshHUD();
-  pampaTalk([['card', '<b>🚩 A República Rio-Grandense</b><br>A bandeira verde, vermelha e amarela está no mastro do Campo dos Menezes. E hoje de noite tem fogo aceso na frente da bodega: é só voltar pra casa.', 'Campo dos Menezes'],
+  pampaTalk([['card', '<b>🚩 A República Rio-Grandense</b><br>A bandeira verde, vermelha e amarela está no mastro do Campo dos Menezes. Ao lado do palanque ficou aceso o <b>Fogo da República</b>: dali dá pra voltar pra bodega ou pro começo do pampa. E hoje de noite tem fogo aceso na frente da bodega.', 'Campo dos Menezes'],
     ['card', '<b>📜 Como foi de verdade</b><br>Em 11 de setembro de 1836, um dia depois de vencer no Seival, o coronel Antônio de Sousa Neto proclamou a República Rio-Grandense no Campo dos Menezes. Durou até a paz de Ponche Verde, em 1845.<br><br>Porongos veio antes do fim: em 14 de novembro de 1844, os Lanceiros Negros foram atacados pelas tropas do Moringue. Mais de cem morreram. Aqui no jogo, a história deu a eles a revanche que a vida não deu.', 'Você sabia?']], null, 'Viva!');
 }
 function drawPampaMoirao(B) { ellipse(B.x + 24, B.y + 18, 18, 6, 'rgba(14,16,8,.3)'); rect(B.x + 18, B.y - 96, 12, 116, '#5a3e22', 2, '#2e1e10'); }
@@ -493,7 +493,7 @@ function pampaFinal(b) {
     layers.push({ y: B.y + 16, draw: () => drawPampaMoirao(B) }); if (!solto) layers.push({ y: B.y + 20, draw: () => drawPampaCorda(B) });
     if (apagando) apaga = Math.min(lancas.length, apaga + .05); if (nascendo) sol = Math.min(1, sol + .0035);
     for (const a of sumindo) { a.alpha = Math.max(0, (a.alpha ?? 1) - .006); if (a.alpha > .02 && Math.random() < .2) fxStars(a.x + (Math.random() - .5) * 40, a.y - 40 - Math.random() * 90, 1); }
-    layers.push({ y: 9e9, draw: () => { lancas.slice(Math.floor(apaga)).forEach(l => pampaChama(l)); rect(cam.x - 2000, cam.y - 1400, 4000, 2800, `rgba(${Math.round(16 + 230 * sol)},${Math.round(20 + 130 * sol)},${Math.round(58 + 30 * sol)},${.34 - .2 * sol})`); } });
+    layers.push({ y: 9e9, draw: () => { lancas.slice(Math.floor(apaga)).forEach(l => pampaChama(l)); if (typeof batalhaChuvaFinal === 'function') batalhaChuvaFinal(cam, sol); rect(cam.x - 2000, cam.y - 1400, 4000, 2800, `rgba(${Math.round(16 + 230 * sol)},${Math.round(20 + 130 * sol)},${Math.round(58 + 30 * sol)},${.34 - .2 * sol})`); } });
   };
   playSteps([...sceneWorld({ map: 'pampa', x: cam.x, y: cam.y, props }),
     { actor: 'sadi', x: B.x - 560, y: B.y + 90, dx: 1 }, { actor: 'moringue', x: B.x - 330, y: B.y + 40, dx: -1, draw: (q, y) => moringueFigura(q.x, y, q.dx, 1 - some) }, { actor: 'bento', x: B.x, y: B.y + 18, dx: -1 }, { actor: 'lanceiro', x: B.x - 880, y: B.y + 40, dx: 1 }, { actor: 'lanc0', as: lanceiroArt(1), x: B.x - 960, y: B.y + 110, dx: 1 }, { actor: 'lanc1', as: lanceiroArt(2), x: B.x - 850, y: B.y + 150, dx: 1 }, { actor: 'canabarro', x: B.x - 1020, y: B.y + 60, dx: 1 }, { fade: 'in', time: .9 },

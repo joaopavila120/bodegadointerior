@@ -51,16 +51,22 @@ function joaoMariaArte() {
   return joaoMariaCanvas = c;
 }
 function drawJoaoMaria(x, y, dx = 1) {
+  const falando = talkState?.lines?.[talkState.i]?.[0]?.name === 'João Maria';
+  if (ACTION_ART_CROPS.joaomaria && historyFigure('joaomaria', x, y, 1, dx, false, 0, falando)) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 90, 80, .1, '255,230,170'); ctx.restore(); return; }
   const c = joaoMariaArte(); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(x, y - 90, 90, .12, '255,230,170'); ctx.restore();
   ellipse(x, y + 3, 24, 7, 'rgba(10,14,8,.3)'); ctx.save(); ctx.translate(x, y); if (dx < 0) ctx.scale(-1, 1); ctx.drawImage(c, -60, -220, 120, 230); ctx.restore();
 }
 function joaoMariaPortrait(size = 104) {
+  const sheet = ACTION_ART_CROPS.joaomaria, r = sheet?.frames[0];
+  if (r) { const h = sheet.reference * .39, x = r[0] + r[4] - h / 2, y = r[1] + r[5] - sheet.reference; return `<span class="portrait portrait-phone" style="width:${size}px;height:${size}px;overflow:hidden"><svg width="${size}" height="${size}" viewBox="${x} ${y} ${h} ${h}"><image href="assets/images/future-characters/${sheet.image}" width="${sheet.size[0]}" height="${sheet.size[1]}"/></svg></span>`; }
   if (!joaoMariaURL) { const c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.fillStyle = '#5a4a36'; g.fillRect(0, 0, 96, 96); g.drawImage(joaoMariaArte(), 60, 126, 120, 120, 0, 0, 96, 96); try { joaoMariaURL = c.toDataURL(); } catch (_) { return `<span class="portrait portrait-phone" style="width:${size}px;height:${size}px">✝️</span>`; } }
   return `<span class="portrait portrait-phone" style="width:${size}px;height:${size}px;display:grid;place-items:center;overflow:hidden"><img src="${joaoMariaURL}" width="${size}" height="${size}" alt=""></span>`;
 }
 
-// ---------- O general David Canabarro (sprite pronto em assets/images/future-characters) ----------
+// ---------- O general David Canabarro e o monge João Maria (sprites prontos em assets/images/future-characters) ----------
 {
+  const monge = typeof FUTURE_CHARACTER_SPRITES === 'object' && FUTURE_CHARACTER_SPRITES['monge-joao-maria'];
+  if (monge) { ACTION_ART_CROPS.joaomaria = monge; FOLK_ART_SIZE.joaomaria = monge.displayHeight || 126; const im = ACTION_ART.joaomaria = new Image(); im.src = 'assets/images/future-characters/' + monge.image; }
   const meta = typeof FUTURE_CHARACTER_SPRITES === 'object' && FUTURE_CHARACTER_SPRITES['david-canabarro'];
   if (meta) {
     ACTION_ART_CROPS.canabarro = meta; FOLK_ART_SIZE.canabarro = meta.displayHeight || 132; SPIRIT_IDS.add('canabarro');

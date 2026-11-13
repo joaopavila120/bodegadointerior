@@ -182,7 +182,7 @@ function ilhaBauAbre(L, c) {
   G.cash = round(G.cash + loot.cash);
   for (const [k, q] of Object.entries(loot.raw)) { bagAdd(k, q); tiles.push([bagIcon(k), q, BAG_RAW[k].name.toLowerCase()]); }
   carabinaAdd(loot.cartuchos); tiles.push([rangedIcon('cartuchos'), loot.cartuchos, 'cartuchos de carabina']);
-  for (const [id, q] of Object.entries(loot.bornal)) { const got = Math.min(q, Math.max(0, mataBagMax() - (bag[id] || 0))); if (!got) continue; bag[id] = (bag[id] || 0) + got; tiles.push([mataGearHTML(id, 34), got, MATA_ITEMS.find(it => it.id === id).name.toLowerCase()]); }
+  for (const [id, q] of Object.entries(loot.bornal)) { const got = Math.min(q, Math.max(0, mataBagMax(id) - (bag[id] || 0))); if (!got) continue; bag[id] = (bag[id] || 0) + got; tiles.push([mataGearHTML(id, 34), got, MATA_ITEMS.find(it => it.id === id).name.toLowerCase()]); }
   AudioEngine.caveChestOpen?.(); fxStars(c.x, c.y - 50, 8); mataXP(6); mataBeltRefresh(); save(); refreshHUD();
   const txt = c.chefe ? 'No meio da clareira, onde o chefe caiu, um baú de pirata grande, de ferragem de prata. Dentro tinha:' : 'No fim do ramal, meio enterrado nas folhas, um baú de pirata com a fechadura podre. Dentro tinha:';
   talk([['card', `<b>🧰 ${c.chefe ? 'O baú da clareira' : 'Baú de pirata'}</b><br>${txt}<div class="bag-grid cave-loot">${tiles.map(([icon, big, small]) => `<div class="bag-item">${icon}<b>${big}</b><small>${small}</small></div>`).join('')}</div>`, 'Mata da cerração · trecho ' + L.n]], null, 'Guardar');

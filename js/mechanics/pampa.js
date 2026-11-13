@@ -270,7 +270,7 @@ function pampaAbreBau(L, c) {
   // É o fim do jogo: o baú rende como os mais fundos da mata, e ainda traz ferro imperial.
   const loot = trechoChestLoot(22 + L.n), bag = mataBag(), extra = [], ferro = 1 + Math.floor(Math.random() * 3);
   G.cash = round(G.cash + loot.cash); for (const k of CAVE_MINERALS) if (loot[k]) bagAdd(k, loot[k]);
-  for (const [id, q] of Object.entries(loot.items)) { const room = Math.max(0, mataBagMax() - (bag[id] || 0)), n = Math.min(q, room); if (!n) continue; bag[id] = (bag[id] || 0) + n; const it = MATA_ITEMS.find(i => i.id === id); extra.push([mataGearHTML(id, 34), n, it.name.toLowerCase()]); }
+  for (const [id, q] of Object.entries(loot.items)) { const room = Math.max(0, mataBagMax(id) - (bag[id] || 0)), n = Math.min(q, room); if (!n) continue; bag[id] = (bag[id] || 0) + n; const it = MATA_ITEMS.find(i => i.id === id); extra.push([mataGearHTML(id, 34), n, it.name.toLowerCase()]); }
   if (loot.butia) { bagAdd('butia', loot.butia); extra.push([itemIconHTML('butia'), loot.butia, loot.butia > 1 ? 'butiás (curam)' : 'butiá (cura)']); }
   bagAdd('ferro_imperial', ferro); extra.push([bagIcon('ferro_imperial'), ferro, 'ferro imperial']);
   loot.cards = loot.cards.filter(id => giveCard(id, 'baú do pampa'));

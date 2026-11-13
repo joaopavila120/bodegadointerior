@@ -50,9 +50,14 @@ function olmiroFantasma() {
     ['sadi', 'Um fantasma?!'],
     ['olmiro', 'Me deu mate e me ensinou a secar erva no barbaquá, com fumaça de nó de pinho. Disse que tinha lutado com os farrapos.'],
     ['olmiro', 'Quando acordei, o fogo era cinza fria. Mas a erva tava lá, sequinha, no meu bornal.'],
-    ['olmiro', 'Se um dia tu subir a Serra, vai até o fim da estrada. Diz pro homem de camisa vermelha que o Olmiro mandou lembranças.']
+    ['olmiro', 'Se um dia tu subir a Serra, vai até o fim da estrada. Diz pro homem de camisa vermelha que o Olmiro mandou lembranças.'],
+    ['olmiro', 'E toma isto aqui, que já passou da hora. É o facão do teu vô: ele me emprestou numa tropeada, faz uns trinta invernos, e eu nunca devolvi.'],
+    ['sadi', 'O facão do vô! Cabo de chifre e tudo… Bah, seu Olmiro.'],
+    ['olmiro', 'Com ele tu entra mata adentro: lá é braba, de dia e de noite, e ninguém passa de mão vazia.'],
+    ['olmiro', 'Agora, já que te devolvi o facão, me faz um favor de tropeiro: me traz um pote de mel de jataí. A abelhinha faz colmeia nos troncos da mata adentro, onde a mata é braba, e o meu peito anda chiando.'],
+    ['olmiro', 'Vou acampar na entrada do pinheiral, no fim da estrada da Serra. Te espero lá.']
   ];
-  const start = () => { startMission(m); talk([['dica', '<b>📖 Capítulo 2 · O fantasma de camisa vermelha</b><br>' + m.goal() + '.<br><i>Onde: ' + m.where + '</i><br><br>A estrada da Serra abriu: segue a estrada da Fronteira pra direita e vai até o fim dela.<br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo 2']], null, 'Bora!'); };
+  const start = () => { startMission(m); olmiroDaFacao(); talk([['dica', '<b>📖 Capítulo 2 · O fantasma de camisa vermelha</b><br>' + m.goal() + '.<br><i>Onde: ' + m.where + '</i><br><br>A estrada da Serra abriu: segue a estrada da Fronteira pra direita e vai até o fim dela.<br><br>Recompensa:' + rewardHTML(m.reward), 'História · capítulo 2'], ...olmiroFacaoDica()], null, 'Bora!'); };
   if (!scenesEnabled()) { G.missions.fantasma = { status: 'offered', day: G.day }; talk(lines, () => { delete G.missions.fantasma; start(); }, 'Vou lembrar'); return; }
   const horse = (a, y) => mountedPose('olmiro-mounted-v1', a.x, y, a.dx, a.dy || 0, !!a.walk);
   G.missions.fantasma = { status: 'offered', day: G.day };
@@ -86,7 +91,7 @@ const MATA_PROSE = [
     valter: [['', 'O Olmiro te contou do fantasma do pinheiral? Meu avô contava a mesma história: um homem de camisa vermelha que dava mate pros tropeiros perdidos.']],
     manolima: [['', 'O Olmiro e o fantasma de camisa vermelha… Tropeei com o Olmiro: mentiroso ele não é. Exagerado, talvez.']] } },
   { id: 'garibaldi', when: () => !!G.mata?.metGaribaldi, lines: {
-    _: [['Encontrei o fantasma do pinheiral.', 'Bah! E era mesmo o Garibaldi? O das figurinhas?'], ['', 'Me contaram que tu prosa com um fantasma lá na Serra. Tu tá bem, Sadi?']],
+    _: [['Encontrei o fantasma do pinheiral.', 'Bah! E era mesmo o Garibaldi, o herói dos farrapos?'], ['', 'Me contaram que tu prosa com um fantasma lá na Serra. Tu tá bem, Sadi?']],
     jayme: [['', 'Garibaldi, herói de dois mundos… e agora de mais um, o dos fantasmas. Isso dá pajada!']] } },
   { id: 'cachaco', when: () => !!G.mata?.cachaco, lines: {
     _: [['', 'Bah, é verdade que tu derrubou o Cachaço? Dizem que era do tamanho de um boi!'], ['', 'O Javali Cachaço! Meu tio jurava que esse bicho virava carreta no pinheiral.']],

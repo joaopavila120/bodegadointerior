@@ -12,7 +12,8 @@ function caminhoEtapas() {
   const wo = id => typeof weaponOwned === 'function' && weaponOwned(id);
   const i = G?.ilha || {}, p = G?.pampa || {}, m = G?.mata || {};
   return [
-    { done: !!cs.facao, t: 'Pegar o facão do vô', o: 'Cravado na boca da gruta, na Serra Gaúcha.' },
+    { done: !!cs.facao, t: 'Ganhar o facão do vô', o: 'O seu Olmiro, o tropeiro, devolve no capítulo 2 (de noite, na rua da Fronteira).' },
+    { done: !!G?.olmiroMel?.entregue || !!cs.facao && !G?.missions?.melOlmiro, t: 'Levar um pote de mel pro Olmiro', o: 'Mata adentro, pela picada do leste do pinheiral: a colmeia fica num tronco logo no começo da trilha. O Olmiro acampa na entrada do pinheiral.' },
     { done: !!G.up?.bodoque, t: 'Ganhar o bodoque do Garibaldi', o: 'Visite o rancho do Garibaldi, na Mata de Araucárias.' },
     { done: up('poncho'), t: 'Vestir o poncho (vida 140)', o: 'Ferraria do São Dunstano, na gruta da Serra.' },
     { done: typeof bornalNivel === 'function' && bornalNivel() >= 1, t: 'Comprar o primeiro bornal', o: 'Ferraria do São Dunstano: cabe mais item de cura.' },

@@ -542,10 +542,8 @@ function drawIlha(view, seen, layers) {
     layers.push({ y: b.y, draw: () => { if (!environmentSprite('pier-v1', 1, b.x, b.y + bob, 220, 80)) ellipse(b.x, b.y - 20 + bob, 100, 26, '#6a4628'); drawNereu(b.x + 20, b.y - 22 + bob, -1); } });
   }
   if (mataCombatOn() && !scene) drawMataNightLayers(layers, seen);
-  // A cerração por cima de tudo (de noite, mais escuro), o farol girando e o fogo do trapiche.
+  // De noite, mais escuro; por cima, o farol girando e o fogo do trapiche.
   layers.push({ y: 8e9, draw: () => {
-    rect(view.x, view.y, view.w, view.h, 'rgba(170,184,190,.10)');
-    ctx.save(); for (let k = 0; k < 6; k++) { const fx = view.x + ((k * 811 + frameClock * 22) % (view.w + 900)) - 450, fy = view.y + (k * 377) % view.h; ctx.globalAlpha = .07; ellipse(fx, fy, 420, 90, '#dfe6ea'); } ctx.restore();
     if (worldNight()) { mataNightVeil(view, .5); darkHole(p.x, p.y - 40, 260, 820, '6,10,18', .45); }
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     glow(fg.x, fg.y - 30, 220, .26 + .05 * Math.sin(frameClock * 9), '255,150,60');

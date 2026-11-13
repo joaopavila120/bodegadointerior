@@ -721,7 +721,7 @@
    {const h=b.hp;use('gralhas');check(poder.gralhas.length===5,'o bando de gralhas chega');for(let i=0;i<150;i++){simulate(1/30);hold();}check(b.hp<h,'as gralhas bicam o bicho');}
    {poderState().pick='lunar';poder.cd={lunar:5};b.lunar=0;poderUse();check(!(b.lunar>0)&&poder.cd.lunar===5,'poder usado espera a volta');}
    {updateRangedButton();updatePoderButton();const r=['caveAttackButton','caveDashButton','rangedBox','poderBox'].map(id=>$(id)).filter(e=>e&&!e.classList.contains('hidden')).map(e=>e.getBoundingClientRect());
-    check($('poderBox').parentElement.id==='combatStack'&&r.length>=3&&r.every((a,i)=>r.every((c,j)=>i===j||a.bottom<=c.top||c.bottom<=a.top||a.right<=c.left||c.right<=a.left)),'facão, arma de longe e poder ficam empilhados sem se encavalar');}
+    check($('poderBox').parentElement.id==='combatBar'&&$('rangedBox').parentElement.id==='combatBar'&&r.length>=3&&r.every((a,i)=>r.every((c,j)=>i===j||a.bottom<=c.top||c.bottom<=a.top||a.right<=c.left||c.right<=a.left)),'facão e dash à direita, arma de longe e poder na barra de baixo, sem se encavalar');}
    caveLeave();worldOut=null;G.phase='prep';}
   {goOutside();G.up.bodoque=false;delete G.mataSeen;garibaldiIntro();check(G.up.bodoque&&/bodoque/.test($('dialogContent').textContent+(talkState?.lines||[]).map(l=>l[1]).join(' ')),'o Garibaldi dá o bodoque e explica como usar');closeDialog(true);goInside();}
   {goOutside();switchMap({map:'vila',x:1600,y:900});closeDialog(true);const f=VILA.fogo,M=WORLD_MAPS.vila;

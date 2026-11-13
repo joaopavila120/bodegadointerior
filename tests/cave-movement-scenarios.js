@@ -21,7 +21,7 @@
     for(let row=1;row<CAVE.rows-1;row++)run.grid[row][8]=1;
     caveMovePlayer(1000,0);check(worldOut.x<=640-CAVE_PLAYER_RADIUS&&worldCanWalk(worldOut.x,worldOut.y),'Movimento longo não atravessa parede');
     reset(620,500);caveMovePlayer(50,100);check(worldOut.y>590&&worldOut.x<=624,'Desliza pela parede ao andar na diagonal');
-    reset(550,500);keys.add('d');check(!caveDash(),'Dash começa bloqueado');G.cave.up.dash=true;check(caveDash(),'Dash comprado inicia com direção do movimento');
+    reset(550,500);keys.add('d');check(caveUp('dash'),'O dash é do Sadi desde o começo');check(caveDash(),'Dash inicia com direção do movimento');
     check(!caveDash(),'Não encadeia dash durante a recarga');
     const hp=G.cave.hp;caveHurt(50,{x:500,y:500});check(G.cave.hp===hp,'Dash bloqueia dano por contato');
     run.shots=[{x:worldOut.x,y:worldOut.y-40,vx:0,vy:0,life:1,dmg:50}];caveTick(.01);

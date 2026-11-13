@@ -55,7 +55,7 @@ function caveOreGlow(k) { return k === 'ametista' ? '190,140,255' : k === 'agata
 
 // ---------- Armas da forja ----------
 const CAVE_WEAPONS = [
-  { id: 'facao', name: 'Facão do vô', icon: '🔪', dmg: 12, desc: 'O facão de cabo de chifre que estava cravado na boca da gruta. Afia com as melhorias do vô.' },
+  { id: 'facao', name: 'Facão do vô', icon: '🔪', dmg: 12, desc: 'O facão de cabo de chifre do vô, que o seu Olmiro guardou por trinta invernos. Afia com as melhorias do vô.' },
   { id: 'cobre', name: 'Facão de cobre', icon: '🗡️', dmg: 20, cost: 60, needs: { cobre: 8 }, ore: 'cobre', color: '255,170,100', lamina: 'cobre', desc: 'Cobre das primeiras galerias, batido a frio. Leve e ligeiro.' },
   { id: 'ferro', name: 'Facão de ferro batido', icon: '🗡️', dmg: 28, cost: 140, needs: { ferro: 8, cobre: 4 }, ore: 'ferro', color: '220,220,235', lamina: 'cinza_escuro', desc: 'Ferro das galerias do meio, temperado na água fria do arroio.' },
   { id: 'ametista', name: 'Facão de ametista', icon: '🗡️', dmg: 34, cost: 200, needs: { ametista: 10 }, ore: 'ametista', color: '200,150,255', lamina: 'ametista', desc: 'Fio de ametista lapidada sobre alma de aço: corta e brilha no escuro.' },

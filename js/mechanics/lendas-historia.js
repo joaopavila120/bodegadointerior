@@ -155,7 +155,7 @@ function lendaArcGoal(id) {
   if (s === 'call') return d.call[1];
   if (s === 'clues') return 'Procure os sinais (' + d.clues.filter(c => a.clues[c.id]).length + '/' + d.clues.length + '): ' + d.clues.map(c => check(a.clues[c.id], c.label.toLowerCase())).join(' · ');
   if (s === 'ask') return 'Pergunte por aí: ' + d.ask.map(q => check(a.asked[q.id], PEOPLE.find(p => p.id === q.id)?.name || q.id)).join(' · ');
-  if (s === 'wait') return !caveState().facao ? 'Antes, pegue o facão do vô, cravado na boca da gruta da Serra' : a.retry ? 'A lenda segue lá: volte pra tentar de novo · ' + d.encounter.waitText() : d.encounter.waitText();
+  if (s === 'wait') return !caveState().facao ? 'Antes, pegue o facão do vô com o seu Olmiro, o tropeiro (na entrada do pinheiral)' : a.retry ? 'A lenda segue lá: volte pra tentar de novo · ' + d.encounter.waitText() : d.encounter.waitText();
   if (s === 'fight' || s === 'prelude') return 'Enfrente a lenda!';
   if (s === 'report') return 'Volte e conte pra quem te chamou (' + (PEOPLE.find(p => p.id === d.report)?.name || giver) + ')';
   return '';
@@ -198,7 +198,7 @@ function lendaArcTalk(pid) {
 }
 // ---------- O encontro e a luta ----------
 function lendaArcMeet(id) {
-  if (!caveState().facao) { floatNote('Sem o facão do vô não dá pra enfrentar a lenda: ele fica cravado na boca da gruta da Serra.'); AudioEngine.bad(); return; }
+  if (!caveState().facao) { floatNote('Sem o facão do vô não dá pra enfrentar a lenda: quem tem ele é o seu Olmiro, o tropeiro.'); AudioEngine.bad(); return; }
   const a = lendaArc(id), d = LENDA_ARCS[id]; a.stage = 'fight'; a.prelude = null; save();
   if (d.reveal && !a.revealed) { lobisomemReveal(); return; }
   if (d.reveal) { floatNote('🐺 Ele te viu de novo no arvoredo…'); lendaStart(id); return; }

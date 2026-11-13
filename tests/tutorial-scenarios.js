@@ -32,7 +32,8 @@
  use('bag');keys.add('e');holdTick(G.task.requested/G.task.maxWeight*2.5);keys.delete('e');finishWeigh();check(held()?.weight===500,'tutorial pesa os 500 g reais solicitados');counter();lesson('fiado');
  check(G.shop[0]?.fiado&&G.shop[0].pid==='codorna','tutorial traz um freguês pedindo fiado');refuseFiado();check(G.shop[0]?.fiado&&G.shop[0].state==='queue','no tutorial o fiado não pode ser recusado');
  const fiadoCash=G.cash;use('shop:codorna');counter();check(G.cash===fiadoCash&&fiadoOpen().length===1&&fiadoOpen()[0].amount===price('codorna'),'entrega fiado vai para o caderninho, sem entrar no caixa');lesson('mate');
- const stock=G.stock.erva;use('mate');keys.add('e');advance(1.2);keys.delete('e');const boosted=G.boost>0;lesson('clean');check(boosted&&G.stock.erva===stock,'mate da lição dá impulso sem gastar erva nem pedir reposição');
+ const stock=G.stock.erva;use('mate');keys.add('e');advance(1.2);keys.delete('e');const boosted=G.boost>0;lesson('dash');check(boosted&&G.stock.erva===stock,'mate da lição dá impulso sem gastar erva nem pedir reposição');
+ const antesDash={...G.player};check(bodegaDashStart(),'Shift dá o dash dentro da bodega');simulate(.3);check(Math.hypot(G.player.x-antesDash.x,G.player.y-antesDash.y)>40,'o dash leva o Sadi pra frente');lesson('clean');
  use('table:0');keys.add('e');advance(1.1);keys.delete('e');advance(2);
  check(G.tutorial.complete&&G.phase==='closed'&&G.stats.served===8&&G.stats.lost===0&&modal==='tvAward','concluir as lições encerra o dia, sem perdas, e entrega a TV');
  check(G.tv&&!G.tables[0].dirty,'TV e limpeza permanecem após tutorial');

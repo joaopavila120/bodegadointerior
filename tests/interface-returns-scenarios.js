@@ -27,7 +27,8 @@
   const source=FIXED.find(f=>sourceProduct(f.id)===key).id;approach(source);const before=G.stock[key],cash=G.cash;interact();check(!!held()&&G.stock[key]===before-1,'retirada de '+key);
   check(hintText(nearest()).includes('devolver'),'dica de devolução de '+key);interact();check(!held()&&G.stock[key]===before&&G.cash===cash,'E devolve '+key+' sem cobrar ou duplicar');
  }
- approach('bin:pao_xis');interact();const other=G.stock.queijo;approach('bin:queijo');interact();check(held()?.key==='pao_xis'&&G.stock.queijo===other,'produto só volta à própria origem');approach('bin:pao_xis');interact();
+ approach('bin:pao_xis');interact();const other=G.stock.queijo;approach('bin:queijo');interact();check(G.hands.some(h=>h?.key==='pao_xis')&&G.hands.some(h=>h?.key==='queijo'),'com a bandeja, o pão não volta pro lugar do queijo: o queijo vai pro espaço livre');
+ G.slot=G.hands.findIndex(h=>h?.key==='queijo');approach('bin:queijo');interact();G.slot=G.hands.findIndex(h=>h?.key==='pao_xis');approach('bin:pao_xis');interact();check(!G.hands[0]&&!G.hands[1]&&G.stock.queijo===other,'produto só volta à própria origem');G.slot=0;
  for(const key of ['erva','pinhao','bergamota']){
   if(GOODS[key].unlock)G.up[GOODS[key].unlock]=true;G.stock[key]=7000;const source=FIXED.find(f=>sourceProduct(f.id)===key).id;approach(source);startWeigh(key,source);const qty=G.task.requested;keys.add('e');holdTick(qty/G.task.maxWeight*2.5);keys.clear();finishWeigh();check(held()?.weight===qty,'pesagem antes de devolver '+key);interact();check(!held()&&Math.abs(G.stock[key]-7000)<.001,'devolução restaura o peso real de '+key);
  }

@@ -3,7 +3,7 @@
 // o Sadi sozinho. E quem senta do lado dele é o vô.
 'use strict';
 
-const FOGUEIRA_RODA = ['lucia', 'anselmo', 'rosa', 'nair', 'valter', 'arlindo', 'badin', 'guri', 'marcio', 'marcelo', 'indavirus', 'lauro', 'peixinhonabrasa', 'dianho', 'mitodosul', 'loligebien', 'gaudencio', 'baitaca', 'olmiro', 'dunstano', 'hans', 'helga', 'estela', 'ramiro', 'arami', 'saci', 'grazi', 'jasy', 'kurupi', 'sepe', 'damiao', 'princesa', 'zeferino', 'neto'];
+const FOGUEIRA_RODA = ['lucia', 'anselmo', 'rosa', 'nair', 'valter', 'arlindo', 'badin', 'guri', 'marcio', 'marcelo', 'indavirus', 'lauro', 'peixinhonabrasa', 'dianho', 'mitodosul', 'loligebien', 'baitaca', 'olmiro', 'dunstano', 'hans', 'helga', 'estela', 'ramiro', 'arami', 'saci', 'grazi', 'jasy', 'kurupi', 'sepe', 'damiao', 'princesa', 'zeferino', 'neto'];
 const FOGUEIRA_FRENTE = ['bento', 'garibaldi', 'anita', 'lanceiro', 'canabarro', 'manolima', 'jayme', 'padre_romio'];
 function fogueiraFalas() {
   const cuia = !!G.relics?.cuia_vo;
@@ -41,7 +41,7 @@ function fogueiraFalas() {
     verso: [
       ['jayme', 'Dá licença, gente, que o pajador não aguenta mais ficar quieto.'],
       ['jayme', '“Quem cruzou este pampa inteiro / com a lança e o mate na mão / não volta só bodegueiro: / volta a casa de um irmão.”'],
-      ['gaudencio', 'Isso aí vale um trago, seu Jayme!'],
+      ['valter', 'Isso aí vale um trago, seu Jayme! E o primeiro é por conta da casa.'],
       ['padre_romio', 'Vale uma bênção também. Deus guarde esta casa, e quem chega nela com fome ou com medo.'],
       ['padre_romio', 'E guarde o Saci longe do meu vinho de missa.'],
       ['saci', 'Tarde demais, padre.']
@@ -64,16 +64,16 @@ function fogueiraFalas() {
       ['sadi', 'Bom… Viva o Sul!']
     ],
     vo: [
-      ['card', 'O fogo baixa. Um a um, o pessoal vai embora pela estrada, ou fica dormindo onde caiu. O Sadi fica olhando a brasa.', 'Madrugada'],
+      ['card', 'O fogo baixa. Um a um, o pessoal se despede e vai embora pela estrada. O Sadi fica sozinho, olhando a brasa.', 'Madrugada'],
       ['vo', 'Fogo bom. Tu pôs angico. Quem te ensinou?'],
       ['sadi', 'Vô?'],
-      ['vo', 'Quieto, que tu acorda o presidente.'],
+      ['vo', 'Fala baixo, guri, que a vila já tá dormindo.'],
       ['vo', '“Sobe, que a bodega não abre sozinha.” Eu escrevi isso num bilhete, lá no fundo da caverna. Achei que tu ia chegar até ali, e olhe lá.'],
       ['vo', 'Nunca pensei que tu ia passar disso. Serra, mata, ilha, pampa. Lança na mão. Bandeira no mastro. Eu só queria que tu vendesse canha sem falir.'],
       ['sadi', 'Eu quase fali, vô. Duas vezes.'],
       ['vo', 'Eu sei. Eu vi. Do balcão a gente enxerga tudo.'],
       ['vo', 'Vou te dizer uma coisa que eu nunca disse pra ninguém, porque gaúcho velho não diz: eu tenho orgulho de ti, guri.'],
-      ['vo', 'De ti e dessa gente toda que dorme aí na minha grama. Era isso que eu queria quando abri o galpão. Olha só o tamanho.'],
+      ['vo', 'De ti e dessa gente toda que sentou hoje na minha grama. Era isso que eu queria quando abri o galpão. Olha só o tamanho.'],
       ['sadi', 'Tu fica?'],
       ['vo', 'Fico até clarear. Depois, tu sabe.'],
       ['sadi', 'A bodega não abre sozinha.'],
@@ -84,7 +84,7 @@ function fogueiraFalas() {
 }
 function fogueiraConclui() {
   const st = pampaState(); st.fogueira = G.day; G.relics ??= {}; G.relics.bandeira = G.day; AudioEngine.sceneQuiet = false; save(); refreshHUD();
-  const f = fogueiraFalas(); talk([['card', f.fim, 'Fim'], ['card', '<b>🚩 A bandeira farrapa</b><br>O Bento deixou a bandeira do Campo dos Menezes com o Sadi. Agora ela fica na prateleira de lembranças da sua casa.', 'Item raro']], null, 'Seguir jogando');
+  const f = fogueiraFalas(); talk([['card', f.fim, 'Fim'], ['card', '<b>🚩 A bandeira farrapa</b><br>O Bento deixou a bandeira do Campo dos Menezes com o Sadi. Agora ela fica na prateleira de lembranças da sua casa.', 'Item raro'], ['card', '<b>🏠 Presentes pra casa</b><br>Quem veio pra roda deixou lembrança: a mesa campeira com chimarrão, a poltrona de couro com pelego, o cavalete com a sela e o laço, o tapete de lã e uma lança dos Lanceiros Negros. Já estão arrumados na sua casa: na estante de <b>Coleções e retratos</b> dá pra escolher o que fica à mostra.', 'Presentes']], null, 'Seguir jogando');
 }
 // O fogo grande da roda: o mesmo fogo dos acampamentos, bem maior, com labareda viva e fagulha subindo. Baixa conforme a noite passa.
 function drawFogueiraGrande(x, y, k = 1, t = frameClock) {
@@ -111,8 +111,6 @@ function fogueiraRoda(cx, cy) {
   f2.slice(meio).forEach((id, i) => roda.push({ id, ...pos(325, 428, i, f2.length - meio, 690, 250) }));
   return roda;
 }
-// Quem pegou no sono em volta do fogo.
-function fogueiraDorme(id) { return { draw: (a, y) => { ctx.save(); ctx.translate(a.x, y); ctx.rotate(Math.PI / 2 * (a.dx < 0 ? -1 : 1)); sceneActorDraw(id, { x: 0, y: 0, dx: 1, walk: false }); ctx.restore(); const f = (frameClock * .35 + a.x * .01) % 1; txt('z', a.x + 10 + f * 22, y - 34 - f * 50, 15 + f * 8, `rgba(236,236,255,${.6 * (1 - f)})`, 'center'); } }; }
 function fogueiraVo(a, y) { ctx.save(); ctx.filter = 'sepia(.55) brightness(1.1)'; drawVo(a.x, y, a.dx); ctx.restore(); const k = a.alpha ?? 1; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(a.x, y - 80, 120, .16 * k, '255,220,160'); ctx.restore(); }
 function fogueiraCena() {
   const cx = 1650, cy = 880, F = fogueiraFalas(), diz = l => l[0] === 'card' ? { overlay: 'note', text: l[1] } : { say: l[0], text: l[1] };
@@ -132,7 +130,7 @@ function fogueiraCena() {
     ...F.memorias.map(diz), ...F.mano.map(diz), { do: () => AudioEngine.violaFogo?.(.022) }, ...F.verso.map(diz), ...F.cuia.map(diz), ...F.viva.map(diz),
     { do: () => { AudioEngine.gritoFarrapo?.(.08); setTimeout(() => AudioEngine.vivas?.(.07), 500); sceneShout('Viva o Sul!', cx, cy - 300, '#ffe27a', 34); fxStars(cx, cy - 220, 16); pula(12); const s = scene.actors.sadi; if (s) s.hop = 12; golpeTreme = Math.max(golpeTreme, .12); } }, { wait: 2.8 },
     { do: () => AudioEngine.hinoFarrapo?.(.024) }, { wait: 5 }, { fade: 'out', time: 1.8 },
-    { do: () => { fogo = .18; for (const q of gente) delete scene.actors[q.id]; const s = scene.actors.sadi; if (s) Object.assign(s, { x: cx - 120, y: cy + 100, dx: 1, dy: 0, hop: 0 }); noite = .76; Object.assign(scene.world, { night: noite, x: cx, y: cy + 60, lights: [luz] }); for (const [id, x, y, dx] of [['bento', cx + 300, cy + 70, -1], ['garibaldi', cx - 330, cy - 40, 1], ['manolima', cx + 380, cy - 90, -1], ['jayme', cx - 360, cy + 130, 1]]) scene.actors[id] = { x, y, dx, ...fogueiraDorme(id) }; } }, { fade: 'in', time: 2 }, diz(F.vo[0]), { wait: 1.6 },
+    { do: () => { fogo = .18; for (const q of gente) delete scene.actors[q.id]; const s = scene.actors.sadi; if (s) Object.assign(s, { x: cx - 120, y: cy + 100, dx: 1, dy: 0, hop: 0 }); noite = .76; Object.assign(scene.world, { night: noite, x: cx, y: cy + 60, lights: [luz] }); } }, { fade: 'in', time: 2 }, diz(F.vo[0]), { wait: 1.6 },
     { actor: 'vo', x: cx + 118, y: cy + 104, dx: -1, alpha: 0, draw: fogueiraVo }, { do: () => { let k = 0; const t = setInterval(() => { const a = scene?.actors?.vo; if (!a || ++k > 40) { clearInterval(t); return; } a.alpha = k / 40 * .86; }, 60); AudioEngine.heart?.(); } }, { wait: 2.8 },
     ...F.vo.slice(1, 9).map(diz), { do: () => { AudioEngine.despedida?.(.03); } }, ...F.vo.slice(9).map(diz), { do: () => { clareia = .001; AudioEngine.violaFogo?.(.02); } }, { wait: 3.5 }, { do: () => { const a = scene?.actors?.vo; if (a) sai.push(a); AudioEngine.queroquero?.(.02, 2); } }, { wait: 3 }, scenePan(cx, 720, 34), { wait: 3 }, { fade: 'out', time: 2.4 }, { caption: 'Raízes do Sul', time: 3 }], 'fogueira', () => { AudioEngine.sceneQuiet = false; fogueiraConclui(); });
 }

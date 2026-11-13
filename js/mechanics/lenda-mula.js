@@ -47,7 +47,7 @@ function mulaGoal() {
   if (s === 'clues') return 'Procure sinais da mula (' + MULA_CLUES.filter(c => a.clues[c.id]).length + '/3): ' + MULA_CLUES.map(c => check(a.clues[c.id], c.name)).join(' · ');
   if (s === 'ask') return 'Pergunte pros mais velhos quando ela aparece: ' + MULA_ASK.map(p => check(a.asked[p.id], p.name)).join(' · ');
   if (s === 'wait') {
-    if (!caveState().facao) return 'Antes, pegue o facão do vô, cravado na boca da gruta da Serra';
+    if (!caveState().facao) return 'Antes, pegue o facão do vô com o seu Olmiro, o tropeiro (na entrada do pinheiral)';
     if (a.retry) return 'A mula ainda ronda a igreja da Serra: volte lá de noite pra tentar de novo. Prepare butiá, pitanga, o bolicho do São Dunstano e o bornal do Garibaldi';
     if (mulaThursday()) return worldNight() ? 'É hoje! Vá pra frente da igreja da Serra e espere a mula' : 'Hoje é quinta: de noite, espere a mula na frente da igreja da Serra';
     const n = mulaDaysToThursday(); return 'Quinta à noite, na frente da igreja da Serra (falta' + (n > 1 ? 'm ' + n + ' dias' : ' 1 dia') + '). Prepare butiá, pitanga e os itens do São Dunstano e do Garibaldi';
@@ -104,7 +104,7 @@ function mulaAsk(id) {
 }
 // ---------- 4. A noite da mula ----------
 function mulaMeet() {
-  if (!caveState().facao) { floatNote('Sem o facão do vô não dá pra enfrentar a mula: ele fica cravado na boca da gruta da Serra.'); AudioEngine.bad(); return; }
+  if (!caveState().facao) { floatNote('Sem o facão do vô não dá pra enfrentar a mula: quem tem ele é o seu Olmiro, o tropeiro.'); AudioEngine.bad(); return; }
   mulaArc().stage = 'fight'; save(); meetFolk('mula');
 }
 // O brilho que mostra que dá pra investigar ali.

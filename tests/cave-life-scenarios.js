@@ -13,8 +13,7 @@
       check(gems.length>0&&gems.every(r=>r.loot===(floor>10?'agata':'ametista')),'Minério correto no andar '+floor);
       if(floor>10)check(run.beasts.every(b=>b.max>=Math.round(CAVE_BEASTS[b.kind].hp*1.3)),'Bichos mais resistentes no andar '+floor);
     }
-    check(!caveDash()&&!caveUp('dash'),'Jogo começa sem dash');
-    caveUpdateControls();check($('caveDashButton').classList.contains('hidden'),'Botão de dash permanece oculto antes da compra');
+    check(caveUp('dash')&&!CAVE_UPGRADES.some(u=>u.id==='dash'),'O dash é do Sadi desde o começo e não está à venda');
     bagAdd('ametista',3);bagAdd('agata',2);const stock=bagQty('ametista'),cash=G.cash;
     storeSell('ametista');check(G.cash===cash&&bagQty('ametista')===stock&&!SELLABLE.includes('ametista'),'Armazém não compra minérios, inclusive por ação direta');
     check(!dunstanSell('ametista:all'),'Venda não funciona fora da janela de negociação');
@@ -23,11 +22,8 @@
     action('dunstanSell','ametista:1');check(bagQty('ametista')===2&&G.cash===cash+BAG_RAW.ametista.value,'Venda unitária paga o mineral correto');
     action('dunstanSell','agata:all');check(!bagQty('agata')&&G.cash===cash+BAG_RAW.ametista.value+2*BAG_RAW.agata.value,'Venda de todas as ágatas');
     const paid=G.cash;action('dunstanSell','agata:all');check(G.cash===paid,'Duplo clique não duplica pagamento');
-    facaoBuy('dash');const price=CAVE_UPGRADES.find(u=>u.id==='dash').cost;
-    check(caveUp('dash')&&G.cash===paid-price,'São Dunstano vende a esquiva');
-    facaoBuy('dash');check(G.cash===paid-price,'Melhoria já comprada não cobra novamente');
-    closeDialog(true);caveUpdateControls();check(!$('caveDashButton').classList.contains('hidden')&&caveDash(),'Dash e botão liberados após comprar');
-    check(normalizeSave(JSON.parse(JSON.stringify(G))).cave.up.dash,'Compra do dash persiste');
+    facaoBuy('dash');check(G.cash===paid,'O dash não se compra: nada é cobrado');
+    closeDialog(true);caveUpdateControls();check(!$('caveDashButton').classList.contains('hidden')&&caveDash(),'Dash e botão disponíveis sem comprar');
     for(const card of CARDS.filter(c=>c.set==='bodega')){
       const file=PORTRAIT_FILES[card.person];if(file)check(collectibleArt(card.id).includes('portraits/'+file+'.jpg'),'Carta usa portraits: '+card.id);
     }

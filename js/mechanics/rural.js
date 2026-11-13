@@ -203,7 +203,7 @@ function campeiroCards() {
 }
 // Venda no Armazém: o que é colhido ou produzido e está no inventário.
 // A alface colhida e os potes de conserva já entram no estoque como salada, pepino e codorna: vendem por esses nomes.
-const SELLABLE = ['salada', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'pepino', 'codorna', 'bergamota', 'pinhao', 'erva'];
+const SELLABLE = ['salada', 'trigo', 'leite', 'peixe', 'butia', 'pitanga', 'guabiroba', 'pepino_cru', 'ovo', 'ovo_codorna', 'pepino', 'codorna', 'bergamota', 'pinhao', 'erva', 'mel', 'vinho'];
 function sellPrice(k, q) { return round(BAG_RAW[k] ? BAG_RAW[k].value * q : (bagBulk(k) ? q / 1000 * (GOODS[k].price || GOODS[k].cost * 1000) * .4 : (GOODS[k].price || GOODS[k].cost * 2) * .35 * q)); }
 function sellHave(k) { return GOODS[k] && !BAG_RAW[k] ? G.stock[k] || 0 : bagQty(k); }
 function sellLot(k) { return GOODS[k] && !BAG_RAW[k] ? Math.min(sellHave(k), goodPack(k)) : sellHave(k); }

@@ -1,8 +1,7 @@
 // O pampa mais vivo. Nada aqui muda colisão, rota nem ponto de interação: é só o campo respirando.
 //   · No chão (pintado uma vez nos blocos): touceiras de macela amarela e de flor roxa do campo, manchas de
 //     trevo e juncos com taboa na beira das poças e dos banhados.
-//   · A cada quadro, por cima: sombras de nuvem passando devagar pelo campo, borboletas perto do Sadi e, de
-//     tempo em tempo, um bando de avoantes cruzando o céu.
+//   · A cada quadro, por cima: borboletas perto do Sadi e, de tempo em tempo, um bando de avoantes cruzando o céu.
 'use strict';
 
 // ---------- O que entra no chão (uma vez, nos blocos) ----------
@@ -66,15 +65,6 @@ function belezaPassaro(x, y, k) {
   const draw = drawPampa; drawPampa = function (view, seen, layers) {
     draw(view, seen, layers);
     layers.push({ y: 8.2e9, draw: () => {
-      // As sombras das nuvens, passando devagar com o minuano.
-      ctx.save(); ctx.fillStyle = 'rgba(16,24,10,.09)';
-      for (let k = 0; k < 2; k++) {
-        const span = view.w + 1800, cx = view.x + ((k * 1100 + frameClock * 24) % span) - 900;
-        const cy = view.y + (k ? view.h * .7 : view.h * .22) + Math.sin(frameClock * .06 + k * 2) * 50;
-        ctx.beginPath(); ctx.ellipse(cx, cy, 540, 210, .25, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(cx + 280, cy + 70, 340, 140, .15, 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.restore();
       // Borboletas perto do Sadi (o campo tem flor, tem borboleta).
       const p = worldOut;
       if (p && !scene) for (let k = 0; k < 3; k++) {

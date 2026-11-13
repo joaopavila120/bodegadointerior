@@ -1,11 +1,10 @@
-// HUD de combate reestruturado: em vez de só R atirar e X rodar as armas uma a uma, a pilha de botões do canto
-// ganha atalhos diretos:
-//   · Armas de longe: um quadradinho por arma que o Sadi tem (bodoque, 38, arpão, carabina), com a munição de cada
-//     uma. Clicar escolhe na hora (arpão ⇄ carabina sem dar a volta). X continua trocando: agora ele volta pra arma
-//     usada antes (troca rápida entre as duas últimas) e, se só tem duas, alterna entre elas.
-//   · Poderes: um quadradinho por poder, com a volta (cooldown) de cada um à vista. Clicar já usa o poder direto.
-//     V usa o escolhido e G troca, como sempre.
-//   · Bornal: um botão 🎒 na pilha abre o inventário no meio da peleia (a tecla B já fazia isso; agora tem botão).
+// HUD de combate: uma barra só, no canto de baixo à esquerda, com três grupos lado a lado.
+//   · Bornal: os itens de cura e de briga (1 a 9 usam) e o 🎒, que abre o inventário (B).
+//   · Arma: um quadradinho por arma de longe, com a munição. O da vez tem o "R": clicar nele atira; clicar noutro troca
+//     na hora (arpão ⇄ carabina sem dar a volta). X volta pra arma usada antes.
+//   · Poder: um quadradinho por poder, com a volta (o tempo pra usar de novo) enchendo por cima. Clicar já usa aquele poder.
+//     V usa o da vez e G troca.
+// À direita ficam só os botões de ação: facão, dash e laço.
 // Nada aqui muda dano nem regra: é só a mão chegando mais rápido no que já existia.
 'use strict';
 
@@ -21,82 +20,77 @@
     G.rangedPrev = cur; swap();
   };
 }
-function chudRangedPick(id) {
-  if (!rangedOwned(id) || rangedWeapon() === id) return;
+function chudRangedSlot(id) {
+  if (!rangedOwned(id)) return;
+  if (rangedWeapon() === id) { rangedFire(); return; }
   G.rangedPrev = rangedWeapon(); G.rangedPick = id; AudioEngine.tick?.();
   if (worldOut) effect(RANGED[id].name, worldOut.x, worldOut.y - 150, '#ffe2a6', 15);
   updateRangedButton();
 }
-function chudPoderCast(id) {
-  if (!poderHas(id)) return;
-  poderState().pick = id; updatePoderButton(); poderUse();
-}
+function chudPoderCast(id) { if (!poderHas(id)) return; poderState().pick = id; updatePoderButton(); poderUse(); }
 function chudBag() { if (typeof inCave === 'function' && inCave()) { if (typeof openCaveBag === 'function') openCaveBag(); } else showBag(); }
-
-// ---------- Munição de cada arma, pro quadradinho ----------
 function chudAmmo(id) {
-  if (id === 'revolver38') return (ranged.reload > 0 ? '⟳' : rangedDrum()) + '·' + rangedBalas();
+  if (id === 'revolver38') return ranged.reload > 0 ? '⟳' : rangedDrum() + '·' + rangedBalas();
   if (id === 'carabina') return String(typeof carabinaBalas === 'function' ? carabinaBalas() : 0);
   if (id === 'bodoque') return '∞';
   return '';
 }
-function chudSlotIcon(id) {
-  const src = RANGED_ART[id];
-  return src ? `<img src="${src}" alt="" draggable="false">` : `<span class="slot-emoji">🎯</span>`;
-}
+function chudArmaIcon(id) { const src = RANGED_ART[id]; return src ? `<img src="${src}" alt="" draggable="false">` : '<span class="slot-emoji">🎯</span>'; }
+const chudKbd = k => `<kbd>${k}</kbd>`;
 
-// ---------- A fila das armas ----------
+// ---------- O grupo das armas ----------
 let chudRangedHTML = '';
 updateRangedButton = function () {
   const box = $('rangedBox'); if (!box) return;
   const id = rangedWeapon(), show = !!id && rangedCombat() && !modal && !scene;
-  box.classList.toggle('hidden', !show); box.classList.toggle('in-cave', inCave());
-  chudBagButton(show);
-  if (!show) return;
+  box.classList.toggle('hidden', !show); if (!show) return;
   const list = rangedList();
-  const slots = list.length < 2 ? '' : `<div class="combat-slots" id="rangedSlots">${list.map(w =>
-    `<button type="button" class="combat-slot${w === id ? ' active' : ''}" data-act="rangedPick" data-id="${w}" title="${RANGED[w].name}" aria-label="${RANGED[w].name}">${chudSlotIcon(w)}<em>${chudAmmo(w)}</em></button>`).join('')}</div>`;
-  const drum = rangedDrum();
-  const fire = id === 'revolver38' ? '<b>R</b> · 38 ' + (ranged.reload > 0 ? '⟳' : '●'.repeat(drum) + '○'.repeat(RANGED.revolver38.drum - drum)) + ' <small>' + rangedBalas() + '</small>'
-    : id === 'carabina' ? '<b>R</b> · Carabina <small>' + carabinaBalas() + '</small>'
-    : '<b>R</b> · ' + (id === 'arpao' ? 'Arpão' : 'Bodoque');
-  const html = slots + `<button id="rangedButton" class="sling-button" type="button" data-act="rangedFire">${fire}</button>`;
+  const html = `<header>Arma ${chudKbd('R')} atira${list.length > 1 ? ' · ' + chudKbd('X') + ' troca' : ''}</header><div class="cbar-row">${list.map(w =>
+    `<button type="button" class="combat-slot${w === id ? ' active' : ''}" data-act="rangedSlot" data-id="${w}" title="${RANGED[w].name}${w === id ? ' · clique pra atirar' : ' · clique pra trocar'}" aria-label="${RANGED[w].name}">${chudArmaIcon(w)}<em>${chudAmmo(w)}</em>${w === id ? '<i>R</i>' : ''}</button>`).join('')}</div>`;
   if (html !== chudRangedHTML) { chudRangedHTML = html; box.innerHTML = html; }
 };
 
-// ---------- A fila dos poderes ----------
+// ---------- O grupo dos poderes ----------
 let chudPoderHTML = '';
 updatePoderButton = function () {
   const box = $('poderBox'); if (!box) return;
   const id = poderPick(), show = !!id && rangedCombat() && !modal && !scene;
-  box.classList.toggle('hidden', !show); box.classList.toggle('in-cave', inCave()); if (!show) return;
+  box.classList.toggle('hidden', !show); if (!show) return;
   const list = poderList(), benz = typeof poderBenzido === 'function' ? poderBenzido : () => false;
-  const slots = list.length < 2 ? '' : `<div class="combat-slots" id="poderSlots">${list.map(k => {
-    const P = PODERES[k], cd = Math.ceil(poder.cd[k] || 0);
-    return `<button type="button" class="combat-slot${k === id ? ' active' : ''}${cd > 0 ? ' cooling' : ''}" data-act="poderCast" data-id="${k}" title="${P.name}" aria-label="${P.name}"><span class="slot-emoji">${P.icon}</span>${benz(k) ? '<span class="slot-benzido">✨</span>' : ''}${cd > 0 ? `<span class="slot-cd">${cd}</span>` : ''}</button>`;
+  const html = `<header>Poder ${chudKbd('V')} usa${list.length > 1 ? ' · ' + chudKbd('G') + ' troca' : ''}</header><div class="cbar-row">${list.map(k => {
+    const P = PODERES[k], cd = poder.cd[k] || 0, total = benz(k) ? Math.round(P.cd * .7) : P.cd, frac = cd > 0 ? Math.min(1, cd / total) : 0;
+    return `<button type="button" class="combat-slot${k === id ? ' active' : ''}${cd > 0 ? ' cooling' : ''}" data-act="poderCast" data-id="${k}" title="${P.name}${benz(k) ? ' (benzido)' : ''}" aria-label="${P.name}" style="--cd:${Math.round(frac * 100)}%"><span class="slot-emoji">${P.icon}</span>${benz(k) ? '<span class="slot-benzido">✨</span>' : ''}${cd > 0 ? `<span class="slot-cd">${Math.ceil(cd)}</span>` : ''}${k === id ? '<i>V</i>' : ''}</button>`;
   }).join('')}</div>`;
-  const P = PODERES[id], cd = Math.ceil(poder.cd[id] || 0);
-  const html = slots + `<button id="poderButton" class="sling-button${cd > 0 ? ' cooling' : ''}" type="button" data-act="poderUse"><b>V</b> · ${P.icon} ${cd > 0 ? cd + ' s' : P.name.split(' ')[0]}</button>`;
   if (html !== chudPoderHTML) { chudPoderHTML = html; box.innerHTML = html; }
 };
 
-// ---------- O botão do bornal na pilha ----------
-function chudBagButton(show) {
-  const b = $('combatBagButton'); if (!b) return;
-  b.classList.toggle('hidden', !(show || rangedCombat() && !modal && !scene));
+// ---------- A barra ----------
+function chudBarSync() {
+  const bar = $('combatBar'); if (!bar) return;
+  const itens = $('cbarItens'), cinto = ['mataBelt', 'caveBelt'].some(id => $(id) && !$(id).classList.contains('hidden'));
+  const briga = typeof rangedCombat === 'function' && worldOut && rangedCombat() && !modal && !scene;
+  itens?.classList.toggle('hidden', !(cinto || briga));
+  const on = [...bar.children].some(g => !g.classList.contains('hidden'));
+  bar.classList.toggle('hidden', !on); document.body.classList.toggle('combat-bar-on', on);
+  if (on) document.body.style.setProperty('--cbar-h', bar.offsetHeight + 'px');
 }
 
 // ---------- Ligações ----------
 {
   const act = action; action = function (name, id) {
-    if (name === 'rangedPick') { chudRangedPick(id); return; }
+    if (name === 'rangedSlot') { chudRangedSlot(id); return; }
     if (name === 'poderCast') { chudPoderCast(id); return; }
     if (name === 'combatBag') { chudBag(); return; }
     return act(name, id);
   };
-  // O botão do bornal entra na pilha de combate (criada em poderes.js), por cima de tudo.
+  // Monta a barra com o que os outros arquivos criaram (o cinto da mata, o da gruta, as armas e os poderes).
   document.addEventListener('DOMContentLoaded', () => {
-    const stack = $('combatStack') || $('hudLayer'); if (!stack) return;
-    stack.insertAdjacentHTML('beforeend', '<button id="combatBagButton" class="sling-button combat-bag hidden" type="button" data-act="combatBag" aria-label="Abrir o bornal"><b>B</b> · 🎒 Bornal</button>');
+    const hud = $('hudLayer'); if (!hud) return;
+    hud.insertAdjacentHTML('beforeend', `<div id="combatBar" class="combat-bar hidden" aria-label="Barra de combate"><section id="cbarItens" class="cbar-grupo cbar-itens hidden"><header>Bornal ${chudKbd('1')}–${chudKbd('9')}</header><div class="cbar-row" id="cbarCinto"><button type="button" class="combat-slot cbar-bag" data-act="combatBag" title="Abrir o bornal (B)" aria-label="Abrir o bornal">${typeof forgeUpgradeIcon === 'function' ? '<span class="slot-art">' + forgeUpgradeIcon('bornal') + '</span>' : '<span class="slot-emoji">🎒</span>'}<i>B</i></button></div></section></div>`);
+    const bar = $('combatBar'), cinto = $('cbarCinto');
+    for (const id of ['mataBelt', 'caveBelt']) { const el = $(id); if (el) cinto.insertBefore(el, cinto.lastElementChild); }
+    for (const id of ['rangedBox', 'poderBox']) { const el = $(id); if (!el) continue; el.className = 'cbar-grupo ' + (id === 'rangedBox' ? 'cbar-armas' : 'cbar-poderes') + ' hidden'; el.innerHTML = ''; bar.appendChild(el); }
+    $('combatBagButton')?.remove();
+    setInterval(chudBarSync, 150);
   });
 }

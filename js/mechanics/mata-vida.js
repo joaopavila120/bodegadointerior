@@ -228,7 +228,7 @@ function mataKill(b) {
 }
 function mataAttack() {
   const N = mataNight, p = worldOut; if (!mataCombatOn() || !N || N.faint || paused || modal || scene || phoneOpen || worldTalkOpen()) return;
-  if (!caveState().facao) { floatNote('Sem o facão do vô, só resta correr! Ele fica cravado na boca da gruta, na Serra.'); return; }
+  if (!caveState().facao) { floatNote('Sem o facão do vô, só resta correr! Quem tem ele é o seu Olmiro, o tropeiro.'); return; }
   if (N.cd > 0) return; N.cd = caveCd(); const ang = Math.atan2(p.dy || 0, p.dx || (p.dy ? 0 : 1)); N.swing = { t: .2, ang }; AudioEngine.swoosh?.(.08);
   const reach = caveReach(); let flesh = false;
   for (const b of N.beasts) {

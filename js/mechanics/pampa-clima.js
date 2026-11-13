@@ -1,5 +1,5 @@
 // O ar do pampa: o que se ouve e o que passa na tela, e muda conforme o caminho desce pro sul e o dia acaba.
-//   · O campo: sombra de nuvem, sementes no ar, bando de pássaro, quero-quero e, de longe, gado e cavalo.
+//   · O campo: sementes no ar, bando de pássaro, quero-quero e, de longe, gado e cavalo.
 //   · O banhado: neblina rente ao chão, vaga-lume, anel na água e sapo.
 //   · Os campos rasos: poeira correndo pela estrada, e um clarim longe.
 //   · O cerro: céu fechado, relâmpago, trovão, coruja. Quanto mais fundo, mais escuro em volta da tela.
@@ -69,8 +69,6 @@ function pampaRaio(dt) {
 }
 function drawPampaClima(L, A, view) {
   const { x: vx, y: vy, w: vw, h: vh } = view, t = frameClock, leve = typeof lightGraphics !== 'undefined' && lightGraphics;
-  // Sombra de nuvem passando: mancha grande e macia, só no campo aberto.
-  if (A.chao !== 'banhado') for (let i = 0; i < 3; i++) { const sw = vw + 1400, cx = vx + ((i * 977 + t * (18 + i * 5)) % sw) - 700, cy = vy + ((i * 613) % vh), r = 460 + i * 90; ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .55); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, `rgba(20,24,16,${A.chao === 'cerro' ? .16 : .1})`); g.addColorStop(1, 'rgba(20,24,16,0)'); ctx.fillStyle = g; ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore(); }
   if (A.chao === 'banhado') {
     // Neblina rente ao chão e vaga-lume.
     if (!leve) for (let i = 0; i < 6; i++) { const sw = vw + 900, cx = vx + ((i * 541 + t * (14 + i * 4)) % sw) - 450, cy = vy + vh * (.3 + (i * .13) % .7), r = 320 + i * 40; ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .22); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, 'rgba(214,226,214,.2)'); g.addColorStop(1, 'rgba(214,226,214,0)'); ctx.fillStyle = g; ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore(); }

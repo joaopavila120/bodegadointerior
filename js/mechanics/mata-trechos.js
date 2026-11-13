@@ -622,7 +622,7 @@ function mataBeltRefresh() {
   const M = WORLD_MAPS.mata, edge = M.edge, walk = M.canWalk;
   M.edge = function (p) {
     if (p.x > MATA.W - 12 && Math.abs(p.y - 770) < 90) {
-      if (!caveState().facao) { trechoSay('Daqui pra frente a mata é braba, de dia e de noite: sem o facão do vô (cravado na boca da gruta, na Serra), não dá.'); return null; }
+      if (!caveState().facao) { trechoSay('Daqui pra frente a mata é braba, de dia e de noite: sem o facão do vô, não dá. O seu Olmiro, o tropeiro, é quem tem ele.'); return null; }
       const e = trechoEnds(2); return { map: 'trecho', trecho: 2, x: 90, y: e.yIn, title: TRECHO_BIOME_NAMES.mata, text: 'Facão na mão: daqui pra frente a mata é braba.' };
     }
     return edge.call(this, p);

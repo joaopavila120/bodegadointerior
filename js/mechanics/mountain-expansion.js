@@ -84,7 +84,7 @@ function dunstanTalk() {
   talk([
     ['dunstano','Buenas, Sadi. Sou São Dunstano, o ferreiro desta gruta. Aqui no primeiro andar ninguém te ataca. Pode preparar teu equipamento com calma.'],
     ['sadi','Buenas! E como faço para enfrentar os bichos lá embaixo?'],
-    ['dunstano','Anda com WASD e golpeia com Espaço ou F. Na ferraria tu pode comprar o Passo de esquiva: ele libera o dash com Shift e te deixa invulnerável durante a esquiva. No celular aparece um botão depois da compra.'],
+    ['dunstano','Anda com WASD e golpeia com Espaço ou F. Pra desviar, aperta Shift: o dash te deixa invulnerável durante a esquiva. No celular tem o botão Dash.'],
     ['dunstano','Pinhões recuperam tua vida. Se desmaiar, volta à boca da gruta e perde parte do dinheiro. Não precisa esperar a vida acabar para subir pela corda!'],
     ['dunstano','Este refúgio não tem pedras nem bichos. Do segundo ao décimo andar tu encontra ametista. Depois do décimo, vem a pedra vermelha, a ágata e inimigos mais fortes. Traga os minérios para mim: eu compro aqui na ferraria.'],
     ['dunstano','Lá embaixo, a escada aparece ao derrotar os bichos ou quebrar a pedra que a esconde. Usa E nas escadas, nos baús e na corda.'],

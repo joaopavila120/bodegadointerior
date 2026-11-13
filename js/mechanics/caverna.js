@@ -84,7 +84,6 @@ function caveState() { G.cave ??= { facao: false, floor: 1, deepest: 1, hp: CAVE
 function caveOpen() { return !!G.cave?.facao || ['baia', 'sino'].some(id => ['active', 'done'].includes(missionState(id)?.status)); }
 // Melhorias do facão, na ferraria de São Dunstano no primeiro andar.
 const CAVE_UPGRADES = [
-  { id: 'dash', name: 'Passo de esquiva', icon: '↗', cost: 160, desc: 'Libera o dash com Shift: invulnerável durante a esquiva, com 1,2 s de recarga.' },
   { id: 'afiado', name: 'Facão afiado na pedra', icon: '🔪', cost: 120, desc: 'Golpe mais forte: 18 de dano (era 12).' },
   { id: 'aco', name: 'Lâmina de aço carbono', icon: '⚔️', cost: 320, requires: 'afiado', desc: 'O golpe mais forte de todos: 26 de dano.' },
   { id: 'cabo', name: 'Cabo de chifre de boi', icon: '🐂', cost: 150, desc: 'Golpe mais ligeiro: dá pra bater mais seguido.' },
@@ -92,7 +91,8 @@ const CAVE_UPGRADES = [
   { id: 'poncho', name: 'Poncho de couro', icon: '🧥', cost: 200, desc: 'Aguenta mais pancada: 140 de vida (era 100).' },
   { id: 'lampiao', name: 'Lampião a querosene', icon: '🏮', cost: 90, desc: 'Clareia bem mais longe no escuro da caverna.' }
 ];
-function caveUp(id) { return !!G.cave?.up?.[id]; }
+// O dash (Shift) é do Sadi desde o começo: não se compra mais.
+function caveUp(id) { return id === 'dash' || !!G.cave?.up?.[id]; }
 function caveMaxHp() { return caveUp('poncho') ? 140 : CAVE.maxHp; }
 function caveDmg() { return caveUp('aco') ? 26 : caveUp('afiado') ? 18 : 12; }
 function caveCd() { return caveUp('cabo') ? .26 : .38; }
@@ -197,7 +197,6 @@ let worldDash=null,worldDashCd=0,worldDashTrail=[];
 function caveDash() {
   if(caveDefeatActive())return false;
   if(!worldOut||!started||paused||modal||scene||phoneOpen||worldTalkOpen()||G.game||G.bocce||G.penalties)return false;
-  if(!caveUp('dash')){floatNote('Compre o Passo de esquiva com São Dunstano no primeiro andar da caverna.');return false;}
   const cave=inCave(),run=cave?caveFloorRun():null,p=worldOut;
   if(cave?run.dash||(run.dashCd||0)>0:worldDash||worldDashCd>0||typeof playerMounted==='function'&&playerMounted())return false;
   let dx=Number(keys.has('d')||keys.has('ArrowRight'))-Number(keys.has('a')||keys.has('ArrowLeft'));
@@ -253,10 +252,16 @@ function caveDoorSpot() {
 }
 function caveDoor() {
   const st = caveState();
+  // Sem facão ninguém desce (quem tem o facão do vô é o seu Olmiro, o tropeiro). Na primeira descida, como funciona.
   if (!st.facao) {
-    talk([['card', '<b>🔪 O facão do vô</b><br>Na boca da gruta, cravado numa pedra, um facão de cabo de chifre com as iniciais do vô. Lá de baixo vem um bafo frio e um grunhido de javali.', 'Caverna da Serra'],
-      ['sadi', 'Bah, que facão cuiudo! O vô descia aqui embaixo, é?'],
-      ['dica', '<b>Espaço</b> ou <b>F</b>: golpe de facão (no celular, o botão Facão).<br><b>E</b>: escada, baú e corda.<br>São Dunstano te recebe no primeiro andar: compra teus minérios e vende melhorias, inclusive o dash. Ametistas aparecem do andar 2 ao 10; depois vêm as ágatas. Pinhão recupera a vida. A escada aparece quando os bichos acabam ou embaixo de uma pedra.', 'Como funciona a caverna']], () => { st.facao = true; save(); enterCave(1); }, 'Descer');
+    talk([['card', '<b>🕳️ Caverna da Serra</b><br>Uma gruta escura entre os paredões. Lá de baixo vem um bafo frio e um grunhido de javali.', 'Caverna da Serra'],
+      ['sadi', 'De mão vazia eu não desço aí nem amarrado. O seu Olmiro, o tropeiro, tá com o facão do vô.']], null, 'Melhor não');
+    return;
+  }
+  if (!st.dica && (st.deepest || 1) <= 1) {
+    talk([['card', '<b>🕳️ Caverna da Serra</b><br>Uma gruta escura entre os paredões. Lá de baixo vem um bafo frio e um grunhido de javali.', 'Caverna da Serra'],
+      ['sadi', 'Bah… o vô descia aqui embaixo, é? Bueno, facão na mão.'],
+      ['dica', '<b>Espaço</b> ou <b>F</b>: golpe de facão (no celular, o botão Facão).<br><b>Shift</b>: dash, invulnerável durante a esquiva.<br><b>E</b>: escada, baú e corda.<br>São Dunstano te recebe no primeiro andar: compra teus minérios e vende melhorias. Ametistas aparecem do andar 2 ao 10; depois vêm as ágatas. Pinhão recupera a vida. A escada aparece quando os bichos acabam ou embaixo de uma pedra.', 'Como funciona a caverna']], () => { st.dica = G.day; save(); enterCave(1); }, 'Descer');
     return;
   }
   const stops = CAVE.stops.filter(n => n <= st.deepest);

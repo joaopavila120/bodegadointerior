@@ -663,20 +663,33 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .wake-card.out{opacity:0}
 @keyframes wakeIn{from{opacity:0}to{opacity:1}}
 
-/* ---------- HUD de combate: troca rápida de arma, poderes à vista e bornal ---------- */
-#hudLayer .ranged-box{flex-direction:column;align-items:flex-end;gap:5px}
-#hudLayer .combat-slots{display:flex;gap:5px;justify-content:flex-end;pointer-events:auto}
-#hudLayer .combat-slot{position:relative;width:46px;height:46px;padding:2px;display:grid;place-items:center;background:#2b1d12e6;border:2px solid #7a5a32;border-radius:10px;color:#ffe8b8;box-shadow:0 4px 10px #0007;cursor:pointer;touch-action:manipulation}
+/* ---------- Barra de combate: bornal, arma e poder num lugar só ---------- */
+#hudLayer .combat-bar{position:absolute;left:14px;bottom:12px;max-width:calc(100% - 180px);display:flex;flex-wrap:wrap-reverse;align-items:flex-end;gap:8px;z-index:4;pointer-events:none}
+#hudLayer .combat-bar.hidden,#hudLayer .combat-bar .hidden,body.intro-playing #hudLayer .combat-bar{display:none}
+#hudLayer .cbar-grupo{pointer-events:auto;display:flex;flex-direction:column;gap:3px;padding:4px 7px 7px;background:#2b1d12ee;border:2px solid #b58e52;border-radius:12px;box-shadow:0 6px 16px #0008}
+#hudLayer .cbar-grupo header{font:bold 11px/1.2 Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#e8cf98;white-space:nowrap}
+#hudLayer .cbar-grupo header kbd{display:inline-block;min-width:15px;padding:0 3px;margin:0 1px;border-radius:4px;background:#ffd96a;color:#38291b;font:bold 10px/14px Arial,sans-serif;text-align:center;text-transform:none}
+#hudLayer .cbar-armas{border-color:#c8a86a}
+#hudLayer .cbar-poderes{border-color:#9db86a}
+#hudLayer .cbar-row{display:flex;gap:5px;align-items:center}
+#hudLayer .combat-bar .horta-bar{position:static;transform:none;display:flex;gap:5px;padding:0;background:none;border:0;box-shadow:none}
+#hudLayer .combat-bar .horta-bar button{min-width:46px;min-height:46px;width:46px;height:46px;padding:2px}
+#hudLayer .combat-bar .horta-bar button .mata-item-art,#hudLayer .combat-bar .horta-bar button .pixel-item{width:32px!important;height:32px!important}
+#hudLayer .combat-bar .horta-bar button img,#hudLayer .combat-bar .horta-bar button svg{max-width:32px;max-height:32px}
+#hudLayer .combat-slot{position:relative;width:46px;height:46px;padding:2px;display:grid;place-items:center;background:#4a3420;border:2px solid #7a5a32;border-radius:9px;color:#ffe8b8;cursor:pointer;touch-action:manipulation;overflow:hidden}
 #hudLayer .combat-slot img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated;pointer-events:none}
-#hudLayer .combat-slot .slot-emoji{font-size:23px;line-height:1;pointer-events:none}
+#hudLayer .combat-slot .slot-emoji{font-size:22px;line-height:1;pointer-events:none}
 #hudLayer .combat-slot em{position:absolute;right:3px;bottom:1px;font-style:normal;font-size:10px;font-weight:bold;color:#ffd96a;text-shadow:0 1px 2px #000;pointer-events:none}
-#hudLayer .combat-slot.active{background:#7a5a24;border-color:#ffd96a;box-shadow:0 0 0 2px #ffd96a66,0 4px 10px #0007}
-#hudLayer .combat-slot.cooling{opacity:.72}
-#hudLayer .combat-slot .slot-cd{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,12,6,.55);border-radius:8px;font-size:15px;font-weight:bold;color:#ffe2a6;pointer-events:none}
-#hudLayer .combat-slot .slot-benzido{position:absolute;left:2px;top:0;font-size:11px;pointer-events:none}
-#hudLayer .combat-bag{font-size:13px}
-#hudLayer .sling-button.cooling{opacity:.75}
-@media(max-width:750px){#hudLayer .combat-slot{width:40px;height:40px}#hudLayer .combat-slot img{width:25px;height:25px}#hudLayer .combat-slot .slot-emoji{font-size:18px}}
+#hudLayer .combat-slot i{position:absolute;left:2px;top:1px;font:bold 10px/1 Arial,sans-serif;font-style:normal;color:#38291b;background:#ffd96a;border-radius:3px;padding:1px 3px;pointer-events:none}
+#hudLayer .combat-slot.active{background:#7a5a24;border-color:#ffd96a;box-shadow:0 0 0 2px #ffd96a66}
+#hudLayer .combat-slot.cooling::after{content:"";position:absolute;inset:0;background:conic-gradient(rgba(14,8,4,.66) var(--cd,0%),transparent 0);pointer-events:none}
+#hudLayer .combat-slot .slot-cd{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;font-weight:bold;color:#fff2c8;text-shadow:0 1px 3px #000;z-index:1;pointer-events:none}
+#hudLayer .combat-slot .slot-benzido{position:absolute;right:1px;top:0;font-size:10px;pointer-events:none}
+#hudLayer .cbar-bag{background:#3a2a18}
+#hudLayer .combat-slot .slot-art,#hudLayer .combat-slot .slot-art .campeira-icon,#hudLayer .combat-slot .slot-art svg{display:block;width:32px;height:32px;pointer-events:none}
+body.combat-bar-on #hudLayer #hint{bottom:calc(var(--cbar-h,0px) + 20px)}
+@media(max-width:750px){#hudLayer .combat-bar{left:6px;bottom:6px;max-width:calc(100% - 120px);gap:5px}#hudLayer .combat-slot,#hudLayer .combat-bar .horta-bar button{width:38px;height:38px;min-width:38px;min-height:38px}#hudLayer .combat-slot img{width:24px;height:24px}#hudLayer .combat-slot .slot-emoji{font-size:17px}#hudLayer .cbar-grupo header{font-size:9px}}
+.touch .touch-dash{font-size:12px;font-weight:bold}
 
 /* ---------- Caminho da peleia (no Guia e progresso) ---------- */
 .caminho-lista{display:flex;flex-direction:column;gap:2px;margin:8px 0}

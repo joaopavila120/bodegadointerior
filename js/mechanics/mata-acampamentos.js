@@ -88,7 +88,7 @@ const CAMP_FOLK_MEET = {
   ],
   anita: [
     ['anita', 'Tu é o gaúcho que o Giuseppe mandou? Ele não fala de outra coisa!'],
-    ['sadi', 'A Anita Garibaldi? Da figurinha?'],
+    ['sadi', 'A Anita Garibaldi? A heroína dos dois mundos?'],
     ['anita', 'Ana Maria de Jesus Ribeiro, mas pode chamar de Anita. Nasci aqui pertinho, no sul de Santa Catarina, perto de Laguna.'],
     ['anita', 'Em 1839 os farrapos tomaram Laguna, e eu vi aquele italiano de camisa vermelha descendo do barco. Larguei tudo e fui junto.'],
     ['anita', 'Lutei nos barcos, carreguei munição debaixo de tiro e aprendi a montar e a atirar no meio da guerra.'],

@@ -700,3 +700,29 @@ body.combat-bar-on #hudLayer #hint{bottom:calc(var(--cbar-h,0px) + 20px)}
 .caminho-etapa.proxima{background:#f7edd2;border:1px solid #d9b25e}
 .caminho-etapa.proxima span{color:#b0742a;font-weight:bold}
 .caminho-etapa small{display:block;color:#7a6848;margin-top:2px}
+
+/* ---------- Repaginada do HUD: entradas macias, brilhos e resposta ao toque ---------- */
+@keyframes vida-sobe{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes vida-pop{0%{opacity:0;transform:scale(.94)}60%{transform:scale(1.015)}100%{opacity:1;transform:scale(1)}}
+@keyframes vida-brilho{from{left:-45%}to{left:115%}}
+.float-note{animation:vida-sobe .3s ease-out;box-shadow:0 8px 22px #000a}
+.float-note.reminder{animation:vida-sobe .3s ease-out,flash 1.6s ease-in-out 1}
+.toast{animation:vida-sobe .28s ease-out}
+.overlay .dialog{animation:vida-pop .22s ease-out}
+.rpg-box:not(.hidden){animation:vida-sobe .24s ease-out}
+.quest-tracker{transition:opacity .3s}
+.level-bar{overflow:hidden}
+.level-bar span{position:relative;background:linear-gradient(90deg,#86b457,#b8dd7f);transition:width .6s ease}
+.level-stat{position:relative;overflow:hidden}
+.level-stat::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:34%;background:linear-gradient(105deg,transparent,rgba(255,244,200,.14),transparent);animation:vida-brilho 6.5s ease-in-out infinite;pointer-events:none}
+button{transition:filter .12s,transform .08s,box-shadow .12s}
+button:not(:disabled):hover{filter:brightness(1.08)}
+button:not(:disabled):active{transform:translateY(1px)}
+.hand-slot.active{box-shadow:0 0 0 2px #ffd96a88,0 4px 10px #0007}
+#hudLayer .sling-button:not(:disabled):hover{box-shadow:0 6px 18px #000a,0 0 10px #ffd96a33}
+#hudLayer .combat-slot:not(:disabled):hover{filter:brightness(1.12)}
+#hudLayer .combat-slot.active{animation:vida-pop .18s ease-out}
+.phone-app:hover b{color:#1d2a16}
+.stat{transition:border-color .2s}
+.stat:hover{border-color:#ffd96a}
+@media (prefers-reduced-motion:reduce){.float-note,.toast,.overlay .dialog,.rpg-box:not(.hidden),#hudLayer .combat-slot.active{animation:none}.level-stat::after{display:none}}

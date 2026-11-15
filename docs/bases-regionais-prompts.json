@@ -1,0 +1,120 @@
+{
+  "mode": "built-in image_gen",
+  "guide": "docs/bases-regionais.md",
+  "style_references": [
+    "assets/images/island/vila-pesqueira-v1.png",
+    "assets/images/island/capela-costeira-v1.png",
+    "assets/images/pampa/pampa-props-v1.png",
+    "docs/previews/base-ilha-lotes.jpg",
+    "docs/previews/base-pampa-lotes.jpg"
+  ],
+  "after": "python scripts/trim-bases.py",
+  "style": "Use case: stylized-concept. Production environment sprite art for the warm detailed hand-painted PIXEL ART RPG Bodega do Sadi (southern Brazil, 1830s-1840s). Crisp dark pixel outlines, readable chunky shapes and pixel clusters, restrained earthy colors, weathered wood, warm gray stone, cream plaster, terracotta, santa-fe straw. Match the provided rustic architecture references, not photorealism and not low-poly. Camera is a TOP-DOWN RPG THREE-QUARTER view looking down about 35 degrees: front facade horizontal and facing south toward the viewer, roof and tops visible, vertical walls vertical. NOT diamond isometric: no diagonal footprint, no tilted horizon, no fisheye. The base of the front wall touches the bottom of the drawing; roof fills roughly the upper half. A usable door scaled for adult human sprites (door height about one third of the whole building height), centered on the front. Real transparent alpha background, no checkerboard, no ground plate, no grass patch, no cast shadow outside the object, no people, no animals unless asked, no lettering, no signs, no border, no watermark. Minimal plants, no flower clutter. ONE isolated object filling most of the canvas with a small transparent margin.",
+  "assets": [
+    {
+      "id": "ilha-oratorio-monge",
+      "lote": "BASE_LOTES · ilha · caixa 260x230 (proporção ~1,13)",
+      "prompt": "ONE humble hermit oratory of the wandering monk Joao Maria, a southern Brazilian folk saint, in an Azorean coastal fishing village. A tiny whitewashed lime-plaster chapel-niche (one small room, about as tall as two men) with a terracotta tile roof, a little arched opening at center with candles and a simple wooden saint inside, worn stone plinth. Beside it on the RIGHT a tall rough-hewn dark cedar cross planted in a mound of stones. In front-left a small spring (olho d'agua) in a ring of mossy stones with a wooden cup on the edge. A log bench, a straw mat and a bundle of rue (arruda) herbs hanging under the eave. Poor, clean, peaceful, sacred, not a church. Square canvas 1024x1024, whole group fills it, sharp enough to display 260 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/ilha-oratorio-monge.png"
+    },
+    {
+      "id": "ilha-quartel-canabarro",
+      "lote": "BASE_LOTES · ilha · caixa 360x270 (proporção ~1,33)",
+      "prompt": "ONE improvised field headquarters of the Farroupilha rebel army inside a coastal Azorean fishing village of Santa Catarina, 1839. A long low single-storey building: whitewashed wattle-and-daub walls over a gray stone plinth, faded ochre corner posts, terracotta tile roof, a deep open front porch (alpendre) on rough wooden posts. Under the porch: a plank table with a rolled map, an inkwell and a brass spyglass, a wooden rack with three carbines, neatly stacked ammunition crates and two small powder kegs. At the LEFT end a short wooden flagpole with the Rio-Grandense republic flag: green and yellow divided by a diagonal red band, no coat of arms, no text. Military but improvised and tidy. Different from the existing whitewashed fisherman house reference. Landscape canvas 1536x1024, building about 4:3, sharp enough to display 360 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/ilha-quartel-canabarro.png"
+    },
+    {
+      "id": "ilha-casa-nereu",
+      "lote": "BASE_LOTES · ilha · caixa 300x240 (proporção ~1,25)",
+      "prompt": "ONE small Azorean fisherman house of an old boatman, island of Santa Catarina. Whitewashed walls, sea-green painted door and window frames with wooden shutters, terracotta tile roof with a small chimney, stone plinth. On the RIGHT side a lean-to of weathered gray boards sheltering coiled ropes, two crossed oars, a lantern, woven straw fish baskets (balaios) and a fishing net hung to dry. A string of salted mullet (tainha) drying under the eave. A plain wooden bench beside the door. Lived-in, salty, cozy, clearly different from the existing blue-door fisherman house reference. Landscape canvas 1536x1024, building about 5:4, sharp enough to display 300 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/ilha-casa-nereu.png"
+    },
+    {
+      "id": "pampa-casa-comando",
+      "lote": "BASE_LOTES · pampa trecho 1 · caixa 360x260 (proporção ~1,38)",
+      "prompt": "ONE Farroupilha command house on an estancia in the open Rio Grande do Sul pampa, 1840. Single-storey colonial ranch house: thick fieldstone lower walls and whitewashed adobe above, heavy terracotta tile roof, a deep front veranda on rough dark wooden posts, solid wooden double door at center, two windows with brown shutters, iron lantern. Under the veranda: a long table with maps and a candle, a saddle on a wooden trestle and a leather chair. At the RIGHT a tall wooden flag mast taller than the roof flying the Rio-Grandense republic flag (green and yellow divided by a diagonal red band, no coat of arms, no text). At the LEFT a short palanque hitching rail. Sober, strong, the most important house of the camp. Landscape canvas 1536x1024, building about 4:3, sharp enough to display 360 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/pampa-casa-comando.png"
+    },
+    {
+      "id": "pampa-casa-anita",
+      "lote": "BASE_LOTES · pampa trecho 1 · caixa 300x240 (proporção ~1,25)",
+      "prompt": "ONE small rancho of the pampa where a couple of revolutionaries lives: wattle-and-daub walls in warm clay color with lime patches, thick thatched roof of santa-fe straw, a small front veranda on crooked posts with a woven hammock hung between two posts, a wooden door at center and one square window with an open shutter. A red shirt and a blue shawl drying on a rope line at the LEFT. A sailor's wooden sea chest with rope handles beside the door, a little garden bed of herbs, and at the RIGHT a small fogo de chao ring of stones with a black iron kettle and a gourd of chimarrao on a stump. Humble, warm, romantic, tidy. Landscape canvas 1536x1024, building about 5:4, sharp enough to display 300 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/pampa-casa-anita.png"
+    },
+    {
+      "id": "pampa-rancho-lanceiros",
+      "lote": "BASE_LOTES · pampa trecho 1 · caixa 340x175 (proporção ~1,95, comprido e baixo)",
+      "prompt": "ONE long low bunkhouse rancho of the Lanceiros Negros, the Black cavalry lancers corps of the Farroupilha Revolution. Sturdy wattle-and-daub walls with whitewash, thatched santa-fe straw roof, long front porch along the whole facade on straight wooden posts, two plain wooden doors and small square windows. Beside the main door an upright wooden rack holding six long cavalry lances with small red pennants. On a rail under the porch: leather saddles, folded ponchos and a lasso. At the RIGHT end a hollowed log water trough. Dignified, disciplined, well-kept and proud, not a ruin, not a slave quarters, no caricature. Wide landscape canvas 1536x1024, building about twice as wide as tall, sharp enough to display 340 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/pampa-rancho-lanceiros.png"
+    },
+    {
+      "id": "ilha-varal-redes",
+      "enfeite": "BASE_ENFEITES · ilha · largura 200",
+      "prompt": "ONE wooden fishing-net drying rack of an Azorean fishing village: two forked posts and a long crossbar with a brown cotton fishing net draped over it, cork floats and lead weights hanging, a woven straw basket at the foot. Landscape canvas 1024x1024, wider than tall, sharp enough to display 200 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/ilha-varal-redes.png"
+    },
+    {
+      "id": "ilha-poco",
+      "enfeite": "BASE_ENFEITES · ilha · largura 110",
+      "prompt": "ONE small round village well of stacked gray stone with whitewashed rim, a little wooden frame with a crank and rope, and a wooden bucket on the rim. Square canvas 1024x1024, sharp enough to display 110 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/ilha-poco.png"
+    },
+    {
+      "id": "ilha-banco-cruzeiro",
+      "enfeite": "BASE_ENFEITES · ilha · largura 160",
+      "prompt": "ONE roadside cruzeiro: a small rough wooden cross on a three-step whitewashed stone base with a few melted candles and a tin cup of flowers, and a plain wooden bench at its LEFT for pilgrims to rest. Landscape canvas 1024x1024, wider than tall, sharp enough to display 160 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/ilha-banco-cruzeiro.png"
+    },
+    {
+      "id": "ilha-canoa-virada",
+      "enfeite": "BASE_ENFEITES · ilha · largura 200",
+      "prompt": "ONE dugout fishing canoe (canoa de garapuvu) lying upside down on two wooden sawhorses for repair, pointing left-right, faded blue and white paint with a red stripe, a paddle and a pot of tar beside it. Wide canvas 1536x1024, about three times wider than tall, sharp enough to display 200 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/ilha-canoa-virada.png"
+    },
+    {
+      "id": "pampa-palanque",
+      "enfeite": "BASE_ENFEITES · pampa trecho 1 · largura 260",
+      "prompt": "ONE palanque hitching rail of the pampa: a long thick horizontal log on two posts, with two saddled criollo horses (one bay, one gray) tied to it, standing calmly side by side facing left, gaucho saddles (arreios) with sheepskin pelegos. Wide canvas 1536x1024, sharp enough to display 260 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/pampa-palanque.png"
+    },
+    {
+      "id": "pampa-poco",
+      "enfeite": "BASE_ENFEITES · pampa trecho 1 · largura 120",
+      "prompt": "ONE pampa well with sarilho: round fieldstone wall, a wooden frame with a winch drum and crank, rope and a leather bucket. Square canvas 1024x1024, sharp enough to display 120 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/pampa-poco.png"
+    },
+    {
+      "id": "pampa-carreta",
+      "enfeite": "BASE_ENFEITES · pampa trecho 1 · largura 260",
+      "prompt": "ONE resting gaucho ox cart (carreta) without oxen, pointing left-right: two huge solid wooden wheels, a long wooden shaft resting on the ground, a curved roof of hides and straw over the bed, a few sacks and a barrel inside. Wide canvas 1536x1024, sharp enough to display 260 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/pampa-carreta.png"
+    },
+    {
+      "id": "pampa-lenha",
+      "enfeite": "BASE_ENFEITES · pampa trecho 1 · largura 150",
+      "prompt": "ONE neat pile of split firewood logs stacked between two stakes, with a chopping stump and an axe stuck in it at the RIGHT. Landscape canvas 1024x1024, wider than tall, sharp enough to display 150 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/pampa-lenha.png"
+    },
+    {
+      "id": "pampa-bebedouro",
+      "enfeite": "BASE_ENFEITES · pampa trecho 1 · largura 180",
+      "prompt": "ONE long hollowed tree-trunk water trough for horses on two small stone supports, filled with water, a wooden bucket beside it. Wide canvas 1536x1024, sharp enough to display 180 pixels wide.",
+      "transparent": true,
+      "path": "assets/images/bases/enfeites/pampa-bebedouro.png"
+    }
+  ]
+}

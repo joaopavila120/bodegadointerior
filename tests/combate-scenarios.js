@@ -101,6 +101,20 @@
    switchMap({map:'pampa',n:PAMPA_N.capitao,x:f.x+130,y:f.y+60});closeDialog(true);worldMap().spots().find(x=>x.id==='pampa:fogofim').act();talkPick(0);k=0;while(modal==='talk'&&k++<20)talkNext();closeDialog(true);check(worldOut.map==='vila','ou pra bodega');}
   // ---------- A curva dos chefes ----------
   {const hp=k=>CAVE_BEASTS[k].hp;check(hp('cachaco')<hp('papo')&&hp('papo')<hp('mariath')&&hp('mariath')<hp('bernunciaMae')&&hp('bernunciaMae')<hp('grenfell'),'os chefes crescem na ordem da história');check(hp('moringue')>hp('capitao')&&hp('capitao')>hp('boiBarroso'),'e o pampa fecha mais forte');const t=n=>(PAMPA_MOBS[n]||[]).reduce((a,q)=>a+q[1],0);check(t(14)>=25&&t(2)>=7,'o pampa tem bem mais inimigo');}
+  // ---------- As bases em paz: Vila do Trapiche (ilha) e Porteira do Pampa ----------
+  {novo();goOutside();closeDialog(true);testeIlha();ilhaState().folks={joaomaria:G.day,canabarro:G.day};switchMap({map:'ilha',x:3000,y:4400});fecha();passa(.2);
+   const vivos=()=>(mataNight?.beasts||[]).filter(b=>b.hp>0);check(vivos().length>20&&!vivos().some(b=>baseNaZona('ilha',b.x,b.y)),'a Vila do Trapiche começa sem bicho, e o resto da ilha segue com eles');
+   passa(8);check(!vivos().some(b=>baseNaZona('ilha',b.x,b.y)),'bicho nenhum entra na vila');
+   const hp=caveState().hp;mataHurt(30,{x:3000,y:4300});check(caveState().hp===hp,'na vila, ninguém fere o Sadi');
+   const sp=worldMap().spots();check(['joaomaria','canabarro'].every(id=>sp.some(s=>s.id==='base:'+id)),'o monge e o Canabarro moram na vila depois de conhecidos');
+   sp.find(s=>s.id==='base:joaomaria').act();check(modal==='talk','e prosam com o Sadi');fecha();
+   for(const l of BASE_LOTES.filter(l=>l.mapa==='ilha')){const f=baseFrente(l);check(worldMap().canWalk(f.x,f.y),'a porta do lote '+l.id+' é chão');}
+   G.pampa??={};G.pampa.folk={neto:G.day,lanceiro:G.day,anita:G.day,canabarro:G.day};G.pampa.republica=G.day;
+   check(!baseMoradores().some(m=>m.id==='canabarro'),'o Canabarro deixa a ilha quando vai pro pampa');
+   switchMap({...pampaEntrada(1)});fecha();const ps=worldMap().spots().filter(s=>s.id.startsWith('base:'));
+   check(['neto','lanceiro','anita','canabarro','bento'].every(id=>ps.some(s=>s.id==='base:'+id)),'a Porteira do Pampa junta o Neto, o Lanceiro, a Anita, o Canabarro e o Bento');
+   for(const m of baseMoradores())check(worldMap().canWalk(m.x,m.y+10),m.id+' fica em pé no chão da porteira');
+   const F=pampaLayout(1).ferraria;check(worldMap().canWalk(F.x+F.w/2,F.y+F.h+34),'a forja do Zeferino segue livre');}
   novo();worldOut=null;mataNight=null;lendaFight=null;closeDialog(true);G.testMode=false;window.NO_SCENES=true;
   return results;
 })()

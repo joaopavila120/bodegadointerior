@@ -20,6 +20,5 @@ function restoreRoutes(){if(!G.needsRoutes)return;delete G.needsRoutes;resetQueu
 
 function nearest(){const p=G.player,options=[];for(const f of furniture()){const d=distRect(p,f);if(d<58)options.push({kind:'station',id:f.id,obj:f,d,label:f.label});}for(const item of G.floor){const d=Math.hypot(p.x-item.x,p.y-item.y);if(d<49)options.push({kind:'floor',obj:item,d:d-11,label:item.item.spoiled?'Recolher item estragado':'Recolher '+itemLabel(item.item)});}for(const puddle of G.puddles){const d=Math.hypot(p.x-puddle.x,p.y-puddle.y);if(d<40)options.push({kind:'station',id:'puddle:'+puddle.id,obj:{x:puddle.x-20,y:puddle.y-12,w:40,h:24},d:d-5,label:'Secar poça · segure E'});}return options.sort((a,b)=>a.d-b.d)[0]||null;}
 
-function nearestPerson(){return personCandidates().map(c=>({...c,d:Math.hypot(c.x-G.player.x,c.y-G.player.y)})).filter(c=>c.d<105).sort((a,b)=>a.d-b.d)[0]||null;}
 
 function personCandidates(){const list=[];for(const c of G.shop)if(c.state!=='leave')list.push({person:c.person,x:c.x,y:c.y,actor:c});for(const g of G.groups){if(g.state==='leave')continue;const t=G.tables.find(t=>t.id===g.table);for(let j=0;j<g.size;j++)list.push({person:groupPerson(g,j),...groupSeatPosition(g,j),actor:g,table:t,diner:g.diners?.[j]});}return list;}

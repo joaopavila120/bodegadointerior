@@ -4,11 +4,11 @@ Geradas com a ferramenta integrada imagegen. PNGs com transparência preservada;
 
 Arquivos finais integrados ao jogo:
 
-- [Sadi caminhando de lado](../assets/images/sadi-side-walk.png)
+- Sadi caminhando de lado (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 - [Galpão de melhorias](../assets/images/world/architecture-shop-melhorias.png)
 - [Galpão de sementes](../assets/images/world/architecture-shop-sementes.png)
 - [Açougue](../assets/images/world/architecture-shop-carnes.png)
-- [Atacado](../assets/images/world/architecture-shop-atacado.png)
+- Atacado (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 - [Pecuária](../assets/images/world/architecture-shop-pecuaria.png)
 
 ## sadi-side-walk.png

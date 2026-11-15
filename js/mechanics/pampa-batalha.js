@@ -134,7 +134,6 @@ function batalhaCavaleiro(b, dt, N) {
 function batalhaAlvoLivre(N) { const ocupados = new Set(N.beasts.filter(q => q.hp > 0 && q.batalha).map(q => q.alvo)); const livres = N.aliados.filter(a => a.papel === 'linha' && !ocupados.has(a)); return livres[Math.floor(Math.random() * livres.length)] || N.aliados.find(a => a.papel === 'linha') || null; }
 
 // ---------- As cenas da batalha ----------
-function batalhaFalaTalk(lines) { return lines.map(l => typeof l[0] === 'string' && !['card', 'sadi'].includes(l[0]) ? [pampaQuem(l[0]), ...l.slice(1)] : l); }
 moringueApeia = function (b, N) {
   pampaDerruba(b, N, 'Caiu do cavalo!'); b.fase = 2; b.state = 'chase'; b.stun = 2.4; b.cool = 2; N.vento = { t: 5, ativo: 0, dir: 1 }; keys.clear(); golpeTreme = Math.max(golpeTreme, .35);
   batalhaRaio(N, { x: b.x + 70, y: b.y + 10 }); AudioEngine.neigh?.(.06);

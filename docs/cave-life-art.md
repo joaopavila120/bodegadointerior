@@ -78,7 +78,7 @@ Pixel art production sprite atlas for a warm detailed southern Brazilian RPG. Ma
 
 ### saci-walk-v1
 
-Arquivo: [saci-walk-v1.png](../assets/images/expansion/saci-walk-v1.png) — intermediário; o jogo usa `saci-walk-v2.png`.
+Arquivo: saci-walk-v1.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git) — intermediário; o jogo usa `saci-walk-v2.png`.
 
 Sem referência de imagem.
 

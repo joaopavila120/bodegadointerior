@@ -109,7 +109,7 @@ Use case: stylized-concept. Production detailed pixel-art sprites for rustic 2D 
 
 ### secondary-common-v1.png
 
-[Imagem final](../assets/images/expansion/secondary-common-v1.png)
+Imagem final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alpha. Warm rustic detailed pixels dark brown outlines, slight overhead camera. STRICT evenly spaced equal grid, each figure fully inside own cell with padding. No text no lines no background. Exactly 6 columns x 4 rows equal cells. Each row is ONE person, columns 1-2 walking toward viewer two alternate steps, columns 3-4 walking RIGHT two alternate steps, columns 5-6 walking AWAY/back two alternate steps. Row1 Lucia: brown hair in bun, blue plaid shirt, blue jeans, boots. Row2 Anselmo/Arlindo: gray bearded elderly gaucho in brown hat vest cream shirt dark gray bombacha boots. Row3 Rosa: brown curly hair, terracotta blouse green long skirt brown shoes. Row4 Nair: elderly woman white bun mustard cardigan floral blouse navy skirt. Same person appearance across row.
@@ -117,7 +117,7 @@ Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alph
 
 ### secondary-inter-v1.png
 
-[Imagem final](../assets/images/expansion/secondary-inter-v1.png)
+Imagem final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alpha. Warm rustic detailed pixels dark brown outlines, slight overhead camera. STRICT evenly spaced equal grid, each figure fully inside own cell with padding. No text no lines no background. Exactly 6 columns x 6 rows equal cells. Each row ONE person; columns1-2 front walking alternate steps, cols3-4 RIGHT walking alternate steps, cols5-6 BACK walking alternate steps. Six Internacional fans in red/white rustic gaucho clothes: row1 brown bearded young man red shirt white apron gray bombacha; row2 brown bun young woman red white-trim full dress; row3 white beard old man brown hat red poncho gray bombacha; row4 curly brown hair woman white blouse red skirt; row5 black beard man brown hat white shirt red striped poncho gray bombacha; row6 clean shaven young man red beret red thin white striped shirt white bombacha. Full bodies. Keep identities same across row.
@@ -125,7 +125,7 @@ Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alph
 
 ### secondary-gremio-v1.png
 
-[Imagem final](../assets/images/expansion/secondary-gremio-v1.png)
+Imagem final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alpha. Warm rustic detailed pixels dark brown outlines, slight overhead camera. STRICT evenly spaced equal grid, each figure fully inside own cell with padding. No text no lines no background. Exactly 6 columns x 6 rows equal cells. Each row ONE person; columns1-2 front walking alternate steps, cols3-4 RIGHT walking alternate steps, cols5-6 BACK walking alternate steps. Six Gremio fans in BLUE BLACK WHITE rustic gaucho clothes: row1 brown bearded man blue black striped football shirt brown bombacha boots; row2 brown bun woman blue plaid shirt jeans; row3 white beard older man brown hat blue poncho gray bombacha; row4 curly brunette woman blue blouse black full skirt; row5 black moustache man black hat blue black striped shirt gray bombacha; row6 young clean shaven man blue beret white shirt blue scarf dark bombacha. No lettering. Full bodies.
@@ -133,7 +133,7 @@ Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alph
 
 ### secondary-gremio2-v1.png
 
-[Imagem final](../assets/images/expansion/secondary-gremio2-v1.png)
+Imagem final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: stylized-concept. Pixel art RPG walking sprite atlas. Transparent alpha. Warm rustic detailed pixels dark brown outlines, slight overhead camera. STRICT evenly spaced equal grid, each figure fully inside own cell with padding. No text no lines no background. Exactly 6 columns x 6 rows equal cells. Each row ONE person; columns1-2 front walking alternate steps, cols3-4 RIGHT walking alternate steps, cols5-6 BACK walking alternate steps. Six additional Gremio football fans dressed traditional blue black white: row1 older black mustache man black hat blue black striped jersey dark bombacha; row2 middle aged woman brown bun blue dress white apron; row3 old white beard man blue hat black waistcoat blue shirt gray bombacha; row4 young curly black hair woman white blouse blue long skirt; row5 stubbled man brown hat blue black striped poncho dark trousers; row6 boy brown hair blue beret striped blue black football shirt white bombacha. Full bodies.

@@ -2,7 +2,7 @@
 
 Arte gerada com a ferramenta integrada imagegen, usando a primeira folha lateral como referência.
 
-Arquivo final: [assets/images/sadi-side-walk-v2.png](../assets/images/sadi-side-walk-v2.png).
+Arquivo final: assets/images/sadi-side-walk-v2.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git).
 
 O renderizador alinha cada pose pelo eixo da cabeça e do quadril; usa oito quadros de caminhada e o nono como descanso. A cadência lateral acompanha o deslocamento, limitada a 1,65 ciclos por segundo.
 

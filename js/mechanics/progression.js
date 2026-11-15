@@ -26,8 +26,6 @@ function bodegaLevel(xp=G.xp){let n=1;LEVELS.forEach((l,i)=>{if(xp>=l.xp)n=i+1;}
 function levelInfo(level=bodegaLevel()){return LEVELS[level-1];}
 function levelProgress(){const l=bodegaLevel();if(l>=LEVELS.length)return 1;return clamp((G.xp-LEVELS[l-1].xp)/(LEVELS[l].xp-LEVELS[l-1].xp),0,1);}
 function gainXP(n){G.xp=Math.max(0,(G.xp||0)+n);}
-// O aluguel cresce com a bodega; o caderno de fiado também comporta mais.
-function rentForLevel(level=bodegaLevel()){return 15+8*(level-1);}
 const COSTELAO_SUPPLIES=9; // lenha extra e sal grosso do costelão
 function creditLimit(level=bodegaLevel()){return 40+20*level;}
 

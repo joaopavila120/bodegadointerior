@@ -71,7 +71,6 @@ function trechoExitY(n) { const y = trechoEnds(n).yOut; return trechoBiome(n) ==
 function trechoEnds(n) { const R = caveRand(n * 7349 + G.day * 104729 + 31); return { R, yIn: 520 + R() * (TRECHO.H - 1040), yOut: 520 + R() * (TRECHO.H - 1040) }; }
 function trechoRiverX(T, y) { const r = T.river; return r.x0 + Math.sin(y / 330 + r.ph) * 110 + Math.sin(y / 130 + r.ph2) * 40; }
 function trechoRiverHalf(T, y) { return (T.biome === 'restinga' ? 30 : 34) + 4 * Math.sin(y / 60); }
-function trechoBeach(T) { return T.biome === 'restinga' && T.n >= TRECHO.beachFrom; }
 function trechoShoreY(x) { return TRECHO.shoreY + Math.sin(x / 300) * 18 + Math.sin(x / 97) * 6; }
 function trechoTrail(id, half, ctrl) {
   const pts = mataSmooth(ctrl), normals = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], c = pts[Math.min(pts.length - 1, i + 1)], dx = c[0] - a[0], dy = c[1] - a[1], L = Math.hypot(dx, dy) || 1; return [-dy / L, dx / L]; });
@@ -393,7 +392,6 @@ REGION_NAMES.trecho = 'Mata adentro';
 let trechoSayAt = 0;
 function trechoSay(text) { if (performance.now() - trechoSayAt < 3500) return; trechoSayAt = performance.now(); floatNote(text); AudioEngine.bad?.(); }
 const TRECHO_DEEPER = ['Mais fundo na mata.', 'A picada segue mato adentro.', 'O mato fecha de novo atrás de ti.', 'Cheiro de terra molhada e bicho por perto.'];
-function trechoTitleText(n) { const b = trechoBiome(n); return TRECHO_BIOME_NAMES[b] + ' · ' + TRECHO_BIOME_TEXT[b] + (TRECHO_BOSSES[n] && !trechoBossDone(TRECHO_BOSSES[n]) ? ' Tem coisa grande no meio da picada.' : TRECHO.camps.includes(n) ? ' Há um acampamento neste trecho.' : ''); }
 function trechoBossDone(boss) { return !!mataState()[boss]; }
 // Os chefes (Javali Cachaço no 7, Lagarto do papo-amarelo no 13) moram em mata-chefes.js.
 function trechoBossEnter(T) {}

@@ -120,7 +120,6 @@ function mataProseLine(person) {
 // ---------- Butiá e pitanga: curam em qualquer briga ----------
 function healFruit(id) { return HEAL_FRUITS.find(f => f.id === id) || null; }
 function fruitQty(id) { return Math.floor(bagQty(id)); }
-function butiaQty() { return fruitQty('butia'); }
 function healFruits() { return HEAL_FRUITS.filter(f => fruitQty(f.id) > 0); }
 function butiaUse(hpOf, maxOf, refresh, id = 'butia') {
   if (fruitQty(id) < 1) return false; const st = caveState(), p = worldOut, name = healFruit(id).name.toLowerCase();

@@ -98,7 +98,6 @@ function rewardPlain(rw) { return rewardParts(rw).map(([, t]) => t).join(', '); 
 // A conversa do Valter (prólogo e dicas) usa a mesma janela.
 function valterTalk(lines, then, ok) { talk(lines, then, ok); }
 function valterNext() { talkNext(); }
-function valterSkip() { talkSkip(); }
 // Popups da história (missões, dicas) só aparecem quando a cena está livre; os testes automáticos desligam as cenas.
 // Aviso de bloqueio (lugar fechado, tutorial, região): caixa de diálogo no meio da tela, e não aviso lateral.
 function warnDialog(title, text) { openDialog(title, `<p>${text}</p><div class="actions"><button class="primary" data-act="close">Entendi</button></div>`, 'aviso'); AudioEngine.bad(); }

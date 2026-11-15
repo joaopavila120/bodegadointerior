@@ -347,7 +347,6 @@ WORLD_MAPS.salao = interiorMap({
 // ---------- Lojas da Fronteira ----------
 // Armazém Querência (produtos para agricultura) e Casa do Campeiro (produtos para pecuária): prateleiras e o caixa.
 // No balcão, a compra sai na hora (sem esperar a entrega) e um pouco mais barata que pelo celular.
-const STORE_DISCOUNT = .9;
 Object.assign(FURN, {
   // Prateleira de loja, com a mercadoria de cada uma.
   storeShelf(i) {

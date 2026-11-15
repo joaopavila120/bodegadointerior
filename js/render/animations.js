@@ -347,9 +347,6 @@ function drawCambona(x, y, w, h) {
   for (let i = 0; i < n; i++) { const a = (frameClock * (brewing ? 1.1 : .5) + i / n) % 1; ellipse(ox + 1 * k - a * 10, oy + 7 * k - a * 26, 2 + a * 4, 3 + a * 5, `rgba(255,241,215,${(brewing ? .6 : .35) * (1 - a)})`); }
   if (G.stock.cafe > 0) food('cafe', ox + sw - 6, oy + 18 * k, 26);
 }
-function drawCupSteam(x, y) {
-  for (let k = 0; k < 2; k++) { const a = (frameClock * .5 + k * .5) % 1; ellipse(x - 4 + k * 8 + Math.sin(a * 7 + k) * 3, y - a * 24, 2 + a * 3, 3 + a * 4, `rgba(255,241,215,${.4 * (1 - a)})`); }
-}
 // Caixas do fornecedor empilhadas ao lado de quem entrega.
 const DELIVERY_TIME = 3.5;
 function crateLanding(i) { return .35 + i * .45 + .22; }

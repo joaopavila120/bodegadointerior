@@ -33,9 +33,9 @@ Use case: stylized-concept. Production sprite animation sheet on TRUE transparen
 
 ### secondary-common-v2.png
 
-[PNG final](../assets/images/expansion/secondary-common-v2.png)
+PNG final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
-Referência: [secondary-common-v1.png](../assets/images/expansion/secondary-common-v1.png)
+Referência: secondary-common-v1.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: precise-object-edit. The reference is a sprite sheet of 4 different rural Brazilian RPG characters, one identity per row. Preserve EACH row's identity, clothing colors, hats, hairstyle and pixel-art style. REBUILD the sheet as EXACTLY NINE columns and 4 rows, TRUE transparent background, no labels, generous gutters. Critical requested fix: legs must visibly move; old sheet repeats nearly identical poses and is NOT a usable walk cycle. New columns 1,2,3: character walking toward camera. Columns 4,5,6: walking RIGHT in side profile. Columns 7,8,9: walking AWAY, back view. Within each triplet use CLEARLY DIFFERENT SILHOUETTES: A CONTACT POSE with left boot reaching far forward and right boot trailing; B PASSING POSE with feet close together under hips, one knee lifted and bent at 80 degrees; C OPPOSITE CONTACT POSE with right boot reaching forward and left boot trailing. Arms counter-swing opposite leading leg. Side view especially: first pose wide stride, second pose very narrow stride with bent lifted knee, third wide stride opposite leg. Front/back alternating boots must change vertical position visibly. For skirts show shoes, sway the hem and swing legs under it. Each identity stays same scale, body proportions, head height, consistent feet baseline. Render all 36 complete figures with clean separated transparent gutters, no cutoffs, no scenery. This is an animation production asset, not a lineup of static duplicate portraits.
@@ -43,9 +43,9 @@ Use case: precise-object-edit. The reference is a sprite sheet of 4 different ru
 
 ### secondary-inter-v2.png
 
-[PNG final](../assets/images/expansion/secondary-inter-v2.png)
+PNG final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
-Referência: [secondary-inter-v1.png](../assets/images/expansion/secondary-inter-v1.png)
+Referência: secondary-inter-v1.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: precise-object-edit. The reference is a sprite sheet of 6 different rural Brazilian RPG characters, one identity per row. Preserve EACH row's identity, clothing colors, hats, hairstyle and pixel-art style. REBUILD the sheet as EXACTLY NINE columns and 6 rows, TRUE transparent background, no labels, generous gutters. Critical requested fix: legs must visibly move; old sheet repeats nearly identical poses and is NOT a usable walk cycle. New columns 1,2,3: character walking toward camera. Columns 4,5,6: walking RIGHT in side profile. Columns 7,8,9: walking AWAY, back view. Within each triplet use CLEARLY DIFFERENT SILHOUETTES: A CONTACT POSE with left boot reaching far forward and right boot trailing; B PASSING POSE with feet close together under hips, one knee lifted and bent at 80 degrees; C OPPOSITE CONTACT POSE with right boot reaching forward and left boot trailing. Arms counter-swing opposite leading leg. Side view especially: first pose wide stride, second pose very narrow stride with bent lifted knee, third wide stride opposite leg. Front/back alternating boots must change vertical position visibly. For skirts show shoes, sway the hem and swing legs under it. Each identity stays same scale, body proportions, head height, consistent feet baseline. Render all 54 complete figures with clean separated transparent gutters, no cutoffs, no scenery. This is an animation production asset, not a lineup of static duplicate portraits.
@@ -53,9 +53,9 @@ Use case: precise-object-edit. The reference is a sprite sheet of 6 different ru
 
 ### secondary-gremio-v2.png
 
-[PNG final](../assets/images/expansion/secondary-gremio-v2.png)
+PNG final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
-Referência: [secondary-gremio-v1.png](../assets/images/expansion/secondary-gremio-v1.png)
+Referência: secondary-gremio-v1.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: precise-object-edit. The reference is a sprite sheet of 6 different rural Brazilian RPG characters, one identity per row. Preserve EACH row's identity, clothing colors, hats, hairstyle and pixel-art style. REBUILD the sheet as EXACTLY NINE columns and 6 rows, TRUE transparent background, no labels, generous gutters. Critical requested fix: legs must visibly move; old sheet repeats nearly identical poses and is NOT a usable walk cycle. New columns 1,2,3: character walking toward camera. Columns 4,5,6: walking RIGHT in side profile. Columns 7,8,9: walking AWAY, back view. Within each triplet use CLEARLY DIFFERENT SILHOUETTES: A CONTACT POSE with left boot reaching far forward and right boot trailing; B PASSING POSE with feet close together under hips, one knee lifted and bent at 80 degrees; C OPPOSITE CONTACT POSE with right boot reaching forward and left boot trailing. Arms counter-swing opposite leading leg. Side view especially: first pose wide stride, second pose very narrow stride with bent lifted knee, third wide stride opposite leg. Front/back alternating boots must change vertical position visibly. For skirts show shoes, sway the hem and swing legs under it. Each identity stays same scale, body proportions, head height, consistent feet baseline. Render all 54 complete figures with clean separated transparent gutters, no cutoffs, no scenery. This is an animation production asset, not a lineup of static duplicate portraits.
@@ -63,9 +63,9 @@ Use case: precise-object-edit. The reference is a sprite sheet of 6 different ru
 
 ### secondary-gremio2-v2.png
 
-[PNG final](../assets/images/expansion/secondary-gremio2-v2.png)
+PNG final (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
-Referência: [secondary-gremio2-v1.png](../assets/images/expansion/secondary-gremio2-v1.png)
+Referência: secondary-gremio2-v1.png (versão antiga, saiu na limpeza de 15/11/2026; está no histórico do git)
 
 ```text
 Use case: precise-object-edit. The reference is a sprite sheet of 6 different rural Brazilian RPG characters, one identity per row. Preserve EACH row's identity, clothing colors, hats, hairstyle and pixel-art style. REBUILD the sheet as EXACTLY NINE columns and 6 rows, TRUE transparent background, no labels, generous gutters. Critical requested fix: legs must visibly move; old sheet repeats nearly identical poses and is NOT a usable walk cycle. New columns 1,2,3: character walking toward camera. Columns 4,5,6: walking RIGHT in side profile. Columns 7,8,9: walking AWAY, back view. Within each triplet use CLEARLY DIFFERENT SILHOUETTES: A CONTACT POSE with left boot reaching far forward and right boot trailing; B PASSING POSE with feet close together under hips, one knee lifted and bent at 80 degrees; C OPPOSITE CONTACT POSE with right boot reaching forward and left boot trailing. Arms counter-swing opposite leading leg. Side view especially: first pose wide stride, second pose very narrow stride with bent lifted knee, third wide stride opposite leg. Front/back alternating boots must change vertical position visibly. For skirts show shoes, sway the hem and swing legs under it. Each identity stays same scale, body proportions, head height, consistent feet baseline. Render all 54 complete figures with clean separated transparent gutters, no cutoffs, no scenery. This is an animation production asset, not a lineup of static duplicate portraits.

@@ -69,8 +69,6 @@ function deliverGift(item){
  if(cash){G.cash=round(G.cash+cash);G.stats.aid+=cash;}
  showBanner(PEOPLE[item.person].name+' te deu um presente!',(names.length?names.join(' e '):'')+(cash?(names.length?' · ':'')+money(cash)+' (a peça já era tua)':'')+' · '+item.text,'gift');AudioEngine.heart();save();
 }
-// Entrega na hora, com a pessoa presente (ex.: fim do tutorial de bocha com o Mano Lima).
-function giveGift(person,gift){const key=giftKey(person,gift.at);G.giftQueue=(G.giftQueue||[]).filter(g=>g.key!==key);deliverGift({person,key,decor:gift.decor,text:gift.text});}
 // Depois do expediente: presentes de visita e a bandeira do Mano Lima no fim do segundo dia.
 function queueAfterHoursGifts(){
  const today=G.visitedToday?.day===G.day?G.visitedToday.ids:[];

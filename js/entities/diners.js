@@ -89,8 +89,3 @@ function deliverToDiner(g,item,table){
  if(!d.orders.length){pay(d.delivered,d.person,d.patience/d.maxPatience,true,g.x,g.y);d.delivered=[];d.status=d.later?.length&&G.phase==='open'&&!g.training?'thinking':'served';d.think=thinkTime(THINK_NEXT);}
  finishToastLesson(g,item);deliveryConversation(d.person,g,d);tutorialDelivered(g,item.pid);completeDinerRound(g);save();
 }
-function renderTableOrders(){
- const host=$('tableOrders');if(!host)return;
- const groups=G.groups.filter(g=>['seated','chat'].includes(g.state));
- host.innerHTML=groups.length?groups.map(g=>{ensureDiners(g);return `<section class="table-ticket"><b>Mesa ${g.table+1} · ${g.size}/4 lugares</b>${g.diners.map(d=>`<div class="diner-ticket ${d.status}"><span>${escapeHTML(PEOPLE[d.person].name)}</span><strong>${d.status==='waiting'?Math.ceil(d.patience)+' s':d.status==='served'?'✓ Pago':'Desistiu'}</strong><small>${d.orders.map(nameOf).join(' + ')|| (d.status==='served'?'Aproveitando a prosa':'Pedido cancelado')}</small>${d.status==='waiting'?`<progress max="${d.maxPatience}" value="${d.patience}" aria-label="Tempo de ${escapeHTML(PEOPLE[d.person].name)}"></progress>`:''}</div>`).join('')}</section>`;}).join(''):'<p class="muted">Os pedidos aparecem aqui quando os fregueses sentam. Cada pessoa tem seu prazo.</p>';
-}

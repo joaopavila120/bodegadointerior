@@ -6,7 +6,6 @@
 
 const WORLD_MAPS = {};
 let worldOut = null, worldTufts = {};
-function worldTestOn() { return true; }
 function worldMap() { return WORLD_MAPS[worldOut?.map || 'vila']; }
 function worldCanWalk(x, y) { return worldMap().canWalk(x, y); }
 function worldNearest() { const p = worldOut; if (!p) return null; let best = null, bd = 90; for (const s of [...walkerSpots(), ...worldMap().spots()]) { const d = Math.hypot(s.x - p.x, s.y - p.y); if (d < Math.min(bd, s.radius ?? 90)) { bd = d; best = s; } } return best; }
@@ -60,7 +59,6 @@ function worldBanner(title, text) { showBanner(title, text, 'info', { world: tru
 // ---------- Gente na estrada ----------
 // Cada mapa tem seus moradores, que andam pelas ruas quando não estão na bodega. E puxa uma prosa.
 let worldWalkers = [], worldWalkersKey = '';
-function walkerPos(w) { const a = w.line[w.seg], b = w.line[w.seg + 1]; return { a, b }; }
 // A turma da estrada só muda quando muda o mapa, o dia, a noite ou uma região abre (antes mudava a cada quadro e piscava).
 function walkersKey(M) { return M.id + ':' + G.day + ':' + worldNight() + ':' + lateNight() + ':' + prologueActive() + ':' + (G.regions ? Object.values(G.regions).join() : ''); }
 // Personagens menores (sem casa): fregueses comuns e torcedores que também andam pelas ruas.

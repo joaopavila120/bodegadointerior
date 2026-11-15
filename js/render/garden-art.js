@@ -75,15 +75,6 @@ function gardenSurroundings(layers){
   }
   for(const [x,y,i,w,h] of [[1330,350,9,70,60],[1380,710,10,65,55],[1140,720,11,70,66]])layers.push({y,draw:()=>worldSprite('garden',i,x-w/2,y-h,w,h)});
 }
-function worldRanchGround(layers){
-  const C=RANCH;
-  if(!regionalEnvironmentReady('curral')){
-  for(const r of [C.coop,C.quail,C.cocho])worldGroundPatch({x:r.x-35,y:r.y+r.h-45,w:r.w+70,h:125,kind:1,seed:.6});
-  worldGroundPatch({x:C.gate-65,y:760,w:130,h:170,kind:1,seed:.3});
-  worldGroundPatch({x:220,y:820,w:1100,h:80,kind:1,seed:.2});
-  }
-  for(const [x,y] of [[165,680],[1410,670],[180,875],[1420,875]])layers.push({y,draw:()=>worldSprite('frontier-flora',0,x-40,y-50,80,50)});
-}
 useWorldArt('drawHortaLayers',(layers,seen)=>{
   const r=VILA.horta;if(!seen(r.x+r.w/2,r.y+r.h/2,r.w))return true;
   const h=hortaState();

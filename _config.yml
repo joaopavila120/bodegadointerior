@@ -6,7 +6,6 @@ exclude:
   - scripts
   - tests
   - tools
-  - tmp
   - "assets/images/world/preview-*.png"
   - .sass-cache
   - .jekyll-cache

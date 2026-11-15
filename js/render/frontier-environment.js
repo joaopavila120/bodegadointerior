@@ -50,10 +50,6 @@ function frontierRoadPath(r, expansion = 0) {
   for (let t = length; t > 0; t -= 12) p.lineTo(...point(t,1));
   p.lineTo(...point(0,1)); p.closePath(); return p;
 }
-function frontierRoads() {
-  return [...VILA_ROADS, ...worldApproachRects(WORLD_MAPS.vila),
-    [505,885,95,65], [1690,VILA.rail-20,VILA.W-1690,48]];
-}
 // O rio Uruguai: água de rio (verde-barrento, mais escura no fundo e mais clara na beira), a outra margem com mato e
 // a beira molhada com uma linha de espuma. A água que se mexe (correnteza, brilhos, espuma) fica em drawVilaRiver.
 const FRONTIER_FAR = x => 66 + Math.sin(x / 150) * 18 + Math.sin(x / 47) * 6;   // a margem uruguaia, lá do outro lado

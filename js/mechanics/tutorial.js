@@ -17,7 +17,6 @@ const TUTORIAL_GOODS=['pao_xis','burger','ovo','queijo','salada','cerveja','refr
 // O tutorial da bodega acontece no primeiro dia de portas abertas: o dia em que o prólogo da roça termina (ou o dia 1).
 function firstDay(){return G.day===(G.tutorial?.day||1);}
 function tutorialStockMissing(){if(!G.tutorial?.stockLesson||!tutorialActive())return [];return TUTORIAL_GOODS.filter(k=>(G.stock[k]||0)+bagQty(k)+G.deliveries.filter(d=>d.key===k).reduce((n,d)=>n+d.qty,0)<=0);}
-function startWithoutStock(g){let cash=0;for(const[k,v]of Object.entries(GOODS))if(v.initial>0&&k!=='azeite'){cash+=v.initial*v.cost;g.stock[k]=0;}g.cash=round(g.cash+cash);g.stats=stats(g.cash);g.tutorial.stockLesson=true;g.tutorial.cleanLesson=true;for(const t of g.tables)if(!t.unlock){t.dirty=true;t.plates=2;}}
 function tutorialDirtyTables(){return G.tutorial?.cleanLesson&&tutorialActive()&&!isCampo()?G.tables.filter(t=>t.dirty&&!t.unlock&&!t.group):[];}
 // Antes de abrir no primeiro dia: comprar, limpar as mesas e abrir no caixa.
 function tutorialPrepHint(){

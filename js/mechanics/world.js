@@ -5,7 +5,6 @@ function improvementCount(g=G){return UPGRADES.filter(u=>g.up[u.id]).length;}
 
 function wetFootsteps(actor,distance){if(G.event.id!=='chuva'||actor.state==='leave'||!['open','closing'].includes(G.phase))return;actor.wetDistance=(actor.wetDistance||0)+distance;actor.dripDistance=(actor.dripDistance||0)+distance;if(actor.wetDistance>750||actor.dripDistance<62)return;actor.dripDistance=0;const x=actor.x,y=actor.y;if(G.puddles.length>=24||G.puddles.some(p=>Math.hypot(p.x-x,p.y-y)<30)||!canWalk(x,y))return;G.puddles.push({id:G.next++,x,y,r:18+Math.random()*6});}
 
-function footballUnlocked(day=G.day){return day>=2;}
 function isFootball(){return ['gremio','inter','grenal'].includes(G.event.id);}
 function isDerbyGroup(g){return G.event.id==='grenal'&&g?.size>1&&new Set(g.members?.map(p=>PEOPLE[p].team)).size>1;}
 function footballTick(dt){if(!isFootball()||G.phase!=='open')return;const e=G.event;if(e.fired.result)return;if(G.elapsed>=DAY-25){finishFootball();return;}if(G.elapsed>=75&&!e.fired.halftime){e.fired.halftime=true;for(const g of G.groups.filter(g=>['seated','chat'].includes(g.state))){addDinerRound(g);}say('Intervalo na TV! Sai mais uma rodada para as mesas.');AudioEngine.crowd();}if(fightsAllowed()&&e.id==='grenal')for(const t of availableTables()){const g=G.groups.find(g=>g.id===t.group);if(!g||!isDerbyGroup(g)||!['seated','chat'].includes(g.state)||t.fight||t.fightCooldown)continue;g.derbyAge=(g.derbyAge||0)+dt;if(g.derbyAge>=18){g.derbyAge=0;triggerFight(t);}}}

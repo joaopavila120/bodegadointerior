@@ -37,7 +37,6 @@ function caminhoEtapas() {
     { done: !!p.capitao, t: 'Vencer o capitão de cavalaria', o: 'Perto do palanque: é o caminho até Porongos.' }
   ];
 }
-function caminhoProximo() { return caminhoEtapas().find(e => !e.done) || null; }
 function caminhoPeleiaHTML() {
   const etapas = caminhoEtapas(), feito = etapas.filter(e => e.done).length;
   let proximoAchado = false;

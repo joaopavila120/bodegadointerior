@@ -16,7 +16,6 @@ function fixedTableModes(state=G){for(const t of state.tables){t.mode=t.id===1||
 function plannedEvent(){if(!G.nextEvent){G.nextEvent=eventForDay(G.day+1,G);save();}return G.nextEvent;}
 
 // A porta da cancha (fechada, com placa) está pintada no cenário, na parede direita (room2.png).
-const CANCHA_DOOR={id:'cancha',x:1485,y:300,w:80,h:80,label:'Porta da cancha de bocha'};
 const CANCHA_DOOR_SHAPE=[[1485,181],[1564,207],[1564,372],[1485,324]];
 // A cancha agora tem entrada só por fora, pelo pátio.
 function nearCanchaDoor(){return false;}

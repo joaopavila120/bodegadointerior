@@ -183,7 +183,6 @@ function costelaoNoMeat(){
  openDialog('Domingo de costelão sem carne',`<p>${text}</p><div class="actions">${btn.join('')}</div>`,'costelaoMeat');
 }
 function skipCostelao(){if(G.event.id!=='costelao'||G.phase!=='prep')return;G.event={id:'normal',seen:true,fired:{},noCostelao:true};closeDialog(true);floatNote('🔥 Sem costelão hoje: a bodega abre como um dia normal.');save();refreshHUD();openDay();}
-function costelaoPossible(){if(!G.costelaoTaught||G.testMode)return true;return G.stock.costela_crua>0||G.stock.costela>0||hasCash(Math.min(BOI_COST,MANTA_BUY_COST));}
 // O primeiro costelão fecha sozinho depois dos três pedidos: não conta como fechar cedo.
 function firstCostelaoDone(){return firstCostelao()&&campoState().firstOrders>=FIRST_COSTELAO_ORDERS;}
 function maioneseAvailable(){return G.stock.maionese>0||G.stock.ovo>0&&G.stock.azeite>0;}

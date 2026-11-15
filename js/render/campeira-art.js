@@ -64,11 +64,3 @@ drawHortaLayers=function(layers,seen){
   }});
 };
 
-const homeMaterialTiles=new Map();
-function homeMaterial(index,x,y,w,h){
-  if(!homeMaterialTiles.has(index)){
-    const c=CAMPEIRA_CROPS['home-earth-materials-v1'].frames[index],tile=document.createElement('canvas');tile.width=tile.height=320;
-    tile.getContext('2d').drawImage(CAMPEIRA_ART['home-earth-materials-v1'],...c,0,0,320,320);homeMaterialTiles.set(index,tile);
-  }
-  ctx.save();ctx.fillStyle=ctx.createPattern(homeMaterialTiles.get(index),'repeat');ctx.fillRect(x,y,w,h);ctx.restore();
-}

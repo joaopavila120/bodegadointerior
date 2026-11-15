@@ -128,7 +128,7 @@ function pampaLayout(n = pampaArea()) {
   // A estrada: desce sempre pro sul, em zigue-zague, e passa pelo meio do campo do chefe.
   const ctrl = [[xIn, -60], [xIn, 190]];
   const desce = (x0, y0, x1, y1) => { const k = Math.max(1, Math.round((y1 - y0) / 480)); let lado = R() < .5 ? -1 : 1; for (let i = 1; i < k; i++) { const t = i / k; ctrl.push([clamp(x0 + (x1 - x0) * t + lado * (240 + R() * 220), 450, W - 450), y0 + (y1 - y0) * t]); lado = -lado; } ctrl.push([x1, y1]); };
-  if (n === 1) { L.bays.push({ id: 'vila', x: 1900, y: 830, rx: 1050, ry: 400 }); desce(xIn, 190, 1900, 430); ctrl.push([1900, 830], [1900, 1230]); desce(1900, 1230, xOut, H - 190); ctrl.push([xOut, H + 60]); }
+  if (n === 1) { L.bays.push({ id: 'vila', x: 2100, y: 1050, rx: 1500, ry: 850 }); desce(xIn, 190, 1900, 430); ctrl.push([1900, 830], [1900, 1230]); desce(1900, 1230, xOut, H - 190); ctrl.push([xOut, H + 60]); }
   else if (L.palco) {
     const q = L.palco; L.bays.push({ id: 'palco', ...q }); desce(xIn, 190, q.x, q.y - q.ry); ctrl.push([q.x, q.y]);
     if (n !== last) { ctrl.push([q.x, q.y + q.ry]); desce(q.x, q.y + q.ry, xOut, H - 190); ctrl.push([xOut, H + 60]); }

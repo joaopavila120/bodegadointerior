@@ -10,15 +10,16 @@
 // Nos fogos de cada um, nada muda: é lá que o Sadi conhece cada personagem.
 'use strict';
 
-const BASE_ZONAS = { ilha: { nome: 'Vila do Trapiche', x: 2950, y: 4420, rx: 950, ry: 600 } };
+const BASE_ZONAS = { ilha: { nome: 'Vila do Trapiche', x: 3100, y: 4420, rx: 1300, ry: 680 } };
 // Cada lote: a caixa da arte (x, y, w, h: o pé da casa fica em y + h), a frente (onde fica a porta) e o morador.
 const BASE_LOTES = [
-  { id: 'ilha-oratorio-monge', mapa: 'ilha', nome: 'Oratório do monge João Maria', dono: 'joaomaria', x: 2520, y: 3990, w: 260, h: 230, quando: () => !!ilhaState().folks?.joaomaria },
-  { id: 'ilha-quartel-canabarro', mapa: 'ilha', nome: 'Quartel farrapo do general Canabarro', dono: 'canabarro', x: 3270, y: 3960, w: 360, h: 270, quando: () => !!ilhaState().folks?.canabarro && !G.pampa?.folk?.canabarro },
-  { id: 'ilha-casa-nereu', mapa: 'ilha', nome: 'Casa do seu Nereu, o barqueiro', dono: null, x: 3390, y: 4360, w: 300, h: 240 },
-  { id: 'pampa-casa-comando', mapa: 'pampa', n: 1, nome: 'Casa de comando farroupilha', dono: 'neto', x: 2040, y: 380, w: 360, h: 260, quando: () => !!G.pampa?.folk?.neto },
-  { id: 'pampa-casa-anita', mapa: 'pampa', n: 1, nome: 'Rancho da Anita e do Garibaldi', dono: 'anita', x: 2600, y: 400, w: 300, h: 240, quando: () => !!G.pampa?.folk?.anita },
-  { id: 'pampa-rancho-lanceiros', mapa: 'pampa', n: 1, nome: 'Rancho dos Lanceiros Negros', dono: 'lanceiro', x: 2060, y: 980, w: 340, h: 175, quando: () => !!G.pampa?.folk?.lanceiro }
+  // Doorways are about 125 world pixels tall, matching an adult; roofs do not set the scale.
+  { id: 'ilha-oratorio-monge', mapa: 'ilha', nome: 'Oratório do monge João Maria', dono: 'joaomaria', x: 2350, y: 3651, w: 560, h: 539, portaX: .44, trilha: [2630, 4275], quando: () => !!ilhaState().folks?.joaomaria },
+  { id: 'ilha-quartel-canabarro', mapa: 'ilha', nome: 'Quartel farrapo do general Canabarro', dono: 'canabarro', x: 3290, y: 3739, w: 660, h: 461, portaX: .48, trilha: [3080, 4250], quando: () => !!ilhaState().folks?.canabarro && !G.pampa?.folk?.canabarro },
+  { id: 'ilha-casa-nereu', mapa: 'ilha', nome: 'Casa do seu Nereu, o barqueiro', dono: null, x: 3450, y: 4276, w: 560, h: 374, portaX: .38, trilha: [3015, 4580] },
+  { id: 'pampa-casa-comando', mapa: 'pampa', n: 1, nome: 'Casa de comando farroupilha', dono: 'neto', x: 2070, y: 128, w: 800, h: 552, portaX: .48, trilha: [1900, 780], quando: () => !!G.pampa?.folk?.neto },
+  { id: 'pampa-casa-anita', mapa: 'pampa', n: 1, nome: 'Rancho da Anita e do Garibaldi', dono: 'anita', x: 3020, y: 340, w: 560, h: 441, portaX: .45, trilha: [2820, 1010], quando: () => !!G.pampa?.folk?.anita },
+  { id: 'pampa-rancho-lanceiros', mapa: 'pampa', n: 1, nome: 'Rancho dos Lanceiros Negros', dono: 'lanceiro', x: 2070, y: 1154, w: 1020, h: 397, portaX: .225, trilha: [1900, 1620], quando: () => !!G.pampa?.folk?.lanceiro }
 ];
 // Quem mais fica na base, sem lote próprio: em pé perto de um lote dos generais.
 const BASE_VISITAS = [
@@ -28,18 +29,18 @@ const BASE_VISITAS = [
 // Os enfeites de cada base (só aparecem quando a arte existir em assets/images/bases/enfeites/<id>.png):
 // x, y é o pé do objeto (centro de baixo) e w a largura dele no mundo; a altura sai da proporção da imagem.
 const BASE_ENFEITES = [
-  { id: 'ilha-varal-redes', mapa: 'ilha', nome: 'Varal de redes de pesca', x: 3870, y: 4560, w: 200 },
+  { id: 'ilha-varal-redes', mapa: 'ilha', nome: 'Varal de redes de pesca', x: 4170, y: 4580, w: 260 },
   { id: 'ilha-poco', mapa: 'ilha', nome: 'Poço da vila', x: 3250, y: 4480, w: 110 },
-  { id: 'ilha-banco-cruzeiro', mapa: 'ilha', nome: 'Banco e cruzeiro do monge', x: 2920, y: 4150, w: 160 },
-  { id: 'ilha-canoa-virada', mapa: 'ilha', nome: 'Canoa virada no cavalete', x: 3620, y: 4790, w: 200 },
-  { id: 'pampa-palanque', mapa: 'pampa', n: 1, nome: 'Palanque com dois cavalos encilhados', x: 1620, y: 1080, w: 260 },
-  { id: 'pampa-poco', mapa: 'pampa', n: 1, nome: 'Poço de sarilho', x: 2500, y: 590, w: 120 },
-  { id: 'pampa-carreta', mapa: 'pampa', n: 1, nome: 'Carreta de boi descansando', x: 1450, y: 1150, w: 260 },
-  { id: 'pampa-lenha', mapa: 'pampa', n: 1, nome: 'Pilha de lenha com cepo e machado', x: 2560, y: 1100, w: 150 },
-  { id: 'pampa-bebedouro', mapa: 'pampa', n: 1, nome: 'Bebedouro de tronco', x: 1700, y: 640, w: 180 }
+  { id: 'ilha-banco-cruzeiro', mapa: 'ilha', nome: 'Banco e cruzeiro do monge', x: 2930, y: 4160, w: 160 },
+  { id: 'ilha-canoa-virada', mapa: 'ilha', nome: 'Canoa virada no cavalete', x: 3660, y: 4850, w: 290 },
+  { id: 'pampa-palanque', mapa: 'pampa', n: 1, nome: 'Palanque com dois cavalos encilhados', x: 1460, y: 1260, w: 380 },
+  { id: 'pampa-poco', mapa: 'pampa', n: 1, nome: 'Poço de sarilho', x: 2935, y: 890, w: 120 },
+  { id: 'pampa-carreta', mapa: 'pampa', n: 1, nome: 'Carreta de boi descansando', x: 1030, y: 1440, w: 340 },
+  { id: 'pampa-lenha', mapa: 'pampa', n: 1, nome: 'Pilha de lenha com cepo e machado', x: 3230, y: 1500, w: 180 },
+  { id: 'pampa-bebedouro', mapa: 'pampa', n: 1, nome: 'Bebedouro de tronco', x: 1660, y: 1130, w: 220 }
 ];
 function basePe(l) { return { x: l.x + 14, y: l.y + l.h * .58, w: l.w - 28, h: l.h * .42 }; }
-function baseFrente(l) { return { x: l.x + l.w / 2, y: l.y + l.h + 30 }; }
+function baseFrente(l) { return { x: l.x + l.w * (l.portaX ?? .5), y: l.y + l.h + 55 }; }
 function baseLotesAqui() { const m = worldOut?.map, n = m === 'pampa' ? pampaLayout().n : null; return BASE_LOTES.filter(l => l.mapa === m && (l.n == null || l.n === n)); }
 function baseNaZona(mapa, x, y) { const z = BASE_ZONAS[mapa]; return !!z && ((x - z.x) / z.rx) ** 2 + ((y - z.y) / z.ry) ** 2 < 1; }
 
@@ -67,6 +68,22 @@ function drawBaseEnfeite(e) {
   const im = baseArteEnfeite(e); if (!im) return;
   const h = im.naturalHeight * e.w / im.naturalWidth;
   ellipse(e.x, e.y - 4, e.w * .46, 12, 'rgba(14,12,8,.3)'); ctx.drawImage(im, e.x - e.w / 2, e.y - h, e.w, h);
+}
+// Quiet worn-earth approaches connect each doorway to its village path.
+// These are baked into the existing terrain tiles, not repainted each frame.
+function drawBasePatios(mapa, n = null) {
+  const soil = ilhaPattern(1);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(const l of BASE_LOTES){
+    if(l.mapa!==mapa||(l.n!=null&&l.n!==n)||!l.trilha)continue;
+    const f=baseFrente(l),bottom=l.y+l.h;
+    ctx.beginPath();ctx.moveTo(...l.trilha);ctx.lineTo(f.x,f.y+8);ctx.lineTo(f.x,bottom-4);
+    ctx.strokeStyle=soil||'#967c53';
+    for(const [width,alpha] of [[88,.12],[70,.16],[52,.35]]){ctx.lineWidth=width;ctx.globalAlpha=alpha;ctx.stroke();}
+    ctx.globalAlpha=.25;ctx.fillStyle=soil||'#967c53';
+    ctx.beginPath();ctx.ellipse(f.x,bottom+18,95,36,0,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
 }
 
 // ---------- O lote marcado (enquanto a casa não vem) ----------
@@ -122,10 +139,14 @@ function baseFala(id, pampa) {
   const st = G.bases ??= {}; st.prosa ??= {}; const k = (st.prosa[chave] || 0) % sets.length; st.prosa[chave] = (st.prosa[chave] || 0) + 1; save();
   if (pampa) pampaTalk(sets[k], null, 'Valeu'); else talk(ilhaFolkFala(sets[k]), null, 'Valeu');
 }
-function baseMorador(id, x, y, pampa) {
-  const dx = worldOut && worldOut.x < x ? -1 : 1;
-  if (!pampa && ILHA_FOLKS[id]) ILHA_FOLKS[id].draw(x, y, dx);
-  else drawPampaFolk(id, x, y);
+function baseMorador(m, pampa) {
+  const dx = m.walk ? m.dx : worldOut && worldOut.x < m.x ? -1 : 1;
+  if (m.walk) {
+    if (pampa && m.id === 'neto') { pampaFigura('neto', m.x, m.y, dx, 1, 1, 1 + frameClock * 7); return; }
+    if (FOLK_ART_SIZE[m.id] && historyFigure(m.id, m.x, m.y, 1, dx, true, m.dy)) { if (m.id === 'joaomaria') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(m.x, m.y - 90, 80, .1, '255,230,170'); ctx.restore(); } return; }
+  }
+  if (!pampa && ILHA_FOLKS[m.id]) ILHA_FOLKS[m.id].draw(m.x, m.y, dx);
+  else drawPampaFolk(m.id, m.x, m.y);
 }
 function baseMoradores() {
   const out = [], pampa = worldOut?.map === 'pampa';
@@ -133,10 +154,70 @@ function baseMoradores() {
   if (pampa) for (const v of BASE_VISITAS) if (v.n === pampaLayout().n && v.quando()) { const l = BASE_LOTES.find(x => x.id === v.junto), f = baseFrente(l); out.push({ id: v.id, x: f.x + v.dx, y: f.y + 6 }); }
   return out;
 }
+// ---------- Uma volta perto de casa ----------
+// De vez em quando cada morador sai do lugar, anda um pedaço curto perto de casa (ou volta pra porta) e para de novo.
+// Só vai aonde dá pra chegar em linha reta sem atravessar casa, enfeite ou taipa. Se o Sadi chega perto ou a prosa
+// abre, para onde está e fica de frente pra ele.
+const BASE_PASSEIO = { raio: 160, vel: 50, perto: 170 };
+const baseAndar = {};
+function baseAndarDe(m) {
+  const key = worldOut.map + ':' + m.id; let a = baseAndar[key];
+  if (!a || a.hx !== m.x || a.hy !== m.y) a = baseAndar[key] = { id: m.id, hx: m.x, hy: m.y, x: m.x, y: m.y, tx: m.x, ty: m.y, t: 3 + Math.random() * 6, walk: false, dx: 1, dy: 0 };
+  return a;
+}
+function baseLinhaLivre(M, x0, y0, x1, y1) {
+  const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 16);
+  for (let i = 1; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; if (!M.canWalk(x, y) || !M.canWalk(x - 14, y) || !M.canWalk(x + 14, y)) return false; }
+  return true;
+}
+function baseMoradoresAgora() { return worldOut ? baseMoradores().map(baseAndarDe) : []; }
+function baseAndarTick(dt) {
+  const M = WORLD_MAPS[worldOut.map], todos = baseMoradoresAgora();
+  for (const a of todos) {
+    if (talkState || Math.hypot(worldOut.x - a.x, worldOut.y - a.y) < BASE_PASSEIO.perto) { a.walk = false; a.t = Math.max(a.t, 2.5); continue; }
+    if (a.walk) {
+      const vx = a.tx - a.x, vy = a.ty - a.y, d = Math.hypot(vx, vy), passo = BASE_PASSEIO.vel * dt;
+      if (d <= passo) { a.x = a.tx; a.y = a.ty; a.walk = false; a.t = 4 + Math.random() * 8; continue; }
+      a.x += vx / d * passo; a.y += vy / d * passo;
+      if (Math.abs(vx) > Math.abs(vy) * .8) { a.dx = Math.sign(vx); a.dy = 0; } else { a.dx = 0; a.dy = Math.sign(vy); }
+      continue;
+    }
+    if ((a.t -= dt) > 0) continue;
+    a.t = 2 + Math.random() * 3;
+    const longe = Math.hypot(a.x - a.hx, a.y - a.hy) > 40;
+    for (let k = 0; k < 10; k++) {
+      const volta = longe && (k === 0 ? Math.random() < .5 : k > 6), ang = Math.random() * Math.PI * 2, r = 50 + Math.random() * (BASE_PASSEIO.raio - 50);
+      const tx = volta ? a.hx : a.hx + Math.cos(ang) * r, ty = volta ? a.hy : a.hy + Math.sin(ang) * r * .45;
+      if (Math.hypot(tx - a.x, ty - a.y) < 30 || todos.some(o => o !== a && Math.hypot(o.x - tx, o.y - ty) < 60)) continue;
+      if (!baseLinhaLivre(M, a.x, a.y, tx, ty)) continue;
+      Object.assign(a, { tx, ty, walk: true }); break;
+    }
+  }
+}
 function baseNome(id) { return id === 'neto' ? 'o coronel Neto' : id === 'lanceiro' ? 'o Lanceiro Negro' : id === 'joaomaria' ? 'o monge João Maria' : id === 'canabarro' ? 'o general Canabarro' : id === 'anita' ? 'a Anita' : id === 'bento' ? 'o Bento' : id; }
 
 // ---------- Ligações ----------
 {
+  const islandGround=paintIlhaGround;
+  paintIlhaGround=function(view){islandGround(view);drawBasePatios('ilha');};
+  const pampaGround=paintPampaGround;
+  paintPampaGround=function(L,view){pampaGround(L,view);drawBasePatios('pampa',L.n);};
+  // Older saves may place Sadi inside an enlarged house. Move only such arrivals to its porch.
+  const checked=new WeakMap(),outside=outsideTick;
+  outsideTick=function(dt){
+    if(worldOut&&!scene&&['ilha','pampa'].includes(worldOut.map)){
+      const key=worldOut.map+':'+(worldOut.map==='pampa'?pampaArea():0),lotes=baseLotesAqui();
+      if(checked.get(worldOut)!==key&&lotes.every(l=>baseArte(l))){
+        checked.set(worldOut,key);
+        const l=lotes.find(l=>{const p=basePe(l);return worldOut.x>p.x&&worldOut.x<p.x+p.w&&worldOut.y>p.y&&worldOut.y<p.y+p.h;});
+        if(l){const f=baseFrente(l),M=WORLD_MAPS[worldOut.map];
+          for(const [dx,dy] of [[0,30],[-70,30],[70,30],[0,100]])if(M.canWalk(f.x+dx,f.y+dy)){worldOut.x=f.x+dx;worldOut.y=f.y+dy;break;}
+        }
+      }
+    }
+    if (worldOut && !scene && !paused && !modal && ['ilha', 'pampa'].includes(worldOut.map)) baseAndarTick(dt);
+    return outside(dt);
+  };
   // Ilha: a vila do trapiche não tem bicho (nem nasce, nem persegue, nem fere) e o mato abre nos lotes.
   // Árvore tem copa alta: a que nasce logo na frente do lote tapava a casa inteira, então a frente fica mais limpa.
   const reserva = ilhaReserved; ilhaReserved = function (x, y, pad = 0) { return baseReservado('ilha', x, y, pad) || reserva(x, y, pad); };
@@ -161,7 +242,8 @@ function baseNome(id) { return id === 'neto' ? 'o coronel Neto' : id === 'lancei
     const L = lay(n); if (L._bases) return L; L._bases = true;
     const lotes = BASE_LOTES.filter(l => l.mapa === 'pampa' && l.n === L.n), enfeites = BASE_ENFEITES.filter(e => e.mapa === 'pampa' && e.n === L.n);
     const livre = o => !lotes.some(l => o.x > l.x - 40 && o.x < l.x + l.w + 40 && o.y > l.y - 20 && o.y < l.y + l.h + 80) && !enfeites.some(e => Math.abs(o.x - e.x) < e.w / 2 + 40 && o.y > e.y - 50 && o.y < e.y + 60);
-    for (const k of ['capim', 'pedras', 'umbus', 'caveiras', 'pedacos', 'lancas', 'carretas', 'solidos']) if (Array.isArray(L[k])) L[k] = L[k].filter(livre);
+    // The enlarged courtyard generates its complete perimeter; do not cut isolated wall fragments.
+    for (const k of ['capim', 'pedras', 'umbus', 'caveiras', 'lancas', 'carretas', 'solidos']) if (Array.isArray(L[k])) L[k] = L[k].filter(livre);
     return L;
   };
   // Chão sólido onde a casa já tem arte.
@@ -174,11 +256,11 @@ function baseNome(id) { return id === 'neto' ? 'o coronel Neto' : id === 'lancei
       draw.call(this, view, seen, layers); if (scene) return;
       for (const l of baseLotesAqui()) if (seen(l.x + l.w / 2, l.y + l.h / 2, Math.max(l.w, l.h))) layers.push({ y: l.y + l.h, draw: () => drawBaseLote(l) });
       for (const e of baseEnfeitesAqui()) if (baseArteEnfeite(e) && seen(e.x, e.y - e.w / 2, e.w)) layers.push({ y: e.y, draw: () => drawBaseEnfeite(e) });
-      for (const m of baseMoradores()) if (seen(m.x, m.y, 200)) layers.push({ y: m.y, draw: () => baseMorador(m.id, m.x, m.y, id === 'pampa') });
+      for (const m of baseMoradoresAgora()) if (seen(m.x, m.y, 200)) layers.push({ y: m.y, draw: () => baseMorador(m, id === 'pampa') });
     };
     M.spots = function () {
       const list = spots.call(this);
-      for (const m of baseMoradores()) list.push({ id: 'base:' + m.id, x: m.x, y: m.y + 10, radius: 100, label: 'Prosear com ' + baseNome(m.id), act: () => baseFala(m.id, id === 'pampa') });
+      for (const m of baseMoradoresAgora()) list.push({ id: 'base:' + m.id, x: m.x, y: m.y + 10, radius: 100, label: 'Prosear com ' + baseNome(m.id), act: () => baseFala(m.id, id === 'pampa') });
       for (const l of baseLotesAqui()) if (!baseArte(l)) { const f = baseFrente(l); list.push({ id: 'lote:' + l.id, x: f.x - 40, y: f.y, radius: 80, info: true, label: 'Lote · ' + l.nome, text: 'Lote reservado: aqui vai ficar ' + l.nome.charAt(0).toLowerCase() + l.nome.slice(1) + '.' }); }
       return list;
     };

@@ -5,8 +5,8 @@
     "assets/images/island/vila-pesqueira-v1.png",
     "assets/images/island/capela-costeira-v1.png",
     "assets/images/pampa/pampa-props-v1.png",
-    "docs/previews/base-ilha-lotes.jpg",
-    "docs/previews/base-pampa-lotes.jpg"
+    "docs/previews/base-ilha-proporcao.png",
+    "docs/previews/base-pampa-proporcao.png"
   ],
   "after": "python scripts/trim-bases.py",
   "style": "Use case: stylized-concept. Production environment sprite art for the warm detailed hand-painted PIXEL ART RPG Bodega do Sadi (southern Brazil, 1830s-1840s). Crisp dark pixel outlines, readable chunky shapes and pixel clusters, restrained earthy colors, weathered wood, warm gray stone, cream plaster, terracotta, santa-fe straw. Match the provided rustic architecture references, not photorealism and not low-poly. Camera is a TOP-DOWN RPG THREE-QUARTER view looking down about 35 degrees: front facade horizontal and facing south toward the viewer, roof and tops visible, vertical walls vertical. NOT diamond isometric: no diagonal footprint, no tilted horizon, no fisheye. The base of the front wall touches the bottom of the drawing; roof fills roughly the upper half. A usable door scaled for adult human sprites (door height about one third of the whole building height), centered on the front. Real transparent alpha background, no checkerboard, no ground plate, no grass patch, no cast shadow outside the object, no people, no animals unless asked, no lettering, no signs, no border, no watermark. Minimal plants, no flower clutter. ONE isolated object filling most of the canvas with a small transparent margin.",

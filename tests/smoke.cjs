@@ -124,6 +124,19 @@ async function main() {
       await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
       const r=await evaluate(fs.readFileSync(path.join(__dirname,'teste-chefes-scenarios.js'),'utf8'));for(const x of r)console.log('PASS '+x);assert.equal(errors.length,0,errors.join('\n'));console.log('PASS painel de teste: '+r.length+' checks');return;
     }
+    if(process.env.BODEGA_FOCUS==='regionalBases'){
+      await load(base+'/index.html');await evaluate('Promise.all([worldArtLoaded,walkArtLoaded,sadiArtLoaded,expansionArtLoadAll(),loadIslandArt(),loadPampaArt()])');
+      await evaluate('BASE_LOTES.forEach(baseArte);BASE_ENFEITES.forEach(baseArteEnfeite)');
+      await waitUntil(()=>evaluate('BASE_LOTES.every(l=>!!baseArte(l))&&BASE_ENFEITES.every(e=>!!baseArteEnfeite(e))'),'Missing base art');
+      const checks=await evaluate(fs.readFileSync(path.join(__dirname,'bases-regionais-scenarios.js'),'utf8'));for(const c of checks)console.log('PASS '+c);
+      await evaluate("started=true;scene=null;closeDialog(true);paused=true;worldWalkers=[];mataNight=null;fx=[];$('start').classList.add('hidden');document.head.insertAdjacentHTML('beforeend','<style>.banner,#floatNotes,#tutorialHint{display:none!important}</style>');");
+      for(const [name,map,x,y,zoom] of [['ilha','ilha',3090,4210,.75],['pampa','pampa',2230,940,.65],['ilha-casas','ilha',3450,4340,1],['pampa-casas','pampa',2660,800,1],['lanceiros','pampa',2390,1570,1]]){
+        await evaluate(`worldOut={map:${JSON.stringify(map)},x:${x},y:${y},dx:0,dy:1};camera.zoom=${zoom};refreshHUD();draw();`);
+        await delay(250);const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(root,'docs/previews/base-'+name+'-proporcao.png'),Buffer.from(shot.data,'base64'));
+      }
+      await load(pathToFileURL(path.join(root,'bodega-do-interior.html')).href);await evaluate("worldOut={map:'pampa',x:1900,y:830};draw();");
+      assert.equal(errors.length,0,errors.join('\n'));console.log('PASS regional bases: '+checks.length+' checks, HTTP, file and previews');return;
+    }
     if(process.env.BODEGA_FOCUS==='pampaActors'){
       await load(base+'/index.html');await evaluate('Promise.all([actionArtReady,mataArtReady,walkArtLoaded,sadiArtLoaded,worldArtLoaded,expansionArtLoadAll(),loadCreatureArt(),loadIslandArt(),loadPampaArt()])');
       await evaluate(`$('start').classList.add('hidden');$('phone').classList.add('hidden');camera.zoom=.9;`);

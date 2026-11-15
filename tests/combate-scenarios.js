@@ -114,6 +114,10 @@
    switchMap({...pampaEntrada(1)});fecha();const ps=worldMap().spots().filter(s=>s.id.startsWith('base:'));
    check(['neto','lanceiro','anita','canabarro','bento'].every(id=>ps.some(s=>s.id==='base:'+id)),'a Porteira do Pampa junta o Neto, o Lanceiro, a Anita, o Canabarro e o Bento');
    for(const m of baseMoradores())check(worldMap().canWalk(m.x,m.y+10),m.id+' fica em pé no chão da porteira');
+   {const andou={};let fora=0;for(let i=0;i<60*30;i++){passa(1/30);for(const a of baseMoradoresAgora()){if(a.walk)andou[a.id]=1;if(!worldMap().canWalk(a.x,a.y)||Math.hypot(a.x-a.hx,a.y-a.hy)>BASE_PASSEIO.raio+5)fora++;}}
+    check(baseMoradores().every(m=>andou[m.id])&&!fora,'de vez em quando cada morador dá uma volta curta perto de casa, sem sair do chão');
+    const a=baseMoradoresAgora()[0];Object.assign(worldOut,{x:a.x+60,y:a.y});const x0=a.x,y0=a.y;passa(2);const b=baseMoradoresAgora()[0];
+    check(!b.walk&&b.x===x0&&b.y===y0&&Math.abs(worldMap().spots().find(s=>s.id==='base:'+b.id).x-b.x)<1,'e para quando o Sadi chega perto, com a prosa onde ele está');}
    const F=pampaLayout(1).ferraria;check(worldMap().canWalk(F.x+F.w/2,F.y+F.h+34),'a forja do Zeferino segue livre');}
   novo();worldOut=null;mataNight=null;lendaFight=null;closeDialog(true);G.testMode=false;window.NO_SCENES=true;
   return results;

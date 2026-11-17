@@ -29,7 +29,7 @@ const LENDA_ARCS = {
     mission: { title: 'As crinas trançadas', giver: 'badin', where: 'Serra: a casa do Badin, as parreiras, a igreja e a vinícola',
       reward: { cash: 120, xp: 80, rep: 2, friend: { badin: 12 }, items: { salame: 4 } }, outroBy: 'badin',
       outro: [['badin', 'O guri do vizinho desceu da figueira sozinho hoje cedo, rindo à toa. E as crinas amanheceram soltas!'], ['badin', 'A nona mandou dizer que tu é o primeiro bodegueiro que ela respeita. Toma, salame da colônia, que é o melhor obrigado que tem aqui.']] },
-    waitText: 'amanhã, depois de conhecer o Badin: ele manda chamar',
+    waitText: 'no dia seguinte ao encontro com o Badin, quando tu sair na rua: ele manda chamar',
     call: ['📜 O Badin mandou chamar', 'Passe na casa de pedra dele, na Serra: tem coisa estranha na colônia'],
     story: [['badin', 'Bah, Sadi, ainda bem que tu veio! De noite tem alguém trançando a crina dos cavalos da colônia, tudo em nó de duende.'],
       ['badin', 'Esvaziaram uma pipa da cantina e o guri do vizinho amanheceu em cima da figueira, sem saber como subiu!'],
@@ -52,7 +52,7 @@ const LENDA_ARCS = {
     mission: { title: 'O filhote roubado', giver: 'garibaldi', where: 'Mata de Araucárias: o pinheiral do Garibaldi',
       reward: { cash: 160, xp: 100, rep: 3, items: { butia: 3 } }, outroBy: 'garibaldi',
       outro: [['garibaldi', 'O filhote voltou pra mãe, e os caçadores sumiram de medo. Fizeste o certo, gaúcho.'], ['garibaldi', 'Quem respeita a mata, a mata respeita de volta. Toma uns butiás do meu paiol.']] },
-    waitText: 'no dia seguinte, o Garibaldi manda recado pela estrada',
+    waitText: 'no dia seguinte ao causo da Mula, quando tu sair na rua: o Garibaldi manda recado pela estrada',
     call: ['📜 O Garibaldi mandou recado', 'Vá até o refúgio dele, na Mata de Araucárias: caçadores no pinheiral'],
     story: [['garibaldi', 'Gaúcho, tem caçador armando arapuca no meu pinheiral. Não é caça pra comer: é pra vender, e pegaram até filhote de veado.'],
       ['garibaldi', 'E de noite um veado branco, de olhos de fogo, ronda o rancho, furioso. É o Anhangá, o guardião da caça. Ele protege os bichos de quem caça por maldade.'],
@@ -71,7 +71,7 @@ const LENDA_ARCS = {
     mission: { title: 'Fogo no campo', giver: 'guri', where: 'Fronteira: os campos queimados e o banhado',
       reward: { cash: 180, xp: 110, rep: 3, friend: { guri: 15 } }, outroBy: 'guri',
       outro: [['guri', 'Bah, Sadi! O fazendeiro de fora foi embora da Fronteira de mala e cuia, depois que viu a cobra de fogo passar na frente da caminhonete dele.'], ['guri', 'E o campo já tá brotando de novo. Dizem que onde o Boitatá passa, a lavoura amanhece sem praga!']] },
-    waitText: 'depois do baile: o Guri vem preocupado com o fogo no campo',
+    waitText: 'no dia seguinte ao baile, quando tu sair na rua: o Guri vem preocupado com o fogo no campo',
     call: ['📜 O Guri mandou chamar', 'Tão queimando o campo da Fronteira de noite: passe na casa dele'],
     story: [['guri', 'Sadi, tu viu o clarão de ontem de noite? Botaram fogo no campo de novo, perto do banhado!'],
       ['guri', 'Já é a terceira vez. E o povo diz que viu uma cobra de fogo correndo atrás das labaredas, furiosa, queimando ainda mais.'],
@@ -92,7 +92,7 @@ const LENDA_ARCS = {
     mission: { title: 'O ouro do Lauro', giver: 'lauro', where: 'Santa Catarina: a casa do Lauro e a sanga dos fundos',
       reward: { cash: 200, xp: 120, rep: 3, friend: { lauro: 15 } }, outroBy: 'lauro',
       outro: [['lauro', 'Bah, Sadi… acordei como quem sai de um sonho comprido. A moça de olhos vermelhos, o ouro… nada disso era meu.'], ['lauro', 'O Gustavo disse que tu enfrentou a Teiniaguá na sanga. Te devo essa, parceiro.']] },
-    waitText: 'logo depois de Indaial: o Gustavo manda recado sobre o Lauro',
+    waitText: 'no dia seguinte a Indaial, quando tu sair na rua: o Gustavo manda recado sobre o Lauro',
     call: ['📜 O Gustavo mandou recado', 'O Lauro anda estranho: passe na casa dele, em Santa Catarina'],
     story: [['lauro', 'Ah, Sadi… tu viu a moça? Uma princesa, de olhos vermelhos como brasa. Ela me espera na sanga, toda noite.'],
       ['lauro', 'Olha o que ela me deu: onças de ouro, de verdade! Só que eu não durmo mais, e a mãe diz que eu falo sozinho…'],
@@ -116,7 +116,7 @@ const LENDA_ARCS = {
       reward: { cash: 300, xp: 160, rep: 5, friend: { manolima: 20 } }, outroBy: 'manolima',
       outro: [['manolima', 'Vivente… tu viu tudo, né? Desde guri eu carrego essa sina. Sétimo filho homem, e ninguém pra me batizar.'], ['manolima', 'A Baia sempre soube. Ela uivava na porta, me esperando voltar de manhã, com o poncho rasgado.'],
         ['sadi', 'Com a gota de sangue da faca benta, o encanto quebrou, Mano. Ninguém mais precisa saber.'], ['manolima', 'Índio véio não esquece isso, Sadi. Enquanto eu tiver gaita e cuia, a tua bodega tem freguês.']] },
-    waitText: 'quando a Fronteira inteira já conhece a bodega: o Valter vem preocupado',
+    waitText: 'no dia seguinte à Oktoberfest, quando tu sair na rua: o Valter vem preocupado',
     call: ['📜 O Valter quer falar contigo', 'Tão sumindo criação na Fronteira: ele te espera em casa'],
     story: [['valter', 'Sadi, a coisa tá feia. Sumiram galinhas do teu curral, ovelhas do vizinho apareceram mortas, e o cachorro do Jayme não voltou.'],
       ['valter', 'O povo da Fronteira já fala em lobisomem. E toda vez é sexta-feira de lua.'],
@@ -145,7 +145,7 @@ for (const [id, d] of Object.entries(LENDA_ARCS)) {
   MISSIONS.push({ id, ...d.mission, when: () => false, waitText: () => d.waitText, goal: () => lendaArcGoal(id), done: () => false });
   FOLK[id].ok = () => false;   // não sai mais sorteada: é deste capítulo
 }
-{ const m = MISSIONS.find(x => x.id === 'mula'); if (m) { delete m.side; m.when = () => false; m.waitText = () => 'no dia seguinte ao sino: o Padre Romio manda chamar'; } }
+{ const m = MISSIONS.find(x => x.id === 'mula'); if (m) { delete m.side; m.when = () => false; m.waitText = () => 'no dia seguinte ao sino, quando tu sair na rua: o Padre Romio manda chamar'; } }
 STORY_ORDER.forEach((id, i) => { const m = MISSIONS.find(x => x.id === id); if (m) m.chapter = i + 1; });
 function lendaArcEncounterAt(id) { const e = LENDA_ARCS[id].encounter; return e.at ? e.at() : lendaNear(e.map, ...e.base); }
 function lendaArcClueAt(c) { return c.at ? c.at() : lendaNear(c.map, ...c.base); }

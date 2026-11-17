@@ -472,6 +472,7 @@ body.world-out #hands,body.world-out [data-act="drop"],body.world-out .context-b
 .qt-line{background:#1e150da6;border-left:3px solid #e7b95e;border-radius:6px;padding:6px 10px;color:#fff1cc;opacity:.85}
 .qt-line b{display:block;font-size:13px}.qt-line span{display:block;font-size:12px;color:#ead9b2;line-height:1.3}
 .qt-line.side{border-left-color:#8fb07a;opacity:.7}.qt-line.event{border-left-color:#e07a3a;background:#2a140ab0}
+.qt-line.aventura{border-left-color:#d0483a;background:#2a100cb0}
 @media(max-width:750px){.quest-tracker{width:46%;top:6px;left:6px}.qt-line{padding:4px 7px}.qt-line b{font-size:11px}.qt-line span{font-size:10px}.float-note{font-size:13px}}
 .calendar-day .cal-map{display:block;font-size:11px;color:#a8431f;font-weight:bold;margin-top:3px}
 

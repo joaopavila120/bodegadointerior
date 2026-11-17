@@ -253,9 +253,11 @@ function baseNome(id) { return id === 'neto' ? 'o coronel Neto' : id === 'lancei
   for (const id of ['ilha', 'pampa']) {
     const M = WORLD_MAPS[id], draw = M.draw, spots = M.spots;
     M.draw = function (view, seen, layers) {
-      draw.call(this, view, seen, layers); if (scene) return;
-      for (const l of baseLotesAqui()) if (seen(l.x + l.w / 2, l.y + l.h / 2, Math.max(l.w, l.h))) layers.push({ y: l.y + l.h, draw: () => drawBaseLote(l) });
+      draw.call(this, view, seen, layers);
+      // As casas e os enfeites aparecem também nas cenas; os moradores, não (a cena põe os atores dela).
+      for (const l of baseLotesAqui()) if ((!scene || baseArte(l)) && seen(l.x + l.w / 2, l.y + l.h / 2, Math.max(l.w, l.h))) layers.push({ y: l.y + l.h, draw: () => drawBaseLote(l) });
       for (const e of baseEnfeitesAqui()) if (baseArteEnfeite(e) && seen(e.x, e.y - e.w / 2, e.w)) layers.push({ y: e.y, draw: () => drawBaseEnfeite(e) });
+      if (scene) return;
       for (const m of baseMoradoresAgora()) if (seen(m.x, m.y, 200)) layers.push({ y: m.y, draw: () => baseMorador(m, id === 'pampa') });
     };
     M.spots = function () {

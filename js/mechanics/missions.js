@@ -605,7 +605,7 @@ function trackerLines() {
   const lines = [], ch = activeChapter(), wait = chapterWaiting(), ev = mapEventToday(), t = ev?.def.tracker?.();
   if (ch) lines.push({ icon: '📖', title: 'Capítulo ' + ch.chapter + ' · ' + ch.title, goal: ch.goal(), kind: 'story' });
   else if (wait) lines.push({ icon: '📖', title: 'Próximo capítulo: ' + wait.title, goal: 'Começa ' + (wait.waitText?.() || 'em breve'), kind: 'story' });
-  else { const call = chapterCallLine(); if (call) lines.push(call); }
+  else { const call = chapterCallLine(); if (call) lines.push(call); else { const prox = currentChapter(); if (prox && !missionState(prox.id)) lines.push({ icon: '📖', title: 'Próximo capítulo: ' + prox.title, goal: 'Começa ' + (prox.waitText?.() || 'logo: siga o dia, que quem tem a história vem atrás de ti'), kind: 'story' }); } }
   if (t) lines.push({ ...t, kind: 'event' });
   const side = activeMissions().filter(m => !m.chapter)[0]; if (side && lines.length < 2) lines.push({ title: side.title, goal: side.goal(), kind: 'side' });
   return lines.slice(0, 2);
@@ -633,7 +633,7 @@ function missionsPanel() {
   const done = storyChapters().filter(m => missionDone(m.id)).length, travel = WORLD_DISCOVERIES ? WORLD_DISCOVERIES.filter(d => travelState().seen[d.id]).length : 0;
   return `<div class="phone-intro"><h3>Missões</h3><p>História: ${done} de ${total} capítulos · ${G.questsDone || 0} pedidos entregues.</p></div>` +
     `<button class="small" data-act="toggleTracker">${G.showTracker === false ? 'Mostrar as missões na tela' : 'Esconder as missões da tela'}</button>` +
-    '<h3 class="phone-section">História</h3>' + (story || '<p class="small-note">A história terminou por enquanto. Bodega lendária!</p>') +
+    '<h3 class="phone-section">História</h3>' + (story || (currentChapter() ? `<div class="mission-card story"><b>📖 Próximo capítulo · ${currentChapter().title}</b><p>Começa ${currentChapter().waitText?.() || 'logo: siga o dia, que quem tem a história vem atrás de ti'}.</p></div>` : '<p class="small-note">A história terminou por enquanto. Bodega lendária!</p>')) +
     (evCard ? '<h3 class="phone-section">Evento de hoje</h3>' + evCard : '') +
     '<h3 class="phone-section">Secundárias</h3>' + (side || '<p class="small-note">Nenhuma agora. Converse com o povo, em casa e na rua: alguns têm missões para dar.</p>') +
     '<h3 class="phone-section">Pedidos aceitos</h3>' + (quests || '<p class="small-note">Nenhum pedido aceito. Visite as casas: quem tem amizade contigo pede coisas da roça.</p>') +

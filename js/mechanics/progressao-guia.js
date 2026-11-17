@@ -62,8 +62,39 @@ function caminhoDica(to) {
   if (to.map === 'pampa' && typeof bornalNivel === 'function' && bornalNivel() < 2) diz('alforje', '🎒 No bolicho do seu Zeferino tem costela de fogo de chão; com o alforje de campanha dá pra levar bem mais.');
 }
 
+// ---------- A aventura no quadro do canto ----------
+// A história da bodega (capítulos) e a aventura do Garibaldi (mata → Laguna → ilha → pampa → República) andam juntas.
+// A aventura são missões "secundárias" no código, e o quadro do canto só cabia duas linhas: em dia de evento ela sumia,
+// e entre uma etapa e outra (antes de prosear de novo com o Garibaldi, antes de entrar no pampa) não aparecia nada.
+// Agora ela tem a linha dela, logo depois da história, e mostra também o chamado entre as etapas.
+const AVENTURA = ['melOlmiro', 'laguna', 'bento', 'porongos', 'fogueira'];
+function aventuraLinha() {
+  if (!G?.missions) return null;
+  for (const id of AVENTURA) if (missionActive(id)) { const m = MISSIONS.find(x => x.id === id); if (m) return { title: m.title, goal: m.goal() }; }
+  if (missionDone('fantasma') && G.mata?.metGaribaldi && !G.mata?.historia && !missionState('laguna')) return { title: 'A Batalha de Laguna', goal: 'O Garibaldi tem uma história pra te contar: prosa com ele no pinheiral, na Mata de Araucárias' };
+  if (typeof bentoChamando === 'function' && bentoChamando()) return { title: 'Levaram o Bento!', goal: 'O Garibaldi te chama no pinheiral, na Mata de Araucárias' };
+  if (missionDone('bento') && !missionState('porongos')) return { title: 'A batalha de Porongos', goal: 'A porteira do pampa fica no fim da estrada da Serra: o Giuseppe já juntou a tropa' };
+  return null;
+}
+// Capítulos que esperam o nível da bodega: dizem quanto XP falta e de onde ele vem.
+const CAPITULO_NIVEL = { gaita: 4, bau: 5 };
+function xpFaltando(nivel) { const alvo = LEVELS[nivel - 1]?.xp ?? 0; return Math.max(0, alvo - (G.xp || 0)); }
+function xpDica(nivel) { const f = xpFaltando(nivel); return f > 0 ? ' · faltam ' + f + ' XP (abra a bodega todo dia e atenda bem: lucro e freguês atendido viram XP)' : ''; }
+
 // ---------- Ligações ----------
 {
   const gc = guideContent; guideContent = function () { return gc() + caminhoPeleiaHTML(); };
   const sm = switchMap; switchMap = function (to) { const r = sm(to); try { caminhoDica(to); } catch (e) { } return r; };
+  const tl = trackerLines; trackerLines = function () {
+    const base = tl(), a = aventuraLinha();
+    if (!a || base.some(l => l.title === a.title)) return base;
+    const historia = base.filter(l => l.kind === 'story'), resto = base.filter(l => l.kind !== 'story');
+    return [...historia, { icon: '⚔️', title: a.title, goal: a.goal, kind: 'aventura' }, ...resto].slice(0, 3);
+  };
+  for (const [id, nivel] of Object.entries(CAPITULO_NIVEL)) {
+    const m = MISSIONS.find(x => x.id === id); if (!m?.waitText) continue;
+    const wt = m.waitText; m.waitText = () => wt() + xpDica(nivel);
+  }
+  const lend = MISSIONS.find(x => x.id === 'lendaria');
+  if (lend?.goal) { const goal = lend.goal; lend.goal = () => goal() + xpDica(LEVELS.length); }
 }

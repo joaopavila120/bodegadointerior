@@ -24,7 +24,7 @@ MISSIONS.push({ id: 'fantasma', chapter: 2, title: 'O fantasma de camisa vermelh
   goal: () => 'Siga a estrada da Serra até o fim e entre na Mata de Araucárias',
   done: () => !!G.mata?.metGaribaldi, reward: { cash: 60, xp: 40, rep: 1, unlock: 'Mata de Araucárias e o refúgio do Garibaldi' }, outroBy: 'garibaldi',
   outro: ['Volta e senta no fogo quando quiser, gaúcho. Tenho muito causo pra te contar.'] });
-// ---------- Missão secundária: a Batalha de Laguna ----------
+// ---------- A Batalha de Laguna (a aventura do Garibaldi; o último capítulo da bodega espera por ela) ----------
 MISSIONS.push({ id: 'laguna', title: 'A Batalha de Laguna', giver: 'garibaldi', side: true, when: () => false, where: 'Mata adentro, do pinheiral até a barra de Laguna',
   goal: () => 'Desça a mata até a barra de Laguna e vença o navio imperial' + (G.mata?.deepest > 1 ? ' · mais fundo: ' + TRECHO_BIOME_NAMES[trechoBiome(Math.min(G.mata.deepest, TRECHO.last + 1))] : ''),
   done: () => !!G.mata?.laguna?.won, reward: { cash: 300, xp: 250, rep: 6 }, outroBy: 'garibaldi',
@@ -32,7 +32,7 @@ MISSIONS.push({ id: 'laguna', title: 'A Batalha de Laguna', giver: 'garibaldi', 
 {
   // A "Bodega lendária" espera a Batalha de Laguna.
   const L = MISSIONS.find(m => m.id === 'lendaria');
-  if (L) { const when = L.when; L.when = () => (!when || when()) && missionDone('laguna'); L.waitText = () => 'depois da Batalha de Laguna (missão secundária do Garibaldi, na Mata de Araucárias)'; }
+  if (L) { const when = L.when; L.when = () => (!when || when()) && missionDone('laguna'); L.waitText = () => 'depois da Batalha de Laguna: a missão do Garibaldi, mata adentro a partir do pinheiral (Mata de Araucárias)'; }
 }
 // O Olmiro passa na rua da Fronteira de noite, depois do trago de pura.
 function olmiroReady() {
